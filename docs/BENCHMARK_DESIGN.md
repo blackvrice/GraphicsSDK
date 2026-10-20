@@ -1,0 +1,82 @@
+# 재현 가능한 벤치마크 절차
+
+## 비교 계약
+
+Low-level API와 end-to-end는 별도 범주다. backend, 물리 GPU의 LUID, driver, CPU,
+OS, RAM, compiler, Release 최적화, validation 설정 및 workload 계약이 모두 같은
+자료만 비교한다. 다른 API/GPU의 숫자로 전체 SDK 순위를 만들지 않는다.
+소프트웨어 renderer는 기능 검증으로 분리한다. 지원하지 않는 측정치는 null이며 0이 아니다.
+
+공통 runner는 독립 프로세스를 여러 번 실행하고 SDK/시나리오 순서를 고정 seed로
+섞는다. warmup은 각 프로세스에서 별도로 수행한다. 원자료를 보존하고 출력 디렉터리를
+덮어쓰지 않는다. `sources.lock.json`의 SHA와 실제 checkout 및 변경 여부를 확인한다.
+현재 첫 구현의 C는 GPU 명령을 실행하지 않는 자원 생성/해제 API 측정이다.
+GPU 실행 시간은 없으며, 동기화 대기 wall time을 GPU timestamp로 부르지 않는다.
+
+## 최초 실행 범위: C
+
+버퍼 1,000개, 각 65,536 bytes, GPU default memory, vertex 용도.
+텍스처 1,000개, 64×64 RGBA8 UNorm, mip 1, sample 1, sampled 용도.
+초기 데이터와 초기 clear를 요청하지 않는다. 매 표본은 idle → 생성 → release API → idle.
+LLGL NoInitialData를 명시하고 SDL의 cycling을 사용하지 않는다.
+SDK 내부 메모리 풀과 deferred release 정책의 차이는 비용에 포함된다.
+이것은 실제 물리 GPU allocation 수나 GPU 사용 중 해제 측정과 동일하지 않다.
+현재 메모리 사용량·지연 해제·reuse·1000개 외 count sweep은 각각 추가 검증 대상이다.
+
+## 추가 구현된 A / B / D 부분 집합
+
+A는 같은 D3DCompiler SM5.1 bytecode로 64×64 RGBA8 target을 clear하고 동일한 triangle을
+1k/10k/100k회 그리거나 같은 수의 instance를 한 draw로 그린다. CPU record/submit/wait를
+분리하고 전후 이미지의 중앙/모서리 pixel을 검증한다. 공통 비교에는 GPU timestamp
+명령을 넣지 않는다. SDK별 API 경계 차이로 low-level 오버헤드 순위로 해석하지 않는다.
+
+B는 준비된 CPU payload를 반복 업로드하여 GPU 완료까지 측정한다. 1080p/4K RGBA8,
+4K RGBA16F이고 한 texture와 한 frame-in-flight다. CPU source는 재사용한다. SDL/Core는
+재사용 upload buffer에 memcpy하고 LLGL은 WriteTexture 내부 staging 정책을 사용한다.
+내부 추가 복사/할당 차이는 end-to-end 비용에 포함한다. 같은 유효 byte 수와 256-byte
+aligned row 조건을 사용하며 전후 전체 payload readback이 일치해야 한다.
+
+D는 shader compile을 제외한 반복 PSO 생성·해제 부분만 구현했다. 같은 bytecode와
+render state를 사용하고 SDK 내부 caching을 허용한다. native driver cache를 지우지
+않으므로 cold/warm/cache hit-miss 통제 실험은 아니다. create API 구간이 주요 metric이며
+release API와 전체 batch wall도 기록한다. Root signature 생성 포함 여부는 SDK 정책이다.
+
+기본 10 warmup, 3개 프로세스 회차 × 120개 표본. 할당 비용처럼 실행 시간이 긴
+작업은 우선 소규모 실행 후 분산과 실행 비용을 보고 표본 수를 조정하고 명시한다.
+현재 공개 실행은 한 CPU 스레드, 한 SDK 장치, headless, VSync 비해당이다.
+
+## A–H 구현 및 검증 순서
+
+| 항목 | 동일 workload 규칙 | 필요한 측정/정확성 확인 |
+|---|---|---|
+| A draw | 1k/10k/100k draw 및 동일 instance 수, 같은 삼각형·shader·해상도·scissor·PSO | record, submit, wait, GPU timestamps 분리; 이미지 readback |
+| B upload | 1080p/4K RGBA8 및 4K RGBA16F, 동일 바이트, single/multiple/continuous | row pitch, memcpy 포함 경계 명시, fence 완료, 바이트 readback |
+| C allocation | 위 계약, 생성/파괴·재사용·in-flight 해제 분리 | 생성·release API·완료 대기와 CPU/GPU 메모리 분리 |
+| D shader/PSO | 동일 bytecode/profile/flags, 캐시 cold/warm와 PSO 생성 분리 | compile cache 정책, shader hash, 오류 포함 |
+| E 2D | 10k/100k sprite, 같은 정렬/배칭/atlas/blend/clip/layer | 동일 이미지, 실제 draw 수, CPU/GPU 및 메모리 |
+| F 3D | 같은 mesh/instance/depth/MRT/postprocess | 동일 이미지와 실행 명령 조건 |
+| G compute | 같은 blur/색 변환/reduction/buffer 크기와 workgroup | CPU 참조 결과와 GPU readback, barrier와 dispatch 분리 |
+| H video | 같은 upload/필터/레이어/color contract, decode/encode 제외 | latency/copy 수/bytes/drops; 외부 texture는 실제 지원 조건만 |
+
+표에 있는 명세는 구현 완료 표시가 아니다. 구현된 adapter 및 측정 범위는
+[ROADMAP](ROADMAP.md), [BENCHMARK_REPORT](BENCHMARK_REPORT.md)에 명시한다.
+
+## 통계와 회귀
+
+P50는 median, P95/P99는 정렬된 원자료의 `(N-1)*q` 인덱스를 선형 보간한다.
+회차별 median, 전체 min/max/MAD와 3 MAD 초과 표본 수를 함께 저장한다.
+이상치를 자동 삭제하지 않는다. 작은 MAD 또는 적은 표본에서는 꼬리 추정이 불안정하다.
+프레임이 아닌 allocation 표본의 `frame_ms`는 전체 batch wall time을 뜻한다.
+
+회귀 비용 변화율은 `100*(new_p50/baseline_p50-1)`이다. 비용이 낮을수록 좋다.
+경고는 양쪽 최소 3회차이며 모든 새 회차 median이 기존 최대 회차 median보다
+`max(기준 median의 5%, 3*(기존 MAD+새 MAD))` 이상 느릴 때만 발생한다.
+이는 보수적인 휴리스틱이며 통계적 유의성 증명이나 성능 우위 판정이 아니다.
+공유 GPU의 noisy 결과로 CI를 실패시키지 않는다. 신뢰 구간/전용 장비 반복은 추후 추가한다.
+
+## 프로파일러와 환경
+
+PIX/RenderDoc/Nsight/RGP/Xcode/Tracy를 사용한 프로파일 캡처는 수행 시 별도 기록한다.
+현재 runner는 `steady_clock`, DXGI adapter identity/driver, Win32 RAM/OS/CPU 조회를 사용한다.
+GPU timestamp 미지원 adapter에서는 null을 기록한다. 프로파일러 도구를 실행하지 않은
+상태에서 측정 병목을 GPU 원인으로 확정하지 않는다.

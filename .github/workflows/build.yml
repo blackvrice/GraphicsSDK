@@ -1,0 +1,28 @@
+name: Build and correctness
+on: [push, pull_request]
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake --preset windows
+      - run: cmake --build --preset windows-release
+      - run: ctest --preset windows-release
+      - run: cmake --install out/core --config Release --prefix out/install
+      - shell: pwsh
+        run: |
+          cmake -S tests/consumer -B out/consumer -A x64 "-DCMAKE_PREFIX_PATH=$pwd/out/install"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cmake --build out/consumer --config Release
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          ./out/consumer/Release/consumer.exe
+      - run: python -m unittest discover -s tests -p "test_*.py" -v
+  portable-core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build
+      - run: cmake --preset portable-core -DCMAKE_CXX_COMPILER=g++-14
+      - run: cmake --build --preset portable-core
+      - run: ctest --preset portable-core
+      - run: python3 -m unittest discover -s tests -p "test_*.py" -v
