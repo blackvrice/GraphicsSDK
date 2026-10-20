@@ -32,6 +32,28 @@ incompatible device/validation/category rejection and noisy regression decisions
 An independent `tests/consumer` uses installed headers and package exports only.
 `examples/Triangle.cpp` renders and writes an actual PPM readback.
 
+The subsequent license-audit change passed 17 Python tests in total (the original 3 statistics
+tests plus 14 audit/package tests). It checks stale pins, D3DX12 origin mismatches, nested/end
+notices, missing compiler evidence, unknown linked libraries, altered/missing package payloads,
+unsafe archive paths and snapshot drift. Both actual Windows inventory profiles and the SDK
+ZIP passed offline validation. The Windows CI SDK audit command also passed locally; remote
+CI was not run. Rendering implementation and historical performance measurements were unchanged.
+
+The subsequent Diligent adapter change passed 20 Python tests in total, adding rejection of
+wrong workload/sample/readback results, stale source/dependency fingerprints, and explicit
+RSA-MD5/NVAPI/DXC license classification. All eight Diligent scenarios passed a separate
+Release correctness run (`count=1`, warmup=1, samples=2) with the native D3D12 debug layer.
+The adapter requires the native info queue to exist when validation is requested and fails
+on ERROR/CORRUPTION messages after GPU completion; no such messages were found. This is
+debug-layer validation, not Diligent GPU-based validation. Draw/PSO runs check the triangle
+center and clear corner before/after timing; uploads compare every byte in both checks.
+Actual logs and JSON are retained under `benchmarks/reports/validation/2026-10-20-diligent`.
+Performance campaigns disable validation and are reported separately in the
+[Diligent report](DILIGENT_BENCHMARK_REPORT.md). Core rendering code was unchanged.
+The documented `bootstrap_competitors.ps1 -Diligent` command also passed on the pinned
+checkouts, preserving the measured executable hash. Both the original SDK ZIP audit and
+the additional Diligent inventory `--check` passed; core CTest passed 4/4 again.
+
 `gfx_debug_capture <absolute-path-to-gfx_tests.exe> --validation` captures Windows debug output
 for otherwise abrupt native validation termination. Use it for diagnostics, outside performance runs.
 

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "reviewed_commits": {
+    "llgl": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+    "sdl": "3b2bc951500ca6a1f428af77e036e732d9a8afe3"
+  },
+  "components": [
+    {"id":"llgl-d3dx12","sdk":"llgl","patterns":["sources/Renderer/Direct3D12/D3DX12/*"],"license":"MIT","selected":"MIT","extra_notices":["licenses/provenance/d3dx12-upstream-LICENSE.txt"],"note":"Exact upstream match after line ending and outer whitespace normalization; verified against recorded origin digest."},
+    {"id":"llgl","sdk":"llgl","patterns":["*"],"license":"BSD-3-Clause","selected":"BSD-3-Clause","root_notices":["LICENSE.txt"]},
+    {"id":"sdl-hidapi","sdk":"sdl","patterns":["src/hidapi/hidapi/*","src/hidapi/windows/*"],"license":"GPL-3.0-only OR BSD-3-Clause OR LicenseRef-HIDAPI-Original","selected":"BSD-3-Clause","root_notices":["src/hidapi/LICENSE.txt","src/hidapi/LICENSE-bsd.txt"],"note":"BSD alternative explicitly selected; do not infer a mandatory GPL dependency from the alternatives."},
+    {"id":"sdl-hidapi-interface","sdk":"sdl","patterns":["include/SDL3/SDL_hidapi.h"],"license":"Zlib AND LicenseRef-HIDAPI-Original","selected":"Zlib AND LicenseRef-HIDAPI-Original"},
+    {"id":"sdl-yuv2rgb","sdk":"sdl","patterns":["src/video/yuv2rgb/*"],"license":"BSD-3-Clause","selected":"BSD-3-Clause","root_notices":["src/video/yuv2rgb/LICENSE"]},
+    {"id":"sdl-libm-public-domain","sdk":"sdl","patterns":["src/libm/s_isinf.c","src/libm/s_isinff.c"],"license":"LicenseRef-Public-Domain","selected":"LicenseRef-Public-Domain"},
+    {"id":"sdl-libm-wrapper","sdk":"sdl","patterns":["src/libm/math_libm.h"],"license":"Zlib","selected":"Zlib"},
+    {"id":"sdl-fdlibm","sdk":"sdl","patterns":["src/libm/*"],"license":"SunPro","selected":"SunPro"},
+    {"id":"sdl-gameinput-headers","sdk":"sdl","patterns":["src/core/windows/gameinput/*"],"license":"MIT","selected":"MIT","note":"Compiler-read source/header evidence is conservative; it does not prove the GameInput DLL is linked or loaded."},
+    {"id":"sdl-directx-headers","sdk":"sdl","patterns":["src/video/directx/*"],"license":"MIT","selected":"MIT","extra_notices":["licenses/provenance/d3dx12-upstream-LICENSE.txt"]},
+    {"id":"sdl-khronos-dual","sdk":"sdl","patterns":["src/video/khronos/vulkan/*","src/video/khronos/vk_video/*","src/video/khronos/openxr/*"],"license":"Apache-2.0 OR MIT","selected":"MIT","note":"MIT alternative selected; verbatim copyright/SPDX notices retained together with Khronos permission text."},
+    {"id":"sdl-khronos-apache","sdk":"sdl","patterns":["include/SDL3/SDL_opengles2_gl2platform.h","src/video/khronos/EGL/*","src/video/khronos/GLES2/gl2platform.h"],"license":"Apache-2.0","selected":"Apache-2.0","extra_notices":["licenses/texts/Apache-2.0.txt"]},
+    {"id":"sdl-egl-amalgamation","sdk":"sdl","patterns":["include/SDL3/SDL_egl.h"],"license":"Zlib AND MIT AND Apache-2.0","selected":"Zlib AND MIT AND Apache-2.0","extra_notices":["licenses/texts/Apache-2.0.txt"],"note":"Amalgamated file contains licenses after its first comment; scan all comments, not just the file header."},
+    {"id":"sdl-opengl-mesa","sdk":"sdl","patterns":["include/SDL3/SDL_opengl.h"],"license":"MIT","selected":"MIT"},
+    {"id":"sdl-khronos-mit","sdk":"sdl","patterns":["include/SDL3/SDL_opengl_glext.h","include/SDL3/SDL_opengles2_*","src/video/khronos/KHR/*","src/video/khronos/GLES*/*"],"license":"MIT","selected":"MIT"},
+    {"id":"sdl-x11-keysym","sdk":"sdl","patterns":["src/events/imKStoUCS.c"],"license":"MIT","selected":"MIT","note":"Recorded as compiler-read; this file's X11/Wayland body may be preprocessed out on Windows."},
+    {"id":"sdl-stb-image","sdk":"sdl","patterns":["src/video/stb_image.h"],"license":"MIT OR Unlicense","selected":"MIT"},
+    {"id":"sdl-miniz","sdk":"sdl","patterns":["src/video/miniz.h"],"license":"Unlicense","selected":"Unlicense"},
+    {"id":"sdl-gfx-rotate","sdk":"sdl","patterns":["src/video/SDL_rotate.c"],"license":"Zlib","selected":"Zlib"},
+    {"id":"sdl-public-domain-derivatives","sdk":"sdl","patterns":["src/render/SDL_render_debug_font.h","src/stdlib/SDL_crc16.c","src/stdlib/SDL_crc32.c","src/stdlib/SDL_malloc.c","src/stdlib/SDL_murmur3.c","src/stdlib/SDL_qsort.c","src/stdlib/SDL_strtokr.c","src/time/SDL_time.c"],"license":"Zlib AND LicenseRef-Public-Domain","selected":"Zlib AND LicenseRef-Public-Domain","note":"Preserve author notices and each source's public-domain/CC0 attribution; this is not a claim that every derivative shares one standard license identifier."},
+    {"id":"sdl","sdk":"sdl","patterns":["*"],"license":"Zlib","selected":"Zlib","root_notices":["LICENSE.txt"]}
+  ],
+  "system_prerequisites": [
+    {"id":"windows-sdk-runtime","distribution":"not_bundled","license":"Microsoft SDK/Windows terms, not GraphicsSDK MIT","url":"https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files"},
+    {"id":"msvc-runtime","distribution":"not_bundled","license":"Microsoft Visual Studio redistribution terms; /MD consumer prerequisite","url":"https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files"},
+    {"id":"optional-gpu-loaders","distribution":"not_bundled","license":"Provider runtime terms; Vulkan/OpenXR/driver DLLs are separate from header licenses","note":"Compiler-read headers do not establish that a loader was used by this D3D12 benchmark."}
+  ]
+}

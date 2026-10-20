@@ -1,0 +1,63 @@
+# Reviewed dependency inventories
+
+These inventories apply to the specific Windows x64 Release builds and artifact hashes
+recorded in each JSON file. They are a source/notice inventory, not a legal redistribution
+approval or a claim about every platform, every static-library member or future releases.
+
+* [SDK inventory](generated/windows-sdk-release/inventory.json) and
+  [SDK notices](generated/windows-sdk-release/THIRD_PARTY_NOTICES.txt).
+* [Benchmark inventory](generated/windows-benchmarks-release/inventory.json) and
+  [benchmark notices](generated/windows-benchmarks-release/THIRD_PARTY_NOTICES.txt).
+* [Review policy](policy.json), [D3DX12 origin proof](provenance/d3dx12-origin.json),
+  [Microsoft MIT text](provenance/d3dx12-upstream-LICENSE.txt),
+  [Apache-2.0 text](texts/Apache-2.0.txt).
+* [Diligent benchmark inventory](generated/windows-benchmarks-diligent-release/inventory.json),
+  [notices](generated/windows-benchmarks-diligent-release/THIRD_PARTY_NOTICES.txt) and
+  [additional review policy](diligent-policy.json). Use this profile for the optional Diligent build;
+  the earlier benchmark snapshot records its earlier artifact hashes.
+
+Before redistributing the reviewed benchmark binaries, retain the full benchmark notice
+file with them. BSD license and non-endorsement terms, MIT notices, Apache terms and upstream
+source modification notices remain applicable as specified by each component. The explicit
+HIDAPI choice is BSD-3-Clause; GPL is an offered alternative, not the selected license.
+The standalone SDK package contains own SDK code only. Windows SDK/CRT/driver/loaders are
+unbundled prerequisites; copying their DLLs would require a separate terms review.
+
+## Reproduce offline
+
+Build with the existing Windows presets/bootstrap first, then use a new output directory:
+
+```powershell
+python tools/audit_licenses.py --profile sdk --package out/GraphicsSDK-0.0.1-dev-windows-x64.zip --output out/sdk-license-audit
+python tools/audit_licenses.py --profile benchmarks --output out/benchmark-license-audit
+python tools/audit_licenses.py --profile benchmarks --output out/benchmark-license-audit --check
+python tools/audit_licenses.py --profile benchmarks-diligent --output out/diligent-license-audit
+python tools/audit_licenses.py --profile benchmarks-diligent --output out/diligent-license-audit --check
+```
+
+The optional `--package` checks the existing ZIP against the actual core library, all public
+headers, installed CMake exports and own MIT license. Unreviewed files, Windows name aliases,
+unsafe archive paths and altered/missing required contents fail verification. No ZIP is
+extracted and no existing package or snapshot is overwritten.
+
+The benchmark profile reads MSBuild compiler-read logs from core, adapters, LLGL,
+LLGL_DXCommon, LLGL_Direct3D12 and SDL. This conservatively includes headers and translation
+units whose bodies may be preprocessed out or unused after linking. Generated PCH/config
+inputs and system header counts are separate. It does not infer runtime loader usage from
+header inclusion. Linker-read logs verify the actual static/import libraries, including inputs
+introduced through linker directives. Unreviewed libraries fail even if no foreign header was
+read by the compiler. System link inputs and artifact hashes are also recorded.
+
+Changed SDK pins require an explicit policy review. Tracked competitor modifications,
+untracked compiler-read sources, unknown local/external inputs, stale core build fingerprints
+or stale LLGL DLL runtime copies fail the audit. These checks do not constitute a general
+license detector for arbitrary newly copied code. Root-license fallback is scoped to the
+exact reviewed competitor commits and the reviewed exception rules. The additional Diligent
+profile records the public Core, configured xxHash/Abseil, actual NVAPI linker library, NCSA DXC
+headers and the AMD checksum derived from the RSA Data Security, Inc. MD5 Message Digest
+Algorithm. Retain its RSA attribution and derivative-work terms with the MIT AMD notice.
+
+`--check` detects drift in both the inventory and collected notices, without rewriting either.
+Snapshots contain build-specific evidence; another machine/build should produce a new
+snapshot. The Windows CI job creates a fresh SDK inventory after installation. Remote CI
+execution has not been verified here.

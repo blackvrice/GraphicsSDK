@@ -37,6 +37,7 @@ struct Adapter {
 std::unique_ptr<Adapter> llgl(bool validation);
 std::unique_ptr<Adapter> sdl(bool validation);
 std::unique_ptr<Adapter> graphicsSDK(bool validation);
+std::unique_ptr<Adapter> diligent(bool validation);
 std::string quote(std::string_view);
 std::string environment(std::string_view device);
 }

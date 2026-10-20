@@ -1,0 +1,17 @@
+{
+  "schema_version":1,
+  "reviewed_commits": {
+    "diligent_core":"4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "diligent_xxhash":"680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf",
+    "diligent_abseil":"af5aede14a0b4013be6890148d34e0fd7b1fac69",
+    "diligent_nvapi":"9296d671e71608d6d6b7749ed93989af4ada8858"
+  },
+  "components": [
+    {"id":"diligent-dxbc-checksum","sdk":"diligent_core","patterns":["ThirdParty/GPUOpenShaderUtils/*"],"license":"MIT AND LicenseRef-RSA-MD5","selected":"MIT AND LicenseRef-RSA-MD5","root_notices":["ThirdParty/GPUOpenShaderUtils/License.txt"],"note":"DXBC checksum code derived from the RSA Data Security, Inc. MD5 Message Digest Algorithm. Retain the in-source RSA attribution and derivative-work terms as well as AMD MIT terms."},
+    {"id":"diligent-dxc-headers","sdk":"diligent_core","patterns":["ThirdParty/DirectXShaderCompiler/*"],"license":"NCSA","selected":"NCSA","root_notices":["ThirdParty/DirectXShaderCompiler/LICENSE.TXT","ThirdParty/DirectXShaderCompiler/ThirdPartyNotices.txt"],"note":"Vendored compiler-read headers; a DXC runtime DLL is not bundled with the benchmark or SDK."},
+    {"id":"diligent-core","sdk":"diligent_core","patterns":["*"],"license":"Apache-2.0","selected":"Apache-2.0","root_notices":["License.txt"]},
+    {"id":"diligent-xxhash","sdk":"diligent_xxhash","patterns":["*"],"license":"BSD-2-Clause","selected":"BSD-2-Clause","root_notices":["LICENSE"]},
+    {"id":"diligent-abseil","sdk":"diligent_abseil","patterns":["*"],"license":"Apache-2.0","selected":"Apache-2.0","root_notices":["LICENSE","AUTHORS"]},
+    {"id":"diligent-nvapi","sdk":"diligent_nvapi","patterns":["*"],"license":"MIT","selected":"MIT","root_notices":["License.txt"],"note":"Pinned x64 nvapi64.lib is an actual linker input. It is covered by this repository's explicit MIT binary-library terms; driver-provided runtime components are separate prerequisites."}
+  ]
+}

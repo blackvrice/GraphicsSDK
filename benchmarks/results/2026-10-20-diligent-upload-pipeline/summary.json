@@ -1,0 +1,1590 @@
+[
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "pipeline",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:43.408013+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "none_repeated_pso_creation_driver_cache_uncontrolled",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "12120010083042245506",
+      "payload_bytes": 0
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "pipeline_creation_ms": {
+        "p50": 0.0096,
+        "p95": 0.0101,
+        "p99": 0.01259200000000003,
+        "min": 0.0079,
+        "max": 0.019,
+        "mad": 0.00020000000000000052,
+        "run_p50": [
+          0.0085,
+          0.0096,
+          0.0098
+        ],
+        "outliers_over_3_mad": 100,
+        "sample_count": 360
+      },
+      "release_api_ms": {
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "p99": 0.0004,
+        "min": 0.0002,
+        "max": 0.0006,
+        "mad": 0.0,
+        "run_p50": [
+          0.0003,
+          0.0003,
+          0.0003
+        ],
+        "outliers_over_3_mad": null,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 0.01,
+        "p95": 0.0105,
+        "p99": 0.013033000000000032,
+        "min": 0.0083,
+        "max": 0.0194,
+        "mad": 0.00020000000000000052,
+        "run_p50": [
+          0.0088,
+          0.01,
+          0.0102
+        ],
+        "outliers_over_3_mad": 100,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload1080",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 8294400,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:56.724574+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        1920,
+        1080
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 8294400
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 1.6303999999999998,
+        "p95": 3.2605049999999998,
+        "p99": 3.769308000000003,
+        "min": 1.0472,
+        "max": 6.0167,
+        "mad": 0.35214999999999985,
+        "run_p50": [
+          1.3441999999999998,
+          1.8728500000000001,
+          1.7868
+        ],
+        "outliers_over_3_mad": 39,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 1.6303999999999998,
+        "p95": 3.2605049999999998,
+        "p99": 3.769308000000003,
+        "min": 1.0472,
+        "max": 6.0167,
+        "mad": 0.35214999999999985,
+        "run_p50": [
+          1.3441999999999998,
+          1.8728500000000001,
+          1.7868
+        ],
+        "outliers_over_3_mad": 39,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 33177600,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:36.694555+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 33177600
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 8.45685,
+        "p95": 14.35199,
+        "p99": 16.366486000000002,
+        "min": 5.5498,
+        "max": 17.6815,
+        "mad": 1.3849,
+        "run_p50": [
+          8.00015,
+          9.73255,
+          7.774150000000001
+        ],
+        "outliers_over_3_mad": 38,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 8.45685,
+        "p95": 14.35199,
+        "p99": 16.366486000000002,
+        "min": 5.5498,
+        "max": 17.6815,
+        "mad": 1.3849,
+        "run_p50": [
+          8.00015,
+          9.73255,
+          7.774150000000001
+        ],
+        "outliers_over_3_mad": 38,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k16f",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 66355200,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:33:38.705367+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba16_float",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 66355200
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 15.1484,
+        "p95": 21.004825,
+        "p99": 31.573834000000087,
+        "min": 11.1874,
+        "max": 40.3098,
+        "mad": 1.3864500000000008,
+        "run_p50": [
+          14.57245,
+          14.760950000000001,
+          16.292099999999998
+        ],
+        "outliers_over_3_mad": 37,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 15.1484,
+        "p95": 21.004825,
+        "p99": 31.573834000000087,
+        "min": 11.1874,
+        "max": 40.3098,
+        "mad": 1.3864500000000008,
+        "run_p50": [
+          14.57245,
+          14.760950000000001,
+          16.292099999999998
+        ],
+        "outliers_over_3_mad": 37,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "graphicssdk",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "pipeline",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "readback_verified": true,
+    "sdk_commit": null,
+    "sdk_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "measured_at_utc": "2026-10-20T14:34:15.712526+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "none_repeated_pso_creation_driver_cache_uncontrolled",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "12120010083042245506",
+      "payload_bytes": 0
+    },
+    "metrics": {
+      "pipeline_creation_ms": {
+        "p50": 0.0044,
+        "p95": 0.0046,
+        "p99": 0.0053,
+        "min": 0.0041,
+        "max": 0.0106,
+        "mad": 0.00010000000000000026,
+        "run_p50": [
+          0.0044,
+          0.0043,
+          0.0043
+        ],
+        "outliers_over_3_mad": 10,
+        "sample_count": 360
+      },
+      "release_api_ms": {
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "p99": 0.00044100000000000253,
+        "min": 0.0003,
+        "max": 0.0007,
+        "mad": 0.0,
+        "run_p50": [
+          0.0003,
+          0.0003,
+          0.0003
+        ],
+        "outliers_over_3_mad": null,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 0.0048,
+        "p95": 0.005,
+        "p99": 0.005782000000000005,
+        "min": 0.0045,
+        "max": 0.0111,
+        "mad": 9.99999999999994e-05,
+        "run_p50": [
+          0.0049,
+          0.0047,
+          0.0047
+        ],
+        "outliers_over_3_mad": 19,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "graphicssdk",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload1080",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 8294400,
+    "readback_verified": true,
+    "sdk_commit": null,
+    "sdk_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "measured_at_utc": "2026-10-20T14:34:49.750862+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        1920,
+        1080
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 8294400
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 1.55,
+        "p95": 3.0166250000000003,
+        "p99": 3.7922000000000002,
+        "min": 1.0532,
+        "max": 4.8944,
+        "mad": 0.2537999999999999,
+        "run_p50": [
+          1.7319,
+          1.43445,
+          1.47405
+        ],
+        "outliers_over_3_mad": 49,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 1.55,
+        "p95": 3.0166250000000003,
+        "p99": 3.7922000000000002,
+        "min": 1.0532,
+        "max": 4.8944,
+        "mad": 0.2537999999999999,
+        "run_p50": [
+          1.7319,
+          1.43445,
+          1.47405
+        ],
+        "outliers_over_3_mad": 49,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "graphicssdk",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 33177600,
+    "readback_verified": true,
+    "sdk_commit": null,
+    "sdk_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "measured_at_utc": "2026-10-20T14:34:29.275738+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 33177600
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 7.784800000000001,
+        "p95": 10.83918,
+        "p99": 12.690349000000003,
+        "min": 5.1,
+        "max": 14.6468,
+        "mad": 1.1004500000000004,
+        "run_p50": [
+          7.729749999999999,
+          7.61435,
+          8.136
+        ],
+        "outliers_over_3_mad": 13,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 7.784800000000001,
+        "p95": 10.83918,
+        "p99": 12.690349000000003,
+        "min": 5.1,
+        "max": 14.6468,
+        "mad": 1.1004500000000004,
+        "run_p50": [
+          7.729749999999999,
+          7.61435,
+          8.136
+        ],
+        "outliers_over_3_mad": 13,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "graphicssdk",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k16f",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 66355200,
+    "readback_verified": true,
+    "sdk_commit": null,
+    "sdk_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+    "measured_at_utc": "2026-10-20T14:34:10.835671+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba16_float",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 66355200
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 16.3978,
+        "p95": 30.535195,
+        "p99": 37.368821000000025,
+        "min": 11.4045,
+        "max": 38.7064,
+        "mad": 2.3214000000000006,
+        "run_p50": [
+          16.43525,
+          21.317300000000003,
+          15.1446
+        ],
+        "outliers_over_3_mad": 60,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 16.3978,
+        "p95": 30.535195,
+        "p99": 37.368821000000025,
+        "min": 11.4045,
+        "max": 38.7064,
+        "mad": 2.3214000000000006,
+        "run_p50": [
+          16.43525,
+          21.317300000000003,
+          15.1446
+        ],
+        "outliers_over_3_mad": 60,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "llgl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "pipeline",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "readback_verified": true,
+    "sdk_commit": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:13.806978+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "none_repeated_pso_creation_driver_cache_uncontrolled",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "12120010083042245506",
+      "payload_bytes": 0
+    },
+    "metrics": {
+      "pipeline_creation_ms": {
+        "p50": 0.0033,
+        "p95": 0.0038,
+        "p99": 0.0055410000000000025,
+        "min": 0.003,
+        "max": 0.0324,
+        "mad": 0.0002000000000000001,
+        "run_p50": [
+          0.0033,
+          0.0036,
+          0.0031
+        ],
+        "outliers_over_3_mad": 15,
+        "sample_count": 360
+      },
+      "release_api_ms": {
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "p99": 0.0005410000000000025,
+        "min": 0.0002,
+        "max": 0.0035,
+        "mad": 0.0,
+        "run_p50": [
+          0.0003,
+          0.0003,
+          0.0003
+        ],
+        "outliers_over_3_mad": null,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 0.0036,
+        "p95": 0.004205000000000001,
+        "p99": 0.0062,
+        "min": 0.0033,
+        "max": 0.0367,
+        "mad": 0.00010000000000000026,
+        "run_p50": [
+          0.0036,
+          0.0041,
+          0.0035
+        ],
+        "outliers_over_3_mad": 129,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "llgl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload1080",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 8294400,
+    "readback_verified": true,
+    "sdk_commit": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:33:51.791578+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        1920,
+        1080
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 8294400
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 2.8095499999999998,
+        "p95": 7.447975000000003,
+        "p99": 9.598736000000008,
+        "min": 1.7075,
+        "max": 12.1259,
+        "mad": 0.6192,
+        "run_p50": [
+          3.6421,
+          2.55055,
+          2.5927499999999997
+        ],
+        "outliers_over_3_mad": 50,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 2.8095499999999998,
+        "p95": 7.447975000000003,
+        "p99": 9.598736000000008,
+        "min": 1.7075,
+        "max": 12.1259,
+        "mad": 0.6192,
+        "run_p50": [
+          3.6421,
+          2.55055,
+          2.5927499999999997
+        ],
+        "outliers_over_3_mad": 50,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "llgl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 33177600,
+    "readback_verified": true,
+    "sdk_commit": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:45.991461+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 33177600
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 11.248149999999999,
+        "p95": 14.335865,
+        "p99": 16.48982,
+        "min": 7.9393,
+        "max": 20.6162,
+        "mad": 1.2382999999999997,
+        "run_p50": [
+          11.80565,
+          11.4832,
+          10.660499999999999
+        ],
+        "outliers_over_3_mad": 13,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 11.248149999999999,
+        "p95": 14.335865,
+        "p99": 16.48982,
+        "min": 7.9393,
+        "max": 20.6162,
+        "mad": 1.2382999999999997,
+        "run_p50": [
+          11.80565,
+          11.4832,
+          10.660499999999999
+        ],
+        "outliers_over_3_mad": 13,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "llgl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k16f",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 66355200,
+    "readback_verified": true,
+    "sdk_commit": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:19.952582+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba16_float",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 66355200
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 24.98715,
+        "p95": 48.742775,
+        "p99": 61.48700100000002,
+        "min": 15.9207,
+        "max": 76.4078,
+        "mad": 5.6272,
+        "run_p50": [
+          21.016849999999998,
+          21.167650000000002,
+          39.1691
+        ],
+        "outliers_over_3_mad": 51,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 24.98715,
+        "p95": 48.742775,
+        "p99": 61.48700100000002,
+        "min": 15.9207,
+        "max": 76.4078,
+        "mad": 5.6272,
+        "run_p50": [
+          21.016849999999998,
+          21.167650000000002,
+          39.1691
+        ],
+        "outliers_over_3_mad": 51,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "sdl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "pipeline",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "readback_verified": true,
+    "sdk_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:57.848507+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "none_repeated_pso_creation_driver_cache_uncontrolled",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "12120010083042245506",
+      "payload_bytes": 0
+    },
+    "metrics": {
+      "pipeline_creation_ms": {
+        "p50": 0.004,
+        "p95": 0.0046,
+        "p99": 0.0056,
+        "min": 0.0038,
+        "max": 0.0897,
+        "mad": 0.00010000000000000026,
+        "run_p50": [
+          0.0041,
+          0.0039,
+          0.004
+        ],
+        "outliers_over_3_mad": 48,
+        "sample_count": 360
+      },
+      "release_api_ms": {
+        "p50": 0.0,
+        "p95": 0.0001,
+        "p99": 0.0001,
+        "min": 0.0,
+        "max": 0.0003,
+        "mad": 0.0,
+        "run_p50": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "outliers_over_3_mad": null,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 0.0041,
+        "p95": 0.0047,
+        "p99": 0.0057,
+        "min": 0.0038,
+        "max": 0.0898,
+        "mad": 0.00010000000000000026,
+        "run_p50": [
+          0.00425,
+          0.004,
+          0.0041
+        ],
+        "outliers_over_3_mad": 49,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "sdl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload1080",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 8294400,
+    "readback_verified": true,
+    "sdk_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:26.827649+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        1920,
+        1080
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 8294400
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 1.5288,
+        "p95": 3.4656450000000008,
+        "p99": 4.146934,
+        "min": 1.0427,
+        "max": 5.1516,
+        "mad": 0.30569999999999997,
+        "run_p50": [
+          1.2943500000000001,
+          2.2380500000000003,
+          1.49585
+        ],
+        "outliers_over_3_mad": 59,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 1.5288,
+        "p95": 3.4656450000000008,
+        "p99": 4.146934,
+        "min": 1.0427,
+        "max": 5.1516,
+        "mad": 0.30569999999999997,
+        "run_p50": [
+          1.2943500000000001,
+          2.2380500000000003,
+          1.49585
+        ],
+        "outliers_over_3_mad": 59,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "sdl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 33177600,
+    "readback_verified": true,
+    "sdk_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:54.532670+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 33177600
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 8.105599999999999,
+        "p95": 11.485405000000002,
+        "p99": 14.758854000000003,
+        "min": 5.5637,
+        "max": 16.4456,
+        "mad": 1.132150000000001,
+        "run_p50": [
+          7.9918499999999995,
+          7.620100000000001,
+          9.01275
+        ],
+        "outliers_over_3_mad": 18,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 8.105599999999999,
+        "p95": 11.485405000000002,
+        "p99": 14.758854000000003,
+        "min": 5.5637,
+        "max": 16.4456,
+        "mad": 1.132150000000001,
+        "run_p50": [
+          7.9918499999999995,
+          7.620100000000001,
+          9.01275
+        ],
+        "outliers_over_3_mad": 18,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "sdl",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k16f",
+    "count": 1,
+    "validation": false,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "",
+    "warmup": 10,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 66355200,
+    "readback_verified": true,
+    "sdk_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:34:52.672611+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba16_float",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 66355200
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 17.22195,
+        "p95": 27.694945000000004,
+        "p99": 33.787060000000004,
+        "min": 12.152,
+        "max": 38.6189,
+        "mad": 2.6149999999999993,
+        "run_p50": [
+          15.4266,
+          23.52955,
+          16.226149999999997
+        ],
+        "outliers_over_3_mad": 47,
+        "sample_count": 360
+      },
+      "frame_ms": {
+        "p50": 17.22195,
+        "p95": 27.694945000000004,
+        "p99": 33.787060000000004,
+        "min": 12.152,
+        "max": 38.6189,
+        "mad": 2.6149999999999993,
+        "run_p50": [
+          15.4266,
+          23.52955,
+          16.226149999999997
+        ],
+        "outliers_over_3_mad": 47,
+        "sample_count": 360
+      },
+      "gpu_ms": null
+    }
+  }
+]

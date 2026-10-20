@@ -9,6 +9,7 @@ jobs:
       - run: cmake --build --preset windows-release
       - run: ctest --preset windows-release
       - run: cmake --install out/core --config Release --prefix out/install
+      - run: python tools/audit_licenses.py --profile sdk --output out/license-audit
       - shell: pwsh
         run: |
           cmake -S tests/consumer -B out/consumer -A x64 "-DCMAKE_PREFIX_PATH=$pwd/out/install"

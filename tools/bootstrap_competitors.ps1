@@ -1,10 +1,12 @@
-param([int]$Jobs = 8)
+param([int]$Jobs = 8, [switch]$Diligent)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
     $pins = Get-Content -LiteralPath 'benchmarks/competitors/sources.lock.json' -Raw | ConvertFrom-Json
-    foreach ($item in @(@{Key='llgl'; Directory='LLGL'}, @{Key='sdl'; Directory='SDL'})) {
+    $sources = @(@{Key='llgl'; Directory='LLGL'}, @{Key='sdl'; Directory='SDL'})
+    if ($Diligent) { $sources += @{Key='diligent_core'; Directory='DiligentCore'} }
+    foreach ($item in $sources) {
         $pin = $pins.($item.Key)
         $path = Join-Path '.deps' $item.Directory
         if (-not (Test-Path -LiteralPath $path)) {
@@ -30,8 +32,27 @@ try {
     if ($LASTEXITCODE) { throw 'SDL configure failed' }
     cmake --build out/sdl --config Release --parallel $Jobs
     if ($LASTEXITCODE) { throw 'SDL build failed' }
-    cmake -S benchmarks -B out/bench -G 'Visual Studio 17 2022' -A x64
-    if ($LASTEXITCODE) { throw 'Benchmark configure failed' }
-    cmake --build out/bench --config Release --parallel $Jobs
-    if ($LASTEXITCODE) { throw 'Benchmark build failed' }
+    if ($Diligent) {
+        $buildPins = (Get-Content -LiteralPath 'benchmarks/competitors/diligent-build.lock.json' -Raw | ConvertFrom-Json).dependencies
+        foreach ($key in @('diligent_xxhash','diligent_abseil','diligent_nvapi')) {
+            $dep = $buildPins.$key
+            if (Test-Path -LiteralPath (Join-Path $dep.directory '.git')) {
+                $head = git -C $dep.directory rev-parse HEAD
+                $dirty = git -C $dep.directory status --porcelain --untracked-files=no
+                if ($head -ne $dep.commit -or $dirty) { throw "Existing $($dep.directory) differs from pin; preserve it and use a fresh build/source directory" }
+            }
+        }
+        git -C .deps/DiligentCore submodule update --init --depth 1 ThirdParty/xxHash
+        if ($LASTEXITCODE) { throw 'Diligent xxHash checkout failed' }
+        # Configure fetches upstream's fixed Abseil and full NVAPI pins; CMake verifies all four SHAs.
+        cmake -S benchmarks -B out/bench-diligent -G 'Visual Studio 17 2022' -A x64 -DGFX_BENCH_WITH_DILIGENT=ON
+        if ($LASTEXITCODE) { throw 'Diligent benchmark configure failed' }
+        cmake --build out/bench-diligent --config Release --target gfx_bench --parallel $Jobs
+        if ($LASTEXITCODE) { throw 'Diligent benchmark build failed' }
+    } else {
+        cmake -S benchmarks -B out/bench -G 'Visual Studio 17 2022' -A x64
+        if ($LASTEXITCODE) { throw 'Benchmark configure failed' }
+        cmake --build out/bench --config Release --parallel $Jobs
+        if ($LASTEXITCODE) { throw 'Benchmark build failed' }
+    }
 } finally { Pop-Location }

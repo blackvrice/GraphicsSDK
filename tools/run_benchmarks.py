@@ -11,6 +11,31 @@ import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
+def diligent_dependencies(root=ROOT):
+    return json.loads((root / "benchmarks/competitors/diligent-build.lock.json").read_text())["dependencies"]
+
+def verify_source(source, commit):
+    actual = subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip()
+    dirty = subprocess.check_output(["git", "-C", str(source), "status", "--porcelain", "--untracked-files=no"], text=True).strip()
+    if actual != commit or dirty:
+        raise RuntimeError(f"Unpinned or modified source: {source}")
+
+def diligent_fingerprint(root=ROOT):
+    dependencies = diligent_dependencies(root)
+    identity = "".join(f"{name}|{dep['commit']}\n" for name, dep in dependencies.items())
+    files = sorted(list((root/"benchmarks").rglob("*.cpp")) + list((root/"benchmarks").rglob("*.hpp")) + [root/"benchmarks/CMakeLists.txt"])
+    for path in files:
+        identity += path.relative_to(root).as_posix() + "|" + hashlib.sha256(path.read_bytes()).hexdigest() + "\n"
+    return hashlib.sha256(identity.encode()).hexdigest()
+
+def validate_result(result, sdk, scenario, count, warmup, samples, validation):
+    expected = {"sdk": sdk, "scenario": scenario, "count": count, "warmup": warmup, "validation": validation,
+                "api": "d3d12", "category": "end_to_end", "configuration": "Release"}
+    if any(result.get(key) != value for key, value in expected.items()) or len(result.get("samples", [])) != samples:
+        raise RuntimeError("Executable returned a different workload or sample count")
+    if scenario not in ("buffers", "textures") and result.get("readback_verified") is not True:
+        raise RuntimeError("Executable did not verify readback correctness")
+
 def percentile(values, q):
     ordered = sorted(values)
     if not ordered:
@@ -78,17 +103,28 @@ def main():
     lock = json.loads((ROOT / "benchmarks/competitors/sources.lock.json").read_text())
     # Verify built competitor checkout has the recorded version and no local tracked patches.
     for sdk in args.sdks:
-        if sdk not in ("llgl", "sdl", "graphicssdk"):
+        if sdk not in ("llgl", "sdl", "graphicssdk", "diligent_core"):
             p.error(f"Adapter is not implemented: {sdk}")
         if sdk == "graphicssdk":
             continue
+        if sdk == "diligent_core":
+            deps = diligent_dependencies()
+            if deps[sdk]["commit"] != lock[sdk]["commit"]:
+                raise RuntimeError("Research pin and Diligent build pin differ")
+            for dep in deps.values():
+                verify_source(ROOT / dep["directory"], dep["commit"])
+            continue
         source = ROOT / ".deps" / ("LLGL" if sdk == "llgl" else "SDL")
-        commit = subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip()
-        dirty = subprocess.check_output(["git", "-C", str(source), "status", "--porcelain", "--untracked-files=no"], text=True).strip()
-        if commit != lock[sdk]["commit"] or dirty:
-            raise RuntimeError(f"Unpinned or modified source: {sdk}")
+        verify_source(source, lock[sdk]["commit"])
     executable = args.exe.resolve()
     executable_hash = hashlib.sha256(executable.read_bytes()).hexdigest()
+    runtime_hashes = {}
+    if "diligent_core" in args.sdks:
+        built = ROOT / "out/bench-diligent/diligent/Graphics/GraphicsEngineD3D12/Release/GraphicsEngineD3D12_64r.dll"
+        copied = executable.parent / built.name
+        if copied.read_bytes() != built.read_bytes():
+            raise RuntimeError("Diligent runtime DLL does not match the reviewed build")
+        runtime_hashes[built.name] = hashlib.sha256(copied.read_bytes()).hexdigest()
     jobs = [(sdk, scenario, run) for run in range(args.runs) for scenario in args.scenarios for sdk in args.sdks]
     random.Random(20261020).shuffle(jobs)
     collected = {}
@@ -103,6 +139,9 @@ def main():
         # Permit SDK diagnostics before the structured final line, preserve them separately.
         lines = proc.stdout.splitlines()
         result = json.loads(lines[-1])
+        validate_result(result, sdk, scenario, args.count, args.warmup, args.samples, args.validation)
+        if sdk == "diligent_core" and result.get("sdk_build_source_sha256") != diligent_fingerprint():
+            raise RuntimeError("Stale Diligent benchmark build; rebuild after source/pin changes")
         source_hash = hashlib.sha256()
         for source_file in sorted(list((ROOT/"src").rglob("*.cpp"))+list((ROOT/"include").rglob("*.hpp"))+[ROOT/"CMakeLists.txt"]):
             source_hash.update((source_file.relative_to(ROOT).as_posix()+"|"+hashlib.sha256(source_file.read_bytes()).hexdigest()+"\n").encode())
@@ -121,6 +160,9 @@ def main():
                                     "vsync": "not_applicable_headless", "compiler_optimization": "/O2", "runtime": "/MD", "lto": False,
                                     "frames_in_flight": 1, "gpu_work": "none_allocation_only" if allocation else "vertex_id_triangle_no_blend_no_depth_no_cull" if draw else "full_texture_copy",
                                     "gpu_timestamps": False, "shader_fnv1a64": result.get("shader_fnv1a64"), "payload_bytes": result.get("payload_bytes",0)}})
+        if sdk == "diligent_core":
+            result["build_dependencies"] = diligent_dependencies()
+            result["runtime_sha256"] = runtime_hashes
         if scenario == "pipeline":
             result["contract"]["gpu_work"] = "none_repeated_pso_creation_driver_cache_uncontrolled"
             result["contract"]["resource_policy"] = "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed"

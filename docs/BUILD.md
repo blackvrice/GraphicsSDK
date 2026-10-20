@@ -34,6 +34,21 @@ Python interpreter로 바꾼다. 모든 결과 디렉터리는 새 경로여야 
 LLGL/SDL source는 고정 SHA로 `.deps`에 받아 빌드하고 수정하지 않는다.
 Sandbox는 bootstrap 대상이 아니다.
 
+고정 standalone Diligent Core를 추가하려면 다음 별도 빌드 구성을 사용한다.
+기존 `out/bench`와 과거 결과를 보존한다.
+
+```powershell
+./tools/bootstrap_competitors.ps1 -Diligent
+python tools/run_benchmarks.py --exe out/bench-diligent/Release/gfx_bench.exe --sdks llgl sdl graphicssdk diligent_core --scenarios draw instanced --count 10000 --runs 3 --samples 120 --warmup 20 --output benchmarks/results/my-diligent-draw
+python tools/run_benchmarks.py --exe out/bench-diligent/Release/gfx_bench.exe --sdks diligent_core --scenarios buffers textures draw instanced upload1080 upload4k upload4k16f pipeline --count 1 --runs 1 --samples 2 --warmup 1 --validation --output out/my-diligent-validation
+python tools/audit_licenses.py --profile benchmarks-diligent --output out/my-diligent-license-audit
+```
+
+이 profile은 `out/bench-diligent` 고정 레이아웃을 사용한다. Core/xxHash/Abseil/NVAPI
+커밋은 `benchmarks/competitors/diligent-build.lock.json`에 기록했다. upstream 기본 LTO와
+AVX2 추가 옵션을 끄고 `/O2 /MD`를 사용한다. 코어 기본 빌드에는 다운로드가 추가되지 않는다.
+DiligentEngine superproject와 commercial Metal은 이 구성에 포함되지 않는다.
+
 SDK 코어를 포함하지 않는 경쟁 SDK 전용 suite는
 `cmake -S benchmarks -B out/bench-independent -A x64 -DGFX_BENCH_WITH_SDK=OFF`로 구성한다.
 이 설정은 GraphicsSDK 소스/라이브러리 target을 사용하지 않는다.
@@ -41,6 +56,19 @@ SDK 코어를 포함하지 않는 경쟁 SDK 전용 suite는
 보고서와 PNG를 재생성하려면 선택적으로 `python -m pip install --target .deps/python matplotlib`를
 실행한 뒤 `python tools/report_benchmarks.py`를 사용한다. 이는 SDK 빌드 의존성이 아니다.
 전후 비교는 `tools/compare_results.py baseline/summary.json candidate/summary.json --output 새경로`로 생성한다.
+
+## 의존성 고지 및 패키지 검사
+
+```powershell
+python tools/audit_licenses.py --profile sdk --output out/sdk-license-audit
+python tools/audit_licenses.py --profile benchmarks --output out/benchmark-license-audit
+python tools/audit_licenses.py --profile benchmarks --output out/benchmark-license-audit --check
+```
+
+`--package out/GraphicsSDK-0.0.1-dev-windows-x64.zip`를 SDK profile에 추가하면 실제 ZIP의
+필수 파일·LICENSE와 라이브러리·공개 헤더·CMake export를 검사한다. 검사에는 해당
+Windows Release 빌드의 MSBuild 기록이 필요하다. 범위와 한계는
+[라이선스 감사](DEPENDENCY_LICENSES.md) 및 [고지 목록](../licenses/README.md)을 따른다.
 
 현재 자동화는 Windows SDK 및 고정 competitor 빌드와 CTest/Python/외부 소비자 검증을
 지원한다. GPU 성능 측정 중 다른 빌드나 GPU 부하를 실행하지 않는다.

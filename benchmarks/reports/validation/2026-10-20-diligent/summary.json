@@ -1,0 +1,1031 @@
+[
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "buffers",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 0,
+    "readback_verified": null,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:48.881741+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "recreate_uninitialized_default_gpu_memory_then_release_then_idle",
+      "threads": 1,
+      "buffer_bytes": 65536,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "none_allocation_only",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 0
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "allocation_ms": {
+        "p50": 0.16749999999999998,
+        "p95": 0.17956,
+        "p99": 0.18063200000000001,
+        "min": 0.1541,
+        "max": 0.1809,
+        "mad": 0.013400000000000009,
+        "run_p50": [
+          0.16749999999999998
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "release_api_ms": {
+        "p50": 0.0009,
+        "p95": 0.00099,
+        "p99": 0.000998,
+        "min": 0.0008,
+        "max": 0.001,
+        "mad": 9.999999999999999e-05,
+        "run_p50": [
+          0.0009
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "wait_ms": {
+        "p50": 0.1467,
+        "p95": 0.153,
+        "p99": 0.15356,
+        "min": 0.1397,
+        "max": 0.1537,
+        "mad": 0.007000000000000006,
+        "run_p50": [
+          0.1467
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 0.3151,
+        "p95": 0.33355,
+        "p99": 0.33519,
+        "min": 0.2946,
+        "max": 0.3356,
+        "mad": 0.020500000000000018,
+        "run_p50": [
+          0.3151
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "draw",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:51.001589+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "vertex_id_triangle_no_blend_no_depth_no_cull",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "12120010083042245506",
+      "payload_bytes": 0
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "record_ms": {
+        "p50": 0.0119,
+        "p95": 0.01253,
+        "p99": 0.012586,
+        "min": 0.0112,
+        "max": 0.0126,
+        "mad": 0.0007000000000000001,
+        "run_p50": [
+          0.0119
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "submit_ms": {
+        "p50": 0.034350000000000006,
+        "p95": 0.036825000000000004,
+        "p99": 0.037045,
+        "min": 0.0316,
+        "max": 0.0371,
+        "mad": 0.002749999999999999,
+        "run_p50": [
+          0.034350000000000006
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "wait_ms": {
+        "p50": 0.02515,
+        "p95": 0.025555,
+        "p99": 0.025591000000000003,
+        "min": 0.0247,
+        "max": 0.0256,
+        "mad": 0.00045000000000000075,
+        "run_p50": [
+          0.02515
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 0.07139999999999999,
+        "p95": 0.0741,
+        "p99": 0.07433999999999999,
+        "min": 0.0684,
+        "max": 0.0744,
+        "mad": 0.0029999999999999957,
+        "run_p50": [
+          0.07139999999999999
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "instanced",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:49.606898+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "vertex_id_triangle_no_blend_no_depth_no_cull",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "12120010083042245506",
+      "payload_bytes": 0
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "record_ms": {
+        "p50": 0.050249999999999996,
+        "p95": 0.077205,
+        "p99": 0.07960099999999999,
+        "min": 0.0203,
+        "max": 0.0802,
+        "mad": 0.029949999999999997,
+        "run_p50": [
+          0.050249999999999996
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "submit_ms": {
+        "p50": 0.08449999999999999,
+        "p95": 0.09926,
+        "p99": 0.100572,
+        "min": 0.0681,
+        "max": 0.1009,
+        "mad": 0.016400000000000005,
+        "run_p50": [
+          0.08449999999999999
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "wait_ms": {
+        "p50": 0.03385,
+        "p95": 0.05963500000000001,
+        "p99": 0.06192700000000001,
+        "min": 0.0052,
+        "max": 0.0625,
+        "mad": 0.028650000000000002,
+        "run_p50": [
+          0.03385
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 0.1686,
+        "p95": 0.18453,
+        "p99": 0.185946,
+        "min": 0.1509,
+        "max": 0.1863,
+        "mad": 0.017699999999999994,
+        "run_p50": [
+          0.1686
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "pipeline",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:53.472435+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "none_repeated_pso_creation_driver_cache_uncontrolled",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "12120010083042245506",
+      "payload_bytes": 0
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "pipeline_creation_ms": {
+        "p50": 0.021400000000000002,
+        "p95": 0.024730000000000002,
+        "p99": 0.025026,
+        "min": 0.0177,
+        "max": 0.0251,
+        "mad": 0.0037,
+        "run_p50": [
+          0.021400000000000002
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "release_api_ms": {
+        "p50": 0.0004,
+        "p95": 0.0004,
+        "p99": 0.0004,
+        "min": 0.0004,
+        "max": 0.0004,
+        "mad": 0.0,
+        "run_p50": [
+          0.0004
+        ],
+        "outliers_over_3_mad": null,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 0.02185,
+        "p95": 0.025225,
+        "p99": 0.025525,
+        "min": 0.0181,
+        "max": 0.0256,
+        "mad": 0.00375,
+        "run_p50": [
+          0.02185
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "textures",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 0,
+    "readback_verified": null,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:50.300202+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "recreate_uninitialized_default_gpu_memory_then_release_then_idle",
+      "threads": 1,
+      "buffer_bytes": 65536,
+      "texture_extent": [
+        64,
+        64
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "none_allocation_only",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 0
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "allocation_ms": {
+        "p50": 0.2344,
+        "p95": 0.28885,
+        "p99": 0.29369,
+        "min": 0.1739,
+        "max": 0.2949,
+        "mad": 0.0605,
+        "run_p50": [
+          0.2344
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "release_api_ms": {
+        "p50": 0.001,
+        "p95": 0.0012699999999999999,
+        "p99": 0.001294,
+        "min": 0.0007,
+        "max": 0.0013,
+        "mad": 0.0003,
+        "run_p50": [
+          0.001
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "wait_ms": {
+        "p50": 0.15025,
+        "p95": 0.17729499999999998,
+        "p99": 0.179699,
+        "min": 0.1202,
+        "max": 0.1803,
+        "mad": 0.030049999999999993,
+        "run_p50": [
+          0.15025
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 0.38565,
+        "p95": 0.46741499999999997,
+        "p99": 0.47468299999999997,
+        "min": 0.2948,
+        "max": 0.4765,
+        "mad": 0.09084999999999999,
+        "run_p50": [
+          0.38565
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload1080",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 8294400,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:48.164932+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        1920,
+        1080
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 8294400
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 1.35245,
+        "p95": 1.462295,
+        "p99": 1.472059,
+        "min": 1.2304,
+        "max": 1.4745,
+        "mad": 0.12204999999999999,
+        "run_p50": [
+          1.35245
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 1.35245,
+        "p95": 1.462295,
+        "p99": 1.472059,
+        "min": 1.2304,
+        "max": 1.4745,
+        "mad": 0.12204999999999999,
+        "run_p50": [
+          1.35245
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 33177600,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:52.764598+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba8_unorm",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 33177600
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 7.48025,
+        "p95": 8.216944999999999,
+        "p99": 8.282429,
+        "min": 6.6617,
+        "max": 8.2988,
+        "mad": 0.8185500000000001,
+        "run_p50": [
+          7.48025
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 7.48025,
+        "p95": 8.216944999999999,
+        "p99": 8.282429,
+        "min": 6.6617,
+        "max": 8.2988,
+        "mad": 0.8185500000000001,
+        "run_p50": [
+          7.48025
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  },
+  {
+    "schema_version": 1,
+    "sdk": "diligent_core",
+    "api": "d3d12",
+    "category": "end_to_end",
+    "scenario": "upload4k16f",
+    "count": 1,
+    "validation": true,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:95937",
+      "driver": "32.0.16.1088",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    },
+    "sdk_build_source_sha256": "078c4113b068dd32d9dd38e0d846679e85abe516f093370505a1c58c0175e761",
+    "warmup": 1,
+    "configuration": "Release",
+    "shader_fnv1a64": "not_applicable",
+    "payload_bytes": 66355200,
+    "readback_verified": true,
+    "sdk_commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+    "sdk_source_sha256": null,
+    "measured_at_utc": "2026-10-20T14:32:51.958275+00:00",
+    "executable_sha256": "ad9efb49cb12b33d3d4541538e4f4e39e95f67e4a2b998f03bfc1d6b01821490",
+    "contract": {
+      "revision": 2,
+      "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+      "threads": 1,
+      "buffer_bytes": null,
+      "texture_extent": [
+        3840,
+        2160
+      ],
+      "texture_format": "rgba16_float",
+      "mip_levels": 1,
+      "samples": 1,
+      "vsync": "not_applicable_headless",
+      "compiler_optimization": "/O2",
+      "runtime": "/MD",
+      "lto": false,
+      "frames_in_flight": 1,
+      "gpu_work": "full_texture_copy",
+      "gpu_timestamps": false,
+      "shader_fnv1a64": "not_applicable",
+      "payload_bytes": 66355200
+    },
+    "build_dependencies": {
+      "diligent_core": {
+        "repository": "DiligentGraphics/DiligentCore",
+        "url": "https://github.com/DiligentGraphics/DiligentCore.git",
+        "directory": ".deps/DiligentCore",
+        "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95"
+      },
+      "diligent_xxhash": {
+        "repository": "DiligentGraphics/xxHash",
+        "url": "https://github.com/DiligentGraphics/xxHash.git",
+        "directory": ".deps/DiligentCore/ThirdParty/xxHash",
+        "commit": "680bf463fa1ca0461b9a7c2dab7556e1f54cf4cf"
+      },
+      "diligent_abseil": {
+        "repository": "chromium/abseil-cpp",
+        "url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
+        "directory": "out/bench-diligent/_deps/abseil-cpp-src",
+        "commit": "af5aede14a0b4013be6890148d34e0fd7b1fac69",
+        "source_url": "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp/+/af5aede14a0b4013be6890148d34e0fd7b1fac69/"
+      },
+      "diligent_nvapi": {
+        "repository": "NVIDIA/nvapi",
+        "url": "https://github.com/NVIDIA/nvapi.git",
+        "directory": "out/bench-diligent/_deps/nvapi-src",
+        "commit": "9296d671e71608d6d6b7749ed93989af4ada8858"
+      }
+    },
+    "runtime_sha256": {
+      "GraphicsEngineD3D12_64r.dll": "43ab7c1869a35cc2498561a4476dda2427b9b2ca8fa2967179c7d316cc10c9ec"
+    },
+    "metrics": {
+      "upload_latency_ms": {
+        "p50": 14.39825,
+        "p95": 15.570905,
+        "p99": 15.675141,
+        "min": 13.0953,
+        "max": 15.7012,
+        "mad": 1.30295,
+        "run_p50": [
+          14.39825
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "frame_ms": {
+        "p50": 14.39825,
+        "p95": 15.570905,
+        "p99": 15.675141,
+        "min": 13.0953,
+        "max": 15.7012,
+        "mad": 1.30295,
+        "run_p50": [
+          14.39825
+        ],
+        "outliers_over_3_mad": 0,
+        "sample_count": 2
+      },
+      "gpu_ms": null
+    }
+  }
+]

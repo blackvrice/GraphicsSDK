@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "profile": "sdk",
+  "platform": "windows-x64",
+  "configuration": "Release",
+  "status": "inventory_verified",
+  "scope": "Conservative compiler-read closure; not linker-symbol reachability or a legal redistribution approval.",
+  "sdk_build_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+  "policy": {
+    "path": "licenses/policy.json",
+    "sha256": "e778c798a822b3f3ea2b4f7d4b1f043ce5b687c0ca6b4b1685692c544f57b296",
+    "bytes": 5349
+  },
+  "components": [
+    {
+      "id": "graphicssdk",
+      "license": "MIT",
+      "selected": "MIT",
+      "note": "Own SDK sources only; external system prerequisites are not relicensed."
+    }
+  ],
+  "files": [
+    {
+      "path": "INCLUDE/GRAPHICS/BACKEND.HPP",
+      "sha256": "65e303dfa085dcd10dee7b5f2a273577912966a9bd1daaf1e86c50bc85978da1",
+      "bytes": 243,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/COMMANDLIST.HPP",
+      "sha256": "3f8e204b1acf1669434a21aab19a45d98be3bb9ba027e8f779a32d0ee598719e",
+      "bytes": 1678,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/COMMANDQUEUE.HPP",
+      "sha256": "90d15a8f8493f671e376018f71ad069173362bdc1a89cbdade6a751e1f26c12d",
+      "bytes": 457,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/DEVICE.HPP",
+      "sha256": "da956483dea530e3a129447904ed6a76f663f49f7d1706c5e29c4a2ec2a6d78c",
+      "bytes": 865,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/GRAPHICS.HPP",
+      "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27",
+      "bytes": 58,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/PIPELINE.HPP",
+      "sha256": "1688f4970b9c61684fd044c171143d99eace43da83c06126d3ce4d9c78b7182c",
+      "bytes": 324,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/RESOURCES.HPP",
+      "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde",
+      "bytes": 719,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/SHADER.HPP",
+      "sha256": "11eca45b73f8e1aabf8e6d1ae128b5865fe5b2e84e55f3eb2de3c260f04a07bd",
+      "bytes": 612,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/SURFACE.HPP",
+      "sha256": "d3dc852b56fcd477dc1eddb9ec4a794b12a280de871bb6a47ed2abfb42c089ab",
+      "bytes": 328,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/SWAPCHAIN.HPP",
+      "sha256": "9f2c889a5b91b819e894c991c569c73d11aab50d5bc3e7c701a5bcbda66d20a2",
+      "bytes": 429,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "INCLUDE/GRAPHICS/TYPES.HPP",
+      "sha256": "839781f4430401ab14df5f0158a55cb8e7ca338372487e18f546bcf013635b60",
+      "bytes": 1270,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "SRC/BACKENDS/D3D12/D3D12.CPP",
+      "sha256": "ba668da79a3844d8a7f2bb0f63daed1ee5e4a8d94ef29035c12f6d63d5461377",
+      "bytes": 44338,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "SRC/FOUNDATION/BACKEND.CPP",
+      "sha256": "540b977052df907ff18b75af2f5219720f7f8af1865eeeade78324c1c3a05a92",
+      "bytes": 645,
+      "component": "graphicssdk"
+    },
+    {
+      "path": "SRC/SHADER/SHADER.CPP",
+      "sha256": "70bbfde0e47413c57b7da914b6f2a2cebb7e5581b977a2c12aab2da226278d59",
+      "bytes": 2734,
+      "component": "graphicssdk"
+    }
+  ],
+  "compiler_read_evidence": [
+    {
+      "path": "out/core/GraphicsSDKCore.dir/Release/GraphicsSDKCore.tlog/CL.read.1.tlog",
+      "sha256": "66506109124ee241a980c2b5bdc7fea797c9c8b37de2c0e1b67211a5084ada74",
+      "bytes": 123786
+    }
+  ],
+  "system_header_count": 302,
+  "system_input_paths_sha256": "c0b396096383c76b872f3dc68f7ac2ef96a04cc127d6c2cec29f244ae04b87ff",
+  "system_prerequisites": [
+    {
+      "id": "windows-sdk-runtime",
+      "distribution": "not_bundled",
+      "license": "Microsoft SDK/Windows terms, not GraphicsSDK MIT",
+      "url": "https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files"
+    },
+    {
+      "id": "msvc-runtime",
+      "distribution": "not_bundled",
+      "license": "Microsoft Visual Studio redistribution terms; /MD consumer prerequisite",
+      "url": "https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files"
+    },
+    {
+      "id": "optional-gpu-loaders",
+      "distribution": "not_bundled",
+      "license": "Provider runtime terms; Vulkan/OpenXR/driver DLLs are separate from header licenses",
+      "note": "Compiler-read headers do not establish that a loader was used by this D3D12 benchmark."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "out/core/Release/GraphicsSDKCore.lib",
+      "sha256": "015cfea51e01118f7bd21a7d24ba91fee5eae861197fd38d44708d97ec295014",
+      "bytes": 1300654
+    }
+  ],
+  "links": {
+    "core": {
+      "path": "out/core/GraphicsSDKCore.vcxproj",
+      "sha256": "463967dc82ccc502844e2dc8f2ce38a75c597583566528e55f6c32379cc46e0e",
+      "bytes": 37400,
+      "release_x64_link_inputs": []
+    }
+  },
+  "d3dx12_origin": null,
+  "exclusions": [
+    "Other platforms/build configurations",
+    "Unbuilt competitor SDKs",
+    "Benchmark assets/examples not in compiler-read logs",
+    "Report-generation Python packages (tools only, not bundled)"
+  ],
+  "package": {
+    "path": "out/GraphicsSDK-0.0.1-dev-windows-x64.zip",
+    "sha256": "156f1c060f16001a8f503cafd7143eb1158abe60a4062ef912812f059f3f8098",
+    "bytes": 239778,
+    "status": "inventory_verified",
+    "competitor_payload": false,
+    "files": [
+      {
+        "path": "include/graphics/Backend.hpp",
+        "sha256": "65e303dfa085dcd10dee7b5f2a273577912966a9bd1daaf1e86c50bc85978da1",
+        "bytes": 243
+      },
+      {
+        "path": "include/graphics/CommandList.hpp",
+        "sha256": "3f8e204b1acf1669434a21aab19a45d98be3bb9ba027e8f779a32d0ee598719e",
+        "bytes": 1678
+      },
+      {
+        "path": "include/graphics/CommandQueue.hpp",
+        "sha256": "90d15a8f8493f671e376018f71ad069173362bdc1a89cbdade6a751e1f26c12d",
+        "bytes": 457
+      },
+      {
+        "path": "include/graphics/Device.hpp",
+        "sha256": "da956483dea530e3a129447904ed6a76f663f49f7d1706c5e29c4a2ec2a6d78c",
+        "bytes": 865
+      },
+      {
+        "path": "include/graphics/Graphics.hpp",
+        "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27",
+        "bytes": 58
+      },
+      {
+        "path": "include/graphics/Pipeline.hpp",
+        "sha256": "1688f4970b9c61684fd044c171143d99eace43da83c06126d3ce4d9c78b7182c",
+        "bytes": 324
+      },
+      {
+        "path": "include/graphics/Resources.hpp",
+        "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde",
+        "bytes": 719
+      },
+      {
+        "path": "include/graphics/Shader.hpp",
+        "sha256": "11eca45b73f8e1aabf8e6d1ae128b5865fe5b2e84e55f3eb2de3c260f04a07bd",
+        "bytes": 612
+      },
+      {
+        "path": "include/graphics/Surface.hpp",
+        "sha256": "d3dc852b56fcd477dc1eddb9ec4a794b12a280de871bb6a47ed2abfb42c089ab",
+        "bytes": 328
+      },
+      {
+        "path": "include/graphics/SwapChain.hpp",
+        "sha256": "9f2c889a5b91b819e894c991c569c73d11aab50d5bc3e7c701a5bcbda66d20a2",
+        "bytes": 429
+      },
+      {
+        "path": "include/graphics/Types.hpp",
+        "sha256": "839781f4430401ab14df5f0158a55cb8e7ca338372487e18f546bcf013635b60",
+        "bytes": 1270
+      },
+      {
+        "path": "lib/GraphicsSDKCore.lib",
+        "sha256": "015cfea51e01118f7bd21a7d24ba91fee5eae861197fd38d44708d97ec295014",
+        "bytes": 1300654
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfig.cmake",
+        "sha256": "b7a8b47444f27643ecc1253e2135ccb45ba2347b294a04070d1b4dcdd779b4eb",
+        "bytes": 1012
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfigVersion.cmake",
+        "sha256": "7888d65181f9bce3b8dac512377e62517e2543b7d09a56fc5f51e7f0eafc6d35",
+        "bytes": 3332
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets-release.cmake",
+        "sha256": "7f6b1fe649ce86a62fcc833c3c0d9e0e04fb76f6e37b21dcb138226b18d5827d",
+        "bytes": 893
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets.cmake",
+        "sha256": "b98fe153bf676214c98a3d2274eb1c1699520cb25abf800acac9c8ccfcd553be",
+        "bytes": 4401
+      },
+      {
+        "path": "share/GraphicsSDK/BUILD.md",
+        "sha256": "dffb01e61e12eca977cd72d7de002eca9fdf4c4c41594ba9ec35969ec3446488",
+        "bytes": 2792
+      },
+      {
+        "path": "share/GraphicsSDK/LICENSE",
+        "sha256": "925ea65f6a1cecdd5b92d82d244a23531aacfb1ce07a87a4ae2050361175c18b",
+        "bytes": 1081
+      },
+      {
+        "path": "share/GraphicsSDK/README.md",
+        "sha256": "3dec24c23be2cd0158c177979ace434ed288e4bc36546ae618f5ecab077b8a9d",
+        "bytes": 1677
+      }
+    ]
+  }
+}
