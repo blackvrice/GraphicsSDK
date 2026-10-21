@@ -1,0 +1,77 @@
+Test project D:/source/GraphicsSDK/out/bench
+      Start  1: phase1_shader_cold
+ 1/22 Test  #1: phase1_shader_cold ...............   Passed    0.47 sec
+      Start  2: phase1_shader_warm
+ 2/22 Test  #2: phase1_shader_warm ...............   Passed    0.38 sec
+      Start  3: phase1_pso_hit
+ 3/22 Test  #3: phase1_pso_hit ...................   Passed    0.40 sec
+      Start  4: phase1_pso_miss
+ 4/22 Test  #4: phase1_pso_miss ..................   Passed    0.40 sec
+      Start  5: phase1_compute_blur
+ 5/22 Test  #5: phase1_compute_blur ..............   Passed    0.44 sec
+      Start  6: phase1_compute_color
+ 6/22 Test  #6: phase1_compute_color .............   Passed    0.44 sec
+      Start  7: phase1_compute_reduce
+ 7/22 Test  #7: phase1_compute_reduce ............   Passed    0.44 sec
+      Start  8: phase1_compute_buffer
+ 8/22 Test  #8: phase1_compute_buffer ............   Passed    0.44 sec
+      Start  9: phase1_compute_graphics
+ 9/22 Test  #9: phase1_compute_graphics ..........   Passed    0.45 sec
+      Start 10: phase1_sprites_10000
+10/22 Test #10: phase1_sprites_10000 .............   Passed    0.41 sec
+      Start 11: phase1_sprites_100000
+11/22 Test #11: phase1_sprites_100000 ............   Passed    0.41 sec
+      Start 12: phase1_mesh_draw
+12/22 Test #12: phase1_mesh_draw .................   Passed    0.48 sec
+      Start 13: phase1_mesh_instanced
+13/22 Test #13: phase1_mesh_instanced ............   Passed    0.42 sec
+      Start 14: phase1_multi_upload
+14/22 Test #14: phase1_multi_upload ..............   Passed    0.50 sec
+      Start 15: phase1_resource_reuse
+15/22 Test #15: phase1_resource_reuse ............   Passed    0.42 sec
+      Start 16: phase1_resource_inflight
+16/22 Test #16: phase1_resource_inflight .........   Passed    0.42 sec
+      Start 17: phase1_switch_binding
+17/22 Test #17: phase1_switch_binding ............   Passed    0.48 sec
+      Start 18: phase1_video_1080
+18/22 Test #18: phase1_video_1080 ................***Failed    0.51 sec
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3129: warning treated as error
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3556: integer divides may be much slower, try using uints if possible.
+
+
+      Start 19: phase1_video_4k
+19/22 Test #19: phase1_video_4k ..................***Failed    0.41 sec
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3129: warning treated as error
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3556: integer divides may be much slower, try using uints if possible.
+
+
+      Start 20: phase1_video_p010
+20/22 Test #20: phase1_video_p010 ................***Failed    0.41 sec
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3129: warning treated as error
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3556: integer divides may be much slower, try using uints if possible.
+
+
+      Start 21: phase1_video_layers
+21/22 Test #21: phase1_video_layers ..............***Failed    0.40 sec
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3129: warning treated as error
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3556: integer divides may be much slower, try using uints if possible.
+
+
+      Start 22: phase1_video_filter
+22/22 Test #22: phase1_video_filter ..............***Failed    0.40 sec
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3129: warning treated as error
+D:\source\GraphicsSDK\out\bench\phase1.hlsl(11,98-100): error X3556: integer divides may be much slower, try using uints if possible.
+
+
+
+77% tests passed, 5 tests failed out of 22
+
+Total Test time (real) =   9.55 sec
+
+The following tests FAILED:
+	 18 - phase1_video_1080 (Failed)
+	 19 - phase1_video_4k (Failed)
+	 20 - phase1_video_p010 (Failed)
+	 21 - phase1_video_layers (Failed)
+	 22 - phase1_video_filter (Failed)
+Errors while running CTest

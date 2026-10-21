@@ -42,6 +42,11 @@ The [LLGL upload recovery report](docs/LLGL_UPLOAD_BENCHMARK_REPORT.md) validate
 buffer-to-texture path and fresh repeated observations. The pinned WriteTexture bug and old-path
 data remain historical; no vendor patch or native copy bypass is used.
 
+The [Phase 1 extension report](docs/PHASE1_COMPLETION_REPORT.md) adds 22 LLGL cache/resource/
+2D/3D/compute/video baselines with CPU references and fresh GPU/CPU observations. **Phase 1
+is still incomplete:** advanced cross-SDK comparisons and continuous GPU memory peak
+evidence are missing; the completion gate rejects this state.
+
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),
 [retained notices](licenses/README.md), and [competitor license comparison](docs/COMPETITOR_ANALYSIS.md#기능과-라이선스).

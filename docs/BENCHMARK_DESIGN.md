@@ -129,3 +129,20 @@ allocation/release API 시간에는 관측을 넣지 않지만 allocation frame 
 경로를 사용하며 추가 GPU buffer copy·대기를 end-to-end 비용에 포함한다. 새 upload
 계약 revision 5는 old path/이전 계약과 분리한다. 기존 LLGL upload 수치는 보존하지만
 현재 correctness 기준으로 다시 승인하지 않는다. [새 검증·측정](LLGL_UPLOAD_BENCHMARK_REPORT.md)을 따른다.
+
+## Phase 1 advanced baseline
+
+`phase1_llgl` / `run_phase1.py`는 별도 category `phase1_extension`이다. LLGL public API로
+application shader/PSO cache, 다중 upload/재사용/fence 수명/binding, E/F/G/H 작업을 실행하고
+GPU 전체 readback 또는 compiler binary 전체 bytes의 pre/post CPU reference를 검사한다.
+compile cache와 GPU rendering/compute는 분리하고, CPU shader 비교를 GPU readback으로
+보고하지 않는다. application cache miss/hit counter를 실제 lookup/insert 분기에서 집계한다.
+
+GPU query는 명시적 command buffer의 clear/copy/draw/dispatch를 포함하며 별도 public
+WriteBuffer 내부 제출은 제외한다. CPU frame에는 staging·추가 copies/waits와 query 수집이
+포함된다. 4-fence C 시나리오를 하나의 GPU interval로 가장하지 않는다.
+서로 다른 category/scope나 driver cache와 application cache 비용을 섞지 않는다.
+
+LLGL 이외 advanced adapter는 미구현이고 matching advanced cross-SDK 비교는 미완료다.
+연속 GPU memory acceptance도 미확보이며 gate가 phase1_complete=false를 유지한다.
+그 외 SDK의 기존 A–D 측정 범위는 별도로 남긴다. [구체적 dataset·원본·제한](PHASE1_COMPLETION_REPORT.md)을 따른다.

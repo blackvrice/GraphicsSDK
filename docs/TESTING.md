@@ -167,3 +167,22 @@ and CopyTextureFromBuffer, including its extra default-buffer copy/wait cost. Co
 inventory and unchanged SDK ZIP checks passed. Optional competitor profiles, LLGL GBV,
 continuous GPU memory peaks, cache hit/miss control, prolonged stress and remote CI were
 not run. See [public upload report](LLGL_UPLOAD_BENCHMARK_REPORT.md).
+
+Phase 1 extensions (2026-10-21): final common CTest 44/44, core CTest 4/4 and Python
+49/49 passed. The extension adds 22 native LLGL scenarios with bytecode or full GPU readback
+CPU references, real completed timestamp queries, strict work-byte/draw/dispatch counts,
+actual application cache counters, and process CPU/memory observations. A separate native
+runner validates all 22 final scenarios. Final performance evidence is 66 processes / 7,920
+samples (3 independent runs × 120 samples, warmup 3 each).
+
+Final video_layers uploads two distinct NV12 planesets and composites them on the GPU.
+The initial single-video/solid-overlay campaign and metadata that did not distinguish CPU
+shader validation from readback are retained as excluded exploration. No original was rewritten.
+
+Native validation checks ERROR/CORRUPTION through teardown. A parallel MSVC compiler crash
+was retained and final serial builds passed; its cause is unresolved. New inventory and unchanged
+SDK package checks passed. Other advanced SDK adapters, continuous/transient GPU peak analysis,
+LLGL GBV and long stress remain unperformed. WPR GPU capture failed profiling policy; elevation
+was canceled and before/after status showed no recording. The completion gate deliberately
+returns exit 1 for missing advanced cross-SDK comparisons and event-based peak evidence.
+See [Phase 1 status](PHASE1_COMPLETION_REPORT.md).

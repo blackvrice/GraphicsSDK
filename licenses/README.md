@@ -91,3 +91,9 @@ The subsequent public LLGL buffer-to-texture upload path has its own
 [windows-benchmarks-llgl-upload-release](generated/windows-benchmarks-llgl-upload-release/inventory.json)
 snapshot and adjacent notices (969 compiler-read project inputs, 22 components). It retains the
 same competitor pins, system prerequisites and redistribution limitations; old snapshots remain historical.
+
+The Phase 1 advanced LLGL baseline has the separate `benchmarks-phase1` audit profile and
+[final inventory](generated/windows-benchmarks-phase1-final-release/inventory.json) with adjacent
+notices (970 project inputs, 22 components). This conservative closure includes both common and
+extension targets. The first exploratory inventory remains historical. Neither snapshot is a
+redistribution clearance or evidence that all Phase 1 acceptance gates passed.

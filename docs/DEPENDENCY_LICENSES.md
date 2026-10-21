@@ -175,6 +175,14 @@ SDK ZIP을 덮어쓰지 않았다. optional Forge/Diligent/bgfx profile의 새 �
 다른 플랫폼 검증을 수행했다는 의미가 아니다. 새 공통 inventory 및 기존 SDK ZIP의
 `--check`가 통과했다.
 
+Phase 1 advanced baseline은 별도 `benchmarks-phase1` 감사 profile을 사용한다.
+공통 `gfx_bench`와 새 `phase1_llgl` target의 compiler/linker 입력을 함께 수집하며
+[최종 inventory](../licenses/generated/windows-benchmarks-phase1-final-release/inventory.json)와
+인접 고지문에 970개 프로젝트 입력/22개 구성요소를 기록한다. 새 third-party package나
+vendor patch는 없고 같은 fixed LLGL/SDL 입력 및 Windows/D3DCompiler/PSAPI 시스템
+전제조건을 유지한다. 초기 탐색 inventory는 별도로 보존한다. 자체 SDK/API/ZIP은
+변경하지 않았으며 inventory와 기존 SDK package 검사가 통과했다.
+
 LLGL 공개 upload 복구 후에는 별도
 [inventory](../licenses/generated/windows-benchmarks-llgl-upload-release/inventory.json)와
 같은 폴더의 고지문을 생성했다. 공통 profile의 compiler-read 입력 969개/구성요소 22개,

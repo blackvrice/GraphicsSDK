@@ -30,9 +30,10 @@ inventory and terms review; the checked item is limited to the current reviewed 
 - [x] Opt-in Windows process-batch CPU utilization, process-lifetime CPU memory peaks and explicitly bounded GPU memory checkpoint maxima for GraphicsSDK/LLGL/SDL3; matching contract, native checks and repeated observations ([report](CPU_MEMORY_BENCHMARK_REPORT.md)).
 - [x] Public LLGL upload/readback state regression recovery, padded-row/changing-payload native checks and fresh same-binary upload measurements with telemetry ON/OFF ([report](LLGL_UPLOAD_BENCHMARK_REPORT.md)).
 - [ ] Continuous/transient GPU memory peak acceptance.
-- [ ] Controlled shader cache cold/warm and PSO cache hit/miss.
-- [ ] Multi-texture uploads, reuse/in-flight allocation scenarios, switching and binding workloads.
-- [ ] E/F/G/H workloads and correctness references (2D/3D/compute/media stages).
+- [x] LLGL application shader-cache cold/warm and PSO handle-cache hit/miss workloads with actual counters and reference validation; driver/OS cache remains uncontrolled ([report](PHASE1_COMPLETION_REPORT.md)).
+- [x] LLGL four-texture uploads, persistent reuse/four-fence retained allocation and pipeline/texture/scissor switching baselines with readback references ([report](PHASE1_COMPLETION_REPORT.md)).
+- [x] Independent LLGL E/F/G/H baselines: sprites/atlas/blend/clip, mesh depth/MRT/postprocess, four compute kernels plus graphics transition, NV12/P010/two-video composition/filter and CPU references ([report](PHASE1_COMPLETION_REPORT.md)).
+- [ ] Matching advanced E/F/G/H adapters and same-environment comparisons for additional SDKs; GraphicsSDK compute/depth/MRT API prerequisites remain in Phase 2.
 
 The minimal same-environment competitor comparison criterion is met for the implemented
 end-to-end subset. The full requested A–H benchmark suite is not complete.
@@ -74,3 +75,8 @@ end-to-end subset. The full requested A–H benchmark suite is not complete.
 
 There are no numerical superiority targets before comparable baseline evidence. A whole-SDK
 performance ranking is not a release gate; correctness and maintenance remain mandatory.
+
+Phase 1 completion is currently rejected by the [machine-readable gate](../benchmarks/reports/2026-10-21-phase1-final/acceptance.json):
+advanced cross-SDK comparisons and continuous/transient GPU memory evidence remain missing.
+The GPU trace attempt failed Windows profiling policy (`0xc5585011`); elevated launch was canceled.
+Checkpoints and a single advanced SDK are not promoted to full Phase 1 completion.

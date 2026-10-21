@@ -207,6 +207,10 @@ def collect(root, profile, package=None):
     trace_dirs, artifacts_map, projects, sdk_dirs = dict(TRACE_DIRS), dict(ARTIFACTS), dict(PROJECTS), dict(SDK_DIRS)
     generated = set(GENERATED_INPUTS)
     extra = None
+    if profile == "benchmarks-phase1":
+        trace_dirs["phase1"]="out/bench/phase1_llgl.dir/Release"
+        artifacts_map["phase1"]="out/bench/Release/phase1_llgl.exe"
+        projects["phase1"]="out/bench/phase1_llgl.vcxproj"
     if profile == "benchmarks-diligent":
         from diligent_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
@@ -312,7 +316,7 @@ def collect(root, profile, package=None):
         inventory["package"] = audit_package(root, package)
     if benchmark:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map,
-            extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12"))
+            extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
     if extra:
         inventory[extra.get("review_key", "diligent_build_review")] = extra["evidence"]
     if generated_inputs:
@@ -344,7 +348,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

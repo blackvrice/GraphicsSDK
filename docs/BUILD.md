@@ -181,3 +181,42 @@ python tools/report_llgl_upload.py
 report 생성기는 고정 2026-10-21-llgl-upload-plain/telemetry 폴더를 검증한다.
 새 upload 계약 revision 5와 계측 여부를 유지하며 이전 upload 자료와 자동 비교하지 않는다.
 GPU 시간은 null이다. [범위·추가 copy 비용·원본](LLGL_UPLOAD_BENCHMARK_REPORT.md)을 따른다.
+
+## Phase 1 확장 baseline과 완료 게이트
+
+```powershell
+./tools/bootstrap_competitors.ps1 -Jobs 1
+ctest --test-dir out/bench -C Release --output-on-failure
+python tools/run_phase1.py --samples 5 --runs 1 --validation --output out/my-phase1-native
+python tools/run_phase1.py --samples 120 --runs 3 --output benchmarks/results/my-phase1-baselines
+python tools/audit_licenses.py --profile benchmarks-phase1 --output out/my-phase1-inventory
+python tools/report_phase1.py
+python tools/phase1_acceptance.py benchmarks/reports/2026-10-21-phase1-final/acceptance-evidence.json
+```
+
+새 `phase1_llgl` target은 public LLGL cache/resource/E/F/G/H baseline 22개다. 공통 전체
+CTest는 44개이고 extension source와 실제 exe의 fingerprint를 대조한다. 측정은 기존
+`gfx_bench` 결과와 category/marker/observer 계약이 다르다. 다른 SDK를 선택하면 원본
+폴더 생성 전에 거부한다. 해당 SDK의 기술적 기능 미지원이라는 뜻은 아니며 adapter
+미구현이다. source/report 원본은 [확장 보고서](PHASE1_COMPLETION_REPORT.md)를 따른다.
+
+report 생성기는 고정 `2026-10-21-phase1-final`을 검증한다. 최초
+`2026-10-21-phase1-extension`은 one-video+solid overlay였던 탐색 자료로 제외했다.
+새 측정 폴더를 재사용하거나 과거 metadata를 수정하지 않는다.
+
+현재 완료 게이트의 **exit 1은 예상된 미완료 판정**이다. advanced cross-SDK adapter와
+연속 GPU peak 증거가 없어서 Phase 1 완료를 승인하지 않는다. shader/PSO application
+cache는 통제했으나 driver/OS cache를 지우지 않았다.
+
+관리자가 허용한 별도 Windows 터미널에서 GPU trace 수집을 하려면 다음 project script를
+사용한다. 기존 WPR recording이 있거나 출력 폴더가 존재하면 중단한다. 시작한 trace만
+finally에서 종료하며 시스템 정책을 바꾸지 않는다. ETL 수집 자체가 peak 검증 완료는
+아니고 process filtering, allocation lifetime/event loss와 transient positive control 분석이 필요하다.
+
+```powershell
+./tools/capture_phase1_gpu.ps1 -Scenario resource_inflight -Samples 120
+```
+
+현재 환경에서는 WPR policy 오류 `0xc5585011`, 이후 관리자 실행 취소로 ETL을 확보하지
+못했다. capture script의 성공 실행·ETL 분석은 아직 검증되지 않았다. 기본 병렬 빌드 중
+MSVC crash 1회가 있었으며 위의 최종 검증은 serial build로 수행했다.
