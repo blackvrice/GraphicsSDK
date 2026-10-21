@@ -14,6 +14,30 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 def diligent_dependencies(root=ROOT):
     return json.loads((root / "benchmarks/competitors/diligent-build.lock.json").read_text())["dependencies"]
 
+def bgfx_dependencies(root=ROOT):
+    return json.loads((root / "benchmarks/competitors/bgfx-build.lock.json").read_text())["dependencies"]
+
+def bgfx_fingerprint(root=ROOT):
+    deps = bgfx_dependencies(root)
+    identity = "".join(f"{name}|{deps[name]['commit']}\n" for name in ("bgfx", "bx", "bimg"))
+    files = sorted([p for pattern in ("*.cpp", "*.hpp", "*.cmake") for p in (root/"benchmarks").rglob(pattern)] + [root/"benchmarks/CMakeLists.txt"])
+    for path in files:
+        identity += path.relative_to(root).as_posix()+"|"+hashlib.sha256(path.read_bytes()).hexdigest()+"\n"
+    return hashlib.sha256(identity.encode()).hexdigest()
+
+def scenario_error(sdk, scenario):
+    if sdk == "bgfx" and scenario == "pipeline":
+        return "Unsupported bgfx/pipeline: createProgram links shaders; D3D12 PSO creation is lazy on draw"
+    return None
+
+def allocation_policy(result):
+    model = result.get("allocation_model", "default_gpu_resources")
+    if model == "bgfx_pooled_dynamic_vertex_buffers" and result["sdk"] == "bgfx" and result["scenario"] == "buffers":
+        return "recreate_uninitialized_pooled_dynamic_vertex_buffers_then_release_drain_frames_then_idle"
+    if model != "default_gpu_resources" or (result["sdk"] == "bgfx" and result["scenario"] == "buffers"):
+        raise RuntimeError("Unknown or missing allocation model; comparison requires an explicit contract")
+    return "recreate_uninitialized_default_gpu_memory_then_release_then_idle"
+
 def verify_source(source, commit):
     actual = subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip()
     dirty = subprocess.check_output(["git", "-C", str(source), "status", "--porcelain", "--untracked-files=no"], text=True).strip()
@@ -103,9 +127,19 @@ def main():
     lock = json.loads((ROOT / "benchmarks/competitors/sources.lock.json").read_text())
     # Verify built competitor checkout has the recorded version and no local tracked patches.
     for sdk in args.sdks:
-        if sdk not in ("llgl", "sdl", "graphicssdk", "diligent_core"):
+        if sdk not in ("llgl", "sdl", "graphicssdk", "diligent_core", "bgfx"):
             p.error(f"Adapter is not implemented: {sdk}")
+        for scenario in args.scenarios:
+            if error := scenario_error(sdk, scenario):
+                p.error(error)
         if sdk == "graphicssdk":
+            continue
+        if sdk == "bgfx":
+            deps = bgfx_dependencies()
+            if deps[sdk]["commit"] != lock[sdk]["commit"]:
+                raise RuntimeError("Research pin and bgfx build pin differ")
+            for dep in deps.values():
+                verify_source(ROOT / dep["directory"], dep["commit"])
             continue
         if sdk == "diligent_core":
             deps = diligent_dependencies()
@@ -142,6 +176,8 @@ def main():
         validate_result(result, sdk, scenario, args.count, args.warmup, args.samples, args.validation)
         if sdk == "diligent_core" and result.get("sdk_build_source_sha256") != diligent_fingerprint():
             raise RuntimeError("Stale Diligent benchmark build; rebuild after source/pin changes")
+        if sdk == "bgfx" and result.get("sdk_build_source_sha256") != bgfx_fingerprint():
+            raise RuntimeError("Stale bgfx benchmark library; rebuild after source/pin changes")
         source_hash = hashlib.sha256()
         for source_file in sorted(list((ROOT/"src").rglob("*.cpp"))+list((ROOT/"include").rglob("*.hpp"))+[ROOT/"CMakeLists.txt"]):
             source_hash.update((source_file.relative_to(ROOT).as_posix()+"|"+hashlib.sha256(source_file.read_bytes()).hexdigest()+"\n").encode())
@@ -153,7 +189,7 @@ def main():
                        "sdk_source_sha256": source_hash.hexdigest() if sdk == "graphicssdk" else None,
                        "measured_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                        "executable_sha256": executable_hash,
-                       "contract": {"revision": 2, "resource_policy": "recreate_uninitialized_default_gpu_memory_then_release_then_idle" if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+                       "contract": {"revision": 2, "resource_policy": allocation_policy(result) if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
                                     "threads": 1, "buffer_bytes": 65536 if allocation else None,
                                     "texture_extent": [1920,1080] if scenario == "upload1080" else [3840,2160] if scenario.startswith("upload") else [64,64],
                                     "texture_format": "rgba16_float" if scenario == "upload4k16f" else "rgba8_unorm", "mip_levels": 1, "samples": 1,
@@ -163,6 +199,9 @@ def main():
         if sdk == "diligent_core":
             result["build_dependencies"] = diligent_dependencies()
             result["runtime_sha256"] = runtime_hashes
+        if sdk == "bgfx":
+            result["build_dependencies"] = bgfx_dependencies()
+            result["submission_model"] = "single_thread_sequential_view_frame_then_supplied_D3D12_queue_fence"
         if scenario == "pipeline":
             result["contract"]["gpu_work"] = "none_repeated_pso_creation_driver_cache_uncontrolled"
             result["contract"]["resource_policy"] = "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed"

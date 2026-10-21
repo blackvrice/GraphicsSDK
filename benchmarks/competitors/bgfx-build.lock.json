@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scope": "Official amalgamated bgfx/bx and bimg image core; D3D12 only, single caller/render thread, no video or ASTC decoder",
+  "dependency_selection": "bx/bimg latest official commits not newer than the existing bgfx research pin (2026-10-20T05:40:40Z); these are explicit harness pins, not upstream submodule guarantees",
+  "dependencies": {
+    "bgfx": {"repository":"bkaradzic/bgfx","directory":".deps/bgfx","commit":"d8d6acd94b64e01da3c4d1bc869df2dc2a8eb1ba"},
+    "bx": {"repository":"bkaradzic/bx","directory":".deps/bx","commit":"234f2fba71909d95175daf865bb9f3aa5cd3c047"},
+    "bimg": {"repository":"bkaradzic/bimg","directory":".deps/bimg","commit":"c37d64e57457487e6f4f2332d5ac4f025b70b8d7"}
+  }
+}

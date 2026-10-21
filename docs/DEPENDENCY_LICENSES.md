@@ -2,6 +2,7 @@
 
 조사일: 2026-10-20. 범위는 Windows x64 Release SDK, LLGL/SDL3 기본 벤치마크와
 추가 standalone Diligent Core 벤치마크 profile이다.
+bgfx profile은 2026-10-21에 별도로 추가 검토했다.
 다른 플랫폼·미빌드 경쟁 SDK·새 의존성에는 그대로 적용하지 않는다.
 
 ## 확인한 결과
@@ -86,7 +87,33 @@ DXC runtime 사용·배포 권한을 compiler-read 헤더만으로 추정하지 
 새 profile은 Diligent DLL 복사 일치, 실행 파일의 소스/버전 fingerprint와 실제 compiler
 command의 `/O2 /MD`, LTO 미사용을 추가로 검사한다.
 
+## bgfx 추가 profile
+
+`benchmarks-bgfx`는 기본 LLGL/SDL3와 새 bgfx/bx/bimg static libraries, 어댑터, 코어의
+실제 MSBuild compiler/linker 기록을 검사한다. 프로젝트 입력 1,155개, 분류 30개,
+생성 SDL 파일 6개를 기록했다. bgfx/bx/bimg 루트는 BSD-2-Clause이며 RenderDoc API
+헤더 MIT, bx의 dirent MIT, Milo Yip dtoa의 MIT, Matthew Endsley TinySTL BSD와
+Ozan Yigit sdbm public-domain attribution을 별도로 유지했다.
+
+dirent 헤더 자체는 Toni Ronkko와 MIT를 명시한다. 이를 보완할 공식 upstream LICENSE
+전문을 [고정 출처](../licenses/provenance/dirent-license-source.json)와 함께 보존했다.
+D3DX12처럼 전체 소스 본문이 일치하는 원본을 찾았다는 주장은 아니다. bgfx의
+amalgamated 파일 목록에는 Metal/Vulkan 등의 조건부 파일도 읽히지만 이 빌드에서
+그 backend를 실행하거나 제공했다는 뜻은 아니다. ASTC codec 및 image-decode/encode
+도구, shaderc 도구는 빌드·배포 대상이 아니다.
+
+[추가 정책](../licenses/bgfx-policy.json),
+[inventory](../licenses/generated/windows-benchmarks-bgfx-final-release/inventory.json),
+[고지 원문](../licenses/generated/windows-benchmarks-bgfx-final-release/THIRD_PARTY_NOTICES.txt)을
+보존했다. static bgfx library와 실행 파일의 compiled fingerprint 및 실제 `/O2 /MD`,
+LTO 미사용·D3D12·single-thread·video OFF 옵션을 검사한다. 드라이버의 NVAPI와
+RenderDoc/Aftermath 등 선택형 runtime이 배포물에 포함됐다고 추정하지 않는다.
+기존 자체 SDK ZIP에는 경쟁 코드나 DLL을 추가하지 않았다.
+
 고지 모음은 배포 시 사용할 자료이며 `inventory_verified`는 법적 배포 승인 표시가 아니다.
 실제 배포 구성, SDK/백엔드/옵션/버전, 추가 라이브러리 또는 시스템 DLL 포함 범위가 달라지면
 다시 검토한다. Python plotting 패키지는 도구 전용이며 현재 배포 대상에서 제외했다.
 모든 미래 경쟁 SDK의 전이 의존성을 검토 완료했다고 주장하지 않는다.
+
+초기 `windows-benchmarks-bgfx-release`는 copy 기반 탐색 빌드의 기록으로 보존한다.
+최종 makeRef 빌드는 `windows-benchmarks-bgfx-final-release`의 실제 artifact hash를 사용한다.

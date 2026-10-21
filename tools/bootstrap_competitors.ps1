@@ -1,13 +1,19 @@
-param([int]$Jobs = 8, [switch]$Diligent)
+param([int]$Jobs = 8, [switch]$Diligent, [switch]$Bgfx)
 $ErrorActionPreference = 'Stop'
+if ($Diligent -and $Bgfx) { throw 'Select one reviewed optional build profile: -Diligent or -Bgfx' }
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
     $pins = Get-Content -LiteralPath 'benchmarks/competitors/sources.lock.json' -Raw | ConvertFrom-Json
     $sources = @(@{Key='llgl'; Directory='LLGL'}, @{Key='sdl'; Directory='SDL'})
     if ($Diligent) { $sources += @{Key='diligent_core'; Directory='DiligentCore'} }
+    if ($Bgfx) {
+        $bgfxPins = (Get-Content -LiteralPath 'benchmarks/competitors/bgfx-build.lock.json' -Raw | ConvertFrom-Json).dependencies
+        if ($bgfxPins.bgfx.commit -ne $pins.bgfx.commit) { throw 'Research and bgfx build pins differ' }
+        foreach ($key in @('bgfx','bx','bimg')) { $sources += @{Key=$key; Directory=$key; Pin=$bgfxPins.$key} }
+    }
     foreach ($item in $sources) {
-        $pin = $pins.($item.Key)
+        $pin = if ($item.ContainsKey('Pin')) { $item.Pin } else { $pins.($item.Key) }
         $path = Join-Path '.deps' $item.Directory
         if (-not (Test-Path -LiteralPath $path)) {
             New-Item -ItemType Directory -Path $path -Force | Out-Null
@@ -32,7 +38,14 @@ try {
     if ($LASTEXITCODE) { throw 'SDL configure failed' }
     cmake --build out/sdl --config Release --parallel $Jobs
     if ($LASTEXITCODE) { throw 'SDL build failed' }
-    if ($Diligent) {
+    if ($Bgfx) {
+        cmake -S benchmarks -B out/bench-bgfx -G 'Visual Studio 17 2022' -A x64 -DGFX_BENCH_WITH_BGFX=ON -DGFX_BENCH_WITH_DILIGENT=OFF
+        if ($LASTEXITCODE) { throw 'bgfx benchmark configure failed' }
+        cmake --build out/bench-bgfx --config Release --target gfx_bench bgfx_shader_contracts --parallel $Jobs
+        if ($LASTEXITCODE) { throw 'bgfx benchmark build failed' }
+        ctest --test-dir out/bench-bgfx -C Release --output-on-failure
+        if ($LASTEXITCODE) { throw 'bgfx shader contract tests failed' }
+    } elseif ($Diligent) {
         $buildPins = (Get-Content -LiteralPath 'benchmarks/competitors/diligent-build.lock.json' -Raw | ConvertFrom-Json).dependencies
         foreach ($key in @('diligent_xxhash','diligent_abseil','diligent_nvapi')) {
             $dep = $buildPins.$key

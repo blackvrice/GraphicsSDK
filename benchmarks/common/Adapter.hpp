@@ -20,6 +20,8 @@ inline double ms(Clock::time_point start, Clock::time_point end) {
 struct Adapter {
     virtual ~Adapter() = default;
     virtual std::string sourceFingerprint() const { return {}; }
+    virtual std::string unsupportedReason(std::string_view) const { return {}; }
+    virtual std::string allocationModel(std::string_view) const { return "default_gpu_resources"; }
     virtual std::string deviceName() const = 0;
     virtual void idle() = 0;
     virtual void* buffer(std::uint32_t bytes) = 0;
@@ -38,6 +40,7 @@ std::unique_ptr<Adapter> llgl(bool validation);
 std::unique_ptr<Adapter> sdl(bool validation);
 std::unique_ptr<Adapter> graphicsSDK(bool validation);
 std::unique_ptr<Adapter> diligent(bool validation);
+std::unique_ptr<Adapter> bgfxAdapter(bool validation);
 std::string quote(std::string_view);
 std::string environment(std::string_view device);
 }

@@ -15,6 +15,9 @@ approval or a claim about every platform, every static-library member or future 
   [notices](generated/windows-benchmarks-diligent-release/THIRD_PARTY_NOTICES.txt) and
   [additional review policy](diligent-policy.json). Use this profile for the optional Diligent build;
   the earlier benchmark snapshot records its earlier artifact hashes.
+* [bgfx benchmark inventory](generated/windows-benchmarks-bgfx-final-release/inventory.json),
+  [notices](generated/windows-benchmarks-bgfx-final-release/THIRD_PARTY_NOTICES.txt) and
+  [additional policy](bgfx-policy.json) cover the optional `-Bgfx` profile at its recorded pins.
 
 Before redistributing the reviewed benchmark binaries, retain the full benchmark notice
 file with them. BSD license and non-endorsement terms, MIT notices, Apache terms and upstream
@@ -33,6 +36,8 @@ python tools/audit_licenses.py --profile benchmarks --output out/benchmark-licen
 python tools/audit_licenses.py --profile benchmarks --output out/benchmark-license-audit --check
 python tools/audit_licenses.py --profile benchmarks-diligent --output out/diligent-license-audit
 python tools/audit_licenses.py --profile benchmarks-diligent --output out/diligent-license-audit --check
+python tools/audit_licenses.py --profile benchmarks-bgfx --output out/bgfx-license-audit
+python tools/audit_licenses.py --profile benchmarks-bgfx --output out/bgfx-license-audit --check
 ```
 
 The optional `--package` checks the existing ZIP against the actual core library, all public

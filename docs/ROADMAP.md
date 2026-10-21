@@ -9,7 +9,7 @@ Only measured/tested scope is checked. Follow the remaining phases in order.
 - [x] Seven competitor snapshots, feature/architecture/license comparison and source links.
 - [x] Diligent commercial Metal, NVRHI absence of Metal, Forge Windows Vulkan policy distinguished.
 - [x] No Sandbox modifications or integration.
-- [x] Windows SDK/LLGL/SDL3 and added Diligent Core compiler-read dependency inventories, notices, source origin evidence and SDK package checks ([audit scope](DEPENDENCY_LICENSES.md)).
+- [x] Windows SDK/LLGL/SDL3, Diligent Core and bgfx compiler-read dependency inventories, notices, source origin evidence and SDK package checks ([audit scope](DEPENDENCY_LICENSES.md)).
 
 Future redistributed competitors/tools and other platform/configuration changes require a fresh
 inventory and terms review; the checked item is limited to the current reviewed artifacts.
@@ -24,7 +24,8 @@ inventory and terms review; the checked item is limited to the current reviewed 
 - [x] Repeated PSO creation from identical precompiled bytecode (driver cache uncontrolled).
 - [x] Multiple processes, warmup, P50/P95/P99/MAD, JSON/CSV and comparison reports.
 - [x] Standalone pinned Diligent Core D3D12 adapter: all eight existing workloads, native validation/readback, dependency inventory and same-machine repeated measurements ([report](DILIGENT_BENCHMARK_REPORT.md)).
-- [ ] Remaining primary comparison adapters: bgfx and The Forge (overall competitor expansion remains incomplete).
+- [x] Pinned bgfx D3D12 adapter: six matching workloads, pooled buffers under a separate contract, native queue-completion/readback validation, explicit unsupported lazy PSO, dependency audit and repeated measurements ([report](BGFX_BENCHMARK_REPORT.md)).
+- [ ] Remaining primary comparison adapter: The Forge (overall competitor expansion remains incomplete).
 - [ ] Low-level GPU timestamp comparisons where both SDKs expose matching functionality.
 - [ ] CPU utilization, peak CPU/GPU memory, controlled shader cache cold/warm and PSO cache hit/miss.
 - [ ] Multi-texture uploads, reuse/in-flight allocation scenarios, switching and binding workloads.

@@ -210,6 +210,9 @@ def collect(root, profile, package=None):
     if profile == "benchmarks-diligent":
         from diligent_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
+    elif profile == "benchmarks-bgfx":
+        from bgfx_license_profile import configure
+        extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
     benchmark = profile != "sdk"
     target_names = list(trace_dirs) if benchmark else ["core"]
     evidence = []
@@ -218,7 +221,7 @@ def collect(root, profile, package=None):
         inputs, trace = read_trace(root, name, trace_dirs)
         paths.update(inputs); evidence.extend(trace)
     if extra:
-        paths.update(str(path) for path in extra["shader_sources"])
+        paths.update(str(path) for path in extra.get("shader_sources", []))
     pins = json.loads(text_file(root / "benchmarks/competitors/sources.lock.json"))
     if extra:
         pins.update(extra["dependencies"])
@@ -305,9 +308,9 @@ def collect(root, profile, package=None):
         inventory["package"] = audit_package(root, package)
     if benchmark:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map,
-            ("benchmark", "llgl", "llgl_d3d12", "diligent_shared") if extra else ("benchmark", "llgl", "llgl_d3d12"))
+            extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12"))
     if extra:
-        inventory["diligent_build_review"] = extra["evidence"]
+        inventory[extra.get("review_key", "diligent_build_review")] = extra["evidence"]
     if generated_inputs:
         inventory["generated_build_inputs"] = generated_inputs
     sections = ["THIRD-PARTY AND SDK NOTICES", "", "Profile: " + profile,
@@ -337,7 +340,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

@@ -1,0 +1,18 @@
+{
+  "schema_version":1,
+  "reviewed_commits": {
+    "bgfx":"d8d6acd94b64e01da3c4d1bc869df2dc2a8eb1ba",
+    "bx":"234f2fba71909d95175daf865bb9f3aa5cd3c047",
+    "bimg":"c37d64e57457487e6f4f2332d5ac4f025b70b8d7"
+  },
+  "components": [
+    {"id":"bgfx-renderdoc-header","sdk":"bgfx","patterns":["3rdparty/renderdoc/*"],"license":"MIT","selected":"MIT","note":"RenderDoc API header only. No RenderDoc DLL is bundled; header reads do not prove a profiler was attached."},
+    {"id":"bgfx","sdk":"bgfx","patterns":["*"],"license":"BSD-2-Clause","selected":"BSD-2-Clause","root_notices":["LICENSE"]},
+    {"id":"bx-dirent","sdk":"bx","patterns":["include/compat/msvc/dirent.h"],"license":"MIT","selected":"MIT","extra_notices":["licenses/provenance/dirent-upstream-LICENSE.txt"],"note":"The pinned header explicitly identifies MIT and Toni Ronkko. Official upstream full MIT terms supplement that retained header; no exact upstream source-body match is claimed."},
+    {"id":"bx-dtoa","sdk":"bx","patterns":["src/dtoa.cpp"],"license":"BSD-2-Clause AND MIT","selected":"BSD-2-Clause AND MIT","root_notices":["LICENSE"],"note":"Retain Milo Yip's embedded MIT permission and Branimir Karadzic's BSD root terms."},
+    {"id":"bx-tinystl-hash","sdk":"bx","patterns":["include/tinystl/hash.h"],"license":"BSD-2-Clause AND LicenseRef-Public-Domain","selected":"BSD-2-Clause AND LicenseRef-Public-Domain","root_notices":["include/tinystl/LICENSE"],"note":"Preserve Matthew Endsley BSD terms and Ozan Yigit's sdbm public-domain attribution."},
+    {"id":"bx-tinystl","sdk":"bx","patterns":["include/tinystl/*"],"license":"BSD-2-Clause","selected":"BSD-2-Clause","root_notices":["include/tinystl/LICENSE"]},
+    {"id":"bx","sdk":"bx","patterns":["*"],"license":"BSD-2-Clause","selected":"BSD-2-Clause","root_notices":["LICENSE"]},
+    {"id":"bimg","sdk":"bimg","patterns":["*"],"license":"BSD-2-Clause","selected":"BSD-2-Clause","root_notices":["LICENSE"],"note":"Only image.cpp core is compiled, with ASTC decoding disabled. This policy does not review unbuilt image-decode/encode tools and their dependencies."}
+  ]
+}

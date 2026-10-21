@@ -58,6 +58,13 @@ class CompilerEvidenceTests(unittest.TestCase):
         dxc = audit.component_for(policy, "diligent_core", "ThirdParty/DirectXShaderCompiler/dxc/dxcapi.h")
         self.assertEqual(dxc["selected"], "NCSA")
 
+    def test_bgfx_vendored_notices_are_not_replaced_by_root_bsd(self):
+        policy=json.loads((audit.ROOT/"licenses/bgfx-policy.json").read_text())
+        self.assertEqual(audit.component_for(policy,"bgfx","3rdparty/renderdoc/renderdoc_app.h")["selected"],"MIT")
+        self.assertEqual(audit.component_for(policy,"bx","include/compat/msvc/dirent.h")["selected"],"MIT")
+        self.assertIn("MIT",audit.component_for(policy,"bx","src/dtoa.cpp")["selected"])
+        self.assertIn("LicenseRef-Public-Domain",audit.component_for(policy,"bx","include/tinystl/hash.h")["selected"])
+
     def test_d3dx12_origin_accepts_only_recorded_body(self):
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)

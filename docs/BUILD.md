@@ -49,6 +49,28 @@ python tools/audit_licenses.py --profile benchmarks-diligent --output out/my-dil
 AVX2 추가 옵션을 끄고 `/O2 /MD`를 사용한다. 코어 기본 빌드에는 다운로드가 추가되지 않는다.
 DiligentEngine superproject와 commercial Metal은 이 구성에 포함되지 않는다.
 
+bgfx는 별도 `-Bgfx` profile을 사용한다. `-Diligent`와 동시에 지정하지 않는다.
+
+```powershell
+./tools/bootstrap_competitors.ps1 -Bgfx
+python tools/run_benchmarks.py --exe out/bench-bgfx/Release/gfx_bench.exe --sdks llgl sdl graphicssdk bgfx --scenarios draw instanced --count 10000 --runs 3 --samples 120 --warmup 20 --output benchmarks/results/my-bgfx-draw
+python tools/run_benchmarks.py --exe out/bench-bgfx/Release/gfx_bench.exe --sdks bgfx --scenarios buffers textures draw instanced upload1080 upload4k upload4k16f --count 1 --runs 1 --samples 2 --warmup 1 --validation --output out/my-bgfx-validation
+ctest --test-dir out/bench-bgfx -C Release --output-on-failure
+python tools/audit_licenses.py --profile benchmarks-bgfx --output out/my-bgfx-license-audit
+python tools/report_bgfx_benchmarks.py
+```
+
+이 profile은 `.deps/bgfx`, `.deps/bx`, `.deps/bimg`와 `out/bench-bgfx` 레이아웃을 사용한다.
+경쟁 소스는 고정 pin 그대로 두고 공식 amalgamated build를 CMake로 구성한다. 별도
+shaderc 실행 파일 없이 reflection으로 검증한 공통 DXBC를 bgfx container v13으로 감싼다.
+지원 범위는 resource-free vertex-ID VS/PS뿐이다. 일반 bgfx shader compiler 대체 API가 아니다.
+위 보고서 생성 명령은 고정된 2026-10-21 campaign을 읽는다. 새 출력 디렉터리의 측정은
+기존 runner/compare 도구를 사용하고 원본 campaign을 덮어쓰지 않는다.
+
+bgfx `pipeline`은 실행 전에 거부한다. `buffers`는 dynamic vertex buffer pool의 별도
+resource policy이므로 기본 GPU resource 할당과 자동 비교하지 않는다. bgfx source와
+컴파일한 static library의 fingerprint, 실제 compiler flags와 전이 고지를 검사한다.
+
 SDK 코어를 포함하지 않는 경쟁 SDK 전용 suite는
 `cmake -S benchmarks -B out/bench-independent -A x64 -DGFX_BENCH_WITH_SDK=OFF`로 구성한다.
 이 설정은 GraphicsSDK 소스/라이브러리 target을 사용하지 않는다.

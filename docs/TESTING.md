@@ -54,6 +54,19 @@ The documented `bootstrap_competitors.ps1 -Diligent` command also passed on the 
 checkouts, preserving the measured executable hash. Both the original SDK ZIP audit and
 the additional Diligent inventory `--check` passed; core CTest passed 4/4 again.
 
+2026-10-21 bgfx expansion: 25 Python tests passed, including pre-execution rejection of
+unsupported PSO requests without creating an output directory, distinct pooled allocation
+contracts, build-option/dependency fingerprint changes and vendored license exceptions.
+`out/bench-bgfx` has one CPU CTest with 8 shader-container checks: valid payload preservation,
+stage mismatch, empty/malformed DXBC, bound resources, vertex attributes and user varyings.
+All 7 supported scenarios passed native debug-layer execution and the applicable pre/post
+readback checks. A separate 10,000 draw/instance validation run also passed. Native info queue
+errors/corruption fail the run after GPU completion and during teardown. These are debug-layer
+checks, not GPU-based validation or prolonged leak-stress acceptance. bgfx's single-thread
+draw stats additionally reject dropped submissions. Primitive stats are not an instance-count oracle.
+See [bgfx measurement scope](BGFX_BENCHMARK_REPORT.md) and retained JSON/logs under
+`benchmarks/reports/validation/2026-10-21-bgfx-final`. Old reports and source snapshots remain historical.
+
 `gfx_debug_capture <absolute-path-to-gfx_tests.exe> --validation` captures Windows debug output
 for otherwise abrupt native validation termination. Use it for diagnostics, outside performance runs.
 
@@ -65,3 +78,10 @@ external GPU import, and PIX/RenderDoc vendor profiler captures are unverified.
 Hidden-window presentation does not establish interactive window-system acceptance.
 Validation error count does not by itself prove absence of every leak or data race.
 CI configuration is provided separately; creating the file does not mean a remote run passed.
+
+The final bgfx upload path references the immutable campaign source with makeRef. The original
+copy-based exploratory campaigns are retained and excluded from final comparisons. All seven
+correctness scenarios and 10,000 draw/instance validation passed again on the final build.
+The final bootstrap reproduced the measured executable hash; SDK ZIP and final bgfx inventory
+checks passed. Core CTest remained 4/4 and the optional CPU CTest passed all 8 checks. Remote CI
+and a separate render-thread bgfx profile were not run.
