@@ -1,0 +1,49 @@
+Test project D:/source/GraphicsSDK/out/bench
+      Start  1: gpu_timestamp_contracts
+ 1/18 Test  #1: gpu_timestamp_contracts ............   Passed    0.02 sec
+      Start  2: telemetry_contracts
+ 2/18 Test  #2: telemetry_contracts ................   Passed    0.02 sec
+      Start  3: llgl_telemetry_buffers
+ 3/18 Test  #3: llgl_telemetry_buffers .............   Passed    0.50 sec
+      Start  4: llgl_telemetry_draw
+ 4/18 Test  #4: llgl_telemetry_draw ................   Passed    0.85 sec
+      Start  5: llgl_telemetry_upload1080
+ 5/18 Test  #5: llgl_telemetry_upload1080 ..........Exit code 0xc0000409***Exception:   2.74 sec
+ID3D12CommandQueue1::ExecuteCommandLists: Using CopyTextureRegion on Command List (0x000001DF74A4E8F0:'Unnamed ID3D12GraphicsCommandList Object'): Resource state (0x800: D3D12_RESOURCE_STATE_COPY_SOURCE) of resource (0x000001DF74ADBCD0:'Unnamed ID3D12Resource Object') (subresource: 0) is invalid for use as a destination resource.  Expected State Bits (all): 0x400: D3D12_RESOURCE_STATE_COPY_DEST, Actual State: 0x800: D3D12_RESOURCE_STATE_COPY_SOURCE, Missing State: 0x400: D3D12_RESOURCE_STATE_COPY_DEST.
+ID3D12CommandQueue1::ExecuteCommandLists: Using CopyTextureRegion on Command List (0x000001DF74A4E8F0:'Unnamed ID3D12GraphicsCommandList Object'): Resource state (0x800: D3D12_RESOURCE_STATE_COPY_SOURCE) of resource (0x000001DF74ADBCD0:'Unnamed ID3D12Resource Object') (subresource: 0) is invalid for use as a destination resource.  Expected State Bits (all): 0x400: D3D12_RESOURCE_STATE_COPY_DEST, Actual State: 0x800: D3D12_RESOURCE_STATE_COPY_SOURCE, Missing State: 0x400: D3D12_RESOURCE_STATE_COPY_DEST.
+LLGL teardown: LLGL native D3D12 validation failed
+
+      Start  6: llgl_telemetry_pipeline
+ 6/18 Test  #6: llgl_telemetry_pipeline ............   Passed    0.89 sec
+      Start  7: sdl_telemetry_buffers
+ 7/18 Test  #7: sdl_telemetry_buffers ..............   Passed    0.87 sec
+      Start  8: sdl_telemetry_draw
+ 8/18 Test  #8: sdl_telemetry_draw .................   Passed    0.93 sec
+      Start  9: sdl_telemetry_upload1080
+ 9/18 Test  #9: sdl_telemetry_upload1080 ...........   Passed    0.97 sec
+      Start 10: sdl_telemetry_pipeline
+10/18 Test #10: sdl_telemetry_pipeline .............   Passed    0.91 sec
+      Start 11: graphicssdk_telemetry_buffers
+11/18 Test #11: graphicssdk_telemetry_buffers ......   Passed    0.77 sec
+      Start 12: graphicssdk_telemetry_draw
+12/18 Test #12: graphicssdk_telemetry_draw .........   Passed    0.83 sec
+      Start 13: graphicssdk_telemetry_upload1080
+13/18 Test #13: graphicssdk_telemetry_upload1080 ...   Passed    0.79 sec
+      Start 14: graphicssdk_telemetry_pipeline
+14/18 Test #14: graphicssdk_telemetry_pipeline .....   Passed    0.76 sec
+      Start 15: llgl_draw_gpu
+15/18 Test #15: llgl_draw_gpu ......................   Passed    1.01 sec
+      Start 16: llgl_instanced_gpu
+16/18 Test #16: llgl_instanced_gpu .................   Passed    0.79 sec
+      Start 17: graphicssdk_draw_gpu
+17/18 Test #17: graphicssdk_draw_gpu ...............   Passed    0.93 sec
+      Start 18: graphicssdk_instanced_gpu
+18/18 Test #18: graphicssdk_instanced_gpu ..........   Passed    0.74 sec
+
+94% tests passed, 1 tests failed out of 18
+
+Total Test time (real) =  15.36 sec
+
+The following tests FAILED:
+	  5 - llgl_telemetry_upload1080 (Exit code 0xc0000409)
+Errors while running CTest

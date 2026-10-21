@@ -36,6 +36,10 @@ The [The Forge comparison](docs/FORGE_BENCHMARK_REPORT.md) covers eight matching
 under a documented MSVC compatibility configuration with legacy NVAPI excluded.
 The [GPU timestamp report](docs/GPU_TIMESTAMP_BENCHMARK_REPORT.md) compares matching draw
 intervals for GraphicsSDK/LLGL/Forge and records Diligent's different resolve interval separately.
+The [CPU/memory report](docs/CPU_MEMORY_BENCHMARK_REPORT.md) adds opt-in process CPU time,
+lifetime CPU memory peaks and bounded GPU memory checkpoint maxima for the common Windows profile.
+Pinned LLGL full-region uploads after readback fail native state validation and are now rejected;
+historical LLGL upload observations are not current correctness acceptance.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

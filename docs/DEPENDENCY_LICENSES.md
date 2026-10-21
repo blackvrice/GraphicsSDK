@@ -163,3 +163,14 @@ SDK에 복사하지 않는다. 동일 pinned 정책·실제 compiler/linker 입�
 runtime copy를 검사했다. 자체 SDK ZIP은 기존 `--check`가 통과했다.
 Forge의 비활성 PIX header primary terms 미해결과 경쟁 바이너리 재배포 승인 미포함은
 그대로이며 GPU query 추가가 이를 해결했다는 의미가 아니다.
+
+## CPU/memory 공통 profile inventory
+
+선택형 OS 관측을 추가한 공통 LLGL/SDL3/GraphicsSDK 실행 파일은 새
+[inventory](../licenses/generated/windows-benchmarks-telemetry-release/inventory.json)와
+[고지](../licenses/generated/windows-benchmarks-telemetry-release/THIRD_PARTY_NOTICES.txt)에
+968개 compiler-read 프로젝트 입력/22개 구성요소를 기록했다. Windows PSAPI/DXGI는
+시스템 전제조건이며 새 competitor나 runtime 패키지를 추가하지 않는다. 기존 inventory와
+SDK ZIP을 덮어쓰지 않았다. optional Forge/Diligent/bgfx profile의 새 계측 artifact 감사나
+다른 플랫폼 검증을 수행했다는 의미가 아니다. 새 공통 inventory 및 기존 SDK ZIP의
+`--check`가 통과했다.

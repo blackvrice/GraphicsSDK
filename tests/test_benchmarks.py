@@ -6,6 +6,7 @@ import subprocess
 import sys
 import unittest
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "tools"))
 spec = importlib.util.spec_from_file_location("bench", pathlib.Path(__file__).resolve().parents[1] / "tools/run_benchmarks.py")
 bench = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bench)

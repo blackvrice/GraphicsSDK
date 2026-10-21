@@ -79,3 +79,10 @@ Algorithm. Retain its RSA attribution and derivative-work terms with the MIT AMD
 Snapshots contain build-specific evidence; another machine/build should produce a new
 snapshot. The Windows CI job creates a fresh SDK inventory after installation. Remote CI
 execution has not been verified here.
+
+The Windows CPU/memory observer has a separate build snapshot at
+[windows-benchmarks-telemetry-release](generated/windows-benchmarks-telemetry-release/inventory.json)
+with adjacent notices (968 compiler-read project inputs, 22 components). It covers the common
+LLGL/SDL3/GraphicsSDK benchmark binary. PSAPI/DXGI remain system prerequisites; optional
+competitor rebuilds and redistribution clearance are outside this snapshot. Historical inventories
+and the SDK package remain unchanged.

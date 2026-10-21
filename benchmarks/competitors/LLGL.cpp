@@ -59,6 +59,11 @@ public:
         if (!timestamps) throw std::runtime_error("LLGL elapsed timestamp query unavailable");
     }
     std::string deviceName() const override { return device->GetRendererInfo().deviceName.c_str(); }
+    std::string unsupportedReason(std::string_view scenario) const override {
+        if (scenario=="upload1080" || scenario=="upload4k" || scenario=="upload4k16f")
+            return "Pinned LLGL full-region WriteTexture after ReadTexture lacks COPY_SOURCE to COPY_DEST transition; repeated upload validation is blocked";
+        return {};
+    }
     void idle() override { device->GetCommandQueue()->WaitIdle(); checkValidation(); }
     void* buffer(std::uint32_t bytes) override {
         LLGL::BufferDescriptor desc;

@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "sdk": "graphicssdk",
+  "api": "d3d12",
+  "category": "gpu_timestamp",
+  "scenario": "draw_gpu",
+  "count": 10000,
+  "validation": true,
+  "environment": {
+    "cpu": "Intel(R) Core(TM) i7-14700K",
+    "ram_bytes": 68473667584,
+    "os": "Windows 10.0.26220",
+    "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+    "vendor_id": 4318,
+    "device_id": 8644,
+    "luid": "0:95995",
+    "driver": "32.0.16.1088",
+    "driver_query_available": true,
+    "software_renderer": false,
+    "compiler": "MSVC 194435228",
+    "pointer_bits": 64
+  },
+  "sdk_build_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+  "allocation_model": "default_gpu_resources",
+  "warmup": 0,
+  "configuration": "Release",
+  "shader_fnv1a64": "12120010083042245506",
+  "payload_bytes": 0,
+  "gpu_timestamp_scope": "draw_calls_after_clear_and_bind_before_pass_end_v1",
+  "readback_verified": true,
+  "telemetry": {
+    "revision": 1,
+    "scope": "measured_batch_after_warmup_before_post_readback_v1",
+    "gpu_luid": "0:95995",
+    "gpu_node": 0,
+    "cpu_normalization": "one_logical_cpu_100_percent_all_process_threads",
+    "wall_ms": 88.8483,
+    "kernel_ms": 15.625,
+    "user_ms": 31.25,
+    "cpu_ms": 46.875,
+    "cpu_one_core_percent": 52.75846583446167,
+    "checkpoints": [
+      {
+        "phase": "baseline",
+        "sample": 0,
+        "working_set_bytes": 128831488,
+        "private_commit_bytes": 146124800,
+        "lifetime_peak_working_set_bytes": 128831488,
+        "lifetime_peak_commit_bytes": 146124800,
+        "gpu_local_current_bytes": 16056320,
+        "gpu_nonlocal_current_bytes": 67850240,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 0,
+        "working_set_bytes": 129712128,
+        "private_commit_bytes": 146837504,
+        "lifetime_peak_working_set_bytes": 129712128,
+        "lifetime_peak_commit_bytes": 146837504,
+        "gpu_local_current_bytes": 16056320,
+        "gpu_nonlocal_current_bytes": 67850240,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 1,
+        "working_set_bytes": 129712128,
+        "private_commit_bytes": 146837504,
+        "lifetime_peak_working_set_bytes": 129712128,
+        "lifetime_peak_commit_bytes": 146837504,
+        "gpu_local_current_bytes": 16056320,
+        "gpu_nonlocal_current_bytes": 67850240,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 2,
+        "working_set_bytes": 129712128,
+        "private_commit_bytes": 146837504,
+        "lifetime_peak_working_set_bytes": 129712128,
+        "lifetime_peak_commit_bytes": 146837504,
+        "gpu_local_current_bytes": 16056320,
+        "gpu_nonlocal_current_bytes": 67850240,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      }
+    ]
+  },
+  "samples": [
+    {
+      "record_ms": 15.2351,
+      "submit_ms": 14.7369,
+      "wait_ms": 0.0087,
+      "frame_ms": 30.0143,
+      "gpu_ms": 14.309312,
+      "query_read_ms": 0.0336
+    },
+    {
+      "record_ms": 15.267,
+      "submit_ms": 14.5239,
+      "wait_ms": 0.0039,
+      "frame_ms": 29.8115,
+      "gpu_ms": 14.192928,
+      "query_read_ms": 0.0167
+    },
+    {
+      "record_ms": 14.2434,
+      "submit_ms": 14.6199,
+      "wait_ms": 0.004,
+      "frame_ms": 28.8838,
+      "gpu_ms": 14.303936,
+      "query_read_ms": 0.0165
+    }
+  ],
+  "run": 0,
+  "sdk_commit": null,
+  "sdk_source_sha256": "b40aeb6c090ee371f96b260a4275ec1f28146c2d099f4321338acfac0f9045d6",
+  "measured_at_utc": "2026-10-21T05:22:24.614794+00:00",
+  "executable_sha256": "e63752325bfb13e66c0b94a5b637960d88f3eac34909c8b144b85ae9e36f9273",
+  "contract": {
+    "revision": 4,
+    "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+    "threads": 1,
+    "buffer_bytes": null,
+    "texture_extent": [
+      64,
+      64
+    ],
+    "texture_format": "rgba8_unorm",
+    "mip_levels": 1,
+    "samples": 1,
+    "vsync": "not_applicable_headless",
+    "compiler_optimization": "/O2",
+    "runtime": "/MD",
+    "lto": false,
+    "frames_in_flight": 1,
+    "gpu_work": "vertex_id_triangle_no_blend_no_depth_no_cull",
+    "gpu_timestamps": true,
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "timestamp_scope": "draw_calls_after_clear_and_bind_before_pass_end_v1",
+    "timestamp_unit": "milliseconds",
+    "timestamp_queue": "direct_graphics",
+    "query_resolve": "outside_timestamp_interval_after_end_marker",
+    "query_reuse": "one_completed_interval_per_sample",
+    "telemetry": {
+      "revision": 1,
+      "scope": "measured_batch_after_warmup_before_post_readback_v1",
+      "cpu_normalization": "one_logical_cpu_100_percent_all_process_threads",
+      "cpu_source": "GetProcessTimes_kernel_plus_user_100ns_units",
+      "cpu_memory": "GetProcessMemoryInfo_process_lifetime_peaks_and_checkpoint_current",
+      "gpu_memory": "DXGI_QueryVideoMemoryInfo_process_current_usage_node_0_local_nonlocal",
+      "checkpoints": "baseline_then_allocation_live_if_applicable_then_each_sample_end",
+      "observer_cost": "included_in_batch_cpu_and_wall_allocation_frame_includes_live_checkpoint",
+      "gpu_peak": "maximum_of_checkpoints_lower_bound_not_continuous_peak"
+    }
+  }
+}

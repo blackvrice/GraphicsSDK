@@ -9,6 +9,7 @@ import pathlib
 import random
 import statistics
 import subprocess
+import benchmark_telemetry as telemetry
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 GPU_SCENARIOS=("draw_gpu","instanced_gpu")
@@ -64,6 +65,8 @@ def bgfx_fingerprint(root=ROOT):
     return hashlib.sha256(identity.encode()).hexdigest()
 
 def scenario_error(sdk, scenario):
+    if sdk == "llgl" and scenario in ("upload1080", "upload4k", "upload4k16f"):
+        return "Unsupported LLGL upload: pinned full-region WriteTexture after ReadTexture lacks COPY_SOURCE to COPY_DEST transition"
     if scenario in GPU_SCENARIOS and sdk not in ("graphicssdk","llgl","diligent_core","the_forge"):
         return f"Unsupported {sdk}/{scenario}: no matching public draw-only GPU timestamp interval"
     if sdk == "bgfx" and scenario == "pipeline":
@@ -92,7 +95,7 @@ def diligent_fingerprint(root=ROOT):
         identity += path.relative_to(root).as_posix() + "|" + hashlib.sha256(path.read_bytes()).hexdigest() + "\n"
     return hashlib.sha256(identity.encode()).hexdigest()
 
-def validate_result(result, sdk, scenario, count, warmup, samples, validation):
+def validate_result(result, sdk, scenario, count, warmup, samples, validation, observe=False):
     expected = {"sdk": sdk, "scenario": scenario, "count": count, "warmup": warmup, "validation": validation,
                 "api": "d3d12", "category": "gpu_timestamp" if scenario in GPU_SCENARIOS else "end_to_end", "configuration": "Release"}
     if any(result.get(key) != value for key, value in expected.items()) or len(result.get("samples", [])) != samples:
@@ -109,6 +112,7 @@ def validate_result(result, sdk, scenario, count, warmup, samples, validation):
                     raise RuntimeError("Missing/invalid completed GPU timestamp result or query-read cost")
     elif any(sample.get("gpu_ms") is not None for sample in result["samples"]):
         raise RuntimeError("Unexpected timestamp instrumentation in an end-to-end workload")
+    telemetry.validate(result, observe)
 
 def percentile(values, q):
     ordered = sorted(values)
@@ -168,6 +172,7 @@ def main():
     p.add_argument("--samples", type=int, default=120)
     p.add_argument("--warmup", type=int, default=10)
     p.add_argument("--validation", action="store_true")
+    p.add_argument("--telemetry", action="store_true", help="Opt-in process CPU/memory and DXGI checkpoint observations; separate comparison contract")
     p.add_argument("--output", type=pathlib.Path, required=True)
     args = p.parse_args()
     if args.runs < 1 or args.samples < 1 or args.warmup < 0 or args.count < 1:
@@ -222,15 +227,17 @@ def main():
     args.output.mkdir(parents=True)
     (args.output / "schedule.json").write_text(json.dumps(jobs, indent=2) + "\n")
     for sdk, scenario, run in jobs:
-        proc = subprocess.run([str(executable), sdk, scenario, str(args.count), str(args.warmup), str(args.samples), str(int(args.validation))],
+        proc = subprocess.run([str(executable), sdk, scenario, str(args.count), str(args.warmup), str(args.samples), str(int(args.validation))]+(["--telemetry"] if args.telemetry else []),
                               cwd=executable.parent, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
+        if args.telemetry:
+            (args.output / f"{sdk}-{scenario}-{run}.stdout").write_text(proc.stdout,encoding="utf-8")
         if proc.returncode:
             (args.output / f"failure-{sdk}-{scenario}-{run}.txt").write_text(proc.stdout + proc.stderr, encoding="utf-8")
             raise RuntimeError(f"{sdk}/{scenario}: failed with {proc.returncode}: {proc.stderr[-1500:]}")
         # Permit SDK diagnostics before the structured final line, preserve them separately.
         lines = proc.stdout.splitlines()
         result = json.loads(lines[-1])
-        validate_result(result, sdk, scenario, args.count, args.warmup, args.samples, args.validation)
+        validate_result(result, sdk, scenario, args.count, args.warmup, args.samples, args.validation, args.telemetry)
         if sdk == "diligent_core" and result.get("sdk_build_source_sha256") != diligent_fingerprint():
             raise RuntimeError("Stale Diligent benchmark build; rebuild after source/pin changes")
         if sdk == "bgfx" and result.get("sdk_build_source_sha256") != bgfx_fingerprint():
@@ -249,7 +256,7 @@ def main():
                        "sdk_source_sha256": source_hash.hexdigest() if sdk == "graphicssdk" else None,
                        "measured_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                        "executable_sha256": executable_hash,
-                       "contract": {"revision": 3 if gpu_timestamps else 2, "resource_policy": allocation_policy(result) if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+                       "contract": {"revision": 4 if args.telemetry else 3 if gpu_timestamps else 2, "resource_policy": allocation_policy(result) if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
                                     "threads": 1, "buffer_bytes": 65536 if allocation else None,
                                     "texture_extent": [1920,1080] if scenario == "upload1080" else [3840,2160] if scenario.startswith("upload") else [64,64],
                                     "texture_format": "rgba16_float" if scenario == "upload4k16f" else "rgba8_unorm", "mip_levels": 1, "samples": 1,
@@ -258,6 +265,8 @@ def main():
                                     "gpu_timestamps": gpu_timestamps, "shader_fnv1a64": result.get("shader_fnv1a64"), "payload_bytes": result.get("payload_bytes",0)}})
         if gpu_timestamps:
             result["contract"].update(timestamp_contract(sdk))
+        if args.telemetry:
+            result["contract"]["telemetry"]=telemetry.contract()
         if sdk == "diligent_core":
             result["build_dependencies"] = diligent_dependencies()
             result["runtime_sha256"] = runtime_hashes
@@ -281,8 +290,10 @@ def main():
         runs.sort(key=lambda r: r["run"])
         if not all(comparable(runs[0], run) for run in runs):
             raise RuntimeError("Environment changed within measurement")
-        item = {k: v for k, v in runs[0].items() if k not in ("samples", "run")}
+        item = {k: v for k, v in runs[0].items() if k not in ("samples", "run", "telemetry")}
         item["metrics"] = summarize(runs)
+        if args.telemetry:
+            item["process_metrics"]=telemetry.summarize(runs)
         summary.append(item)
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     (args.output / "environment.json").write_text(json.dumps(summary[0]["environment"], indent=2) + "\n", encoding="utf-8")
@@ -292,6 +303,12 @@ def main():
             for metric, values in item["metrics"].items():
                 if values:
                     writer.writerow([item["sdk"], item["scenario"], metric, values["p50"], values["p95"], values["p99"], values["mad"], json.dumps(values["run_p50"])])
+    if args.telemetry:
+        with (args.output / "process-metrics.csv").open("w", newline="", encoding="utf-8") as f:
+            writer=csv.writer(f); writer.writerow(["sdk","scenario","metric","median","min","max","run_values","process_count"])
+            for item in summary:
+                for metric, values in item["process_metrics"].items():
+                    writer.writerow([item["sdk"],item["scenario"],metric,values["median"],values["min"],values["max"],json.dumps(values["run_values"]),values["process_count"]])
     print(args.output / "summary.csv")
 
 if __name__ == "__main__":

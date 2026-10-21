@@ -21,3 +21,11 @@ fingerprint가 다른 원자료를 덮어쓰지 않는다. 차이는 분산·회
 측정된 원인이 없는 임의 비율 개선 목표를 만들지 않는다.
 문서: [BENCHMARK_DESIGN](BENCHMARK_DESIGN.md), [BENCHMARK_REPORT](BENCHMARK_REPORT.md),
 [OPTIMIZATION_LOG](OPTIMIZATION_LOG.md).
+
+CPU 사용률은 선택형 telemetry에서 측정 batch의 프로세스 CPU/wall 비율로 기록한다.
+논리 CPU 하나=100%이며 SDK 내부 worker도 포함한다. CPU lifetime memory peak와 GPU
+checkpoint 최대 사용량은 서로 다른 범위다. GPU 값은 연속 peak가 아니고 budget도 소비량이
+아니다. 관측 비용이 들어간 결과는 비계측 원본과 자동 비교하지 않는다.
+[CPU·메모리 보고서](CPU_MEMORY_BENCHMARK_REPORT.md)에 원본·표본 수·해석 제한을 기록했다.
+고정 LLGL의 full-region upload after readback은 native validation 오류로 현재 차단되어
+과거 업로드 수치를 현재 correctness 근거로 재사용하지 않는다.

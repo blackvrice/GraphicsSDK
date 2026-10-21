@@ -108,3 +108,23 @@ Diligent의 `BeginQuery(DURATION)`는 시작 timestamp와 `ResolveQueryData`를 
 거부한다. SDL3에는 대응 API가 없고 bgfx view timer는 범위가 달라 해당 시나리오를 거부한다.
 비교 범위를 맞추기 위해 native query를 대신 삽입하지 않는다. upload/copy/compute 구간은
 추후 확장 대상이다. [실측과 초기 오분류 자료의 제외 사유](GPU_TIMESTAMP_BENCHMARK_REPORT.md)를 따른다.
+
+## 선택형 CPU 및 메모리 관측
+
+`--telemetry`는 contract revision 4와 `contract.telemetry`를 기록한다. 이전 비계측
+자료와 자동 비교하지 않는다. 측정 batch의 GetProcessTimes kernel+user 시간/wall 비율은
+논리 CPU 하나=100%이며 모든 process thread를 포함한다. warmup·초기화·post-readback은
+구간 밖이고 idle·문자열 저장·관측 비용은 안이다. CPU 관측은 프로세스별 하나이며 frame
+표본 수로 복제하지 않는다. `process_metrics`는 모든 회차값과 median/min/max를 보존한다.
+
+CPU current working set/private commit과 process-lifetime peak는 구분한다. GPU는 같은
+LUID의 node 0 local/nonlocal CurrentUsage·Budget을 baseline, 각 표본 끝, allocation의
+해제 전 live 지점에서 읽는다. 최대 체크포인트는 연속 peak나 residency 증명이 아니다.
+allocation/release API 시간에는 관측을 넣지 않지만 allocation frame 시간은 live 관측을
+포함한다. 지원하지 않는 값은 실패이며 0으로 대체하지 않는다.
+[정확한 구간·원본·제한](CPU_MEMORY_BENCHMARK_REPORT.md)을 따른다.
+
+현재 pin의 LLGL full-region WriteTexture는 ReadTexture 뒤 COPY_DEST 전환 없이 copy를
+기록하여 native validation에 실패한다. 세 LLGL upload 시나리오는 계측 여부와 무관하게
+실행 전에 거부한다. 기존 LLGL upload 수치는 보존하지만 현재 correctness 기준으로
+다시 승인하지 않는다. 이 경로의 public API 수정·재측정은 남아 있다.

@@ -1,5 +1,6 @@
 #include "common/Adapter.hpp"
 #include "common/GpuTimestamp.hpp"
+#include "common/Telemetry.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -8,7 +9,9 @@ int main(int argc, char** argv) try {
 #ifndef NDEBUG
     throw std::runtime_error("Performance benchmark requires Release with NDEBUG");
 #endif
-    if (argc != 7) throw std::runtime_error("Usage: gfx_bench <llgl|sdl|graphicssdk|diligent_core|bgfx|the_forge> <buffers|textures|draw|instanced|draw_gpu|instanced_gpu|upload1080|upload4k|upload4k16f|pipeline> <count> <warmup> <samples> <validation:0|1>");
+    if (argc != 7 && argc != 8) throw std::runtime_error("Usage: gfx_bench <sdk> <scenario> <count> <warmup> <samples> <validation:0|1> [--telemetry]");
+    const bool observe=argc==8;
+    if (observe && std::string_view(argv[7])!="--telemetry") throw std::runtime_error("Unknown observer option");
     std::string sdk = argv[1], scenario = argv[2];
     auto number = [](const char* s, unsigned max) { size_t n{}; auto v = std::stoul(s, &n); if (s[n] || v > max) throw std::runtime_error("Invalid numeric argument"); return static_cast<unsigned>(v); };
     unsigned count = number(argv[3], 100000), warmup = number(argv[4], 10000), samples = number(argv[5], 100000);
@@ -56,13 +59,17 @@ int main(int argc, char** argv) try {
     }
     std::vector<void*> resources; resources.reserve(count);
     std::vector<std::string> results;
+    std::unique_ptr<bench::Telemetry> telemetry;
+    if (observe) telemetry=std::make_unique<bench::Telemetry>(adapter->deviceName(),samples,scenario=="buffers" || scenario=="textures");
     for (unsigned frame = 0; frame < warmup + samples; ++frame) {
+        if (telemetry && frame==warmup) telemetry->begin();
         adapter->idle();
         auto begin = bench::Clock::now();
         if (pipeline) {
             auto timing=adapter->recreatePipeline();
             const auto frameTime=bench::ms(begin,bench::Clock::now());
             if (frame>=warmup) results.push_back("{\"pipeline_creation_ms\":"+std::to_string(timing.creation)+",\"release_api_ms\":"+std::to_string(timing.release)+",\"frame_ms\":"+std::to_string(frameTime)+",\"gpu_ms\":null}");
+            if (telemetry && frame>=warmup) telemetry->checkpoint(false,frame-warmup);
             continue;
         }
         if (draw) {
@@ -71,15 +78,19 @@ int main(int argc, char** argv) try {
             if (!gpuTimestamps && timing.gpu) throw std::runtime_error("Unexpected timestamp instrumentation in end-to-end workload");
             auto gpu=timing.gpu?std::to_string(bench::validGpuMilliseconds(*timing.gpu)):"null";
             if (frame>=warmup) results.push_back("{\"record_ms\":"+std::to_string(timing.record)+",\"submit_ms\":"+std::to_string(timing.submit)+",\"wait_ms\":"+std::to_string(timing.wait)+",\"frame_ms\":"+std::to_string(timing.frame)+",\"gpu_ms\":"+gpu+(gpuTimestamps?",\"query_read_ms\":"+std::to_string(timing.queryRead):"")+"}");
+            if (telemetry && frame>=warmup) telemetry->checkpoint(false,frame-warmup);
             continue;
         }
         if (upload) {
             adapter->upload(pixels); auto end=bench::Clock::now();
             if (frame>=warmup) results.push_back("{\"upload_latency_ms\":"+std::to_string(bench::ms(begin,end))+",\"frame_ms\":"+std::to_string(bench::ms(begin,end))+",\"gpu_ms\":null}");
+            if (telemetry && frame>=warmup) telemetry->checkpoint(false,frame-warmup);
             continue;
         }
         for (unsigned i = 0; i < count; ++i) resources.push_back(scenario == "buffers" ? adapter->buffer(65536) : adapter->texture(64, 64, false));
         auto allocated = bench::Clock::now();
+        if (telemetry && frame>=warmup) telemetry->checkpoint(true,frame-warmup);
+        auto releaseBegin=telemetry?bench::Clock::now():allocated;
         for (auto r : resources) { if (scenario == "buffers") adapter->releaseBuffer(r); else adapter->releaseTexture(r); }
         auto released = bench::Clock::now();
         adapter->idle();
@@ -87,17 +98,19 @@ int main(int argc, char** argv) try {
         resources.clear();
         if (frame >= warmup) {
             std::string row = "{\"allocation_ms\":" + std::to_string(bench::ms(begin, allocated))
-                + ",\"release_api_ms\":" + std::to_string(bench::ms(allocated, released))
+                + ",\"release_api_ms\":" + std::to_string(bench::ms(releaseBegin, released))
                 + ",\"wait_ms\":" + std::to_string(bench::ms(released, end))
                 + ",\"frame_ms\":" + std::to_string(bench::ms(begin, end)) + ",\"gpu_ms\":null}";
             results.push_back(std::move(row));
+            if (telemetry) telemetry->checkpoint(false,frame-warmup);
         }
     }
+    const auto telemetryJson=telemetry?telemetry->finish():"null";
     if (((draw || pipeline) && !adapter->verifyDraw()) || (upload && !adapter->verifyUpload(pixels))) throw std::runtime_error("Post-measurement readback correctness failed");
     std::cout << "{\"schema_version\":1,\"sdk\":" << bench::quote(sdk) << ",\"api\":\"d3d12\",\"category\":" << bench::quote(gpuTimestamps?"gpu_timestamp":"end_to_end") << ",\"scenario\":" << bench::quote(scenario)
         << ",\"count\":" << count << ",\"validation\":" << (validation ? "true" : "false")
         << ",\"environment\":" << env << ",\"sdk_build_source_sha256\":" << bench::quote(adapter->sourceFingerprint()) << ",\"allocation_model\":" << bench::quote(adapter->allocationModel(scenario)) << ",\"warmup\":" << warmup << ",\"configuration\":\"Release\",\"shader_fnv1a64\":" << bench::quote(draw||pipeline?std::to_string(shaderHash):"not_applicable")
-        << ",\"payload_bytes\":" << pixels.size() << ",\"gpu_timestamp_scope\":" << bench::quote(gpuTimestamps?bench::gpuTimestampScope:"disabled") << ",\"readback_verified\":" << (draw||upload||pipeline?"true":"null") << ",\"samples\":[";
+        << ",\"payload_bytes\":" << pixels.size() << ",\"gpu_timestamp_scope\":" << bench::quote(gpuTimestamps?bench::gpuTimestampScope:"disabled") << ",\"readback_verified\":" << (draw||upload||pipeline?"true":"null") << ",\"telemetry\":" << telemetryJson << ",\"samples\":[";
     for (size_t i = 0; i < results.size(); ++i) { if (i) std::cout << ','; std::cout << results[i]; }
     std::cout << "]}\n";
     return 0;

@@ -1,0 +1,2377 @@
+{
+  "schema_version": 1,
+  "sdk": "llgl",
+  "api": "d3d12",
+  "category": "end_to_end",
+  "scenario": "draw",
+  "count": 100000,
+  "validation": false,
+  "environment": {
+    "cpu": "Intel(R) Core(TM) i7-14700K",
+    "ram_bytes": 68473667584,
+    "os": "Windows 10.0.26220",
+    "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+    "vendor_id": 4318,
+    "device_id": 8644,
+    "luid": "0:95995",
+    "driver": "32.0.16.1088",
+    "driver_query_available": true,
+    "software_renderer": false,
+    "compiler": "MSVC 194435228",
+    "pointer_bits": 64
+  },
+  "sdk_build_source_sha256": "",
+  "allocation_model": "default_gpu_resources",
+  "warmup": 20,
+  "configuration": "Release",
+  "shader_fnv1a64": "12120010083042245506",
+  "payload_bytes": 0,
+  "gpu_timestamp_scope": "disabled",
+  "readback_verified": true,
+  "telemetry": {
+    "revision": 1,
+    "scope": "measured_batch_after_warmup_before_post_readback_v1",
+    "gpu_luid": "0:95995",
+    "gpu_node": 0,
+    "cpu_normalization": "one_logical_cpu_100_percent_all_process_threads",
+    "wall_ms": 431.255,
+    "kernel_ms": 0,
+    "user_ms": 109.375,
+    "cpu_ms": 109.375,
+    "cpu_one_core_percent": 25.362024788118397,
+    "checkpoints": [
+      {
+        "phase": "baseline",
+        "sample": 0,
+        "working_set_bytes": 86110208,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86110208,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 0,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 1,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 2,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 3,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 4,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 5,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 6,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 7,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 8,
+        "working_set_bytes": 86138880,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86138880,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 9,
+        "working_set_bytes": 86142976,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86142976,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 10,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 11,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 12,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 13,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 14,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 15,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 16,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 17,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 18,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 19,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 20,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 21,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 22,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 23,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 24,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 25,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 26,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 27,
+        "working_set_bytes": 86147072,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86147072,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 28,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 29,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 30,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 31,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 32,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 33,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 34,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 35,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 36,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 37,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 38,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 39,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 40,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 41,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 42,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 43,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 44,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 45,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 46,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 47,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 48,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 49,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 50,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 51,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 52,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 53,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 54,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 55,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 56,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 57,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 58,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 59,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 60,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 61,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 62,
+        "working_set_bytes": 86151168,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86151168,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 63,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 64,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 65,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 66,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 67,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 68,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 69,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 70,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 71,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 72,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 73,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 74,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 75,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 76,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 77,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 78,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 79,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 80,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 81,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 82,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 83,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 84,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 85,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 86,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 87,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 88,
+        "working_set_bytes": 86155264,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86155264,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 89,
+        "working_set_bytes": 86159360,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86159360,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 90,
+        "working_set_bytes": 86159360,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86159360,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 91,
+        "working_set_bytes": 86159360,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86159360,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 92,
+        "working_set_bytes": 86159360,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86159360,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 93,
+        "working_set_bytes": 86159360,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86159360,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 94,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 95,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 96,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 97,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 98,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 99,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 100,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 101,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 102,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 103,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 104,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 105,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 106,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 107,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 108,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 109,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 110,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 111,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 112,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 113,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 114,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 115,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 116,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 117,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 118,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      },
+      {
+        "phase": "sample_end",
+        "sample": 119,
+        "working_set_bytes": 86163456,
+        "private_commit_bytes": 102838272,
+        "lifetime_peak_working_set_bytes": 86163456,
+        "lifetime_peak_commit_bytes": 102838272,
+        "gpu_local_current_bytes": 12206080,
+        "gpu_nonlocal_current_bytes": 31625216,
+        "gpu_local_budget_bytes": 5450498048,
+        "gpu_nonlocal_budget_bytes": 50488492032
+      }
+    ]
+  },
+  "samples": [
+    {
+      "record_ms": 0.8701,
+      "submit_ms": 0.0269,
+      "wait_ms": 2.6584,
+      "frame_ms": 3.5554,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8912,
+      "submit_ms": 0.0303,
+      "wait_ms": 2.6449,
+      "frame_ms": 3.5664,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8657,
+      "submit_ms": 0.0189,
+      "wait_ms": 2.6487,
+      "frame_ms": 3.5333,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.856,
+      "submit_ms": 0.0263,
+      "wait_ms": 2.6506,
+      "frame_ms": 3.533,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8606,
+      "submit_ms": 0.0192,
+      "wait_ms": 2.6542,
+      "frame_ms": 3.5341,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8944,
+      "submit_ms": 0.0412,
+      "wait_ms": 2.6576,
+      "frame_ms": 3.5932,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8895,
+      "submit_ms": 0.0274,
+      "wait_ms": 2.6768,
+      "frame_ms": 3.5938,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.928,
+      "submit_ms": 0.0327,
+      "wait_ms": 2.6698,
+      "frame_ms": 3.6305,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8784,
+      "submit_ms": 0.0347,
+      "wait_ms": 2.6512,
+      "frame_ms": 3.5643,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8699,
+      "submit_ms": 0.0283,
+      "wait_ms": 2.6542,
+      "frame_ms": 3.5524,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8727,
+      "submit_ms": 0.0257,
+      "wait_ms": 2.6696,
+      "frame_ms": 3.568,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8945,
+      "submit_ms": 0.0414,
+      "wait_ms": 2.6434,
+      "frame_ms": 3.5793,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8954,
+      "submit_ms": 0.0395,
+      "wait_ms": 2.653,
+      "frame_ms": 3.5879,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8703,
+      "submit_ms": 0.0285,
+      "wait_ms": 2.6442,
+      "frame_ms": 3.543,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8648,
+      "submit_ms": 0.0193,
+      "wait_ms": 2.65,
+      "frame_ms": 3.5341,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8571,
+      "submit_ms": 0.0201,
+      "wait_ms": 2.6539,
+      "frame_ms": 3.5311,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8689,
+      "submit_ms": 0.0218,
+      "wait_ms": 2.6473,
+      "frame_ms": 3.5381,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8645,
+      "submit_ms": 0.021,
+      "wait_ms": 2.6432,
+      "frame_ms": 3.5288,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8503,
+      "submit_ms": 0.0196,
+      "wait_ms": 2.6476,
+      "frame_ms": 3.5175,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8664,
+      "submit_ms": 0.0227,
+      "wait_ms": 2.6845,
+      "frame_ms": 3.5736,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8702,
+      "submit_ms": 0.0388,
+      "wait_ms": 2.6579,
+      "frame_ms": 3.567,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8808,
+      "submit_ms": 0.0335,
+      "wait_ms": 2.6466,
+      "frame_ms": 3.561,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8701,
+      "submit_ms": 0.0281,
+      "wait_ms": 2.6508,
+      "frame_ms": 3.5491,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8667,
+      "submit_ms": 0.0242,
+      "wait_ms": 2.654,
+      "frame_ms": 3.5449,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8791,
+      "submit_ms": 0.0425,
+      "wait_ms": 2.6733,
+      "frame_ms": 3.5949,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8756,
+      "submit_ms": 0.0339,
+      "wait_ms": 2.65,
+      "frame_ms": 3.5596,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8693,
+      "submit_ms": 0.0282,
+      "wait_ms": 2.6451,
+      "frame_ms": 3.5426,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8717,
+      "submit_ms": 0.0228,
+      "wait_ms": 2.6482,
+      "frame_ms": 3.5427,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8659,
+      "submit_ms": 0.024,
+      "wait_ms": 2.6634,
+      "frame_ms": 3.5533,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8791,
+      "submit_ms": 0.0447,
+      "wait_ms": 2.6602,
+      "frame_ms": 3.584,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8938,
+      "submit_ms": 0.0377,
+      "wait_ms": 2.6508,
+      "frame_ms": 3.5823,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8732,
+      "submit_ms": 0.0318,
+      "wait_ms": 2.6489,
+      "frame_ms": 3.554,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8549,
+      "submit_ms": 0.0509,
+      "wait_ms": 2.6581,
+      "frame_ms": 3.564,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8782,
+      "submit_ms": 0.0436,
+      "wait_ms": 2.6621,
+      "frame_ms": 3.5839,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8672,
+      "submit_ms": 0.0386,
+      "wait_ms": 2.6554,
+      "frame_ms": 3.5612,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8866,
+      "submit_ms": 0.0581,
+      "wait_ms": 2.6594,
+      "frame_ms": 3.6041,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8881,
+      "submit_ms": 0.0546,
+      "wait_ms": 2.6716,
+      "frame_ms": 3.6143,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8983,
+      "submit_ms": 0.0703,
+      "wait_ms": 2.6957,
+      "frame_ms": 3.6644,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9529,
+      "submit_ms": 0.067,
+      "wait_ms": 2.6586,
+      "frame_ms": 3.6785,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8947,
+      "submit_ms": 0.041,
+      "wait_ms": 2.6668,
+      "frame_ms": 3.6026,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9186,
+      "submit_ms": 0.062,
+      "wait_ms": 2.6561,
+      "frame_ms": 3.6367,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8805,
+      "submit_ms": 0.0282,
+      "wait_ms": 2.6675,
+      "frame_ms": 3.5762,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9259,
+      "submit_ms": 0.0553,
+      "wait_ms": 2.661,
+      "frame_ms": 3.6423,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8934,
+      "submit_ms": 0.049,
+      "wait_ms": 2.6564,
+      "frame_ms": 3.5988,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8724,
+      "submit_ms": 0.0389,
+      "wait_ms": 2.6534,
+      "frame_ms": 3.5648,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8727,
+      "submit_ms": 0.027,
+      "wait_ms": 2.6522,
+      "frame_ms": 3.5519,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8792,
+      "submit_ms": 0.0332,
+      "wait_ms": 2.6551,
+      "frame_ms": 3.5675,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8867,
+      "submit_ms": 0.0419,
+      "wait_ms": 2.6669,
+      "frame_ms": 3.5955,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8959,
+      "submit_ms": 0.0539,
+      "wait_ms": 2.6595,
+      "frame_ms": 3.6093,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9061,
+      "submit_ms": 0.0572,
+      "wait_ms": 2.6553,
+      "frame_ms": 3.6187,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.88,
+      "submit_ms": 0.0396,
+      "wait_ms": 2.6687,
+      "frame_ms": 3.5884,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8844,
+      "submit_ms": 0.0443,
+      "wait_ms": 2.6584,
+      "frame_ms": 3.5872,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8775,
+      "submit_ms": 0.0442,
+      "wait_ms": 2.6632,
+      "frame_ms": 3.5849,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.898,
+      "submit_ms": 0.0416,
+      "wait_ms": 2.6638,
+      "frame_ms": 3.6035,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8971,
+      "submit_ms": 0.0524,
+      "wait_ms": 2.6763,
+      "frame_ms": 3.6259,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9108,
+      "submit_ms": 0.0585,
+      "wait_ms": 2.6766,
+      "frame_ms": 3.646,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8996,
+      "submit_ms": 0.0526,
+      "wait_ms": 2.6614,
+      "frame_ms": 3.6136,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8896,
+      "submit_ms": 0.0592,
+      "wait_ms": 2.6689,
+      "frame_ms": 3.6177,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8994,
+      "submit_ms": 0.0539,
+      "wait_ms": 2.6601,
+      "frame_ms": 3.6135,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8922,
+      "submit_ms": 0.0478,
+      "wait_ms": 2.656,
+      "frame_ms": 3.5961,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8824,
+      "submit_ms": 0.0439,
+      "wait_ms": 2.6541,
+      "frame_ms": 3.5804,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8784,
+      "submit_ms": 0.0463,
+      "wait_ms": 2.6539,
+      "frame_ms": 3.5786,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9204,
+      "submit_ms": 0.0429,
+      "wait_ms": 2.6537,
+      "frame_ms": 3.6171,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8783,
+      "submit_ms": 0.044,
+      "wait_ms": 2.6608,
+      "frame_ms": 3.5831,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8974,
+      "submit_ms": 0.0421,
+      "wait_ms": 2.6567,
+      "frame_ms": 3.5963,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8746,
+      "submit_ms": 0.0405,
+      "wait_ms": 2.6465,
+      "frame_ms": 3.5616,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8492,
+      "submit_ms": 0.0269,
+      "wait_ms": 2.6583,
+      "frame_ms": 3.5344,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8735,
+      "submit_ms": 0.0554,
+      "wait_ms": 2.6458,
+      "frame_ms": 3.5748,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8751,
+      "submit_ms": 0.0342,
+      "wait_ms": 2.6455,
+      "frame_ms": 3.5548,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8606,
+      "submit_ms": 0.0274,
+      "wait_ms": 2.6396,
+      "frame_ms": 3.5276,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8368,
+      "submit_ms": 0.0204,
+      "wait_ms": 2.646,
+      "frame_ms": 3.5032,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.881,
+      "submit_ms": 0.0332,
+      "wait_ms": 2.652,
+      "frame_ms": 3.5662,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8782,
+      "submit_ms": 0.0426,
+      "wait_ms": 2.6507,
+      "frame_ms": 3.5715,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8835,
+      "submit_ms": 0.0464,
+      "wait_ms": 2.6639,
+      "frame_ms": 3.5939,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9105,
+      "submit_ms": 0.0642,
+      "wait_ms": 2.6492,
+      "frame_ms": 3.6239,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8832,
+      "submit_ms": 0.0401,
+      "wait_ms": 2.6378,
+      "frame_ms": 3.5612,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8605,
+      "submit_ms": 0.0232,
+      "wait_ms": 2.6421,
+      "frame_ms": 3.5258,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8661,
+      "submit_ms": 0.0234,
+      "wait_ms": 2.6393,
+      "frame_ms": 3.5289,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8754,
+      "submit_ms": 0.0254,
+      "wait_ms": 2.641,
+      "frame_ms": 3.5418,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 1.0003,
+      "submit_ms": 0.1085,
+      "wait_ms": 2.6642,
+      "frame_ms": 3.7731,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8731,
+      "submit_ms": 0.0329,
+      "wait_ms": 2.6541,
+      "frame_ms": 3.5602,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8714,
+      "submit_ms": 0.0246,
+      "wait_ms": 2.6548,
+      "frame_ms": 3.5508,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8663,
+      "submit_ms": 0.0281,
+      "wait_ms": 2.647,
+      "frame_ms": 3.5415,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8576,
+      "submit_ms": 0.0262,
+      "wait_ms": 2.6554,
+      "frame_ms": 3.5393,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8675,
+      "submit_ms": 0.0303,
+      "wait_ms": 2.7019,
+      "frame_ms": 3.5998,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.893,
+      "submit_ms": 0.048,
+      "wait_ms": 2.6556,
+      "frame_ms": 3.5966,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.872,
+      "submit_ms": 0.0339,
+      "wait_ms": 2.6474,
+      "frame_ms": 3.5534,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8637,
+      "submit_ms": 0.0237,
+      "wait_ms": 2.6492,
+      "frame_ms": 3.5366,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8983,
+      "submit_ms": 0.0303,
+      "wait_ms": 2.6422,
+      "frame_ms": 3.5708,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.867,
+      "submit_ms": 0.0361,
+      "wait_ms": 2.6483,
+      "frame_ms": 3.5514,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8688,
+      "submit_ms": 0.0232,
+      "wait_ms": 2.6497,
+      "frame_ms": 3.5418,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8662,
+      "submit_ms": 0.0214,
+      "wait_ms": 2.6525,
+      "frame_ms": 3.5401,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8823,
+      "submit_ms": 0.0247,
+      "wait_ms": 2.646,
+      "frame_ms": 3.5531,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8953,
+      "submit_ms": 0.0241,
+      "wait_ms": 2.6555,
+      "frame_ms": 3.5749,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8829,
+      "submit_ms": 0.0292,
+      "wait_ms": 2.6514,
+      "frame_ms": 3.5635,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8562,
+      "submit_ms": 0.0297,
+      "wait_ms": 2.6545,
+      "frame_ms": 3.5405,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8829,
+      "submit_ms": 0.0331,
+      "wait_ms": 2.6559,
+      "frame_ms": 3.572,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8584,
+      "submit_ms": 0.0203,
+      "wait_ms": 2.6704,
+      "frame_ms": 3.5492,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8923,
+      "submit_ms": 0.041,
+      "wait_ms": 2.6496,
+      "frame_ms": 3.583,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8808,
+      "submit_ms": 0.0235,
+      "wait_ms": 2.6596,
+      "frame_ms": 3.5639,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8977,
+      "submit_ms": 0.0427,
+      "wait_ms": 2.6502,
+      "frame_ms": 3.5906,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.875,
+      "submit_ms": 0.0213,
+      "wait_ms": 2.649,
+      "frame_ms": 3.5454,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9001,
+      "submit_ms": 0.0422,
+      "wait_ms": 2.6627,
+      "frame_ms": 3.605,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.877,
+      "submit_ms": 0.0232,
+      "wait_ms": 2.6591,
+      "frame_ms": 3.5593,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8754,
+      "submit_ms": 0.0542,
+      "wait_ms": 2.6586,
+      "frame_ms": 3.5883,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8559,
+      "submit_ms": 0.0381,
+      "wait_ms": 2.6619,
+      "frame_ms": 3.556,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8806,
+      "submit_ms": 0.0362,
+      "wait_ms": 2.6663,
+      "frame_ms": 3.5831,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9063,
+      "submit_ms": 0.0544,
+      "wait_ms": 2.6577,
+      "frame_ms": 3.6184,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8821,
+      "submit_ms": 0.0479,
+      "wait_ms": 2.6693,
+      "frame_ms": 3.5993,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9282,
+      "submit_ms": 0.0668,
+      "wait_ms": 2.7098,
+      "frame_ms": 3.7049,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9087,
+      "submit_ms": 0.0621,
+      "wait_ms": 2.6687,
+      "frame_ms": 3.6395,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9246,
+      "submit_ms": 0.0659,
+      "wait_ms": 2.6695,
+      "frame_ms": 3.66,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9229,
+      "submit_ms": 0.0678,
+      "wait_ms": 2.7176,
+      "frame_ms": 3.7083,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9093,
+      "submit_ms": 0.0572,
+      "wait_ms": 2.6745,
+      "frame_ms": 3.641,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.891,
+      "submit_ms": 0.0503,
+      "wait_ms": 2.6914,
+      "frame_ms": 3.6327,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9253,
+      "submit_ms": 0.0792,
+      "wait_ms": 2.6884,
+      "frame_ms": 3.693,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.8961,
+      "submit_ms": 0.0654,
+      "wait_ms": 2.6794,
+      "frame_ms": 3.6409,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9162,
+      "submit_ms": 0.064,
+      "wait_ms": 2.6676,
+      "frame_ms": 3.6479,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9003,
+      "submit_ms": 0.0595,
+      "wait_ms": 2.6719,
+      "frame_ms": 3.6317,
+      "gpu_ms": null
+    },
+    {
+      "record_ms": 0.9074,
+      "submit_ms": 0.065,
+      "wait_ms": 2.6777,
+      "frame_ms": 3.6501,
+      "gpu_ms": null
+    }
+  ],
+  "run": 2,
+  "sdk_commit": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+  "sdk_source_sha256": null,
+  "measured_at_utc": "2026-10-21T05:26:23.830508+00:00",
+  "executable_sha256": "e63752325bfb13e66c0b94a5b637960d88f3eac34909c8b144b85ae9e36f9273",
+  "contract": {
+    "revision": 4,
+    "resource_policy": "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+    "threads": 1,
+    "buffer_bytes": null,
+    "texture_extent": [
+      64,
+      64
+    ],
+    "texture_format": "rgba8_unorm",
+    "mip_levels": 1,
+    "samples": 1,
+    "vsync": "not_applicable_headless",
+    "compiler_optimization": "/O2",
+    "runtime": "/MD",
+    "lto": false,
+    "frames_in_flight": 1,
+    "gpu_work": "vertex_id_triangle_no_blend_no_depth_no_cull",
+    "gpu_timestamps": false,
+    "shader_fnv1a64": "12120010083042245506",
+    "payload_bytes": 0,
+    "telemetry": {
+      "revision": 1,
+      "scope": "measured_batch_after_warmup_before_post_readback_v1",
+      "cpu_normalization": "one_logical_cpu_100_percent_all_process_threads",
+      "cpu_source": "GetProcessTimes_kernel_plus_user_100ns_units",
+      "cpu_memory": "GetProcessMemoryInfo_process_lifetime_peaks_and_checkpoint_current",
+      "gpu_memory": "DXGI_QueryVideoMemoryInfo_process_current_usage_node_0_local_nonlocal",
+      "checkpoints": "baseline_then_allocation_live_if_applicable_then_each_sample_end",
+      "observer_cost": "included_in_batch_cpu_and_wall_allocation_frame_includes_live_checkpoint",
+      "gpu_peak": "maximum_of_checkpoints_lower_bound_not_continuous_peak"
+    }
+  }
+}

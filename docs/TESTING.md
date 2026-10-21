@@ -122,3 +122,28 @@ Initial Diligent data whose contract mislabeled its start resolve are preserved 
 exploration; corrected metadata came from new processes, not rewritten observations.
 See [timestamp report](GPU_TIMESTAMP_BENCHMARK_REPORT.md) and validation `final-summary.json`
 under `benchmarks/reports/validation/2026-10-21-timestamps`.
+
+2026-10-21 CPU/memory observer: common profile CTest 17/17 and core CTest 4/4 passed.
+The CPU observer arithmetic test covers 9 conditions, including >100% process-thread sums,
+same counter zero, near-UINT64_MAX subtraction and invalid wall/counter intervals. Python
+tests passed 41/41, covering observer opt-in, GPU LUID/node, finite consistent CPU values,
+checkpoint order/completeness, live-allocation observations, lifetime peak monotonicity,
+process-level aggregation and refusal to mix instrumented/uninstrumented contracts.
+
+25 native process runs validated all supported common observer paths, GPU timestamp
+coexistence and warmup=0. Three additional uninstrumented draw processes preserved the
+default telemetry=null contract. Performance evidence is separate: 63 processes / 5,760
+workload samples, 3 runs per SDK/scenario; allocation uses 20 samples after 3 warmups,
+other workloads use 120 after 20. CPU observations are process-batch values, not per-frame
+utilization samples. Pipeline batches were too short for reliable CPU accounting (raw zeros
+are preserved and reported as inconclusive). GPU memory maxima are checkpoint bounds,
+not continuously observed transient peaks or leak-stress acceptance.
+
+The initial LLGL upload native test failed with COPY_SOURCE used as COPY_DEST. It reproduced
+with the observer disabled. The pinned public full-region WriteTexture path lacks a transition
+after ReadTexture; all three LLGL uploads are now rejected before runner output/execution
+and by the direct CLI. Failed logs are preserved and excluded from performance evidence.
+Historical LLGL upload observations are not current validation acceptance. Current upload
+measurements cover SDL3/GraphicsSDK. Vendor sources, core SDK and SDK ZIP were unchanged.
+Optional Diligent/bgfx/Forge observer profiles, continuous GPU peaks, cache control and remote
+CI were not executed. See [CPU/memory report](CPU_MEMORY_BENCHMARK_REPORT.md).
