@@ -14,6 +14,7 @@ public:
     [[nodiscard]] virtual Result<void> copyBufferToTexture(const BufferPtr&, const TexturePtr&) = 0;
     [[nodiscard]] virtual Result<void> copyTextureToBuffer(const TexturePtr&, const BufferPtr&) = 0;
     [[nodiscard]] virtual Result<void> beginRenderPass(const TexturePtr&, Color clear) = 0;
+    [[nodiscard]] virtual Result<void> beginRenderPass(const RenderPassDesc&) = 0;
     [[nodiscard]] virtual Result<void> endRenderPass() = 0;
     [[nodiscard]] virtual Result<void> setPipeline(const PipelinePtr&) = 0;
     // A sampled pipeline declares a single fragment texture t0, space0, sampler s0.

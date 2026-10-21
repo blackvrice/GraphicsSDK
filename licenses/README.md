@@ -104,3 +104,10 @@ The graphics binding expansion has fresh
 with adjacent notices: 17 own compiler-read inputs / 1 component and 975 inputs / 22 components.
 The new binding SDK ZIP and both snapshots passed `--check`. Original packages and prior
 inventories remain historical; no new external dependency or competitor modification was added.
+
+The Depth/MRT extension has separate
+[SDK](generated/windows-sdk-depth-mrt-release/inventory.json) and
+[common benchmark](generated/windows-benchmarks-depth-mrt-release/inventory.json) inventories,
+with adjacent notices: 19 own compiler-read inputs / 1 component and 977 inputs / 22 components.
+The fresh SDK ZIP and both snapshots passed `--check`. All earlier packages, source archives,
+measurements and inventories remain preserved; no external dependency or competitor code changed.

@@ -18,7 +18,7 @@ Texture::footprint는 buffer-texture copy의 총 바이트, aligned rowPitch,
 유효 rowBytes 및 높이를 반환한다. 행 padding을 이미지 데이터로 해석하지 않는다.
 Buffer::write는 Upload, Buffer::read는 Readback 메모리에만 허용한다.
 
-CommandList는 transition, copy, 단일 color render pass, pipeline, resource/vertex/index binding,
+CommandList는 transition, copy, color/depth render pass, pipeline, resource/vertex/index binding,
 scissor, draw/indexed draw/instancing, debug marker, 2개 timestamp 슬롯을 지원한다.
 GPU timestamp read는 resolve 후 submit fence 완료 시에만 가능하다.
 
@@ -133,3 +133,60 @@ caps.bindingLayouts는 현재 D3D12에서 true다. shader stage spoof/missing/ty
 comparison sampler, unbounded array, cube/3D/MSAA/integer texture는 Unsupported다.
 지원 resource 종류는 reflectShader의 type, cbuffer 크기는 minimumBytes로 확인할 수 있다.
 새 virtual 함수와 descriptor 변경이 있으므로 개발 버전 consumer는 헤더·라이브러리를 함께 재빌드한다.
+
+## Depth/MRT와 render pass
+
+`Format::D32Float`은 `TextureDesc::depthStencil=true`로 생성하는 단일 mip/layer 깊이 형식이다.
+renderTarget은 false여야 한다. RGBA8UNorm/RGBA16Float은 color 형식이며 depthStencil을
+설정하지 않는다. `validateTextureDescription`은 이 계약과 1..16384 extent를 GPU 없이 검사한다.
+D32 buffer copy/upload/readback은 기존 footprint/rowPitch 계약을 사용한다. sampling은 지원하지 않는다.
+
+기존 pipeline의 colorFormat은 단일 color layout이다. 선택형 `renderTargets`를 설정하면
+colorFormat 대신 해당 layout을 사용한다. 최대 8개 colors를 서로 다른 color 형식으로 구성할 수 있고,
+depth에는 D32Float 하나를 지정한다. colors가 비어 있고 depth가 있는 depth-only layout도 가능하다.
+`DepthState`의 testEnabled/writeEnabled/compare는 pipeline에 고정된다. writeEnabled는
+testEnabled가 필요하고 둘 중 하나를 켜면 depth 형식이 있어야 한다. CompareOp는 Never/Less/Equal/
+LessEqual/Greater/NotEqual/GreaterEqual/Always다. `validateRenderTargets`가 구조를 검사한다.
+
+```cpp
+auto z = device->createTexture({width, height, gfx::Format::D32Float, false, true});
+gfx::GraphicsPipelineDesc desc{vertexShader, twoOutputFragmentShader};
+desc.renderTargets = gfx::RenderTargetLayout{
+    {gfx::Format::RGBA8UNorm, gfx::Format::RGBA16Float}, gfx::Format::D32Float
+};
+desc.depthState = {true, true, gfx::CompareOp::Less};
+// Create pipeline, begin commands and transition color0/color1 to RenderTarget, z to DepthWrite.
+gfx::RenderPassDesc pass{
+    {{color0, gfx::LoadOp::Clear, {0,0,0,1}},
+     {color1, gfx::LoadOp::Clear, {0,0,0,1}}},
+    {z.value(), gfx::LoadOp::Clear, 1.0f, false}
+};
+auto begun = commands->beginRenderPass(pass);
+```
+
+fragment shader는 모든 color slot에 대응하는 floating-point `SV_Target0..N-1` 출력을 제공해야 한다.
+누락·범위 초과·integer 출력은 pipeline 생성 전에 거부한다. 현재 fragment depth/coverage/stencil
+export는 Unsupported다. depth-only pipeline은 fragment bytecode를 생략할 수 있다.
+깊이 값은 VS의 SV_Position에서 공급한다. `alphaBlend`는 모든 color target에 같은 blend를 적용한다.
+개별 target별 독립 blend/mask 설정은 아직 없다.
+
+`beginRenderPass(RenderPassDesc)`는 최소 color 하나 또는 depth 하나를 받는다. attachment는 같은
+장치·같은 width/height이고 서로 중복되지 않아야 한다. color는 renderTarget usage와 RenderTarget
+상태가 필요하다. depth는 depthStencil usage와 DepthWrite 상태가 필요하다.
+DepthAttachment::readOnly=true면 DepthRead 상태와 Load를 사용하며 draw의 depth write를 거부한다.
+Clear는 색/깊이를 초기화하고 Load는 기존 내용을 유지한다. 모든 attachment는 end 뒤에도 저장한다.
+Load의 내용은 호출자가 이전 clear/draw/copy로 초기화해야 하며, 아직 기록하지 않은 내용을 자동
+정의하지 않는다. clear color는 유한 값, depth clear는 유한한 0..1이어야 한다.
+
+`validateRenderPass`는 attachment usage/크기/중복/load/clear를 검사한다. beginRenderPass는
+추가로 device/state를 모두 확인한 다음에만 clear/bind를 기록하므로 실패한 요청이 일부 attachment를
+변경하지 않는다. viewport/scissor는 pass 전체 extent로 초기화한다. pass 중 transition/copy/nested pass,
+pass를 닫지 않은 command end는 거부한다. endRenderPass 뒤에도 pipeline/binding은 유지된다.
+draw는 pipeline의 color count/순서별 format, depth 유무/format, read-only access를 확인한다.
+
+기존 `beginRenderPass(texture, clear)`는 depth 없는 단일 color Clear pass의 shorthand다.
+depth texture는 Common/CopySource/CopyDestination/DepthWrite/DepthRead 상태를 사용하고,
+color texture·buffer에는 DepthWrite/DepthRead를 허용하지 않는다. D32의 ShaderRead/Present/
+RenderTarget도 거부한다. 모든 attachment는 기존 submit version 검사와 fence retention에 참여한다.
+caps.depthAttachment/multipleRenderTargets는 D3D12에서 true다. 새 virtual 함수와 descriptor로
+개발 버전 consumer는 다시 빌드해야 한다. Stencil, MSAA/resolve, discard/store 선택, subpass는 미지원이다.

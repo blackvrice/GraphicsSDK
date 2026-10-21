@@ -7,6 +7,10 @@
 * core_contracts: backend advertising, Unsupported errors, invalid shader inputs.
 * vertex_layout_contracts: portable input-layout limits, semantics, format, offset/stride and rate validation.
 * binding_layout_contracts: portable graphics register/space/visibility limits and overlap rejection.
+* render_pass_contracts: portable texture usage, output layout, attachment size/duplicate/load/clear contracts.
+* render_pass_gpu / render_pass_validation / render_pass_warp: 61 complete color/depth images,
+  eight compare functions and write masks, read-only/depth-only passes, mixed-format eight-MRT,
+  load preservation, alpha blending, postprocess, D32 copies, atomic rejection and lifetime/version checks.
 * resource_bindings_gpu / resource_bindings_validation / resource_bindings_warp: Texture2D/CBV arrays,
   VS/PS register reuse, nonzero spaces, immutable snapshots, point/linear clamp/repeat references,
   full image readback, malformed sets, shader compatibility, descriptor capacity, state/version/
@@ -94,6 +98,12 @@ external GPU import, and PIX/RenderDoc vendor profiler captures are unverified.
 Hidden-window presentation does not establish interactive window-system acceptance.
 Validation error count does not by itself prove absence of every leak or data race.
 CI configuration is provided separately; creating the file does not mean a remote run passed.
+
+2026-10-21 Depth/MRT expansion: SDK CTest 16/16, Windows backend-disabled CTest 4/4,
+common benchmark CTest 72/72, Python 56/56 and the installed consumer passed without skips.
+The new render tests each verified 61 complete color/depth images on hardware, debug+GBV and WARP;
+debug+GBV ERROR/CORRUPTION remained zero. The installed package consumer verified 1,024 rendered
+pixels. [Depth/MRT report](PHASE2_DEPTH_MRT_REPORT.md) records exact scope and limitations.
 
 The final bgfx upload path references the immutable campaign source with makeRef. The original
 copy-based exploratory campaigns are retained and excluded from final comparisons. All seven

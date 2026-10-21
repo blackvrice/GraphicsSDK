@@ -209,3 +209,9 @@ Phase 2 graphics binding 확장은 별도
 생성했다. 각각 17개 입력/자체 구성요소 1개, 975개 입력/구성요소 22개이며 인접 notices를 보존한다.
 새 SDK ZIP과 두 `--check`가 통과했다. 기존 SDK/vertex-input ZIP과 과거 inventory는 그대로다.
 신규 외부 의존성과 competitor 수정은 없으며 위 compiler-read/package 감사 범위를 유지한다.
+
+Depth/MRT 확장은 별도 [SDK inventory](../licenses/generated/windows-sdk-depth-mrt-release/inventory.json)와
+[공통 benchmark inventory](../licenses/generated/windows-benchmarks-depth-mrt-release/inventory.json)를
+추가했다. 각각 compiler-read 입력 19개/자체 구성요소 1개와 입력 977개/구성요소 22개다.
+새 SDK ZIP과 두 `--check`가 통과했고 인접 고지문을 보존한다. 새 외부 의존성과 competitor 수정은
+없으며 최초 SDK/vertex-input/bindings ZIP과 모든 과거 감사·측정·소스 archive를 보존한다.

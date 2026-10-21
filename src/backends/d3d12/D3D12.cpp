@@ -2,6 +2,8 @@
 #include <Windows.h>
 #include <d3d12.h>
 #include <d3d12sdklayers.h>
+#include <d3d12shader.h>
+#include <d3dcompiler.h>
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 #include <algorithm>
@@ -22,8 +24,10 @@ auto failed(HRESULT code, std::string operation) {
         code == DXGI_ERROR_DEVICE_REMOVED || code == DXGI_ERROR_DEVICE_RESET || code == DXGI_ERROR_DEVICE_HUNG ? ErrorCode::DeviceLost : ErrorCode::BackendFailure;
     return std::unexpected(Error{kind, std::move(operation), code});
 }
-DXGI_FORMAT native(Format format) { return format == Format::RGBA8UNorm ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R16G16B16A16_FLOAT; }
-bool validFormat(Format format) { return format == Format::RGBA8UNorm || format == Format::RGBA16Float; }
+DXGI_FORMAT native(Format format) {
+    switch(format){case Format::RGBA8UNorm:return DXGI_FORMAT_R8G8B8A8_UNORM;case Format::RGBA16Float:return DXGI_FORMAT_R16G16B16A16_FLOAT;case Format::D32Float:return DXGI_FORMAT_D32_FLOAT;}
+    return DXGI_FORMAT_UNKNOWN;
+}
 DXGI_FORMAT native(VertexFormat format) {
     switch(format) {
     case VertexFormat::Float:return DXGI_FORMAT_R32_FLOAT;
@@ -48,10 +52,12 @@ D3D12_RESOURCE_STATES native(ResourceState state) {
     case ResourceState::IndexBuffer:return D3D12_RESOURCE_STATE_INDEX_BUFFER;
     case ResourceState::VertexAndIndexBuffer:return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER|D3D12_RESOURCE_STATE_INDEX_BUFFER;
     case ResourceState::ConstantBuffer:return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+    case ResourceState::DepthWrite:return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+    case ResourceState::DepthRead:return D3D12_RESOURCE_STATE_DEPTH_READ;
     }
     return D3D12_RESOURCE_STATE_COMMON;
 }
-bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::ConstantBuffer; }
+bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::DepthRead; }
 D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
     return visibility==ShaderVisibility::Vertex?D3D12_SHADER_VISIBILITY_VERTEX:visibility==ShaderVisibility::Fragment?D3D12_SHADER_VISIBILITY_PIXEL:D3D12_SHADER_VISIBILITY_ALL;
 }
@@ -173,6 +179,7 @@ struct DXTexture final : Texture {
     std::shared_ptr<Tracker> tracker{std::make_shared<Tracker>()};
     ComPtr<ID3D12Resource> resource;
     ComPtr<ID3D12DescriptorHeap> rtv;
+    ComPtr<ID3D12DescriptorHeap> dsv;
     TextureDesc desc;
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT placed{};
     TextureFootprint layout;
@@ -190,6 +197,16 @@ struct DXTexture final : Texture {
             if (FAILED(result)) return failed(result, "Create RTV heap failed");
             owner->device->CreateRenderTargetView(resource.Get(), nullptr, rtv->GetCPUDescriptorHandleForHeapStart());
         }
+        if(desc.depthStencil) {
+            D3D12_DESCRIPTOR_HEAP_DESC heap{};heap.Type=D3D12_DESCRIPTOR_HEAP_TYPE_DSV;heap.NumDescriptors=2;
+            HRESULT result=owner->device->CreateDescriptorHeap(&heap,IID_PPV_ARGS(&dsv));
+            if(FAILED(result))return failed(result,"Create DSV heap failed");
+            auto handle=dsv->GetCPUDescriptorHandleForHeapStart();
+            D3D12_DEPTH_STENCIL_VIEW_DESC view{};view.Format=DXGI_FORMAT_D32_FLOAT;view.ViewDimension=D3D12_DSV_DIMENSION_TEXTURE2D;
+            owner->device->CreateDepthStencilView(resource.Get(),&view,handle);
+            handle.ptr+=owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);view.Flags=D3D12_DSV_FLAG_READ_ONLY_DEPTH;
+            owner->device->CreateDepthStencilView(resource.Get(),&view,handle);
+        }
         return {};
     }
 };
@@ -198,7 +215,8 @@ struct DXPipeline final : Pipeline {
     std::shared_ptr<State> owner;
     ComPtr<ID3D12PipelineState> pso;
     ComPtr<ID3D12RootSignature> root;
-    Format format{};
+    RenderTargetLayout renderTargets;
+    DepthState depthState;
     bool sampled{};
     BindingLayout bindings;
     std::vector<UINT> minimumBytes;
@@ -217,7 +235,10 @@ struct DXCommands final : CommandList {
     std::unordered_set<IUnknown*> retained;
     std::vector<Use> uses;
     std::shared_ptr<DXPipeline> pipeline;
-    std::shared_ptr<DXTexture> target;
+    std::vector<std::shared_ptr<DXTexture>> colorTargets;
+    std::shared_ptr<DXTexture> depthTarget;
+    UINT passWidth{},passHeight{};
+    bool depthReadOnly{};
     struct VertexBinding { std::shared_ptr<DXBuffer> buffer; UINT stride{},size{}; std::uint64_t offset{}; };
     std::array<VertexBinding,32> vertexBuffers{};
     std::shared_ptr<DXBuffer> indexBuffer;
@@ -275,7 +296,7 @@ struct DXCommands final : CommandList {
         if (recording || (submitted && *done < submitted)) return invalid("Command allocator is still recording or in flight");
         HRESULT result = allocator->Reset(); if (FAILED(result)) return failed(result, "Allocator reset failed");
         result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return failed(result, "Command list reset failed");
-        references.clear(); retained.clear(); uses.clear(); pipeline.reset(); target.reset();
+        references.clear(); retained.clear(); uses.clear(); pipeline.reset(); colorTargets.clear();depthTarget.reset();passWidth=passHeight=0;depthReadOnly=false;
         boundResources.clear();
         vertexBuffers={};indexBuffer.reset();indexSize=indexElementSize=0;
         descriptorCount = 0; submitted = 0; renderPass = false; recording = true; ended = false;
@@ -296,8 +317,10 @@ struct DXCommands final : CommandList {
     Result<void> transition(const TexturePtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
+        const bool depth=(*object)->desc.depthStencil;
         if (!validState(next) || vertexState(next) || indexState(next) || next==ResourceState::ConstantBuffer || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
-            (next == ResourceState::Present && !(*object)->backbuffer) || (next == ResourceState::ShaderRead && (*object)->backbuffer))
+            (next == ResourceState::Present && !(*object)->backbuffer) || (next == ResourceState::ShaderRead && ((*object)->backbuffer || depth)) ||
+            ((next==ResourceState::DepthWrite || next==ResourceState::DepthRead) && !depth))
             return invalid("Invalid texture state", ErrorCode::InvalidArgument);
         return change(use((*object)->tracker, (*object)->resource), next);
     }
@@ -338,18 +361,46 @@ struct DXCommands final : CommandList {
     Result<void> beginRenderPass(const TexturePtr& ptr, Color clear) override {
         auto status = ready(true); if (!status) return status;
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
-        if (!(*object)->desc.renderTarget || use((*object)->tracker, (*object)->resource).state != ResourceState::RenderTarget) return invalid("Render target must be in RenderTarget state");
-        target = *object; retain(target->rtv); renderPass = true;
-        auto handle = target->rtv->GetCPUDescriptorHandleForHeapStart();
-        float color[]{clear.r, clear.g, clear.b, clear.a};
-        list->OMSetRenderTargets(1, &handle, FALSE, nullptr); list->ClearRenderTargetView(handle, color, 0, nullptr);
-        D3D12_VIEWPORT viewport{0, 0, static_cast<float>(target->desc.width), static_cast<float>(target->desc.height), 0, 1};
-        D3D12_RECT scissor{0, 0, static_cast<LONG>(target->desc.width), static_cast<LONG>(target->desc.height)};
+        return beginRenderPass(RenderPassDesc{{{ptr,LoadOp::Clear,clear}}, {}});
+    }
+    Result<void> beginRenderPass(const RenderPassDesc& pass) override {
+        auto status=ready(true);if(!status)return status;
+        status=validateRenderPass(pass);if(!status)return status;
+        std::vector<std::shared_ptr<DXTexture>> colors;
+        std::shared_ptr<DXTexture> depth;
+        // Validate all attachments before clearing or mutating the current pass.
+        for(const auto& attachment:pass.colors) {
+            auto object=owned<DXTexture>(attachment.texture);if(!object)return std::unexpected(object.error());
+            if(current(**object)!=ResourceState::RenderTarget)return invalid("Color attachment requires RenderTarget state");
+            colors.push_back(*object);
+        }
+        if(pass.depth.texture) {
+            auto object=owned<DXTexture>(pass.depth.texture);if(!object)return std::unexpected(object.error());
+            if(current(**object)!=(pass.depth.readOnly?ResourceState::DepthRead:ResourceState::DepthWrite))return invalid("Depth attachment state does not match pass access");
+            depth=*object;
+        }
+        const auto& extent=colors.empty()?depth:colors.front();
+        passWidth=extent->desc.width;passHeight=extent->desc.height;
+        std::array<D3D12_CPU_DESCRIPTOR_HANDLE,8> handles{};
+        for(UINT i=0;i<colors.size();++i) {
+            use(colors[i]->tracker,colors[i]->resource);retain(colors[i]->rtv);handles[i]=colors[i]->rtv->GetCPUDescriptorHandleForHeapStart();
+            if(pass.colors[i].load==LoadOp::Clear){const auto c=pass.colors[i].clear;float clear[]{c.r,c.g,c.b,c.a};list->ClearRenderTargetView(handles[i],clear,0,nullptr);}
+        }
+        D3D12_CPU_DESCRIPTOR_HANDLE depthHandle{};
+        if(depth) {
+            use(depth->tracker,depth->resource);retain(depth->dsv);depthHandle=depth->dsv->GetCPUDescriptorHandleForHeapStart();
+            if(pass.depth.readOnly)depthHandle.ptr+=owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+            if(pass.depth.load==LoadOp::Clear)list->ClearDepthStencilView(depthHandle,D3D12_CLEAR_FLAG_DEPTH,pass.depth.clear,0,0,nullptr);
+        }
+        list->OMSetRenderTargets(static_cast<UINT>(colors.size()),colors.empty()?nullptr:handles.data(),FALSE,depth?&depthHandle:nullptr);
+        colorTargets=std::move(colors);depthTarget=std::move(depth);depthReadOnly=pass.depth.readOnly;renderPass=true;
+        D3D12_VIEWPORT viewport{0,0,static_cast<float>(passWidth),static_cast<float>(passHeight),0,1};
+        D3D12_RECT scissor{0,0,static_cast<LONG>(passWidth),static_cast<LONG>(passHeight)};
         list->RSSetViewports(1, &viewport); list->RSSetScissorRects(1, &scissor); return {};
     }
     Result<void> endRenderPass() override {
         auto status = ready(); if (!status) return status;
-        if (!renderPass) return invalid("No active render pass"); renderPass = false; target.reset(); return {};
+        if (!renderPass) return invalid("No active render pass"); renderPass = false;colorTargets.clear();depthTarget.reset();passWidth=passHeight=0;depthReadOnly=false;return {};
     }
     Result<void> setPipeline(const PipelinePtr& ptr) override {
         auto status = ready(); if (!status) return status;
@@ -383,7 +434,7 @@ struct DXCommands final : CommandList {
         for(const auto& binding:bindings.textures) {
             auto at=slot(binding.binding,binding.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());
             auto object=owned<DXTexture>(binding.texture);if(!object)return std::unexpected(object.error());
-            if((*object)->backbuffer || current(**object)!=ResourceState::ShaderRead)return invalid("Texture binding requires ShaderRead");
+            if((*object)->backbuffer || (*object)->desc.depthStencil || current(**object)!=ResourceState::ShaderRead)return invalid("Texture binding requires a color texture in ShaderRead");
             snapshot[*at].texture=*object;
         }
         for(const auto& binding:bindings.constants) {
@@ -425,7 +476,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> setScissor(UINT x, UINT y, UINT width, UINT height) override {
         auto status = ready(); if (!status) return status;
-        if (!renderPass || !width || !height || x > target->desc.width || y > target->desc.height || width > target->desc.width-x || height > target->desc.height-y)
+        if (!renderPass || !width || !height || x > passWidth || y > passHeight || width > passWidth-x || height > passHeight-y)
             return invalid("Scissor outside target", ErrorCode::InvalidArgument);
         D3D12_RECT rect{static_cast<LONG>(x), static_cast<LONG>(y), static_cast<LONG>(x+width), static_cast<LONG>(y+height)};
         list->RSSetScissorRects(1, &rect); return {};
@@ -459,7 +510,10 @@ struct DXCommands final : CommandList {
     }
     Result<void> drawReady() {
         auto status = ready(); if (!status) return status;
-        if (!renderPass || !pipeline || pipeline->format != target->desc.format || (pipeline->descriptorSize && !textureBound)) return invalid("Draw requires compatible target, pipeline and bindings");
+        if (!renderPass || !pipeline || (pipeline->descriptorSize && !textureBound)) return invalid("Draw requires compatible target, pipeline and bindings");
+        if(pipeline->renderTargets.colors.size()!=colorTargets.size() || pipeline->renderTargets.depth.has_value()!=static_cast<bool>(depthTarget))return invalid("Pipeline attachment count/depth does not match pass");
+        for(size_t i=0;i<colorTargets.size();++i)if(pipeline->renderTargets.colors[i]!=colorTargets[i]->desc.format)return invalid("Pipeline color formats do not match pass");
+        if(depthTarget && (*pipeline->renderTargets.depth!=depthTarget->desc.format || (depthReadOnly && pipeline->depthState.writeEnabled)))return invalid("Pipeline depth format/access does not match pass");
         for(const auto& resource:boundResources) {
             if(resource.texture && current(*resource.texture)!=ResourceState::ShaderRead)return invalid("Bound texture state changed; restore ShaderRead before draw");
             if(resource.buffer && current(*resource.buffer)!=ResourceState::ConstantBuffer)return invalid("Bound constant buffer state changed; restore ConstantBuffer before draw");
@@ -585,12 +639,13 @@ public:
     }
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
-        if (!desc.width || !desc.height || desc.width > 16384 || desc.height > 16384 || !validFormat(desc.format)) return invalid("Invalid texture description", ErrorCode::InvalidArgument);
+        status=validateTextureDescription(desc);if(!status)return std::unexpected(status.error());
         auto texture = std::make_shared<DXTexture>(); texture->owner = state; texture->desc = desc;
         D3D12_RESOURCE_DESC nativeDesc{};
         nativeDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; nativeDesc.Width = desc.width; nativeDesc.Height = desc.height;
         nativeDesc.DepthOrArraySize = 1; nativeDesc.MipLevels = 1; nativeDesc.Format = native(desc.format); nativeDesc.SampleDesc.Count = 1;
         if (desc.renderTarget) nativeDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+        if(desc.depthStencil)nativeDesc.Flags=D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL|D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
         D3D12_HEAP_PROPERTIES heap{}; heap.Type = D3D12_HEAP_TYPE_DEFAULT;
         HRESULT result = state->device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&texture->resource));
         if (FAILED(result)) return failed(result, "Create texture failed");
@@ -599,9 +654,12 @@ public:
     }
     Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
-        if (desc.vertex.stage != ShaderStage::Vertex || desc.fragment.stage != ShaderStage::Fragment || desc.vertex.bytes.empty() || desc.fragment.bytes.empty() || !validFormat(desc.colorFormat)) return invalid("Invalid graphics pipeline shaders/format", ErrorCode::InvalidArgument);
+        const auto targets=desc.renderTargets.value_or(RenderTargetLayout{{desc.colorFormat},{}});
+        status=validateRenderTargets(targets,desc.depthState);if(!status)return std::unexpected(status.error());
+        const bool hasFragment=!desc.fragment.bytes.empty();
+        if (desc.vertex.stage != ShaderStage::Vertex || desc.vertex.bytes.empty() || (hasFragment && desc.fragment.stage!=ShaderStage::Fragment) || (!hasFragment && !targets.colors.empty())) return invalid("Invalid graphics pipeline shaders", ErrorCode::InvalidArgument);
         status=validateVertexLayout(desc.vertexLayout);if(!status)return std::unexpected(status.error());
-        auto pipeline = std::make_shared<DXPipeline>(); pipeline->owner = state; pipeline->format = desc.colorFormat; pipeline->sampled = desc.sampledTexture;
+        auto pipeline = std::make_shared<DXPipeline>(); pipeline->owner = state; pipeline->renderTargets=targets;pipeline->depthState=desc.depthState;pipeline->sampled = desc.sampledTexture;
         if(desc.sampledTexture && (!desc.bindingLayout.entries.empty() || !desc.bindingLayout.samplers.empty()))return invalid("Legacy sampledTexture and explicit bindingLayout cannot be combined",ErrorCode::InvalidArgument);
         pipeline->bindings=desc.sampledTexture?BindingLayout{{{}},{{}}}:desc.bindingLayout;
         status=validateBindingLayout(pipeline->bindings);if(!status)return std::unexpected(status.error());
@@ -634,7 +692,19 @@ public:
             return {};
         };
         status=validateShader(desc.vertex);if(!status)return std::unexpected(status.error());
-        status=validateShader(desc.fragment);if(!status)return std::unexpected(status.error());
+        if(hasFragment){status=validateShader(desc.fragment);if(!status)return std::unexpected(status.error());
+            ComPtr<ID3D12ShaderReflection> reflection;
+            HRESULT hr=D3DReflect(desc.fragment.bytes.data(),desc.fragment.bytes.size(),IID_PPV_ARGS(&reflection));
+            if(FAILED(hr))return failed(hr,"Pixel output reflection failed");
+            D3D12_SHADER_DESC shader{};hr=reflection->GetDesc(&shader);if(FAILED(hr))return failed(hr,"Pixel output description failed");
+            UINT mask=0;
+            for(UINT i=0;i<shader.OutputParameters;++i){D3D12_SIGNATURE_PARAMETER_DESC output{};hr=reflection->GetOutputParameterDesc(i,&output);if(FAILED(hr))return failed(hr,"Pixel output parameter failed");
+                if(output.SystemValueType!=D3D_NAME_TARGET)return invalid("Only floating-point SV_Target color outputs are supported",ErrorCode::Unsupported);
+                if(output.SemanticIndex>=targets.colors.size() || output.ComponentType!=D3D_REGISTER_COMPONENT_FLOAT32)return invalid("Pixel output does not match color attachments",ErrorCode::InvalidArgument);
+                mask|=1u<<output.SemanticIndex;
+            }
+            if(mask!=(1u<<targets.colors.size())-1)return invalid("Pixel shader must write every color attachment",ErrorCode::InvalidArgument);
+        }
         std::vector<D3D12_INPUT_ELEMENT_DESC> inputs;
         for(const auto& binding:desc.vertexLayout.buffers) {
             VertexRequirement requirement{binding.slot,binding.stride,0,1,binding.rate};
@@ -679,9 +749,12 @@ public:
         blend.SrcBlend = D3D12_BLEND_SRC_ALPHA; blend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA; blend.BlendOp = D3D12_BLEND_OP_ADD;
         blend.SrcBlendAlpha = D3D12_BLEND_ONE; blend.DestBlendAlpha = D3D12_BLEND_ZERO; blend.BlendOpAlpha = D3D12_BLEND_OP_ADD; blend.LogicOp = D3D12_LOGIC_OP_NOOP;
         blend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-        pso.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        pso.DepthStencilState.DepthEnable=desc.depthState.testEnabled;
+        pso.DepthStencilState.DepthWriteMask=desc.depthState.writeEnabled?D3D12_DEPTH_WRITE_MASK_ALL:D3D12_DEPTH_WRITE_MASK_ZERO;
+        pso.DepthStencilState.DepthFunc=static_cast<D3D12_COMPARISON_FUNC>(static_cast<UINT>(desc.depthState.compare)+1);
+        pso.DSVFormat=targets.depth?native(*targets.depth):DXGI_FORMAT_UNKNOWN;
         pso.SampleMask = UINT_MAX; pso.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        pso.NumRenderTargets = 1; pso.RTVFormats[0] = native(desc.colorFormat); pso.SampleDesc.Count = 1;
+        pso.NumRenderTargets=static_cast<UINT>(targets.colors.size());for(UINT i=0;i<pso.NumRenderTargets;++i)pso.RTVFormats[i]=native(targets.colors[i]);pso.SampleDesc.Count=1;
         result = state->device->CreateGraphicsPipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
         if (FAILED(result)) return failed(result, "Graphics pipeline creation failed");
         return pipeline;
@@ -797,7 +870,7 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     int count = WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, nullptr, 0, nullptr, nullptr);
     if (count <= 0) return failed(E_FAIL, "Adapter name conversion failed");
     std::string name(static_cast<size_t>(count), '\0'); WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, name.data(), count, nullptr, nullptr); name.pop_back();
-    state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true, true};
+    state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true, true, true, true};
     if (desc.validation) { result = state->device.As(&state->info); if (FAILED(result)) return failed(result, "D3D12 InfoQueue unavailable"); }
     D3D12_COMMAND_QUEUE_DESC queue{}; queue.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     result = state->device->CreateCommandQueue(&queue, IID_PPV_ARGS(&state->queue));

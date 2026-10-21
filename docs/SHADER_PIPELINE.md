@@ -20,6 +20,11 @@ native PSO 생성 전에 Unsupported로 거부한다. 임의 reflection에서 la
 static sampler array/comparison sampler, UAV/storage, cube/3D/MSAA/integer texture, unbounded array는
 지원하지 않는다. [공개 계약](PUBLIC_API.md)과 [검증 범위](PHASE2_BINDINGS_REPORT.md)를 따른다.
 
+Depth/MRT pipeline은 fragment output signature도 대조한다. layout의 모든 color slot에
+floating-point SV_Target 출력을 요구하며 범위 초과/누락/integer 출력은 거부한다.
+depth-only layout은 PS bytecode를 생략할 수 있고 VS의 SV_Position으로 깊이를 공급한다.
+fragment depth/coverage/stencil export는 현재 Unsupported다. [Depth/MRT 범위](PHASE2_DEPTH_MRT_REPORT.md)를 따른다.
+
 공통 draw 벤치마크는 같은 source를 한 번 compile하여 동일 bytecode를 세 SDK에
 전달한다. compile 시간은 draw 측정 밖이다. 결과에 bytecode FNV-1a hash를 기록한다.
 이 hash는 재현성 식별자이며 보안용 digest가 아니다.
