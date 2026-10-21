@@ -16,9 +16,9 @@ GPU_SCENARIOS=("draw_gpu","instanced_gpu")
 GPU_SCOPE="draw_calls_after_clear_and_bind_before_pass_end_v1"
 LLGL_UPLOAD_MODEL="llgl_writebuffer_default_buffer_then_copytexturefrombuffer_v1"
 
-def llgl_fingerprint(root=ROOT):
+def llgl_fingerprint(root=ROOT, sdk='llgl'):
     lock=json.loads((root/"benchmarks/competitors/sources.lock.json").read_text())
-    identity="llgl|"+lock['llgl']['commit']+"\n"
+    identity=sdk+"|"+lock[sdk]['commit']+"\n"
     files=sorted([p for pattern in ("*.cpp","*.hpp","*.h","*.cmake") for p in (root/"benchmarks").rglob(pattern)]+[root/"benchmarks/CMakeLists.txt"])
     for path in files:
         identity+=path.relative_to(root).as_posix()+"|"+hashlib.sha256(path.read_bytes()).hexdigest()+"\n"

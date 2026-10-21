@@ -44,8 +44,9 @@ data remain historical; no vendor patch or native copy bypass is used.
 
 The [Phase 1 extension report](docs/PHASE1_COMPLETION_REPORT.md) adds 22 LLGL cache/resource/
 2D/3D/compute/video baselines with CPU references and fresh GPU/CPU observations. **Phase 1
-is still incomplete:** advanced cross-SDK comparisons and continuous GPU memory peak
-evidence are missing; the completion gate rejects this state.
+is still incomplete:** continuous GPU memory peak evidence is missing. The additional
+[SDL3 E-H comparison](docs/PHASE1_SDL_COMPARISON_REPORT.md) covers 14 public semantic workloads
+with explicit shader binding differences, both GPU queries disabled and 84 independent processes.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

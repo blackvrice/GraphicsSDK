@@ -1,5 +1,22 @@
 # Phase 1 확장 구현 및 완료 검증
 
+## 현재 상태: SDL3 추가 비교 완료, 연속 GPU 메모리 증거 미완료
+
+LLGL/SDL3의 E–H public semantic workload 14개를 구현·검증하고 같은 환경에서
+84개 독립 프로세스/10,080개 표본을 수집했다. 양쪽 GPU query를 끈 CPU 완료 구간이며
+버퍼 view·register space·입력 semantic의 차이를 명시한다. 자세한 조건과 재현 방법은
+[추가 비교 보고서](PHASE1_SDL_COMPARISON_REPORT.md)에 있다.
+
+[현재 기계 판정](../benchmarks/reports/2026-10-21-phase1-sdl/acceptance.json)은 추가 SDK
+비교 조건을 통과시키며 **연속/transient GPU 메모리 증거 1건 때문에 전체 완료를 거부**한다.
+이전 관리자 실행 취소 후 권한 실행을 다시 시도하지 않았다. 체크포인트 최댓값은 연속
+peak가 아니다. GraphicsSDK 자체의 compute/depth/MRT API와 나머지 SDK 확장은 미구현이다.
+
+## 아래는 SDL3 추가 전 LLGL baseline의 보존된 이력
+
+아래의 '추가 SDK adapter 없음'과 두 미완료 조건은 LLGL baseline 측정 당시의 상태다.
+현재 추가 SDK 상태와 완료 조건은 위의 판정 및 SDL3 보고서를 따른다.
+
 2026-10-21. **Phase 1 전체는 아직 완료되지 않았다.** 독립 LLGL D3D12 하네스에 남은
 workload baseline을 구현하고 실제 GPU 검증·반복 측정을 수행했다. 완료 게이트는 다음
 두 조건 때문에 실패를 유지한다.

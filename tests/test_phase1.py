@@ -10,6 +10,8 @@ sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'tools'))
 import run_phase1 as p
 import benchmark_telemetry as t
 from phase1_acceptance import evaluate
+from report_phase1_comparison import verify_pairs
+from run_benchmarks import summarize
 
 
 class Phase1Contracts(unittest.TestCase):
@@ -57,12 +59,62 @@ class Phase1Contracts(unittest.TestCase):
     def test_other_sdk_adapters_are_not_silently_replaced_with_llgl_or_native(self):
         support=p.support()
         self.assertEqual(len(support['llgl']),22)
-        for sdk in ('graphicssdk','sdl','bgfx','diligent_core','the_forge'):
+        self.assertEqual(sum(v=='implemented_in_this_harness' for v in support['sdl'].values()),14)
+        for sdk in ('graphicssdk','bgfx','diligent_core','the_forge'):
             self.assertTrue(all(v=='adapter_not_implemented_in_this_harness' for v in support[sdk].values()))
         with tempfile.TemporaryDirectory() as directory:
             out=pathlib.Path(directory)/'absent'
             child=subprocess.run([sys.executable,str(p.ROOT/'tools/run_phase1.py'),'--sdk','graphicssdk','--output',str(out)],capture_output=True,text=True)
             self.assertEqual(child.returncode,2);self.assertFalse(out.exists())
+
+    def test_sdl_requires_cpu_only_and_rejects_llgl_results_and_instrumentation(self):
+        good=self.result();good.update(sdk='sdl',gpu_scope='disabled');good['samples'][0]['gpu_ms']=None
+        p.validate(good,'compute_buffer',1,True,'sdl',True)
+        for sdk,cpu in [('sdl',False),('llgl',True),('bgfx',True)]:
+            with self.assertRaises(ValueError):p.validate(good,'compute_buffer',1,True,sdk,cpu)
+        bad=copy.deepcopy(good);bad['samples'][0]['gpu_ms']=.5
+        with self.assertRaises(ValueError):p.validate(bad,'compute_buffer',1,True,'sdl',True)
+        with tempfile.TemporaryDirectory() as directory:
+            for options in (['--sdk','sdl'],['--compare-sdl','--scenarios','pso_hit'],['--compare-sdl','--exe','wrong.exe']):
+                out=pathlib.Path(directory)/'absent'
+                child=subprocess.run([sys.executable,str(p.ROOT/'tools/run_phase1.py'),*options,'--output',str(out)],capture_output=True,text=True)
+                self.assertEqual(child.returncode,2);self.assertFalse(out.exists())
+
+    def test_matched_contract_retains_public_binding_abi_difference(self):
+        contract=p.comparison_contract(self.result())
+        self.assertEqual(contract['gpu_scope'],'disabled')
+        self.assertEqual(contract['shader_abi_by_sdk'],p.ABI)
+        self.assertIn('different_binding_ABI',contract['comparison_scope'])
+        self.assertEqual(len(contract['shared_workloads_sha256']),64)
+
+    def paired_fixture(self):
+        # Historical real LLGL observations are fixtures only, never emitted as SDL measurements.
+        processes={};rows=[]
+        for sdk in ('llgl','sdl'):
+            for name in p.ADVANCED:
+                group=[]
+                for index in range(3):
+                    r=json.loads((p.ROOT/f'benchmarks/results/2026-10-21-phase1-final/{name}-{index}.json').read_text())
+                    r.update(sdk=sdk,cpu_only=True,native_shader_abi=p.ABI[sdk],gpu_scope='disabled')
+                    for sample in r['samples']:sample['gpu_ms']=None
+                    r['contract']=p.comparison_contract({**r,'contract':r['native_contract']});group.append(r)
+                processes[sdk,name]=group
+                rows.append({**group[0],'metrics':summarize(group),'process_metrics':t.summarize(group)})
+        return rows,processes
+
+    def test_comparison_report_rejects_missing_duplicate_or_mixed_evidence(self):
+        rows,processes=self.paired_fixture();self.assertEqual(len(verify_pairs(rows,processes)),14)
+        for bad_rows in (rows[:-1],rows+[rows[0]],rows[:-1]+[rows[0]]):
+            with self.assertRaises(ValueError):verify_pairs(bad_rows,processes)
+        for mutate in ('driver','query','contract','reference','duplicate_run','summary'):
+            rr,pp=copy.deepcopy((rows,processes));r=pp['sdl','compute_blur'][1]
+            if mutate=='driver':r['environment']['driver']='other'
+            if mutate=='query':r['samples'][0]['gpu_ms']=.1
+            if mutate=='contract':r['contract']['gpu_scope']='instrumented'
+            if mutate=='reference':r['reference_checks']=1
+            if mutate=='duplicate_run':r['run']=0
+            if mutate=='summary':rr[0]['metrics']['frame_ms']['p50']+=1
+            with self.subTest(mutate=mutate),self.assertRaises(ValueError):verify_pairs(rr,pp)
 
     def test_registry_matches_compiled_cli_and_ctest_scenarios(self):
         source=(p.ROOT/'benchmarks/phase1/LLGLSuite.cpp').read_text()

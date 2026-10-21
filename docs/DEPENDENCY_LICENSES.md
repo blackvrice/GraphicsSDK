@@ -183,6 +183,11 @@ vendor patch는 없고 같은 fixed LLGL/SDL 입력 및 Windows/D3DCompiler/PSAP
 전제조건을 유지한다. 초기 탐색 inventory는 별도로 보존한다. 자체 SDK/API/ZIP은
 변경하지 않았으며 inventory와 기존 SDK package 검사가 통과했다.
 
+SDL3 E–H 추가 비교는 같은 profile에 `phase1_sdl`의 compiler/linker 입력도 포함했다.
+[추가 비교 inventory](../licenses/generated/windows-benchmarks-phase1-sdl-release/inventory.json)와
+인접 고지문에 972개 프로젝트 입력/22개 구성요소를 보존한다. 고정 dependency와 기존 SDK
+ZIP은 변경하지 않았으며 별도 폴더에 새 artifact 해시를 기록한다. 이전 감사 결과는 보존한다.
+
 LLGL 공개 upload 복구 후에는 별도
 [inventory](../licenses/generated/windows-benchmarks-llgl-upload-release/inventory.json)와
 같은 폴더의 고지문을 생성했다. 공통 profile의 compiler-read 입력 969개/구성요소 22개,

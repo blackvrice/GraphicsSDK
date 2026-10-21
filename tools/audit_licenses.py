@@ -211,6 +211,9 @@ def collect(root, profile, package=None):
         trace_dirs["phase1"]="out/bench/phase1_llgl.dir/Release"
         artifacts_map["phase1"]="out/bench/Release/phase1_llgl.exe"
         projects["phase1"]="out/bench/phase1_llgl.vcxproj"
+        trace_dirs["phase1_sdl"]="out/bench/phase1_sdl.dir/Release"
+        artifacts_map["phase1_sdl"]="out/bench/Release/phase1_sdl.exe"
+        projects["phase1_sdl"]="out/bench/phase1_sdl.vcxproj"
     if profile == "benchmarks-diligent":
         from diligent_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
@@ -316,7 +319,7 @@ def collect(root, profile, package=None):
         inventory["package"] = audit_package(root, package)
     if benchmark:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map,
-            extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
+            extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
     if extra:
         inventory[extra.get("review_key", "diligent_build_review")] = extra["evidence"]
     if generated_inputs:
