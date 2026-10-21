@@ -25,6 +25,10 @@ approval or a claim about every platform, every static-library member or future 
   PIX headers are conservatively inventoried with incomplete historical primary terms; no PIX
   library/DLL is linked/copied. Their redistribution requires separate review. This profile
   is an inventory of local build inputs, not clearance to redistribute Forge binaries/headers.
+* Timestamp expansion inventories: [Forge](generated/windows-benchmarks-timestamps-forge-release/inventory.json)
+  and [Diligent](generated/windows-benchmarks-timestamps-diligent-release/inventory.json), with
+  their adjacent notices. These record the newer adapter binaries under the same pinned
+  dependency policies. Historical inventories above remain unchanged.
 
 Before redistributing the reviewed benchmark binaries, retain the full benchmark notice
 file with them. BSD license and non-endorsement terms, MIT notices, Apache terms and upstream

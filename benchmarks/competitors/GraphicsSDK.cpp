@@ -1,11 +1,14 @@
 #include "common/Adapter.hpp"
+#include "common/GpuTimestamp.hpp"
 #include <graphics/Graphics.hpp>
 #include <cstring>
 #include <stdexcept>
+#include <iostream>
 
 namespace bench {
-template<class T> T require(gfx::Result<T> value) { if (!value) throw std::runtime_error(value.error().message); return std::move(*value); }
-void require(gfx::Result<void> value) { if (!value) throw std::runtime_error(value.error().message); }
+std::string errorText(const gfx::Error& error) { return error.message+" (native code "+std::to_string(error.nativeCode)+")"; }
+template<class T> T require(gfx::Result<T> value) { if (!value) throw std::runtime_error(errorText(value.error())); return std::move(*value); }
+void require(gfx::Result<void> value) { if (!value) throw std::runtime_error(errorText(value.error())); }
 class GraphicsSDKAdapter final : public Adapter {
     std::unique_ptr<gfx::Device> device;
     gfx::TexturePtr target, uploadTexture;
@@ -14,12 +17,26 @@ class GraphicsSDKAdapter final : public Adapter {
     std::unique_ptr<gfx::CommandList> commands;
     std::uint32_t uploadWidth{}, uploadHeight{}, bytesPerPixel{};
     gfx::GraphicsPipelineDesc pipelineDesc;
+    bool timestamps{};
+    bool validation{};
+    void checkValidation() {
+        if (validation && require(device->validationErrorCount())!=0)
+            throw std::runtime_error("GraphicsSDK native D3D12 validation failed");
+    }
 public:
-    explicit GraphicsSDKAdapter(bool validation) : device(require(gfx::createDevice({gfx::Backend::D3D12,validation}))) {}
-    ~GraphicsSDKAdapter() override { auto status = device->queue().waitIdle(); (void)status; }
+    explicit GraphicsSDKAdapter(bool enabled) : device(require(gfx::createDevice({gfx::Backend::D3D12,enabled}))), validation(enabled) {}
+    ~GraphicsSDKAdapter() override {
+        try {
+            idle(); commands.reset(); pipeline.reset(); target.reset(); uploadTexture.reset(); staging.reset(); checkValidation();
+        } catch (const std::exception& error) { std::cerr << "GraphicsSDK teardown: " << error.what() << '\n'; std::abort(); }
+    }
     std::string deviceName() const override { return device->caps().adapterName; }
     std::string sourceFingerprint() const override { return std::string(gfx::buildFingerprint()); }
-    void idle() override { require(device->queue().waitIdle()); }
+    void idle() override { require(device->queue().waitIdle()); checkValidation(); }
+    void enableGpuTimestamps() override {
+        if (!device->caps().timestampQueries) throw std::runtime_error("GraphicsSDK GPU timestamps unavailable");
+        timestamps=true;
+    }
     void* buffer(std::uint32_t bytes) override { return new gfx::BufferPtr(require(device->createBuffer({bytes}))); }
     void releaseBuffer(void* ptr) override { delete static_cast<gfx::BufferPtr*>(ptr); }
     void* texture(std::uint32_t w, std::uint32_t h, bool half) override { return new gfx::TexturePtr(require(device->createTexture({w,h,half ? gfx::Format::RGBA16Float:gfx::Format::RGBA8UNorm}))); }
@@ -34,11 +51,19 @@ public:
         auto start = Clock::now();
         require(commands->begin());
         require(commands->transition(target,gfx::ResourceState::RenderTarget)); require(commands->beginRenderPass(target,{0,0,1,1})); require(commands->setPipeline(pipeline));
+        if (timestamps) require(commands->writeTimestamp(0));
         if (instanced) require(commands->draw(3,count)); else for (std::uint32_t i=0;i<count;++i) require(commands->draw(3));
-        require(commands->endRenderPass()); require(commands->end());
+        if (timestamps) require(commands->writeTimestamp(1));
+        require(commands->endRenderPass());
+        if (timestamps) require(commands->resolveTimestamps());
+        require(commands->end());
         auto recorded = Clock::now(); auto fence = require(device->queue().submit(*commands)); auto submitted = Clock::now();
-        require(device->queue().wait(fence)); auto end = Clock::now();
-        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,end),ms(start,end),std::nullopt};
+        require(device->queue().wait(fence)); auto completed = Clock::now();
+        std::optional<double> gpu;
+        if (timestamps) gpu=validGpuMilliseconds(require(commands->elapsedGpuMilliseconds()));
+        auto end=Clock::now();
+        checkValidation();
+        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,completed),ms(start,end),gpu,timestamps?ms(completed,end):0};
     }
     std::vector<std::byte> download(const gfx::TexturePtr& texture) {
         auto layout = texture->footprint(); auto readback = require(device->createBuffer({layout.size,gfx::Memory::Readback}));

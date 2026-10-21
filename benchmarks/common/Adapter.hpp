@@ -7,11 +7,12 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <stdexcept>
 
 namespace bench {
 struct Shaders { std::vector<std::byte> vertex, fragment; };
 Shaders compileShaders();
-struct DrawTimes { double record{}, submit{}, wait{}, frame{}; std::optional<double> gpu; };
+struct DrawTimes { double record{}, submit{}, wait{}, frame{}; std::optional<double> gpu; double queryRead{}; };
 struct PipelineTimes { double creation{}, release{}; };
 using Clock = std::chrono::steady_clock;
 inline double ms(Clock::time_point start, Clock::time_point end) {
@@ -22,6 +23,7 @@ struct Adapter {
     virtual std::string sourceFingerprint() const { return {}; }
     virtual std::string unsupportedReason(std::string_view) const { return {}; }
     virtual std::string allocationModel(std::string_view) const { return "default_gpu_resources"; }
+    virtual void enableGpuTimestamps() { throw std::runtime_error("Matching draw timestamp interval is unsupported by this adapter"); }
     virtual std::string deviceName() const = 0;
     virtual void idle() = 0;
     virtual void* buffer(std::uint32_t bytes) = 0;

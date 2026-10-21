@@ -90,3 +90,21 @@ resource loader는 single-thread, staging은 graphics/copy engine 각각 128 MiB
 두고 외부 application config와 MSVC/Windows SDK 호환 심볼 설정을 명시한다.
 구형 NVAPI는 제외한다. [실행 범위·호환 설정·readback 제한과 실제 측정](FORGE_BENCHMARK_REPORT.md)을
 따르며 vendor extension, 공식 전체 sample build, 다른 플랫폼까지 일반화하지 않는다.
+
+## GPU timestamp draw interval
+
+`draw_gpu`와 `instanced_gpu`는 category `gpu_timestamp`, contract revision 3을 사용한다.
+기존 query 없는 end_to_end와 결과를 섞지 않는다. clear·viewport·pipeline API 설정 뒤
+첫 draw 직전에 시작하고 마지막 draw 직후 pass 종료 전에 끝낸다. 64×64 RGBA8,
+동일 DXBC, 3 vertices × count, blend/depth/cull OFF이며 GPU 완료 후 query를 재사용한다.
+
+GraphicsSDK/LLGL/Forge는 resolve가 interval 밖이라 공통 비교가 가능하다. LLGL 결과는
+nanoseconds, Forge와 Diligent는 counter/frequency, GraphicsSDK는 공개 milliseconds다.
+모두 ms로 변환하며 CPU wait로 대체하지 않는다. API 내부 deferred native state 및
+queue stall까지 순수 shader 실행과 분리했다는 뜻은 아니다.
+
+Diligent의 `BeginQuery(DURATION)`는 시작 timestamp와 `ResolveQueryData`를 함께 기록한다.
+이 시작 resolve는 interval 안이므로 `query_resolve`를 다르게 저장하여 직접 비교를
+거부한다. SDL3에는 대응 API가 없고 bgfx view timer는 범위가 달라 해당 시나리오를 거부한다.
+비교 범위를 맞추기 위해 native query를 대신 삽입하지 않는다. upload/copy/compute 구간은
+추후 확장 대상이다. [실측과 초기 오분류 자료의 제외 사유](GPU_TIMESTAMP_BENCHMARK_REPORT.md)를 따른다.

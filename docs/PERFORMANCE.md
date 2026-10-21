@@ -5,9 +5,11 @@
 대표하지 않는다. correctness, resource lifetime, validation을 희생해 점수를 높이지 않는다.
 
 CPU record, submit 및 fence wait의 wall time은 구분한다. timestamp는 GPU query에서만
-얻는다. 공통 SDL3 GPU API에 timestamp query가 없으므로 현재 세 SDK 공통 비교는
-추가 query 명령 없이 실행하고 gpu_ms=null을 저장한다. GraphicsSDK의 별도 correctness
-테스트는 실제 GPU timestamp도 검증하지만 그 한 번의 시간을 경쟁 baseline으로 쓰지 않는다.
+얻는다. SDL3를 포함한 기존 end_to_end 비교는 추가 query 없이 gpu_ms=null을 유지한다.
+별도 draw_gpu/instanced_gpu는 GraphicsSDK/LLGL/Forge의 동일한 GPU marker 구간을
+비교한다. Diligent duration query의 시작 resolve 비용은 구간 안에 있어 별도 계약으로
+기록하고 직접 비교를 거부한다. [GPU timestamp 보고서](GPU_TIMESTAMP_BENCHMARK_REPORT.md)에
+실제 반복 결과와 범위가 있다. correctness 테스트의 한 번의 시간을 baseline으로 쓰지 않는다.
 
 LLGL End와 SDL Submit은 내부 작업 경계가 다르다. record/submit 단일 구간으로
 우위를 주장하지 않고 전체 wall time과 SDK 정책을 함께 본다. 리소스 해제 API와

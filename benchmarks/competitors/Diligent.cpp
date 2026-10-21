@@ -1,4 +1,6 @@
 #include "common/Adapter.hpp"
+#include "common/GpuTimestamp.hpp"
+#include <Graphics/GraphicsEngine/interface/Query.h>
 #include <d3d12.h>
 #include <Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h>
 #include <Graphics/GraphicsEngineD3D12/interface/RenderDeviceD3D12.h>
@@ -30,6 +32,7 @@ class DiligentAdapter final : public Adapter {
     RefCntAutoPtr<IShader> vertex, fragment;
     RefCntAutoPtr<IPipelineState> pipeline;
     Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue;
+    RefCntAutoPtr<IQuery> timestamps;
 
     void checkValidation() {
         if (!infoQueue) return;
@@ -113,15 +116,24 @@ public:
         check();
     }
     ~DiligentAdapter() override {
+        try {
         if (context) {
             context->WaitForIdle(); context->FinishFrame();
             // Context bindings can retain the PSO/RT until the context itself is released.
             context.Release(); pipeline.Release(); target.Release(); uploadTarget.Release();
-            vertex.Release(); fragment.Release(); device->ReleaseStaleResources(true);
+            vertex.Release(); fragment.Release(); timestamps.Release(); device->ReleaseStaleResources(true);
         }
+        check(); checkValidation();
+        } catch (const std::exception& error) { std::cerr << "Diligent teardown: " << error.what() << '\n'; std::abort(); }
     }
     std::string deviceName() const override { return device->GetAdapterInfo().Description; }
     std::string sourceFingerprint() const override { return GFX_DILIGENT_BUILD_SHA256; }
+    void enableGpuTimestamps() override {
+        QueryDesc desc{QUERY_TYPE_DURATION}; desc.Name="benchmark draw duration";
+        device->CreateQuery(desc,&timestamps);
+        if (!timestamps) throw std::runtime_error("Diligent duration query unavailable");
+        check();
+    }
     void idle() override {
         context->WaitForIdle(); context->FinishFrame(); device->ReleaseStaleResources(true); check(); checkValidation();
     }
@@ -159,11 +171,20 @@ public:
         const float clear[]{0,0,1,1};
         context->ClearRenderTarget(rtv,clear,RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         context->SetPipelineState(pipeline);
+        if (timestamps) context->BeginQuery(timestamps);
         if (instanced) context->Draw(DrawAttribs{3,DRAW_FLAG_NONE,count});
         else for (std::uint32_t i=0;i<count;++i) context->Draw(DrawAttribs{3,DRAW_FLAG_NONE});
+        if (timestamps) context->EndQuery(timestamps);
         auto recorded=Clock::now(); context->Flush(); auto submitted=Clock::now();
-        idle(); auto end=Clock::now();
-        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,end),ms(start,end),std::nullopt};
+        idle(); auto completed=Clock::now();
+        std::optional<double> gpu;
+        if (timestamps) {
+            QueryDataDuration data;
+            if (!timestamps->GetData(&data,sizeof(data),true)) throw std::runtime_error("Diligent timestamp result unavailable after completion");
+            gpu=gpuTicksToMilliseconds(0,data.Duration,static_cast<double>(data.Frequency));
+        }
+        auto end=Clock::now();
+        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,completed),ms(start,end),gpu,timestamps?ms(completed,end):0};
     }
     bool verifyDraw() override {
         auto bytes=download(target); const size_t center=(32*64+32)*4;

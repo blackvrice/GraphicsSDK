@@ -26,7 +26,7 @@ inventory and terms review; the checked item is limited to the current reviewed 
 - [x] Standalone pinned Diligent Core D3D12 adapter: all eight existing workloads, native validation/readback, dependency inventory and same-machine repeated measurements ([report](DILIGENT_BENCHMARK_REPORT.md)).
 - [x] Pinned bgfx D3D12 adapter: six matching workloads, pooled buffers under a separate contract, native queue-completion/readback validation, explicit unsupported lazy PSO, dependency audit and repeated measurements ([report](BGFX_BENCHMARK_REPORT.md)).
 - [x] Pinned The Forge D3D12 adapter: eight matching workloads, native validation/readback, no-NVAPI dependency inventory and repeated measurements; explicit MSVC compatibility and untimed native readback limitations ([report](FORGE_BENCHMARK_REPORT.md)).
-- [ ] Low-level GPU timestamp comparisons where both SDKs expose matching functionality.
+- [x] Matching draw/instanced GPU timestamp intervals at 1k/10k/100k for GraphicsSDK/LLGL/Forge; Diligent's start-query resolve interval kept separate, SDL/bgfx matching scopes rejected ([report](GPU_TIMESTAMP_BENCHMARK_REPORT.md)).
 - [ ] CPU utilization, peak CPU/GPU memory, controlled shader cache cold/warm and PSO cache hit/miss.
 - [ ] Multi-texture uploads, reuse/in-flight allocation scenarios, switching and binding workloads.
 - [ ] E/F/G/H workloads and correctness references (2D/3D/compute/media stages).

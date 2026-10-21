@@ -150,3 +150,16 @@ PIX library/DLL은 링크·복사하지 않는다. 동봉 NuGet metadata의 hist
 실제 `/O2 /MD`·no LTO, 생성 외부 config 내용, compiled source fingerprint, 원본·복사본
 AGS/DXC DLL 및 GPU config 파일을 검사한다. 자체 SDK ZIP에는 경쟁 payload를 추가하지
 않았고 기존 SDK package `--check`가 통과했다.
+
+## Timestamp 확장 inventory
+
+query 어댑터 확장 후 새 산출물 해시를 별도로 보존했다. 기존 inventory를 덮어쓰지 않는다.
+[Forge](../licenses/generated/windows-benchmarks-timestamps-forge-release/inventory.json)는
+입력 1,103개/구성요소 39개이고
+[Diligent](../licenses/generated/windows-benchmarks-timestamps-diligent-release/inventory.json)는
+입력 1,350개/구성요소 26개다. 각각 옆의 `THIRD_PARTY_NOTICES.txt`를 유지한다.
+LLGL 공개 native-handle 헤더로 validation queue를 조회하며 외부 query 코드나 DLL을
+SDK에 복사하지 않는다. 동일 pinned 정책·실제 compiler/linker 입력·소스 fingerprint 및
+runtime copy를 검사했다. 자체 SDK ZIP은 기존 `--check`가 통과했다.
+Forge의 비활성 PIX header primary terms 미해결과 경쟁 바이너리 재배포 승인 미포함은
+그대로이며 GPU query 추가가 이를 해결했다는 의미가 아니다.

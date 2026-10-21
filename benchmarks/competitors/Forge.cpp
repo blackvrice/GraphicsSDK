@@ -1,4 +1,5 @@
 #include "common/Adapter.hpp"
+#include "common/GpuTimestamp.hpp"
 #include <Common_3/Graphics/Interfaces/IGraphics.h>
 #include <Common_3/Resources/ResourceLoader/Interfaces/IResourceLoader.h>
 #include <Common_3/Utilities/Interfaces/IFileSystem.h>
@@ -44,6 +45,8 @@ class ForgeAdapter final : public Adapter {
     std::uint32_t uploadWidth{}, uploadHeight{};
     bool uploadHalf{};
     ComPtr<ID3D12InfoQueue> info;
+    QueryPool* timestamps{};
+    double timestampFrequency{};
 
     void check() {
         if (renderer) hr(renderer->mDx.pDevice->GetDeviceRemovedReason(),"Forge D3D12 device removed");
@@ -159,6 +162,7 @@ public:
             if (target) removeRenderTarget(renderer,target);
             if (uploadTexture) removeResource(uploadTexture);
             if (loader) exitResourceLoaderInterface(renderer);
+            if (timestamps) exitQueryPool(renderer,timestamps);
             if (renderer->mDx.pGraphicsRootSignature) { renderer->mDx.pGraphicsRootSignature->Release(); renderer->mDx.pGraphicsRootSignature=nullptr; }
             exitFence(renderer,fence); exitCmd(renderer,cmd); exitCmdPool(renderer,pool); exitQueue(renderer,queue);
             check(); exitRenderer(renderer); renderer=nullptr; check();
@@ -167,6 +171,13 @@ public:
     }
     std::string deviceName() const override { return renderer->pGpu->mGpuVendorPreset.mGpuName; }
     std::string sourceFingerprint() const override { return forgeBuildFingerprint(); }
+    void enableGpuTimestamps() override {
+        QueryPoolDesc desc{}; desc.mType=QUERY_TYPE_TIMESTAMP; desc.mQueryCount=1;
+        initQueryPool(renderer,&desc,&timestamps);
+        require(timestamps && timestamps->mDx.pQueryHeap,"Forge timestamp query pool unavailable");
+        getTimestampFrequency(queue,&timestampFrequency);
+        (void)gpuTicksToMilliseconds(0,0,timestampFrequency); check();
+    }
     void idle() override {
         ensureLoader();
         waitQueueIdle(queue);
@@ -216,10 +227,22 @@ public:
         render.mRenderTargets[0].mStoreAction=STORE_ACTION_STORE;
         cmdBindRenderTargets(cmd,&render); cmdSetViewport(cmd,0,0,64,64,0,1); cmdSetScissor(cmd,0,0,64,64);
         cmdBindPipeline(cmd,pipeline);
+        QueryDesc query{};
+        if (timestamps) { cmdResetQuery(cmd,timestamps,0,1); cmdBeginQuery(cmd,timestamps,&query); }
         if (instanced) cmdDrawInstanced(cmd,3,0,count,0); else for (std::uint32_t i=0;i<count;++i) cmdDraw(cmd,3,0);
-        cmdBindRenderTargets(cmd,nullptr); endCmd(cmd); auto recorded=Clock::now();
-        submit(); auto submitted=Clock::now(); complete(); auto end=Clock::now(); check();
-        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,end),ms(start,end),std::nullopt};
+        if (timestamps) cmdEndQuery(cmd,timestamps,&query);
+        cmdBindRenderTargets(cmd,nullptr);
+        if (timestamps) cmdResolveQuery(cmd,timestamps,0,1);
+        endCmd(cmd); auto recorded=Clock::now();
+        submit(); auto submitted=Clock::now(); complete(); auto completed=Clock::now(); check();
+        std::optional<double> gpu;
+        if (timestamps) {
+            QueryData data{}; getQueryData(renderer,timestamps,0,&data);
+            require(data.mValid,"Forge timestamp result unavailable after completion");
+            gpu=gpuTicksToMilliseconds(data.mBeginTimestamp,data.mEndTimestamp,timestampFrequency);
+        }
+        auto end=Clock::now(); check();
+        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,completed),ms(start,end),gpu,timestamps?ms(completed,end):0};
     }
     bool verifyDraw() override {
         auto pixels=download(target->pTexture,64,64,false,RESOURCE_STATE_RENDER_TARGET); auto center=(32*64+32)*4;

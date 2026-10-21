@@ -4,12 +4,25 @@ import csv
 import datetime
 import hashlib
 import json
+import math
 import pathlib
 import random
 import statistics
 import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+GPU_SCENARIOS=("draw_gpu","instanced_gpu")
+GPU_SCOPE="draw_calls_after_clear_and_bind_before_pass_end_v1"
+
+def timestamp_contract(sdk):
+    # Pinned Diligent QueryManagerD3D12::EndQuery resolves every timestamp
+    # immediately, including the start marker written by BeginQuery(DURATION).
+    # Its measured GPU interval therefore includes that first resolve. Never
+    # silently equate it with the deferred/out-of-interval resolve adapters.
+    return {"timestamp_scope":GPU_SCOPE,"timestamp_unit":"milliseconds",
+            "timestamp_queue":"direct_graphics",
+            "query_resolve":"start_marker_resolve_inside_interval_end_marker_resolve_after" if sdk=="diligent_core" else "outside_timestamp_interval_after_end_marker",
+            "query_reuse":"one_completed_interval_per_sample"}
 
 def diligent_dependencies(root=ROOT):
     return json.loads((root / "benchmarks/competitors/diligent-build.lock.json").read_text())["dependencies"]
@@ -51,6 +64,8 @@ def bgfx_fingerprint(root=ROOT):
     return hashlib.sha256(identity.encode()).hexdigest()
 
 def scenario_error(sdk, scenario):
+    if scenario in GPU_SCENARIOS and sdk not in ("graphicssdk","llgl","diligent_core","the_forge"):
+        return f"Unsupported {sdk}/{scenario}: no matching public draw-only GPU timestamp interval"
     if sdk == "bgfx" and scenario == "pipeline":
         return "Unsupported bgfx/pipeline: createProgram links shaders; D3D12 PSO creation is lazy on draw"
     return None
@@ -79,11 +94,21 @@ def diligent_fingerprint(root=ROOT):
 
 def validate_result(result, sdk, scenario, count, warmup, samples, validation):
     expected = {"sdk": sdk, "scenario": scenario, "count": count, "warmup": warmup, "validation": validation,
-                "api": "d3d12", "category": "end_to_end", "configuration": "Release"}
+                "api": "d3d12", "category": "gpu_timestamp" if scenario in GPU_SCENARIOS else "end_to_end", "configuration": "Release"}
     if any(result.get(key) != value for key, value in expected.items()) or len(result.get("samples", [])) != samples:
         raise RuntimeError("Executable returned a different workload or sample count")
     if scenario not in ("buffers", "textures") and result.get("readback_verified") is not True:
         raise RuntimeError("Executable did not verify readback correctness")
+    if scenario in GPU_SCENARIOS:
+        if result.get("gpu_timestamp_scope")!=GPU_SCOPE:
+            raise RuntimeError("Different or missing GPU timestamp interval")
+        for sample in result["samples"]:
+            for name in ("gpu_ms","query_read_ms"):
+                value=sample.get(name)
+                if isinstance(value,bool) or not isinstance(value,(int,float)) or not math.isfinite(value) or value<0:
+                    raise RuntimeError("Missing/invalid completed GPU timestamp result or query-read cost")
+    elif any(sample.get("gpu_ms") is not None for sample in result["samples"]):
+        raise RuntimeError("Unexpected timestamp instrumentation in an end-to-end workload")
 
 def percentile(values, q):
     ordered = sorted(values)
@@ -137,7 +162,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--exe", type=pathlib.Path, default=ROOT / "out/bench/Release/gfx_bench.exe")
     p.add_argument("--sdks", nargs="+", default=["llgl", "sdl"])
-    p.add_argument("--scenarios", nargs="+", choices=["buffers", "textures", "draw", "instanced", "upload1080", "upload4k", "upload4k16f", "pipeline"], default=["buffers", "textures"])
+    p.add_argument("--scenarios", nargs="+", choices=["buffers", "textures", "draw", "instanced", "upload1080", "upload4k", "upload4k16f", "pipeline", *GPU_SCENARIOS], default=["buffers", "textures"])
     p.add_argument("--count", type=int, default=1000)
     p.add_argument("--runs", type=int, default=3)
     p.add_argument("--samples", type=int, default=120)
@@ -218,18 +243,21 @@ def main():
         if sdk == "graphicssdk" and source_hash.hexdigest() != result.get("sdk_build_source_sha256"):
             raise RuntimeError("GraphicsSDK source changed since compilation; rebuild before measurement")
         allocation = scenario in ("buffers","textures")
-        draw = scenario in ("draw","instanced")
+        draw = scenario in ("draw","instanced",*GPU_SCENARIOS)
+        gpu_timestamps=scenario in GPU_SCENARIOS
         result.update({"run": run, "sdk_commit": lock[sdk]["commit"] if sdk != "graphicssdk" else None,
                        "sdk_source_sha256": source_hash.hexdigest() if sdk == "graphicssdk" else None,
                        "measured_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                        "executable_sha256": executable_hash,
-                       "contract": {"revision": 2, "resource_policy": allocation_policy(result) if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+                       "contract": {"revision": 3 if gpu_timestamps else 2, "resource_policy": allocation_policy(result) if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
                                     "threads": 1, "buffer_bytes": 65536 if allocation else None,
                                     "texture_extent": [1920,1080] if scenario == "upload1080" else [3840,2160] if scenario.startswith("upload") else [64,64],
                                     "texture_format": "rgba16_float" if scenario == "upload4k16f" else "rgba8_unorm", "mip_levels": 1, "samples": 1,
                                     "vsync": "not_applicable_headless", "compiler_optimization": "/O2", "runtime": "/MD", "lto": False,
                                     "frames_in_flight": 1, "gpu_work": "none_allocation_only" if allocation else "vertex_id_triangle_no_blend_no_depth_no_cull" if draw else "full_texture_copy",
-                                    "gpu_timestamps": False, "shader_fnv1a64": result.get("shader_fnv1a64"), "payload_bytes": result.get("payload_bytes",0)}})
+                                    "gpu_timestamps": gpu_timestamps, "shader_fnv1a64": result.get("shader_fnv1a64"), "payload_bytes": result.get("payload_bytes",0)}})
+        if gpu_timestamps:
+            result["contract"].update(timestamp_contract(sdk))
         if sdk == "diligent_core":
             result["build_dependencies"] = diligent_dependencies()
             result["runtime_sha256"] = runtime_hashes

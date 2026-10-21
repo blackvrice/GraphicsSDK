@@ -100,3 +100,25 @@ list with Forge barriers/submission/fence. This does not validate that public co
 Forge GPU-based validation, long-running stress and official VS 2019 sample acceptance remain
 unperformed. See [Forge report](FORGE_BENCHMARK_REPORT.md) and the retained native CTest log
 under `benchmarks/reports/validation/2026-10-21-forge`.
+
+2026-10-21 timestamp expansion: Forge profile CTest 17/17, Diligent profile CTest 7/7
+and core CTest 4/4 passed. The CPU conversion executable checks 12 conditions, including
+nanosecond/tick conversion, same-tick zero, near-UINT64_MAX subtraction, reversed counters
+and zero/negative/non-finite frequencies. All 34 Python tests passed, including missing or
+invalid GPU results, unsupported requests before output creation, scope/category separation,
+and rejection of Diligent's distinct start-query resolve contract.
+
+LLGL, GraphicsSDK, Diligent and Forge timestamp CTests run 10,000 draw/instances with
+native validation and multiple completed query reuses. Native ERROR/CORRUPTION is checked
+through resource teardown; own core GPU-based validation remains a separate test.
+Each measured process verifies the triangle before and after collection. Query-read CPU
+cost is separate from GPU duration, and regular draw tests keep gpu_ms=null.
+
+One initial GraphicsSDK root-signature creation failure was not reproduced by the rerun,
+the final complete suites, ten additional ordinary/timestamp draw initializations or the
+debugger capture. Its cause remains unresolved; native-code diagnostics were added without
+claiming a fix. The initial log is preserved. The runner never silently retries a failure.
+Initial Diligent data whose contract mislabeled its start resolve are preserved as excluded
+exploration; corrected metadata came from new processes, not rewritten observations.
+See [timestamp report](GPU_TIMESTAMP_BENCHMARK_REPORT.md) and validation `final-summary.json`
+under `benchmarks/reports/validation/2026-10-21-timestamps`.

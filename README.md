@@ -34,6 +34,8 @@ The [bgfx comparison](docs/BGFX_BENCHMARK_REPORT.md) adds six matching workloads
 records pooled buffer allocations. Lazy bgfx program linking is excluded from the PSO workload.
 The [The Forge comparison](docs/FORGE_BENCHMARK_REPORT.md) covers eight matching workloads
 under a documented MSVC compatibility configuration with legacy NVAPI excluded.
+The [GPU timestamp report](docs/GPU_TIMESTAMP_BENCHMARK_REPORT.md) compares matching draw
+intervals for GraphicsSDK/LLGL/Forge and records Diligent's different resolve interval separately.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

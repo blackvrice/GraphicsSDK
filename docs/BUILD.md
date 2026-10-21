@@ -111,5 +111,29 @@ python tools/audit_licenses.py --profile benchmarks --output out/benchmark-licen
 Windows Release 빌드의 MSBuild 기록이 필요하다. 범위와 한계는
 [라이선스 감사](DEPENDENCY_LICENSES.md) 및 [고지 목록](../licenses/README.md)을 따른다.
 
+## GPU timestamp draw 측정
+
+```powershell
+./tools/bootstrap_competitors.ps1 -Forge
+python tools/run_benchmarks.py --exe out/bench-forge/Release/gfx_bench.exe --sdks llgl the_forge graphicssdk --scenarios draw_gpu instanced_gpu --count 10000 --runs 3 --samples 120 --warmup 20 --output benchmarks/results/my-timestamp-draw
+./tools/bootstrap_competitors.ps1 -Diligent
+python tools/run_benchmarks.py --exe out/bench-diligent/Release/gfx_bench.exe --sdks diligent_core graphicssdk --scenarios draw_gpu instanced_gpu --count 10000 --runs 3 --samples 120 --warmup 20 --output benchmarks/results/my-diligent-duration
+python tools/report_timestamp_benchmarks.py
+```
+
+일반 `draw`/`instanced`는 query를 기록하지 않는다. 새 `*_gpu`만 GPU marker를 기록한다.
+위 두 bootstrap은 CPU 변환 계약 테스트와 GPU timestamp CTest도 빌드·실행한다.
+수동 빌드에서는 `--target gfx_bench gpu_timestamp_contracts`를 사용한다.
+bgfx/SDL의 새 시나리오는 대응 interval이 없어 실행 전 거부한다.
+
+Diligent duration query는 시작 marker 직후 native resolve가 interval 안에 들어간다.
+`contract.query_resolve`로 구분하여 GraphicsSDK/LLGL/Forge 공통 interval과 자동 비교하지
+않는다. query 없는 기존 frame 측정과도 category/contract가 다르다. `query_read_ms`는
+최초 GPU 완료 후 결과 수집 비용이며 `gpu_ms`와 별도로 읽는다.
+
+보고서 생성 명령은 고정 2026-10-21 campaign을 읽는다. 과거 보고서 생성기는 해당
+소스 snapshot에서 재생성하며, 현재 하네스 fingerprint가 달라졌다면 기존 측정 재사용을
+거부한다. 새 결과는 항상 새 폴더로 저장한다. [계약·검증·실측 범위](GPU_TIMESTAMP_BENCHMARK_REPORT.md)를 따른다.
+
 현재 자동화는 Windows SDK 및 고정 competitor 빌드와 CTest/Python/외부 소비자 검증을
 지원한다. GPU 성능 측정 중 다른 빌드나 GPU 부하를 실행하지 않는다.

@@ -1,5 +1,10 @@
 #include "common/Adapter.hpp"
+#include "common/GpuTimestamp.hpp"
 #include <LLGL/LLGL.h>
+#include <LLGL/Backend/Direct3D12/NativeHandle.h>
+#include <d3d12sdklayers.h>
+#include <wrl/client.h>
+#include <iostream>
 #include <stdexcept>
 #include <algorithm>
 
@@ -13,6 +18,21 @@ class LLGLAdapter final : public Adapter {
     LLGL::Shader *vertexShader{}, *fragmentShader{};
     std::uint32_t uploadWidth{}, uploadHeight{};
     bool uploadHalf{};
+    LLGL::QueryHeap* timestamps{};
+    Microsoft::WRL::ComPtr<ID3D12InfoQueue> info;
+    void checkValidation() {
+        if (!info) return;
+        for (UINT64 i=0;i<info->GetNumStoredMessages();++i) {
+            SIZE_T size{};
+            if (FAILED(info->GetMessage(i,nullptr,&size))) throw std::runtime_error("LLGL validation message size failed");
+            std::vector<std::byte> bytes(size); auto message=reinterpret_cast<D3D12_MESSAGE*>(bytes.data());
+            if (FAILED(info->GetMessage(i,message,&size))) throw std::runtime_error("LLGL validation message failed");
+            if (message->Severity<=D3D12_MESSAGE_SEVERITY_ERROR) {
+                std::cerr << message->pDescription << '\n'; throw std::runtime_error("LLGL native D3D12 validation failed");
+            }
+        }
+        info->ClearStoredMessages();
+    }
 public:
     explicit LLGLAdapter(bool validation) {
         LLGL::RenderSystemDescriptor desc{"Direct3D12"};
@@ -20,10 +40,26 @@ public:
         LLGL::Report report;
         device = LLGL::RenderSystem::Load(desc, &report);
         if (!device) throw std::runtime_error(report.GetText());
+        if (validation) {
+            LLGL::Direct3D12::RenderSystemNativeHandle native{};
+            if (!device->GetNativeHandle(&native,sizeof(native)) || !native.device) throw std::runtime_error("LLGL native device unavailable");
+            auto status=native.device->QueryInterface(IID_PPV_ARGS(&info));
+            native.device->Release(); if (native.factory) native.factory->Release(); if (native.commandQueue) native.commandQueue->Release();
+            if (FAILED(status)) throw std::runtime_error("LLGL native debug info queue unavailable");
+            checkValidation();
+        }
     }
-    ~LLGLAdapter() override { device->GetCommandQueue()->WaitIdle(); }
+    ~LLGLAdapter() override {
+        try { idle(); if (timestamps) device->Release(*timestamps); device.reset(); checkValidation(); }
+        catch (const std::exception& error) { std::cerr << "LLGL teardown: " << error.what() << '\n'; std::abort(); }
+    }
+    void enableGpuTimestamps() override {
+        LLGL::QueryHeapDescriptor desc; desc.type=LLGL::QueryType::TimeElapsed; desc.numQueries=1;
+        timestamps=device->CreateQueryHeap(desc);
+        if (!timestamps) throw std::runtime_error("LLGL elapsed timestamp query unavailable");
+    }
     std::string deviceName() const override { return device->GetRendererInfo().deviceName.c_str(); }
-    void idle() override { device->GetCommandQueue()->WaitIdle(); }
+    void idle() override { device->GetCommandQueue()->WaitIdle(); checkValidation(); }
     void* buffer(std::uint32_t bytes) override {
         LLGL::BufferDescriptor desc;
         desc.size = bytes; desc.bindFlags = LLGL::BindFlags::VertexBuffer;
@@ -67,10 +103,23 @@ public:
     DrawTimes draw(std::uint32_t count,bool instanced) override {
         auto start=Clock::now(); commands->Begin(); commands->SetViewport(LLGL::Extent2D{64,64}); commands->BeginRenderPass(*target);
         const float clear[]{0,0,1,1}; commands->Clear(LLGL::ClearFlags::Color,clear); commands->SetPipelineState(*pipeline);
+        if (timestamps) commands->BeginQuery(*timestamps,0);
         if (instanced) commands->DrawInstanced(3,0,count); else for (std::uint32_t i=0;i<count;++i) commands->Draw(3,0);
+        if (timestamps) commands->EndQuery(*timestamps,0);
         commands->EndRenderPass(); commands->End(); auto recorded=Clock::now();
-        device->GetCommandQueue()->Submit(*commands); auto submitted=Clock::now(); idle(); auto end=Clock::now();
-        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,end),ms(start,end),std::nullopt};
+        device->GetCommandQueue()->Submit(*commands); auto submitted=Clock::now(); idle(); auto completed=Clock::now();
+        std::optional<double> gpu;
+        if (timestamps) {
+            std::uint64_t nanoseconds{};
+            // The public API returns integer nanoseconds; resolving may submit and
+            // wait a separate internal command list, outside the GPU interval.
+            if (!device->GetCommandQueue()->QueryResult(*timestamps,0,1,&nanoseconds,sizeof(nanoseconds)))
+                throw std::runtime_error("LLGL timestamp result unavailable after completion");
+            gpu=gpuTicksToMilliseconds(0,nanoseconds,1e9);
+        }
+        auto end=Clock::now();
+        checkValidation();
+        return {ms(start,recorded),ms(recorded,submitted),ms(submitted,completed),ms(start,end),gpu,timestamps?ms(completed,end):0};
     }
     std::vector<std::byte> download(LLGL::Texture* texture,std::uint32_t w,std::uint32_t h,bool half) {
         std::vector<std::byte> pixels(static_cast<size_t>(w)*h*(half?8:4));
