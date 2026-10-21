@@ -153,14 +153,31 @@ python tools/report_telemetry_benchmarks.py
 직접 CLI에도 마지막 인자로 `--telemetry`를 붙인다. 없으면 OS 관측을 호출하지 않는다.
 수동 target 빌드에는 `telemetry_contracts`를 포함한다. 보고서 생성기는 고정된
 2026-10-21-telemetry 캠페인 네 개를 검증하고 소스 ZIP을 보존한다. 새로운 출력 경로는
-기존 폴더와 겹치지 않게 지정한다. 공통 native CTest 17개는 hardware/debug device가 필요하다.
+기존 폴더와 겹치지 않게 지정한다. 현재 공통 native CTest 22개는 hardware/debug device가 필요하다.
 
 `process-metrics.csv`/`summary.json`의 `process_metrics`는 process batch CPU %, CPU lifetime
 memory peak 및 GPU checkpoint 최댓값이다. `summary.csv`의 frame 시간과 단위·표본 수를
 섞지 않는다. GPU 관측은 node 0 local/nonlocal의 순간 process usage이며 연속 peak가 아니다.
 캐시 cold/warm·PSO hit/miss는 아직 통제하지 않는다.
 
-LLGL upload1080/upload4k/upload4k16f는 pin의 full-region upload/readback 상태 오류 때문에
-실행 전에 실패한다. 다른 시나리오 및 SDL3/GraphicsSDK 업로드는 지원한다.
+LLGL upload1080/upload4k/upload4k16f는 public WriteBuffer→CopyTextureFromBuffer 경로로
+지원한다. 예전 full-region WriteTexture 경로/model 및 stale adapter fingerprint는 거부한다.
 이번 선택형 계측의 실제 빌드·측정 범위는 공통 세 SDK이며 Diligent/bgfx/Forge 재검증은
 수행하지 않았다. [관측 보고서](CPU_MEMORY_BENCHMARK_REPORT.md)를 따른다.
+
+## LLGL 공개 업로드 경로 재측정
+
+```powershell
+./tools/bootstrap_competitors.ps1
+ctest --test-dir out/bench -C Release --output-on-failure
+python tools/run_benchmarks.py --sdks llgl sdl graphicssdk --scenarios upload1080 upload4k upload4k16f --count 1 --runs 3 --samples 120 --warmup 20 --output benchmarks/results/my-upload-plain
+python tools/run_benchmarks.py --sdks llgl sdl graphicssdk --scenarios upload1080 upload4k upload4k16f --count 1 --runs 3 --samples 120 --warmup 20 --telemetry --output benchmarks/results/my-upload-telemetry
+python tools/report_llgl_upload.py
+```
+
+수동 target 빌드는 `gfx_bench gpu_timestamp_contracts telemetry_contracts llgl_upload_contracts`를
+포함한다. 전용 LLGL 테스트는 8개 형식·크기에서 바뀌는 bytes, readback 뒤 재업로드,
+연속 upload, malformed payload 및 padded row를 검사한다. 공통 CTest는 22개다.
+report 생성기는 고정 2026-10-21-llgl-upload-plain/telemetry 폴더를 검증한다.
+새 upload 계약 revision 5와 계측 여부를 유지하며 이전 upload 자료와 자동 비교하지 않는다.
+GPU 시간은 null이다. [범위·추가 copy 비용·원본](LLGL_UPLOAD_BENCHMARK_REPORT.md)을 따른다.

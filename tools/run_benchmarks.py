@@ -14,6 +14,21 @@ import benchmark_telemetry as telemetry
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 GPU_SCENARIOS=("draw_gpu","instanced_gpu")
 GPU_SCOPE="draw_calls_after_clear_and_bind_before_pass_end_v1"
+LLGL_UPLOAD_MODEL="llgl_writebuffer_default_buffer_then_copytexturefrombuffer_v1"
+
+def llgl_fingerprint(root=ROOT):
+    lock=json.loads((root/"benchmarks/competitors/sources.lock.json").read_text())
+    identity="llgl|"+lock['llgl']['commit']+"\n"
+    files=sorted([p for pattern in ("*.cpp","*.hpp","*.h","*.cmake") for p in (root/"benchmarks").rglob(pattern)]+[root/"benchmarks/CMakeLists.txt"])
+    for path in files:
+        identity+=path.relative_to(root).as_posix()+"|"+hashlib.sha256(path.read_bytes()).hexdigest()+"\n"
+    return hashlib.sha256(identity.encode()).hexdigest()
+
+def upload_contract():
+    return {"upload_completion":"cpu_payload_to_persistent_texture_gpu_complete_before_return_v2",
+            "upload_staging":"adapter_managed_copies_allocations_and_waits_included",
+            "upload_readback":"full_payload_before_and_after_measurement",
+            "upload_rows":"tight_cpu_payload_256_byte_gpu_pitch"}
 
 def timestamp_contract(sdk):
     # Pinned Diligent QueryManagerD3D12::EndQuery resolves every timestamp
@@ -65,8 +80,6 @@ def bgfx_fingerprint(root=ROOT):
     return hashlib.sha256(identity.encode()).hexdigest()
 
 def scenario_error(sdk, scenario):
-    if sdk == "llgl" and scenario in ("upload1080", "upload4k", "upload4k16f"):
-        return "Unsupported LLGL upload: pinned full-region WriteTexture after ReadTexture lacks COPY_SOURCE to COPY_DEST transition"
     if scenario in GPU_SCENARIOS and sdk not in ("graphicssdk","llgl","diligent_core","the_forge"):
         return f"Unsupported {sdk}/{scenario}: no matching public draw-only GPU timestamp interval"
     if sdk == "bgfx" and scenario == "pipeline":
@@ -113,6 +126,8 @@ def validate_result(result, sdk, scenario, count, warmup, samples, validation, o
     elif any(sample.get("gpu_ms") is not None for sample in result["samples"]):
         raise RuntimeError("Unexpected timestamp instrumentation in an end-to-end workload")
     telemetry.validate(result, observe)
+    if sdk=="llgl" and scenario in ("upload1080","upload4k","upload4k16f") and result.get("upload_model")!=LLGL_UPLOAD_MODEL:
+        raise RuntimeError("Missing/obsolete LLGL public buffer-to-texture upload model")
 
 def percentile(values, q):
     ordered = sorted(values)
@@ -238,6 +253,8 @@ def main():
         lines = proc.stdout.splitlines()
         result = json.loads(lines[-1])
         validate_result(result, sdk, scenario, args.count, args.warmup, args.samples, args.validation, args.telemetry)
+        if sdk=="llgl" and result.get("sdk_build_source_sha256")!=llgl_fingerprint():
+            raise RuntimeError("Stale LLGL adapter/harness build; rebuild after source changes")
         if sdk == "diligent_core" and result.get("sdk_build_source_sha256") != diligent_fingerprint():
             raise RuntimeError("Stale Diligent benchmark build; rebuild after source/pin changes")
         if sdk == "bgfx" and result.get("sdk_build_source_sha256") != bgfx_fingerprint():
@@ -256,7 +273,7 @@ def main():
                        "sdk_source_sha256": source_hash.hexdigest() if sdk == "graphicssdk" else None,
                        "measured_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                        "executable_sha256": executable_hash,
-                       "contract": {"revision": 4 if args.telemetry else 3 if gpu_timestamps else 2, "resource_policy": allocation_policy(result) if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
+                       "contract": {"revision": 5 if scenario.startswith("upload") else 4 if args.telemetry else 3 if gpu_timestamps else 2, "resource_policy": allocation_policy(result) if allocation else "reuse_resources_one_frame_in_flight_sdk_managed_staging",
                                     "threads": 1, "buffer_bytes": 65536 if allocation else None,
                                     "texture_extent": [1920,1080] if scenario == "upload1080" else [3840,2160] if scenario.startswith("upload") else [64,64],
                                     "texture_format": "rgba16_float" if scenario == "upload4k16f" else "rgba8_unorm", "mip_levels": 1, "samples": 1,
@@ -267,6 +284,8 @@ def main():
             result["contract"].update(timestamp_contract(sdk))
         if args.telemetry:
             result["contract"]["telemetry"]=telemetry.contract()
+        if scenario.startswith("upload"):
+            result["contract"].update(upload_contract())
         if sdk == "diligent_core":
             result["build_dependencies"] = diligent_dependencies()
             result["runtime_sha256"] = runtime_hashes

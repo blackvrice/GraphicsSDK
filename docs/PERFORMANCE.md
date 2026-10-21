@@ -27,5 +27,6 @@ CPU 사용률은 선택형 telemetry에서 측정 batch의 프로세스 CPU/wall
 checkpoint 최대 사용량은 서로 다른 범위다. GPU 값은 연속 peak가 아니고 budget도 소비량이
 아니다. 관측 비용이 들어간 결과는 비계측 원본과 자동 비교하지 않는다.
 [CPU·메모리 보고서](CPU_MEMORY_BENCHMARK_REPORT.md)에 원본·표본 수·해석 제한을 기록했다.
-고정 LLGL의 full-region upload after readback은 native validation 오류로 현재 차단되어
-과거 업로드 수치를 현재 correctness 근거로 재사용하지 않는다.
+고정 LLGL의 full-region WriteTexture after readback 오류는 public buffer-to-texture
+adapter 경로로 복구했다. 추가 staging copy·대기 비용을 포함한 [새 측정](LLGL_UPLOAD_BENCHMARK_REPORT.md)만
+현재 correctness 근거로 사용하고 과거 오류 경로 수치는 재사용하지 않는다.

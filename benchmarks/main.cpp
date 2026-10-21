@@ -110,7 +110,7 @@ int main(int argc, char** argv) try {
     std::cout << "{\"schema_version\":1,\"sdk\":" << bench::quote(sdk) << ",\"api\":\"d3d12\",\"category\":" << bench::quote(gpuTimestamps?"gpu_timestamp":"end_to_end") << ",\"scenario\":" << bench::quote(scenario)
         << ",\"count\":" << count << ",\"validation\":" << (validation ? "true" : "false")
         << ",\"environment\":" << env << ",\"sdk_build_source_sha256\":" << bench::quote(adapter->sourceFingerprint()) << ",\"allocation_model\":" << bench::quote(adapter->allocationModel(scenario)) << ",\"warmup\":" << warmup << ",\"configuration\":\"Release\",\"shader_fnv1a64\":" << bench::quote(draw||pipeline?std::to_string(shaderHash):"not_applicable")
-        << ",\"payload_bytes\":" << pixels.size() << ",\"gpu_timestamp_scope\":" << bench::quote(gpuTimestamps?bench::gpuTimestampScope:"disabled") << ",\"readback_verified\":" << (draw||upload||pipeline?"true":"null") << ",\"telemetry\":" << telemetryJson << ",\"samples\":[";
+        << ",\"payload_bytes\":" << pixels.size() << ",\"upload_model\":" << bench::quote(upload?adapter->uploadModel():"not_applicable") << ",\"gpu_timestamp_scope\":" << bench::quote(gpuTimestamps?bench::gpuTimestampScope:"disabled") << ",\"readback_verified\":" << (draw||upload||pipeline?"true":"null") << ",\"telemetry\":" << telemetryJson << ",\"samples\":[";
     for (size_t i = 0; i < results.size(); ++i) { if (i) std::cout << ','; std::cout << results[i]; }
     std::cout << "]}\n";
     return 0;

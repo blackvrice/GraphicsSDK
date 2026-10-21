@@ -86,3 +86,8 @@ with adjacent notices (968 compiler-read project inputs, 22 components). It cove
 LLGL/SDL3/GraphicsSDK benchmark binary. PSAPI/DXGI remain system prerequisites; optional
 competitor rebuilds and redistribution clearance are outside this snapshot. Historical inventories
 and the SDK package remain unchanged.
+
+The subsequent public LLGL buffer-to-texture upload path has its own
+[windows-benchmarks-llgl-upload-release](generated/windows-benchmarks-llgl-upload-release/inventory.json)
+snapshot and adjacent notices (969 compiler-read project inputs, 22 components). It retains the
+same competitor pins, system prerequisites and redistribution limitations; old snapshots remain historical.

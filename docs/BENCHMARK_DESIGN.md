@@ -125,6 +125,7 @@ allocation/release API 시간에는 관측을 넣지 않지만 allocation frame 
 [정확한 구간·원본·제한](CPU_MEMORY_BENCHMARK_REPORT.md)을 따른다.
 
 현재 pin의 LLGL full-region WriteTexture는 ReadTexture 뒤 COPY_DEST 전환 없이 copy를
-기록하여 native validation에 실패한다. 세 LLGL upload 시나리오는 계측 여부와 무관하게
-실행 전에 거부한다. 기존 LLGL upload 수치는 보존하지만 현재 correctness 기준으로
-다시 승인하지 않는다. 이 경로의 public API 수정·재측정은 남아 있다.
+기록하여 native validation에 실패한다. adapter는 public WriteBuffer→CopyTextureFromBuffer
+경로를 사용하며 추가 GPU buffer copy·대기를 end-to-end 비용에 포함한다. 새 upload
+계약 revision 5는 old path/이전 계약과 분리한다. 기존 LLGL upload 수치는 보존하지만
+현재 correctness 기준으로 다시 승인하지 않는다. [새 검증·측정](LLGL_UPLOAD_BENCHMARK_REPORT.md)을 따른다.

@@ -23,6 +23,7 @@ struct Adapter {
     virtual std::string sourceFingerprint() const { return {}; }
     virtual std::string unsupportedReason(std::string_view) const { return {}; }
     virtual std::string allocationModel(std::string_view) const { return "default_gpu_resources"; }
+    virtual std::string uploadModel() const { return "sdk_managed_staging"; }
     virtual void enableGpuTimestamps() { throw std::runtime_error("Matching draw timestamp interval is unsupported by this adapter"); }
     virtual std::string deviceName() const = 0;
     virtual void idle() = 0;

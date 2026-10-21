@@ -20,7 +20,7 @@ inventory and terms review; the checked item is limited to the current reviewed 
 - [x] Same physical adapter/driver/compiler/validation/workload contract checks.
 - [x] Common allocation workload and actual same-machine competitor data.
 - [x] Draw 1k/10k/100k, instancing; pre/post image readback.
-- [x] Persistent 1080p/4K RGBA8 and 4K RGBA16F upload; byte readback. Current LLGL pin's full-region upload after readback fails native state validation and is blocked; historical LLGL upload numbers are not current acceptance ([details](CPU_MEMORY_BENCHMARK_REPORT.md)).
+- [x] Persistent 1080p/4K RGBA8 and 4K RGBA16F upload; byte readback. LLGL uses a validated public buffer-to-texture path after the pinned WriteTexture state failure; historical old-path numbers remain excluded ([fresh measurements](LLGL_UPLOAD_BENCHMARK_REPORT.md)).
 - [x] Repeated PSO creation from identical precompiled bytecode (driver cache uncontrolled).
 - [x] Multiple processes, warmup, P50/P95/P99/MAD, JSON/CSV and comparison reports.
 - [x] Standalone pinned Diligent Core D3D12 adapter: all eight existing workloads, native validation/readback, dependency inventory and same-machine repeated measurements ([report](DILIGENT_BENCHMARK_REPORT.md)).
@@ -28,7 +28,8 @@ inventory and terms review; the checked item is limited to the current reviewed 
 - [x] Pinned The Forge D3D12 adapter: eight matching workloads, native validation/readback, no-NVAPI dependency inventory and repeated measurements; explicit MSVC compatibility and untimed native readback limitations ([report](FORGE_BENCHMARK_REPORT.md)).
 - [x] Matching draw/instanced GPU timestamp intervals at 1k/10k/100k for GraphicsSDK/LLGL/Forge; Diligent's start-query resolve interval kept separate, SDL/bgfx matching scopes rejected ([report](GPU_TIMESTAMP_BENCHMARK_REPORT.md)).
 - [x] Opt-in Windows process-batch CPU utilization, process-lifetime CPU memory peaks and explicitly bounded GPU memory checkpoint maxima for GraphicsSDK/LLGL/SDL3; matching contract, native checks and repeated observations ([report](CPU_MEMORY_BENCHMARK_REPORT.md)).
-- [ ] Continuous/transient GPU memory peak acceptance; validated public LLGL upload path and fresh measurements after the pinned full-upload/readback state failure.
+- [x] Public LLGL upload/readback state regression recovery, padded-row/changing-payload native checks and fresh same-binary upload measurements with telemetry ON/OFF ([report](LLGL_UPLOAD_BENCHMARK_REPORT.md)).
+- [ ] Continuous/transient GPU memory peak acceptance.
 - [ ] Controlled shader cache cold/warm and PSO cache hit/miss.
 - [ ] Multi-texture uploads, reuse/in-flight allocation scenarios, switching and binding workloads.
 - [ ] E/F/G/H workloads and correctness references (2D/3D/compute/media stages).

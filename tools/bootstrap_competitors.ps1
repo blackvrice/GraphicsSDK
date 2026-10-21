@@ -46,14 +46,14 @@ try {
     if ($Forge) {
         cmake -S benchmarks -B out/bench-forge -G 'Visual Studio 17 2022' -A x64 -DGFX_BENCH_WITH_FORGE=ON -DGFX_BENCH_WITH_BGFX=OFF -DGFX_BENCH_WITH_DILIGENT=OFF
         if ($LASTEXITCODE) { throw 'Forge benchmark configure failed' }
-        cmake --build out/bench-forge --config Release --target gfx_bench gpu_timestamp_contracts telemetry_contracts --parallel $Jobs
+        cmake --build out/bench-forge --config Release --target gfx_bench gpu_timestamp_contracts telemetry_contracts llgl_upload_contracts --parallel $Jobs
         if ($LASTEXITCODE) { throw 'Forge benchmark build failed' }
         ctest --test-dir out/bench-forge -C Release --output-on-failure
         if ($LASTEXITCODE) { throw 'Forge native validation/readback tests failed' }
     } elseif ($Bgfx) {
         cmake -S benchmarks -B out/bench-bgfx -G 'Visual Studio 17 2022' -A x64 -DGFX_BENCH_WITH_BGFX=ON -DGFX_BENCH_WITH_DILIGENT=OFF
         if ($LASTEXITCODE) { throw 'bgfx benchmark configure failed' }
-        cmake --build out/bench-bgfx --config Release --target gfx_bench bgfx_shader_contracts gpu_timestamp_contracts telemetry_contracts --parallel $Jobs
+        cmake --build out/bench-bgfx --config Release --target gfx_bench bgfx_shader_contracts gpu_timestamp_contracts telemetry_contracts llgl_upload_contracts --parallel $Jobs
         if ($LASTEXITCODE) { throw 'bgfx benchmark build failed' }
         ctest --test-dir out/bench-bgfx -C Release --output-on-failure
         if ($LASTEXITCODE) { throw 'bgfx shader contract tests failed' }
@@ -72,7 +72,7 @@ try {
         # Configure fetches upstream's fixed Abseil and full NVAPI pins; CMake verifies all four SHAs.
         cmake -S benchmarks -B out/bench-diligent -G 'Visual Studio 17 2022' -A x64 -DGFX_BENCH_WITH_DILIGENT=ON
         if ($LASTEXITCODE) { throw 'Diligent benchmark configure failed' }
-        cmake --build out/bench-diligent --config Release --target gfx_bench gpu_timestamp_contracts telemetry_contracts --parallel $Jobs
+        cmake --build out/bench-diligent --config Release --target gfx_bench gpu_timestamp_contracts telemetry_contracts llgl_upload_contracts --parallel $Jobs
         if ($LASTEXITCODE) { throw 'Diligent benchmark build failed' }
         ctest --test-dir out/bench-diligent -C Release --output-on-failure
         if ($LASTEXITCODE) { throw 'Diligent timestamp validation tests failed' }

@@ -174,3 +174,10 @@ Forge의 비활성 PIX header primary terms 미해결과 경쟁 바이너리 재
 SDK ZIP을 덮어쓰지 않았다. optional Forge/Diligent/bgfx profile의 새 계측 artifact 감사나
 다른 플랫폼 검증을 수행했다는 의미가 아니다. 새 공통 inventory 및 기존 SDK ZIP의
 `--check`가 통과했다.
+
+LLGL 공개 upload 복구 후에는 별도
+[inventory](../licenses/generated/windows-benchmarks-llgl-upload-release/inventory.json)와
+같은 폴더의 고지문을 생성했다. 공통 profile의 compiler-read 입력 969개/구성요소 22개,
+새 adapter/harness 및 binary 해시를 기록한다. competitor pin과 원본 checkout은 그대로이며
+새 외부 라이브러리는 없다. 새 inventory와 변경하지 않은 SDK ZIP의 `--check`가 통과했다.
+이전 inventory/측정 소스 ZIP을 덮어쓰지 않는다.

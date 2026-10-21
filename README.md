@@ -38,8 +38,9 @@ The [GPU timestamp report](docs/GPU_TIMESTAMP_BENCHMARK_REPORT.md) compares matc
 intervals for GraphicsSDK/LLGL/Forge and records Diligent's different resolve interval separately.
 The [CPU/memory report](docs/CPU_MEMORY_BENCHMARK_REPORT.md) adds opt-in process CPU time,
 lifetime CPU memory peaks and bounded GPU memory checkpoint maxima for the common Windows profile.
-Pinned LLGL full-region uploads after readback fail native state validation and are now rejected;
-historical LLGL upload observations are not current correctness acceptance.
+The [LLGL upload recovery report](docs/LLGL_UPLOAD_BENCHMARK_REPORT.md) validates a public
+buffer-to-texture path and fresh repeated observations. The pinned WriteTexture bug and old-path
+data remain historical; no vendor patch or native copy bypass is used.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

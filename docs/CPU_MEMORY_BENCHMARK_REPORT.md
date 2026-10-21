@@ -1,5 +1,9 @@
 # Windows CPU 및 메모리 관측
 
+이 보고서는 `a2b87f9`의 역사적 측정이다. 이후 LLGL은 [공개 buffer-to-texture 경로와
+새 자료](LLGL_UPLOAD_BENCHMARK_REPORT.md)로 업로드를 복구했다. 아래의 실패·차단 기록은
+당시 원본을 설명하며 과거 측정을 재분류하거나 수정하지 않는다.
+
 2026-10-21. 다음 Phase 1 항목 중 CPU 사용률·CPU 최대 메모리와 GPU 메모리 체크포인트
 관측을 구현했다. 선택형 `--telemetry`를 사용하며 기본 실행에는 OS 관측 API를 호출하지
 않는다. 캐시 cold/warm·PSO hit/miss 통제와 연속 GPU 메모리 peak 검증은 남아 있다.

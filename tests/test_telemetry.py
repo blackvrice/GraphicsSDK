@@ -1,8 +1,6 @@
 import copy
 import pathlib
 import sys
-import subprocess
-import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / 'tools'))
@@ -11,13 +9,15 @@ import run_benchmarks as bench
 
 
 class TelemetryContracts(unittest.TestCase):
-    def test_known_invalid_llgl_upload_is_rejected_before_any_output_or_execution(self):
+    def test_llgl_upload_is_restored_only_with_the_new_public_buffer_copy_model(self):
         for scenario in ('upload1080', 'upload4k', 'upload4k16f'):
-            self.assertIn('COPY_SOURCE', bench.scenario_error('llgl', scenario))
-        with tempfile.TemporaryDirectory() as directory:
-            output = pathlib.Path(directory) / 'absent'
-            proc = subprocess.run([sys.executable, str(bench.ROOT / 'tools/run_benchmarks.py'), '--sdks', 'llgl', '--scenarios', 'upload1080', '--telemetry', '--output', str(output)], capture_output=True, text=True)
-            self.assertEqual(proc.returncode, 2); self.assertFalse(output.exists())
+            self.assertIsNone(bench.scenario_error('llgl', scenario))
+            result={'sdk':'llgl','scenario':scenario,'count':1,'warmup':2,'validation':False,
+                    'api':'d3d12','category':'end_to_end','configuration':'Release','readback_verified':True,
+                    'samples':[{'gpu_ms':None}], 'upload_model':bench.LLGL_UPLOAD_MODEL}
+            bench.validate_result(result,'llgl',scenario,1,2,1,False)
+            for old in (None,'WriteTexture'):
+                with self.assertRaises(RuntimeError): bench.validate_result({**result,'upload_model':old},'llgl',scenario,1,2,1,False)
     def result(self, allocation=False):
         point = {key: 100 for key in telemetry.MEMORY_FIELDS}
         points = [{**point, 'phase': 'baseline', 'sample': 0}]

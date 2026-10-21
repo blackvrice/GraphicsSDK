@@ -147,3 +147,23 @@ Historical LLGL upload observations are not current validation acceptance. Curre
 measurements cover SDL3/GraphicsSDK. Vendor sources, core SDK and SDK ZIP were unchanged.
 Optional Diligent/bgfx/Forge observer profiles, continuous GPU peaks, cache control and remote
 CI were not executed. See [CPU/memory report](CPU_MEMORY_BENCHMARK_REPORT.md).
+
+2026-10-21 LLGL public upload recovery: common CTest 22/22 and existing core CTest 4/4
+passed. The dedicated native test performs 13,156 checks over 8 RGBA8/RGBA16F extent cases,
+including unaligned rows, 72 public uploads and 96 complete readbacks with changing payloads.
+Short payload rejection preserves the previous texture contents; zero/overflow layout rejection
+is checked before GPU mutation. Three repeated upload CTests cover 1080p/4K/4K16F after
+pre-readback. Native ERROR/CORRUPTION checks remain active through teardown.
+
+Eighteen native runner processes validate all 3 upload scenarios for LLGL/SDL3/GraphicsSDK,
+with telemetry ON/OFF and warmup=0 for the observer path. All 43 Python tests passed,
+including the restored public model, missing/obsolete model rejection, LLGL pin/source/harness
+fingerprint changes and separation from old upload contracts and uninstrumented data.
+Fresh performance data uses one binary: 54 processes / 6,480 samples across two separate
+observer profiles. No failed old-path observation is relabeled as passing.
+
+The pinned LLGL WriteTexture implementation is unchanged. The adapter uses WriteBuffer
+and CopyTextureFromBuffer, including its extra default-buffer copy/wait cost. Common new
+inventory and unchanged SDK ZIP checks passed. Optional competitor profiles, LLGL GBV,
+continuous GPU memory peaks, cache hit/miss control, prolonged stress and remote CI were
+not run. See [public upload report](LLGL_UPLOAD_BENCHMARK_REPORT.md).

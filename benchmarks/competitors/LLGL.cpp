@@ -1,5 +1,6 @@
 #include "common/Adapter.hpp"
 #include "common/GpuTimestamp.hpp"
+#include "common/UploadLayout.hpp"
 #include <LLGL/LLGL.h>
 #include <LLGL/Backend/Direct3D12/NativeHandle.h>
 #include <d3d12sdklayers.h>
@@ -12,6 +13,10 @@ namespace bench {
 class LLGLAdapter final : public Adapter {
     LLGL::RenderSystemPtr device;
     LLGL::Texture *targetTexture{}, *uploadTexture{};
+    LLGL::Buffer* uploadBuffer{};
+    LLGL::CommandBuffer* uploadCommands{};
+    UploadLayout uploadFootprint{};
+    std::vector<std::byte> paddedUpload;
     LLGL::RenderTarget* target{};
     LLGL::CommandBuffer* commands{};
     LLGL::PipelineState* pipeline{};
@@ -50,7 +55,14 @@ public:
         }
     }
     ~LLGLAdapter() override {
-        try { idle(); if (timestamps) device->Release(*timestamps); device.reset(); checkValidation(); }
+        try {
+            idle();
+            if (uploadCommands) device->Release(*uploadCommands);
+            if (uploadBuffer) device->Release(*uploadBuffer);
+            if (uploadTexture) device->Release(*uploadTexture);
+            if (timestamps) device->Release(*timestamps);
+            device.reset(); checkValidation();
+        }
         catch (const std::exception& error) { std::cerr << "LLGL teardown: " << error.what() << '\n'; std::abort(); }
     }
     void enableGpuTimestamps() override {
@@ -59,11 +71,8 @@ public:
         if (!timestamps) throw std::runtime_error("LLGL elapsed timestamp query unavailable");
     }
     std::string deviceName() const override { return device->GetRendererInfo().deviceName.c_str(); }
-    std::string unsupportedReason(std::string_view scenario) const override {
-        if (scenario=="upload1080" || scenario=="upload4k" || scenario=="upload4k16f")
-            return "Pinned LLGL full-region WriteTexture after ReadTexture lacks COPY_SOURCE to COPY_DEST transition; repeated upload validation is blocked";
-        return {};
-    }
+    std::string sourceFingerprint() const override { return GFX_LLGL_BUILD_SHA256; }
+    std::string uploadModel() const override { return llglUploadModel; }
     void idle() override { device->GetCommandQueue()->WaitIdle(); checkValidation(); }
     void* buffer(std::uint32_t bytes) override {
         LLGL::BufferDescriptor desc;
@@ -145,15 +154,32 @@ public:
         return {ms(start,end),ms(releasing,released)};
     }
     void prepareUpload(std::uint32_t w,std::uint32_t h,bool half) override {
+        if (uploadTexture) throw std::runtime_error("LLGL upload is already prepared");
+        uploadFootprint=uploadLayout(w,h,half);
         uploadWidth=w; uploadHeight=h; uploadHalf=half;
         LLGL::TextureDescriptor desc; desc.extent={w,h,1}; desc.mipLevels=1; desc.format=half?LLGL::Format::RGBA16Float:LLGL::Format::RGBA8UNorm;
         desc.bindFlags=LLGL::BindFlags::Sampled | LLGL::BindFlags::CopySrc | LLGL::BindFlags::CopyDst; desc.miscFlags=LLGL::MiscFlags::NoInitialData;
         uploadTexture=device->CreateTexture(desc); if (!uploadTexture) throw std::runtime_error("LLGL upload texture creation failed");
+        LLGL::BufferDescriptor bufferDesc; bufferDesc.size=uploadFootprint.size;
+        bufferDesc.bindFlags=LLGL::BindFlags::CopySrc | LLGL::BindFlags::CopyDst;
+        bufferDesc.miscFlags=LLGL::MiscFlags::NoInitialData;
+        uploadBuffer=device->CreateBuffer(bufferDesc);
+        uploadCommands=device->CreateCommandBuffer();
+        if (!uploadBuffer || !uploadCommands) throw std::runtime_error("LLGL upload buffer/commands unavailable");
+        if (uploadFootprint.rowBytes!=uploadFootprint.rowPitch) paddedUpload.resize(static_cast<size_t>(uploadFootprint.size));
     }
     void upload(std::span<const std::byte> pixels) override {
+        if (!uploadTexture || pixels.size()!=uploadFootprint.tightSize) throw std::runtime_error("LLGL upload payload size mismatch");
+        const void* data=pixels.data();
+        if (!paddedUpload.empty()) { padUploadRows(paddedUpload,pixels,uploadFootprint); data=paddedUpload.data(); }
+        // Public WriteBuffer includes LLGL's staging-to-default-buffer copy and wait.
+        // The following public texture copy tracks COPY_SOURCE/COPY_DEST transitions,
+        // including a preceding ReadTexture. No native resource-state bypass.
+        device->WriteBuffer(*uploadBuffer,0,data,uploadFootprint.size);
         LLGL::TextureRegion region; region.extent={uploadWidth,uploadHeight,1};
-        LLGL::ImageView image{LLGL::ImageFormat::RGBA,uploadHalf?LLGL::DataType::Float16:LLGL::DataType::UInt8,pixels.data(),pixels.size()};
-        device->WriteTexture(*uploadTexture,region,image); idle();
+        uploadCommands->Begin();
+        uploadCommands->CopyTextureFromBuffer(*uploadTexture,region,*uploadBuffer,0,uploadFootprint.rowPitch);
+        uploadCommands->End(); device->GetCommandQueue()->Submit(*uploadCommands); idle();
     }
     bool verifyUpload(std::span<const std::byte> pixels) override {
         auto actual=download(uploadTexture,uploadWidth,uploadHeight,uploadHalf); return std::equal(pixels.begin(),pixels.end(),actual.begin(),actual.end());

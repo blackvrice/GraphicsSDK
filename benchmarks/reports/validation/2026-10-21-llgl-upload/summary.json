@@ -1,0 +1,213 @@
+{
+  "ctest": {
+    "common": 22,
+    "core": 4
+  },
+  "python_tests": 43,
+  "native_upload_processes": 18,
+  "native_regression": {
+    "checks": 13156,
+    "format_extent_cases": 8,
+    "public_uploads": 72,
+    "full_readbacks": 96
+  },
+  "performance": {
+    "processes": 54,
+    "samples": 6480,
+    "profiles": [
+      "plain",
+      "telemetry"
+    ]
+  },
+  "executable_sha256": "478d48a4969a54d8dfce311e06802ca43bf0114929558b8fcb41e46cad0710a3",
+  "llgl_build_source_sha256": "774e6fd2ebaca798e98c6b998f5f20d59c6936cdf7557616d2ebc048fb8d8c28",
+  "source_archive": {
+    "path": "benchmarks/reports/sources/llgl-upload-02573a0dd076924d88b647ca42344b181ce2a48a7bbf6f571d8ca8edce66aadd.zip",
+    "sha256": "3e57e0c3d0b8a0a84f1179e25679c0d3fd36c9095ae89768287fc160806a36da"
+  },
+  "clean_dependencies": {
+    "LLGL": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+    "SDL": "3b2bc951500ca6a1f428af77e036e732d9a8afe3"
+  },
+  "limits": [
+    "Original pinned WriteTexture bug remains; the adapter uses different public APIs",
+    "Extra WriteBuffer staging/default-buffer copies and waits are timed",
+    "GPU memory values remain checkpoints, not continuous/transient peaks",
+    "Optional Forge/Diligent/bgfx observer profiles, LLGL GBV, cache control and stress unperformed",
+    "Earlier root-signature initialization failure cause remains unresolved"
+  ],
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/build.log",
+      "sha256": "1468b32e1579677877d2efd167b0a078ced76a7922352e53a31148a5687c48a8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/core-ctest.log",
+      "sha256": "f155660474671de04f5272e10c969ed6f2509dfa9c5bc024a127ba916815a297"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/ctest.log",
+      "sha256": "04826227783676cb97f55c59edc45049c26a97ae2fe53009e24be7af16986fea"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/native-ctest.log",
+      "sha256": "5abf31922e29782338fb2727ba1293d7843c8a0eccfbefa48bf726e1a07f2d85"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/environment.json",
+      "sha256": "20e82beae1ecde5201c5390efb1d0c7d5bd4e33bff8ce5609cb5b78260b0f060"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/graphicssdk-upload1080-0.json",
+      "sha256": "4cb0f56d5057df7ef1355b56e1476a7f351ba28c06e29317d8974d687b9c749c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/graphicssdk-upload4k-0.json",
+      "sha256": "6fda2bca4c9a701c4c3a901f5306e4a66e604a5a88129444b1288ffb58fa552d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/graphicssdk-upload4k16f-0.json",
+      "sha256": "c95f3faf1b6bd784ecdd6ac2a27dd7697baccd6c17496d63293a364c3113df3d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/llgl-upload1080-0.json",
+      "sha256": "00f4a4b44ba06058fe87ec425d1ae54920016f11fa43d6cdc4d8ac48ab2486a1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/llgl-upload4k-0.json",
+      "sha256": "b717a3af29e27a674628d31840901c3149ad9b9143214135881e9d2f19be14b8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/llgl-upload4k16f-0.json",
+      "sha256": "199e30cb5c42037f6ae662ecdfcabf5e1a751d454147879fc1df99423c5b4499"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/schedule.json",
+      "sha256": "c7bbc1534646983b522327447996a02c9c31503e19a5bd45bbfb6b9ba72a6590"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/sdl-upload1080-0.json",
+      "sha256": "3f284a9288567758589eb8dd3d5222c082a595c374ff325dd2d55aabf0423c20"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/sdl-upload4k-0.json",
+      "sha256": "802e5ae855899ad1839c376c06d14371a3b277a9ec425061dccb304b1a40fa67"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/sdl-upload4k16f-0.json",
+      "sha256": "13661e5a904b0b79c3778e4ad37f951e546f43bbb200777ee44493943d37f63f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/summary.csv",
+      "sha256": "4606c2858ed29db6064a7766d68d9caa7f85aeef072ef3dff4a655b091c61e6c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/plain/summary.json",
+      "sha256": "507a703b134a64ab9018c6dead2b421395dbaad96525fb9db3f6d12b951c21ae"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/python-tests.log",
+      "sha256": "840b1f907a8d366630e5f20cda3f0885acc7a102ee31208dcada02a22b2daadc"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/environment.json",
+      "sha256": "20e82beae1ecde5201c5390efb1d0c7d5bd4e33bff8ce5609cb5b78260b0f060"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/graphicssdk-upload1080-0.json",
+      "sha256": "1088edd4b96a6b7f23cc0668d96920bcb79114d8e87fa2b943e03cd19f399527"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/graphicssdk-upload1080-0.stdout",
+      "sha256": "10da05d983b80b179b0f3d4f7c9f44e3fc1fe5012c480de86fe4b3544d0e6182"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/graphicssdk-upload4k-0.json",
+      "sha256": "3cb723fc5f9690df18e9548ef113307ffa68151c6ccd3ec7f575df859def842d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/graphicssdk-upload4k-0.stdout",
+      "sha256": "9b2345698f2d5c9396925a02321cdf72f2417fa6b89fd279ac36d9d5e5e15cd7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/graphicssdk-upload4k16f-0.json",
+      "sha256": "ce53587e25e3dee739d2e3dcd0fc2e1b1edbaff454a46e9045ef95023ad26779"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/graphicssdk-upload4k16f-0.stdout",
+      "sha256": "43bd93c89e8dc2736a180ad320a4707e8f3f54bf5da89fe8929ffb1aeca92f87"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/llgl-upload1080-0.json",
+      "sha256": "c415a64e99f306da178da068ff9d4688c293f7f29cac7443ed1b5043bdfb68f6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/llgl-upload1080-0.stdout",
+      "sha256": "b0920e572da1d7738ee6f9418d72981a0ff65b6480f15231b696486534f01920"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/llgl-upload4k-0.json",
+      "sha256": "33fb5e2f24002ff31dbb9bfa57fd1e8fb2066afec07f1ed57e2ab97dadbee959"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/llgl-upload4k-0.stdout",
+      "sha256": "cd669ae8fc171a28bc296c7883917618366d26ecc53bedb38d6a0fbed2d4e1ca"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/llgl-upload4k16f-0.json",
+      "sha256": "fb937c93d5f74fa490b2e0e8750f6cb1ae5668d5803f133ef295d02bf667bc8e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/llgl-upload4k16f-0.stdout",
+      "sha256": "b9af09ec995d923a153da4d5a90ea5d10ccc7e0061359c5c251df2a50c6d40a3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/process-metrics.csv",
+      "sha256": "1d5a596f29a4d996af927c42c762fbf1768a68153cec484bf45f891cb80aaac4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/schedule.json",
+      "sha256": "c7bbc1534646983b522327447996a02c9c31503e19a5bd45bbfb6b9ba72a6590"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/sdl-upload1080-0.json",
+      "sha256": "d5fd12573ec05d202e1a9edc8bec712d36ce52a8d741cbdd5c3ebe598093e310"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/sdl-upload1080-0.stdout",
+      "sha256": "5043f884d71b4077378ebc0b1b535fa41361d72c98355ae782d685b5e1e893cd"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/sdl-upload4k-0.json",
+      "sha256": "7674ab69bdb2560ec7ececd01824882ed8a23cebf9a3d5f1ff297a6722d3c0de"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/sdl-upload4k-0.stdout",
+      "sha256": "169bdd48005243f103dd4c6e693605fdcd4ba9270bfebcb0d67e24c24950b72b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/sdl-upload4k16f-0.json",
+      "sha256": "52540824ff0d0c65ba81aef36b890b8d8f9bbc8bbaf745997e09232167e4657f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/sdl-upload4k16f-0.stdout",
+      "sha256": "ee2f5e440da6626b0e2316cf5015be1afc729afd137166e46a4a14535c6389a4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/summary.csv",
+      "sha256": "8367d5a39f5c1130b59cf59c3591cea6bd5abcddc9c3c2dbe6cf96be58d716c5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/telemetry/summary.json",
+      "sha256": "7368d897685d2b2b06879404b851e02b107324511cec3b80b439ce1a3e6f9a1e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-21-llgl-upload/license-checks.log",
+      "sha256": "1c44b478b27b4c98003dcff5d7e9fdfaa33e298d449d2fe14d3eec1e673ee779"
+    }
+  ],
+  "license_checks": {
+    "new_common_inventory": "PASS",
+    "unchanged_sdk_zip": "PASS"
+  }
+}
