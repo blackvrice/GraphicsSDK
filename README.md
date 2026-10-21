@@ -43,10 +43,13 @@ buffer-to-texture path and fresh repeated observations. The pinned WriteTexture 
 data remain historical; no vendor patch or native copy bypass is used.
 
 The [Phase 1 extension report](docs/PHASE1_COMPLETION_REPORT.md) adds 22 LLGL cache/resource/
-2D/3D/compute/video baselines with CPU references and fresh GPU/CPU observations. **Phase 1
-is still incomplete:** continuous GPU memory peak evidence is missing. The additional
+2D/3D/compute/video baselines with CPU references and fresh GPU/CPU observations. The additional
 [SDL3 E-H comparison](docs/PHASE1_SDL_COMPARISON_REPORT.md) covers 14 public semantic workloads
 with explicit shader binding differences, both GPU queries disabled and 84 independent processes.
+**Phase 1 foundation acceptance is complete** for the documented Windows D3D12 scope:
+the [GPU memory trace](docs/PHASE1_GPU_MEMORY_REPORT.md) reconciles five process lifetimes,
+zero event loss and three transient controls. Other platforms, remaining SDK APIs and later phases
+are still pending; this is not a completed SDK release.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

@@ -186,3 +186,19 @@ LLGL GBV and long stress remain unperformed. WPR GPU capture failed profiling po
 was canceled and before/after status showed no recording. The completion gate deliberately
 returns exit 1 for missing advanced cross-SDK comparisons and event-based peak evidence.
 See [Phase 1 status](PHASE1_COMPLETION_REPORT.md).
+
+Phase 1 final GPU memory acceptance (2026-10-21): after the user's fresh approval, a private
+DxgKrnl file session captured five fresh LLGL process lifetimes. Header/consumer event loss and
+buffer loss are zero. TDH decoded the installed OS schema. All 1,274 global allocation lifetimes
+pair completely, including 675 destructions in System/other process contexts. Local/nonlocal
+usage and commitment old/new chains begin at zero and end at zero with no gaps.
+Three positive intervals contain two overlapping 32MiB GPU buffers, verified by full readback;
+change events detect 63.992188/64/64MiB beyond the all-checkpoint local maximum.
+
+The new positive-control CTest 1/1 and current Python tests 56/56 passed. Prior common CTest
+72/72 and SDL/LLGL timing evidence were hash-verified, not rerun for this tools-only addition.
+New compiler-read inventory covers 974 inputs/22 components; the unchanged SDK ZIP check passes.
+Target-process events/native outputs are versioned; system ETL stays local and is hash-bound.
+The final completion gate now returns exit 0. Scope is process-lifetime VidMm event-based usage
+in the documented Windows D3D12 profile, not frame-only physical VRAM occupancy or other
+platform/stress/device-loss acceptance. See [final GPU memory report](PHASE1_GPU_MEMORY_REPORT.md).

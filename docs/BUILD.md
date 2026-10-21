@@ -190,33 +190,38 @@ ctest --test-dir out/bench -C Release --output-on-failure
 python tools/run_phase1.py --samples 5 --runs 1 --validation --output out/my-phase1-native
 python tools/run_phase1.py --samples 120 --runs 3 --output benchmarks/results/my-phase1-baselines
 python tools/audit_licenses.py --profile benchmarks-phase1 --output out/my-phase1-inventory
-python tools/report_phase1.py
-python tools/phase1_acceptance.py benchmarks/reports/2026-10-21-phase1-final/acceptance-evidence.json
+python tools/run_phase1.py --compare-sdl --validation --samples 5 --runs 1 --output benchmarks/reports/validation/<new-stage>/native
+python tools/run_phase1.py --compare-sdl --samples 120 --runs 3 --output benchmarks/results/<new-stage>
+python tools/report_phase1_comparison.py --results benchmarks/results/<new-stage> --validation benchmarks/reports/validation/<new-stage> --inventory out/my-phase1-inventory --output benchmarks/reports/<new-stage>
+python tools/phase1_acceptance.py benchmarks/reports/2026-10-21-phase1-gpu-memory-final/acceptance-evidence.json
 ```
 
 새 `phase1_llgl` target은 public LLGL cache/resource/E/F/G/H baseline 22개다. 공통 전체
-CTest는 44개이고 extension source와 실제 exe의 fingerprint를 대조한다. 측정은 기존
-`gfx_bench` 결과와 category/marker/observer 계약이 다르다. 다른 SDK를 선택하면 원본
-폴더 생성 전에 거부한다. 해당 SDK의 기술적 기능 미지원이라는 뜻은 아니며 adapter
-미구현이다. source/report 원본은 [확장 보고서](PHASE1_COMPLETION_REPORT.md)를 따른다.
+CTest는 SDL CPU profile 28개를 포함한 72개이고 source와 실제 exe의 fingerprint를 대조한다.
+`--compare-sdl`은 E–H 14개에서 두 SDK의 GPU query를 모두 끈 public semantic workload
+CPU 완료 구간을 비교한다. 명시적인 binding ABI 차이를 계약에 남긴다. SDL 단독 실행은
+`--sdk sdl --cpu-only`를 사용한다. 미구현 SDK/profile은 원본 폴더 생성 전에 거부한다.
+SDK 자체의 기술적 기능 미지원이라는 뜻은 아니다. [현재 상태](PHASE1_COMPLETION_REPORT.md)를 따른다.
 
-report 생성기는 고정 `2026-10-21-phase1-final`을 검증한다. 최초
-`2026-10-21-phase1-extension`은 one-video+solid overlay였던 탐색 자료로 제외했다.
-새 측정 폴더를 재사용하거나 과거 metadata를 수정하지 않는다.
+이전 LLGL 전용 `report_phase1.py`는 역사 캠페인용이다. 현재 추가 비교에는 새 report
+생성기를 사용하고 새 측정 폴더를 재사용하거나 과거 metadata를 수정하지 않는다.
 
-현재 완료 게이트의 **exit 1은 예상된 미완료 판정**이다. advanced cross-SDK adapter와
-연속 GPU peak 증거가 없어서 Phase 1 완료를 승인하지 않는다. shader/PSO application
-cache는 통제했으나 driver/OS cache를 지우지 않았다.
+현재 완료 게이트는 **exit 0**이다. shader/PSO application cache를 통제했으나 driver/OS
+cache를 지우지 않았다. Windows D3D12 foundation 범위이며 SDK release 완료를 뜻하지 않는다.
 
-관리자가 허용한 별도 Windows 터미널에서 GPU trace 수집을 하려면 다음 project script를
-사용한다. 기존 WPR recording이 있거나 출력 폴더가 존재하면 중단한다. 시작한 trace만
-finally에서 종료하며 시스템 정책을 바꾸지 않는다. ETL 수집 자체가 peak 검증 완료는
-아니고 process filtering, allocation lifetime/event loss와 transient positive control 분석이 필요하다.
+GPU memory 도구를 빌드하고 사용자 승인된 별도 Windows 관리자 프로세스에서 전용 ETW
+수집을 실행한다. 자기 session만 finally에서 종료하며 WPR/global recording과 시스템 정책을
+바꾸지 않는다. ETL 수집 성공만으로 완료하지 않고 새 분석기로 손실·수명·positive control을 검사한다.
 
 ```powershell
-./tools/capture_phase1_gpu.ps1 -Scenario resource_inflight -Samples 120
+cmake -S tools/gpu_trace -B out/gpu-trace -G "Visual Studio 17 2022" -A x64
+cmake --build out/gpu-trace --config Release --parallel 1
+ctest --test-dir out/gpu-trace -C Release --output-on-failure
+./tools/capture_phase1_gpu_lifetime.ps1 -Output D:/source/GraphicsSDK/out/<new-capture>
+python tools/analyze_gpu_memory_trace.py --capture out/<new-capture> --output benchmarks/reports/<new-memory-report>
+python tools/audit_licenses.py --profile benchmarks-gpu-memory --output out/<new-memory-inventory>
 ```
 
-현재 환경에서는 WPR policy 오류 `0xc5585011`, 이후 관리자 실행 취소로 ETL을 확보하지
-못했다. capture script의 성공 실행·ETL 분석은 아직 검증되지 않았다. 기본 병렬 빌드 중
-MSVC crash 1회가 있었으며 위의 최종 검증은 serial build로 수행했다.
+이전 WPR 오류/관리자 취소 이력은 보존했다. 새 승인 후 전용 capture/TDH 해독·프로세스
+수명 분석을 실제로 통과했다. [GPU 메모리 보고서](PHASE1_GPU_MEMORY_REPORT.md)의 범위와
+raw ETL 로컬 보존 조건을 따른다. 이전 병렬 MSVC crash의 원인 미확정 이력은 그대로다.

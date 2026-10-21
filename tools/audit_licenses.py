@@ -207,13 +207,18 @@ def collect(root, profile, package=None):
     trace_dirs, artifacts_map, projects, sdk_dirs = dict(TRACE_DIRS), dict(ARTIFACTS), dict(PROJECTS), dict(SDK_DIRS)
     generated = set(GENERATED_INPUTS)
     extra = None
-    if profile == "benchmarks-phase1":
+    if profile in ("benchmarks-phase1", "benchmarks-gpu-memory"):
         trace_dirs["phase1"]="out/bench/phase1_llgl.dir/Release"
         artifacts_map["phase1"]="out/bench/Release/phase1_llgl.exe"
         projects["phase1"]="out/bench/phase1_llgl.vcxproj"
         trace_dirs["phase1_sdl"]="out/bench/phase1_sdl.dir/Release"
         artifacts_map["phase1_sdl"]="out/bench/Release/phase1_sdl.exe"
         projects["phase1_sdl"]="out/bench/phase1_sdl.vcxproj"
+    if profile == "benchmarks-gpu-memory":
+        for name in ("gpu_etl_export", "gpu_memory_control"):
+            trace_dirs[name]=f"out/gpu-trace/{name}.dir/Release"
+            artifacts_map[name]=f"out/gpu-trace/Release/{name}.exe"
+            projects[name]=f"out/gpu-trace/{name}.vcxproj"
     if profile == "benchmarks-diligent":
         from diligent_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
@@ -274,7 +279,7 @@ def collect(root, profile, package=None):
                     blocks.update(source_notices(text_file(path)))
                 files[relative.casefold()] = {**record_file(root, path), "component": identifier,
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")):
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -319,7 +324,7 @@ def collect(root, profile, package=None):
         inventory["package"] = audit_package(root, package)
     if benchmark:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map,
-            extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
+            extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl", "gpu_etl_export", "gpu_memory_control") if profile=="benchmarks-gpu-memory" else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
     if extra:
         inventory[extra.get("review_key", "diligent_build_review")] = extra["evidence"]
     if generated_inputs:
@@ -351,7 +356,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

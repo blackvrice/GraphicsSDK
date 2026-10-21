@@ -188,6 +188,14 @@ SDL3 E–H 추가 비교는 같은 profile에 `phase1_sdl`의 compiler/linker �
 인접 고지문에 972개 프로젝트 입력/22개 구성요소를 보존한다. 고정 dependency와 기존 SDK
 ZIP은 변경하지 않았으며 별도 폴더에 새 artifact 해시를 기록한다. 이전 감사 결과는 보존한다.
 
+GPU 메모리 acceptance의 별도 `benchmarks-gpu-memory` profile은 위 입력에
+`gpu_etl_export`/`gpu_memory_control`의 실제 compiler/linker 입력을 추가한다.
+[새 inventory](../licenses/generated/windows-benchmarks-gpu-memory-release/inventory.json)는
+974개 프로젝트 입력/22개 구성요소를 기록한다. 두 신규 자체 C++ 파일만 `tools/gpu_trace/`
+아래에서 명시적으로 허용하며 임의 tools 파일을 MIT 입력으로 자동 분류하지 않는다.
+TDH/ETW/DXGI는 Windows 시스템 전제조건이고 새 third-party package는 없다.
+자체 SDK/API/ZIP은 변경하지 않았으며 새 inventory와 기존 SDK ZIP의 `--check`가 통과했다.
+
 LLGL 공개 upload 복구 후에는 별도
 [inventory](../licenses/generated/windows-benchmarks-llgl-upload-release/inventory.json)와
 같은 폴더의 고지문을 생성했다. 공통 profile의 compiler-read 입력 969개/구성요소 22개,

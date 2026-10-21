@@ -2,7 +2,9 @@
 
 2026-10-21. E–H 14개 workload의 SDL3 public GPU API adapter를 추가했다.
 같은 workload의 LLGL/SDL3 CPU 완료 시간을 비교하며, 추가 SDK 비교 조건은 충족했다.
-**Phase 1 전체는 아직 미완료다.** 연속/transient GPU 메모리 추적 증거가 남아 있다.
+이 SDL3 캠페인 당시에는 연속/transient GPU 메모리 증거가 미완료였다.
+이후 [GPU 추적 검증](PHASE1_GPU_MEMORY_REPORT.md)을 완료해 현재 Phase 1 foundation은 통과했다.
+아래의 미완료 판정 링크는 이 캠페인 당시 상태로 보존한다.
 
 - [비교 표와 모든 회차 중앙값](../benchmarks/reports/2026-10-21-phase1-sdl/TABLE.md)
 - [통계·CPU·메모리 요약](../benchmarks/results/2026-10-21-phase1-sdl/summary.json)
@@ -111,6 +113,9 @@ python tools/report_phase1_comparison.py --results benchmarks/results/<new-stage
 ```
 
 ## 남은 완료 조건
+
+아래는 이 캠페인 당시의 이력이다. 이후 사용자가 새 관리자 실행을 승인했고,
+[전용 ETW 수집·분석](PHASE1_GPU_MEMORY_REPORT.md)으로 해당 조건을 통과했다.
 
 관리자 승인된 GPU allocation trace의 event loss=0, allocation lifetime 재구성, transient
 positive control, raw ETL/프로세스별 event 해시를 갖춘 연속 GPU memory peak acceptance가
