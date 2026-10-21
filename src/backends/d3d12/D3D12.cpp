@@ -41,16 +41,20 @@ D3D12_RESOURCE_STATES native(ResourceState state) {
     case ResourceState::Common: return D3D12_RESOURCE_STATE_COMMON;
     case ResourceState::CopySource: return D3D12_RESOURCE_STATE_COPY_SOURCE;
     case ResourceState::CopyDestination: return D3D12_RESOURCE_STATE_COPY_DEST;
-    case ResourceState::ShaderRead: return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    case ResourceState::ShaderRead: return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
     case ResourceState::RenderTarget: return D3D12_RESOURCE_STATE_RENDER_TARGET;
     case ResourceState::Present: return D3D12_RESOURCE_STATE_PRESENT;
     case ResourceState::VertexBuffer:return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
     case ResourceState::IndexBuffer:return D3D12_RESOURCE_STATE_INDEX_BUFFER;
     case ResourceState::VertexAndIndexBuffer:return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER|D3D12_RESOURCE_STATE_INDEX_BUFFER;
+    case ResourceState::ConstantBuffer:return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
     }
     return D3D12_RESOURCE_STATE_COMMON;
 }
-bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::VertexAndIndexBuffer; }
+bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::ConstantBuffer; }
+D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
+    return visibility==ShaderVisibility::Vertex?D3D12_SHADER_VISIBILITY_VERTEX:visibility==ShaderVisibility::Fragment?D3D12_SHADER_VISIBILITY_PIXEL:D3D12_SHADER_VISIBILITY_ALL;
+}
 struct Tracker { ResourceState state{ResourceState::Common}; std::uint64_t version{}, lastUse{}; };
 struct Batch { std::uint64_t fence{}; std::vector<ComPtr<IUnknown>> objects; };
 struct State {
@@ -196,6 +200,9 @@ struct DXPipeline final : Pipeline {
     ComPtr<ID3D12RootSignature> root;
     Format format{};
     bool sampled{};
+    BindingLayout bindings;
+    std::vector<UINT> minimumBytes;
+    UINT descriptorSize{};
     std::vector<VertexRequirement> vertexInputs;
 };
 struct Use { std::shared_ptr<Tracker> tracker; ComPtr<ID3D12Resource> resource; std::uint64_t observedVersion{}; ResourceState state{}; Memory memory{Memory::Device}; };
@@ -217,6 +224,8 @@ struct DXCommands final : CommandList {
     UINT indexSize{},indexElementSize{};
     std::uint64_t submitted{};
     UINT descriptorCount{};
+    struct BoundResource { std::shared_ptr<DXTexture> texture; std::shared_ptr<DXBuffer> buffer; std::uint64_t offset{},size{}; };
+    std::vector<BoundResource> boundResources;
     bool recording{}, ended{}, renderPass{}, textureBound{}, timestampsResolved{};
     std::array<bool, 2> timestampWritten{};
     Result<void> ready(bool outsidePass = false) {
@@ -240,13 +249,13 @@ struct DXCommands final : CommandList {
         if (!object || object->owner != owner) return invalid("Null or foreign resource", ErrorCode::WrongDevice);
         return object;
     }
-    ResourceState current(const DXBuffer& buffer) const {
+    template<class T> ResourceState current(const T& buffer) const {
         auto entry=std::find_if(uses.begin(),uses.end(),[&](const Use& u){return u.tracker==buffer.tracker;});
         return entry==uses.end()?buffer.tracker->state:entry->state;
     }
     Result<void> change(Use& usage, ResourceState next) {
         if (usage.memory == Memory::Upload) {
-            if (next != ResourceState::CopySource && !vertexState(next) && !indexState(next)) return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
+            if (next != ResourceState::CopySource && !vertexState(next) && !indexState(next) && next!=ResourceState::ConstantBuffer) return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
             usage.state = next; return {};
         }
         if (usage.memory == Memory::Readback) {
@@ -267,6 +276,7 @@ struct DXCommands final : CommandList {
         HRESULT result = allocator->Reset(); if (FAILED(result)) return failed(result, "Allocator reset failed");
         result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return failed(result, "Command list reset failed");
         references.clear(); retained.clear(); uses.clear(); pipeline.reset(); target.reset();
+        boundResources.clear();
         vertexBuffers={};indexBuffer.reset();indexSize=indexElementSize=0;
         descriptorCount = 0; submitted = 0; renderPass = false; recording = true; ended = false;
         textureBound = false; timestampsResolved = false; timestampWritten = {};
@@ -279,14 +289,14 @@ struct DXCommands final : CommandList {
     }
     Result<void> transition(const BufferPtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
-        if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination && !vertexState(next) && !indexState(next)) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
+        if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination && !vertexState(next) && !indexState(next) && next!=ResourceState::ConstantBuffer) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
         auto object = owned<DXBuffer>(ptr); if (!object) return std::unexpected(object.error());
         return change(use((*object)->tracker, (*object)->resource, (*object)->desc.memory), next);
     }
     Result<void> transition(const TexturePtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
-        if (!validState(next) || vertexState(next) || indexState(next) || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
+        if (!validState(next) || vertexState(next) || indexState(next) || next==ResourceState::ConstantBuffer || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
             (next == ResourceState::Present && !(*object)->backbuffer) || (next == ResourceState::ShaderRead && (*object)->backbuffer))
             return invalid("Invalid texture state", ErrorCode::InvalidArgument);
         return change(use((*object)->tracker, (*object)->resource), next);
@@ -346,22 +356,72 @@ struct DXCommands final : CommandList {
         auto object = std::dynamic_pointer_cast<DXPipeline>(ptr);
         if (!object || object->owner != owner) return invalid("Null or foreign pipeline", ErrorCode::WrongDevice);
         pipeline = object; retain(object->root); retain(object->pso); textureBound = false;
+        boundResources.clear();
         list->SetPipelineState(object->pso.Get()); list->SetGraphicsRootSignature(object->root.Get());
         list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); return {};
     }
     Result<void> bindTexture(const TexturePtr& ptr) override {
         auto status = ready(); if (!status) return status;
-        if (!pipeline || !pipeline->sampled || descriptorCount == 256) return invalid("Texture binding requires a sampled pipeline and free descriptor slot");
-        auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
-        if ((*object)->backbuffer || use((*object)->tracker, (*object)->resource).state != ResourceState::ShaderRead) return invalid("Sampled texture must be in ShaderRead state");
-        auto cpu = descriptors->GetCPUDescriptorHandleForHeapStart(); auto gpu = descriptors->GetGPUDescriptorHandleForHeapStart();
-        UINT increment = owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        cpu.ptr += static_cast<SIZE_T>(descriptorCount) * increment; gpu.ptr += static_cast<UINT64>(descriptorCount) * increment; ++descriptorCount;
-        D3D12_SHADER_RESOURCE_VIEW_DESC view{}; view.Format = native((*object)->desc.format); view.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        view.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING; view.Texture2D.MipLevels = 1;
-        owner->device->CreateShaderResourceView((*object)->resource.Get(), &view, cpu);
-        ID3D12DescriptorHeap* heaps[]{descriptors.Get()}; list->SetDescriptorHeaps(1, heaps); list->SetGraphicsRootDescriptorTable(0, gpu);
-        textureBound = true; return {};
+        if (!pipeline || !pipeline->sampled) return invalid("bindTexture requires the legacy sampledTexture pipeline");
+        return bindResources({{{0,0,ptr}}, {}});
+    }
+    Result<void> bindResources(const ResourceBindings& bindings) override {
+        auto status=ready();if(!status)return status;
+        if(!pipeline)return invalid("Resource binding requires a pipeline");
+        if(pipeline->descriptorSize>256-descriptorCount)return invalid("Command descriptor capacity exhausted; split the command list");
+        if(bindings.textures.size()+bindings.constants.size()!=pipeline->descriptorSize)return invalid("Every layout array element must be bound exactly once",ErrorCode::InvalidArgument);
+        std::vector<BoundResource> snapshot(pipeline->descriptorSize);
+        auto slot=[&](UINT binding,UINT element,BindingType type)->Result<UINT> {
+            if(binding>=pipeline->bindings.entries.size())return invalid("Unknown layout entry",ErrorCode::InvalidArgument);
+            const auto& entry=pipeline->bindings.entries[binding];
+            if(entry.type!=type || element>=entry.count)return invalid("Binding type or array element mismatch",ErrorCode::InvalidArgument);
+            UINT at=element;for(UINT i=0;i<binding;++i)at+=pipeline->bindings.entries[i].count;
+            if(snapshot[at].texture || snapshot[at].buffer)return invalid("Duplicate binding element",ErrorCode::InvalidArgument);
+            return at;
+        };
+        // Validate the entire set before consuming descriptors or changing native bindings.
+        for(const auto& binding:bindings.textures) {
+            auto at=slot(binding.binding,binding.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());
+            auto object=owned<DXTexture>(binding.texture);if(!object)return std::unexpected(object.error());
+            if((*object)->backbuffer || current(**object)!=ResourceState::ShaderRead)return invalid("Texture binding requires ShaderRead");
+            snapshot[*at].texture=*object;
+        }
+        for(const auto& binding:bindings.constants) {
+            auto at=slot(binding.binding,binding.element,BindingType::ConstantBuffer);if(!at)return std::unexpected(at.error());
+            auto object=owned<DXBuffer>(binding.buffer);if(!object)return std::unexpected(object.error());
+            const auto& buffer=**object;
+            if(buffer.desc.memory==Memory::Readback || binding.offset%256 || !binding.size || binding.size%256 || binding.size>65536 ||
+               binding.offset>buffer.desc.size || binding.size>buffer.desc.size-binding.offset || binding.size<pipeline->minimumBytes[binding.binding])
+                return invalid("Invalid constant buffer view: alignment, bounds or shader size",ErrorCode::InvalidArgument);
+            if(current(buffer)!=ResourceState::ConstantBuffer)return invalid("Constant buffer binding requires ConstantBuffer state");
+            snapshot[*at]={nullptr,*object,binding.offset,binding.size};
+        }
+        for(const auto& resource:snapshot) {
+            if(!resource.texture && !resource.buffer)return invalid("Missing binding array element",ErrorCode::InvalidArgument);
+            if(resource.texture)use(resource.texture->tracker,resource.texture->resource);
+            else use(resource.buffer->tracker,resource.buffer->resource,resource.buffer->desc.memory);
+        }
+        const UINT increment=owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        auto cpu=descriptors->GetCPUDescriptorHandleForHeapStart();auto gpu=descriptors->GetGPUDescriptorHandleForHeapStart();
+        cpu.ptr+=static_cast<SIZE_T>(descriptorCount)*increment;gpu.ptr+=static_cast<UINT64>(descriptorCount)*increment;
+        if(!snapshot.empty()) {ID3D12DescriptorHeap* heaps[]{descriptors.Get()};list->SetDescriptorHeaps(1,heaps);}
+        UINT at=0;
+        for(UINT i=0;i<pipeline->bindings.entries.size();++i) {
+            list->SetGraphicsRootDescriptorTable(i,gpu);
+            for(UINT element=0;element<pipeline->bindings.entries[i].count;++element) {
+                const auto& resource=snapshot[at++];
+                if(resource.texture) {
+                    D3D12_SHADER_RESOURCE_VIEW_DESC view{};view.Format=native(resource.texture->desc.format);view.ViewDimension=D3D12_SRV_DIMENSION_TEXTURE2D;
+                    view.Shader4ComponentMapping=D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;view.Texture2D.MipLevels=1;
+                    owner->device->CreateShaderResourceView(resource.texture->resource.Get(),&view,cpu);
+                } else {
+                    D3D12_CONSTANT_BUFFER_VIEW_DESC view{resource.buffer->resource->GetGPUVirtualAddress()+resource.offset,static_cast<UINT>(resource.size)};
+                    owner->device->CreateConstantBufferView(&view,cpu);
+                }
+                cpu.ptr+=increment;gpu.ptr+=increment;
+            }
+        }
+        descriptorCount+=pipeline->descriptorSize;boundResources=std::move(snapshot);textureBound=true;return {};
     }
     Result<void> setScissor(UINT x, UINT y, UINT width, UINT height) override {
         auto status = ready(); if (!status) return status;
@@ -399,7 +459,11 @@ struct DXCommands final : CommandList {
     }
     Result<void> drawReady() {
         auto status = ready(); if (!status) return status;
-        if (!renderPass || !pipeline || pipeline->format != target->desc.format || (pipeline->sampled && !textureBound)) return invalid("Draw requires compatible target, pipeline and bindings");
+        if (!renderPass || !pipeline || pipeline->format != target->desc.format || (pipeline->descriptorSize && !textureBound)) return invalid("Draw requires compatible target, pipeline and bindings");
+        for(const auto& resource:boundResources) {
+            if(resource.texture && current(*resource.texture)!=ResourceState::ShaderRead)return invalid("Bound texture state changed; restore ShaderRead before draw");
+            if(resource.buffer && current(*resource.buffer)!=ResourceState::ConstantBuffer)return invalid("Bound constant buffer state changed; restore ConstantBuffer before draw");
+        }
         return {};
     }
     Result<void> inputReady(UINT vertices,UINT instances,UINT firstVertex,UINT firstInstance,bool indexed=false,INT baseVertex=0) {
@@ -538,6 +602,39 @@ public:
         if (desc.vertex.stage != ShaderStage::Vertex || desc.fragment.stage != ShaderStage::Fragment || desc.vertex.bytes.empty() || desc.fragment.bytes.empty() || !validFormat(desc.colorFormat)) return invalid("Invalid graphics pipeline shaders/format", ErrorCode::InvalidArgument);
         status=validateVertexLayout(desc.vertexLayout);if(!status)return std::unexpected(status.error());
         auto pipeline = std::make_shared<DXPipeline>(); pipeline->owner = state; pipeline->format = desc.colorFormat; pipeline->sampled = desc.sampledTexture;
+        if(desc.sampledTexture && (!desc.bindingLayout.entries.empty() || !desc.bindingLayout.samplers.empty()))return invalid("Legacy sampledTexture and explicit bindingLayout cannot be combined",ErrorCode::InvalidArgument);
+        pipeline->bindings=desc.sampledTexture?BindingLayout{{{}},{{}}}:desc.bindingLayout;
+        status=validateBindingLayout(pipeline->bindings);if(!status)return std::unexpected(status.error());
+        pipeline->minimumBytes.resize(pipeline->bindings.entries.size());
+        for(const auto& entry:pipeline->bindings.entries)pipeline->descriptorSize+=entry.count;
+        auto validateShader=[&](const ShaderBinary& shader)->Result<void> {
+            auto reflected=reflectShader(shader);if(!reflected)return std::unexpected(reflected.error());
+            const auto visibility=shader.stage==ShaderStage::Vertex?ShaderVisibility::Vertex:ShaderVisibility::Fragment;
+            for(const auto& resource:*reflected) {
+                if(resource.type==ShaderResourceType::Unsupported || !resource.count || resource.count==UINT_MAX)
+                    return invalid("Shader uses an unsupported resource type or unbounded array",ErrorCode::Unsupported);
+                bool found=false;
+                if(resource.type==ShaderResourceType::Sampler) {
+                    if(resource.count!=1)return invalid("Sampler arrays require dynamic samplers and are not supported",ErrorCode::Unsupported);
+                    for(const auto& sampler:pipeline->bindings.samplers)
+                        if(sampler.space==resource.space && (sampler.visibility==visibility || sampler.visibility==ShaderVisibility::All) &&
+                           resource.slot==sampler.slot && resource.count==1)found=true;
+                } else {
+                    const auto type=resource.type==ShaderResourceType::Texture2D?BindingType::Texture2D:BindingType::ConstantBuffer;
+                    for(UINT i=0;i<pipeline->bindings.entries.size();++i) {
+                        const auto& entry=pipeline->bindings.entries[i];
+                        if(entry.type==type && entry.space==resource.space && (entry.visibility==visibility || entry.visibility==ShaderVisibility::All) &&
+                           resource.slot>=entry.slot && static_cast<std::uint64_t>(resource.slot)+resource.count<=static_cast<std::uint64_t>(entry.slot)+entry.count) {
+                            pipeline->minimumBytes[i]=std::max(pipeline->minimumBytes[i],resource.minimumBytes);found=true;
+                        }
+                    }
+                }
+                if(!found)return invalid("Shader resource is missing from the layout or has incompatible type/range/space/visibility: "+resource.name,ErrorCode::InvalidArgument);
+            }
+            return {};
+        };
+        status=validateShader(desc.vertex);if(!status)return std::unexpected(status.error());
+        status=validateShader(desc.fragment);if(!status)return std::unexpected(status.error());
         std::vector<D3D12_INPUT_ELEMENT_DESC> inputs;
         for(const auto& binding:desc.vertexLayout.buffers) {
             VertexRequirement requirement{binding.slot,binding.stride,0,1,binding.rate};
@@ -550,16 +647,25 @@ public:
             }
             pipeline->vertexInputs.push_back(requirement);
         }
-        D3D12_DESCRIPTOR_RANGE range{}; range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; range.NumDescriptors = 1;
-        D3D12_ROOT_PARAMETER parameter{}; parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        parameter.DescriptorTable = {1, &range}; parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-        D3D12_STATIC_SAMPLER_DESC sampler{}; sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-        sampler.AddressU = sampler.AddressV = sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-        sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS; sampler.MaxLOD = D3D12_FLOAT32_MAX; sampler.MaxAnisotropy = 1;
-        sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+        std::vector<D3D12_DESCRIPTOR_RANGE> ranges(pipeline->bindings.entries.size());
+        std::vector<D3D12_ROOT_PARAMETER> parameters(ranges.size());
+        for(UINT i=0;i<ranges.size();++i) {
+            const auto& entry=pipeline->bindings.entries[i];
+            ranges[i]={entry.type==BindingType::Texture2D?D3D12_DESCRIPTOR_RANGE_TYPE_SRV:D3D12_DESCRIPTOR_RANGE_TYPE_CBV,entry.count,entry.slot,entry.space,0};
+            parameters[i].ParameterType=D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;parameters[i].DescriptorTable={1,&ranges[i]};parameters[i].ShaderVisibility=native(entry.visibility);
+        }
+        std::vector<D3D12_STATIC_SAMPLER_DESC> samplers;
+        for(const auto& entry:pipeline->bindings.samplers) {
+            D3D12_STATIC_SAMPLER_DESC sampler{};
+            sampler.Filter=entry.filter==SamplerFilter::Point?D3D12_FILTER_MIN_MAG_MIP_POINT:D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+            sampler.AddressU=sampler.AddressV=sampler.AddressW=entry.address==SamplerAddress::Clamp?D3D12_TEXTURE_ADDRESS_MODE_CLAMP:D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+            sampler.ComparisonFunc=D3D12_COMPARISON_FUNC_ALWAYS;sampler.MaxLOD=D3D12_FLOAT32_MAX;sampler.MaxAnisotropy=1;
+            sampler.ShaderRegister=entry.slot;sampler.RegisterSpace=entry.space;sampler.ShaderVisibility=native(entry.visibility);samplers.push_back(sampler);
+        }
         D3D12_ROOT_SIGNATURE_DESC root{};
         root.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-        if (desc.sampledTexture) { root.NumParameters = 1; root.pParameters = &parameter; root.NumStaticSamplers = 1; root.pStaticSamplers = &sampler; }
+        root.NumParameters=static_cast<UINT>(parameters.size());root.pParameters=parameters.data();
+        root.NumStaticSamplers=static_cast<UINT>(samplers.size());root.pStaticSamplers=samplers.data();
         ComPtr<ID3DBlob> binary, errors;
         HRESULT result = D3D12SerializeRootSignature(&root, D3D_ROOT_SIGNATURE_VERSION_1, &binary, &errors);
         if (FAILED(result)) return failed(result, "Root signature serialization failed");
@@ -691,7 +797,7 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     int count = WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, nullptr, 0, nullptr, nullptr);
     if (count <= 0) return failed(E_FAIL, "Adapter name conversion failed");
     std::string name(static_cast<size_t>(count), '\0'); WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, name.data(), count, nullptr, nullptr); name.pop_back();
-    state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true};
+    state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true, true};
     if (desc.validation) { result = state->device.As(&state->info); if (FAILED(result)) return failed(result, "D3D12 InfoQueue unavailable"); }
     D3D12_COMMAND_QUEUE_DESC queue{}; queue.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     result = state->device->CreateCommandQueue(&queue, IID_PPV_ARGS(&state->queue));

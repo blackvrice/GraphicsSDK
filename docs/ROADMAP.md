@@ -48,7 +48,7 @@ acceptance or later SDK feature milestones.
 - [x] Real triangle/readback, WARP, GPU-based validation and installed consumer checks.
 - [x] Same suite adapter and measured narrow draw-recording optimization.
 - [x] Vertex/index input layouts, UInt16/UInt32 indexed draws, per-instance streams and bounded buffer views; full-image hardware/GBV/WARP tests, state/version/lifetime rejection and installed-consumer checks ([report](PHASE2_VERTEX_INPUT_REPORT.md)).
-- [ ] Generalized resource binding layouts and broader binding correctness coverage.
+- [x] Explicit graphics binding layouts: bounded Texture2D/constant-buffer arrays, register spaces/stage visibility, static point/linear clamp/repeat samplers, shader compatibility and full-image/state/version/lifetime validation ([report](PHASE2_BINDINGS_REPORT.md)). Storage/UAV/compute, dynamic sampler arrays and unbounded bindings remain outside this graphics gate.
 - [ ] Depth/MRT and broader render-pass correctness coverage.
 - [ ] Device loss recovery/injection, long-running memory stress and interactive presentation acceptance.
 

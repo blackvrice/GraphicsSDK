@@ -6,6 +6,11 @@
 
 * core_contracts: backend advertising, Unsupported errors, invalid shader inputs.
 * vertex_layout_contracts: portable input-layout limits, semantics, format, offset/stride and rate validation.
+* binding_layout_contracts: portable graphics register/space/visibility limits and overlap rejection.
+* resource_bindings_gpu / resource_bindings_validation / resource_bindings_warp: Texture2D/CBV arrays,
+  VS/PS register reuse, nonzero spaces, immutable snapshots, point/linear clamp/repeat references,
+  full image readback, malformed sets, shader compatibility, descriptor capacity, state/version/
+  device/thread/lifetime checks. Native/GBV errors must remain zero after completion.
 * vertex_input_gpu / vertex_input_validation / vertex_input_warp: eight complete 64×64 CPU image references,
   Upload/Device inputs, 16/32-bit indices, draw offsets, signed baseVertex, instance streams,
   combined vertex/index storage, all public formats, state/range/layout/device/thread rejection,
@@ -17,6 +22,12 @@
   ERROR/CORRUPTION count must be zero after GPU completion.
 * d3d12_warp: same functional tests on explicitly selected software adapter. Its timings
   do not enter hardware performance comparisons.
+
+2026-10-21 graphics binding expansion: core CTest 12/12, Windows D3D12-OFF CTest 3/3,
+common benchmark CTest 72/72, Python 56/56 and the updated installed consumer passed.
+The three GPU modes each verified eight complete binding images (9,216 pixels per mode);
+debug+GBV completed with zero ERROR/CORRUPTION messages. See the
+[binding report](PHASE2_BINDINGS_REPORT.md) for contracts and raw evidence.
 
 GPU/debug-layer unavailable returns 77 and CTest reports SKIP. A skipped test is not verified
 GPU acceptance. Compile/runtime failures are errors. Tests check a red triangle center,

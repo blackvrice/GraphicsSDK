@@ -5,8 +5,8 @@ Independent C++23 graphics SDK, namespace `gfx`, CMake target `GraphicsSDK::Core
 are not implemented yet. This is not a completed cross-platform SDK release.
 
 The implementation includes buffers/textures and aligned copies, a small graphics pipeline,
-command recording/submission, resource-state validation, fence-retained lifetimes, one sampled
-texture binding, timestamps, headless rendering and a Win32 swapchain. It includes correctness
+command recording/submission, resource-state validation, fence-retained lifetimes, explicit texture/
+constant-buffer binding layouts, static samplers, timestamps, headless rendering and a Win32 swapchain. It includes correctness
 tests, installed-package consumer smoke and LLGL/SDL3/GraphicsSDK benchmark adapters,
 plus optional pinned standalone Diligent Core, single-thread bgfx and The Forge D3D12 adapters.
 Sandbox is a read-only source reference and is not a build dependency or integration target.
@@ -53,7 +53,8 @@ are still pending; this is not a completed SDK release.
 
 Phase 2 now includes [vertex/index input and instanced indexed draws](docs/PHASE2_VERTEX_INPUT_REPORT.md),
 with portable layout validation, hardware/GBV/WARP image checks and the `gfx_indexed_quads` example.
-Generalized bindings and depth/MRT remain next in the roadmap.
+It also supports [graphics binding layouts](docs/PHASE2_BINDINGS_REPORT.md), bounded texture/constant-buffer
+arrays, register spaces and stage visibility with immutable binding snapshots. Depth/MRT is next.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

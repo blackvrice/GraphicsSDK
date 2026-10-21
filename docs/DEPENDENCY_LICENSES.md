@@ -202,3 +202,10 @@ LLGL 공개 upload 복구 후에는 별도
 새 adapter/harness 및 binary 해시를 기록한다. competitor pin과 원본 checkout은 그대로이며
 새 외부 라이브러리는 없다. 새 inventory와 변경하지 않은 SDK ZIP의 `--check`가 통과했다.
 이전 inventory/측정 소스 ZIP을 덮어쓰지 않는다.
+
+Phase 2 graphics binding 확장은 별도
+[SDK inventory](../licenses/generated/windows-sdk-bindings-release/inventory.json)와
+[공통 benchmark inventory](../licenses/generated/windows-benchmarks-bindings-release/inventory.json)를
+생성했다. 각각 17개 입력/자체 구성요소 1개, 975개 입력/구성요소 22개이며 인접 notices를 보존한다.
+새 SDK ZIP과 두 `--check`가 통과했다. 기존 SDK/vertex-input ZIP과 과거 inventory는 그대로다.
+신규 외부 의존성과 competitor 수정은 없으며 위 compiler-read/package 감사 범위를 유지한다.

@@ -97,3 +97,10 @@ The Phase 1 advanced LLGL baseline has the separate `benchmarks-phase1` audit pr
 notices (970 project inputs, 22 components). This conservative closure includes both common and
 extension targets. The first exploratory inventory remains historical. Neither snapshot is a
 redistribution clearance or evidence that all Phase 1 acceptance gates passed.
+
+The graphics binding expansion has fresh
+[SDK](generated/windows-sdk-bindings-release/inventory.json) and
+[common benchmark](generated/windows-benchmarks-bindings-release/inventory.json) inventories,
+with adjacent notices: 17 own compiler-read inputs / 1 component and 975 inputs / 22 components.
+The new binding SDK ZIP and both snapshots passed `--check`. Original packages and prior
+inventories remain historical; no new external dependency or competitor modification was added.
