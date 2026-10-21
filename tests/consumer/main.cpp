@@ -13,6 +13,13 @@ int main() {
     if (!device) { std::cerr << device.error().message; return 1; }
     auto buffer = (*device)->createBuffer({4096});
     if (!buffer) return 1;
+    if (!(*device)->caps().vertexInput || !(*device)->caps().indexedDrawing) return 1;
+    gfx::VertexLayout layout{{{0,12}},{{"POSITION",0,gfx::VertexFormat::Float3,0,0}}};
+    if (!gfx::validateVertexLayout(layout)) return 1;
+    auto vertices=(*device)->createBuffer({36,gfx::Memory::Upload});if(!vertices)return 1;
+    auto commands=(*device)->createCommandList();if(!commands)return 1;
+    if(!(*commands)->begin() || !(*commands)->transition(*vertices,gfx::ResourceState::VertexBuffer) || !(*commands)->bindVertexBuffer(0,*vertices,12) || !(*commands)->end())return 1;
+    auto fence=(*device)->queue().submit(**commands);if(!fence || !(*device)->queue().wait(*fence))return 1;
     std::cout << (*device)->caps().adapterName << "\n";
     return 0;
 }

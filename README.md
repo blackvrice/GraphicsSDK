@@ -51,6 +51,10 @@ the [GPU memory trace](docs/PHASE1_GPU_MEMORY_REPORT.md) reconciles five process
 zero event loss and three transient controls. Other platforms, remaining SDK APIs and later phases
 are still pending; this is not a completed SDK release.
 
+Phase 2 now includes [vertex/index input and instanced indexed draws](docs/PHASE2_VERTEX_INPUT_REPORT.md),
+with portable layout validation, hardware/GBV/WARP image checks and the `gfx_indexed_quads` example.
+Generalized bindings and depth/MRT remain next in the roadmap.
+
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),
 [retained notices](licenses/README.md), and [competitor license comparison](docs/COMPETITOR_ANALYSIS.md#기능과-라이선스).

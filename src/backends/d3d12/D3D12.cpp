@@ -24,6 +24,18 @@ auto failed(HRESULT code, std::string operation) {
 }
 DXGI_FORMAT native(Format format) { return format == Format::RGBA8UNorm ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R16G16B16A16_FLOAT; }
 bool validFormat(Format format) { return format == Format::RGBA8UNorm || format == Format::RGBA16Float; }
+DXGI_FORMAT native(VertexFormat format) {
+    switch(format) {
+    case VertexFormat::Float:return DXGI_FORMAT_R32_FLOAT;
+    case VertexFormat::Float2:return DXGI_FORMAT_R32G32_FLOAT;
+    case VertexFormat::Float3:return DXGI_FORMAT_R32G32B32_FLOAT;
+    case VertexFormat::Float4:return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case VertexFormat::UNorm8x4:return DXGI_FORMAT_R8G8B8A8_UNORM;
+    }
+    return DXGI_FORMAT_UNKNOWN;
+}
+bool vertexState(ResourceState state) { return state==ResourceState::VertexBuffer || state==ResourceState::VertexAndIndexBuffer; }
+bool indexState(ResourceState state) { return state==ResourceState::IndexBuffer || state==ResourceState::VertexAndIndexBuffer; }
 D3D12_RESOURCE_STATES native(ResourceState state) {
     switch (state) {
     case ResourceState::Common: return D3D12_RESOURCE_STATE_COMMON;
@@ -32,10 +44,13 @@ D3D12_RESOURCE_STATES native(ResourceState state) {
     case ResourceState::ShaderRead: return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     case ResourceState::RenderTarget: return D3D12_RESOURCE_STATE_RENDER_TARGET;
     case ResourceState::Present: return D3D12_RESOURCE_STATE_PRESENT;
+    case ResourceState::VertexBuffer:return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+    case ResourceState::IndexBuffer:return D3D12_RESOURCE_STATE_INDEX_BUFFER;
+    case ResourceState::VertexAndIndexBuffer:return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER|D3D12_RESOURCE_STATE_INDEX_BUFFER;
     }
     return D3D12_RESOURCE_STATE_COMMON;
 }
-bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::Present; }
+bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::VertexAndIndexBuffer; }
 struct Tracker { ResourceState state{ResourceState::Common}; std::uint64_t version{}, lastUse{}; };
 struct Batch { std::uint64_t fence{}; std::vector<ComPtr<IUnknown>> objects; };
 struct State {
@@ -174,12 +189,14 @@ struct DXTexture final : Texture {
         return {};
     }
 };
+struct VertexRequirement { UINT slot{},stride{},extent{},alignment{}; VertexInputRate rate{}; };
 struct DXPipeline final : Pipeline {
     std::shared_ptr<State> owner;
     ComPtr<ID3D12PipelineState> pso;
     ComPtr<ID3D12RootSignature> root;
     Format format{};
     bool sampled{};
+    std::vector<VertexRequirement> vertexInputs;
 };
 struct Use { std::shared_ptr<Tracker> tracker; ComPtr<ID3D12Resource> resource; std::uint64_t observedVersion{}; ResourceState state{}; Memory memory{Memory::Device}; };
 struct DXCommands final : CommandList {
@@ -194,6 +211,10 @@ struct DXCommands final : CommandList {
     std::vector<Use> uses;
     std::shared_ptr<DXPipeline> pipeline;
     std::shared_ptr<DXTexture> target;
+    struct VertexBinding { std::shared_ptr<DXBuffer> buffer; UINT stride{},size{}; std::uint64_t offset{}; };
+    std::array<VertexBinding,32> vertexBuffers{};
+    std::shared_ptr<DXBuffer> indexBuffer;
+    UINT indexSize{},indexElementSize{};
     std::uint64_t submitted{};
     UINT descriptorCount{};
     bool recording{}, ended{}, renderPass{}, textureBound{}, timestampsResolved{};
@@ -219,9 +240,13 @@ struct DXCommands final : CommandList {
         if (!object || object->owner != owner) return invalid("Null or foreign resource", ErrorCode::WrongDevice);
         return object;
     }
+    ResourceState current(const DXBuffer& buffer) const {
+        auto entry=std::find_if(uses.begin(),uses.end(),[&](const Use& u){return u.tracker==buffer.tracker;});
+        return entry==uses.end()?buffer.tracker->state:entry->state;
+    }
     Result<void> change(Use& usage, ResourceState next) {
         if (usage.memory == Memory::Upload) {
-            if (next != ResourceState::CopySource) return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
+            if (next != ResourceState::CopySource && !vertexState(next) && !indexState(next)) return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
             usage.state = next; return {};
         }
         if (usage.memory == Memory::Readback) {
@@ -242,6 +267,7 @@ struct DXCommands final : CommandList {
         HRESULT result = allocator->Reset(); if (FAILED(result)) return failed(result, "Allocator reset failed");
         result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return failed(result, "Command list reset failed");
         references.clear(); retained.clear(); uses.clear(); pipeline.reset(); target.reset();
+        vertexBuffers={};indexBuffer.reset();indexSize=indexElementSize=0;
         descriptorCount = 0; submitted = 0; renderPass = false; recording = true; ended = false;
         textureBound = false; timestampsResolved = false; timestampWritten = {};
         return {};
@@ -253,14 +279,14 @@ struct DXCommands final : CommandList {
     }
     Result<void> transition(const BufferPtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
-        if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
+        if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination && !vertexState(next) && !indexState(next)) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
         auto object = owned<DXBuffer>(ptr); if (!object) return std::unexpected(object.error());
         return change(use((*object)->tracker, (*object)->resource, (*object)->desc.memory), next);
     }
     Result<void> transition(const TexturePtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
-        if (!validState(next) || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
+        if (!validState(next) || vertexState(next) || indexState(next) || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
             (next == ResourceState::Present && !(*object)->backbuffer) || (next == ResourceState::ShaderRead && (*object)->backbuffer))
             return invalid("Invalid texture state", ErrorCode::InvalidArgument);
         return change(use((*object)->tracker, (*object)->resource), next);
@@ -344,11 +370,68 @@ struct DXCommands final : CommandList {
         D3D12_RECT rect{static_cast<LONG>(x), static_cast<LONG>(y), static_cast<LONG>(x+width), static_cast<LONG>(y+height)};
         list->RSSetScissorRects(1, &rect); return {};
     }
-    Result<void> draw(UINT vertices, UINT instances) override {
+    Result<void> bindVertexBuffer(UINT slot,const BufferPtr& ptr,UINT stride,std::uint64_t offset,std::uint64_t size) override {
+        auto status=ready();if(!status)return status;
+        auto object=owned<DXBuffer>(ptr);if(!object)return std::unexpected(object.error());
+        const auto& buffer=**object;
+        if(slot>=vertexBuffers.size() || !stride || stride>2048 || offset>buffer.desc.size || size>buffer.desc.size-offset || buffer.desc.memory==Memory::Readback)
+            return invalid("Invalid vertex buffer view",ErrorCode::InvalidArgument);
+        const auto bytes=size?size:buffer.desc.size-offset;
+        if(!bytes || bytes>UINT_MAX)return invalid("Vertex buffer view must contain 1..UINT32_MAX bytes",ErrorCode::InvalidArgument);
+        if(!vertexState(current(buffer)))return invalid("Vertex buffer must be in a vertex read state");
+        use(buffer.tracker,buffer.resource,buffer.desc.memory);
+        D3D12_VERTEX_BUFFER_VIEW view{buffer.resource->GetGPUVirtualAddress()+offset,static_cast<UINT>(bytes),stride};
+        list->IASetVertexBuffers(slot,1,&view);vertexBuffers[slot]={*object,stride,static_cast<UINT>(bytes),offset};return {};
+    }
+    Result<void> bindIndexBuffer(const BufferPtr& ptr,IndexFormat format,std::uint64_t offset,std::uint64_t size) override {
+        auto status=ready();if(!status)return status;
+        auto object=owned<DXBuffer>(ptr);if(!object)return std::unexpected(object.error());
+        if(format!=IndexFormat::UInt16 && format!=IndexFormat::UInt32)return invalid("Invalid index format",ErrorCode::InvalidArgument);
+        const auto element=format==IndexFormat::UInt16?2u:4u;const auto& buffer=**object;
+        if(offset>buffer.desc.size || size>buffer.desc.size-offset || offset%element || buffer.desc.memory==Memory::Readback)
+            return invalid("Invalid index buffer view",ErrorCode::InvalidArgument);
+        const auto bytes=size?size:buffer.desc.size-offset;
+        if(!bytes || bytes>UINT_MAX || bytes%element)return invalid("Invalid index buffer view size/alignment",ErrorCode::InvalidArgument);
+        if(!indexState(current(buffer)))return invalid("Index buffer must be in an index read state");
+        use(buffer.tracker,buffer.resource,buffer.desc.memory);
+        D3D12_INDEX_BUFFER_VIEW view{buffer.resource->GetGPUVirtualAddress()+offset,static_cast<UINT>(bytes),format==IndexFormat::UInt16?DXGI_FORMAT_R16_UINT:DXGI_FORMAT_R32_UINT};
+        list->IASetIndexBuffer(&view);indexBuffer=*object;indexSize=static_cast<UINT>(bytes);indexElementSize=element;return {};
+    }
+    Result<void> drawReady() {
         auto status = ready(); if (!status) return status;
         if (!renderPass || !pipeline || pipeline->format != target->desc.format || (pipeline->sampled && !textureBound)) return invalid("Draw requires compatible target, pipeline and bindings");
+        return {};
+    }
+    Result<void> inputReady(UINT vertices,UINT instances,UINT firstVertex,UINT firstInstance,bool indexed=false,INT baseVertex=0) {
+        // No input requirements for the existing SV_VertexID-only fast path.
+        for(const auto& input:pipeline->vertexInputs) {
+            const auto& binding=vertexBuffers[input.slot];
+            if(!binding.buffer || binding.stride!=input.stride || !vertexState(current(*binding.buffer)))return invalid("Missing, mismatched or stale vertex buffer binding");
+            if(binding.offset%input.alignment || binding.size<input.extent)return invalid("Vertex view alignment/extent does not fit layout",ErrorCode::InvalidArgument);
+            const auto last=(binding.size-input.extent)/input.stride;
+            if(input.rate==VertexInputRate::Instance) {
+                if(static_cast<std::uint64_t>(firstInstance)+instances-1>last)return invalid("Instance input exceeds buffer view",ErrorCode::InvalidArgument);
+            } else if(!indexed) {
+                if(static_cast<std::uint64_t>(firstVertex)+vertices-1>last)return invalid("Vertex input exceeds buffer view",ErrorCode::InvalidArgument);
+            } else if(baseVertex>0 && static_cast<UINT>(baseVertex)>last)return invalid("Base vertex exceeds buffer view",ErrorCode::InvalidArgument);
+        }
+        return {};
+    }
+    Result<void> draw(UINT vertices,UINT instances,UINT firstVertex,UINT firstInstance) override {
+        auto status=drawReady();if(!status)return status;
         if (!vertices || !instances) return invalid("Empty draw", ErrorCode::InvalidArgument);
-        list->DrawInstanced(vertices, instances, 0, 0); return {};
+        if(static_cast<std::uint64_t>(firstVertex)+vertices>std::uint64_t{UINT_MAX}+1 || static_cast<std::uint64_t>(firstInstance)+instances>std::uint64_t{UINT_MAX}+1)return invalid("Draw range overflow",ErrorCode::InvalidArgument);
+        status=inputReady(vertices,instances,firstVertex,firstInstance);if(!status)return status;
+        list->DrawInstanced(vertices, instances, firstVertex, firstInstance); return {};
+    }
+    Result<void> drawIndexed(UINT indices,UINT instances,UINT firstIndex,INT baseVertex,UINT firstInstance) override {
+        auto status=drawReady();if(!status)return status;
+        if(!indices || !instances)return invalid("Empty indexed draw",ErrorCode::InvalidArgument);
+        if(!indexBuffer || !indexState(current(*indexBuffer)))return invalid("Missing or stale index buffer binding");
+        if(static_cast<std::uint64_t>(firstIndex)+indices>indexSize/indexElementSize || static_cast<std::uint64_t>(firstInstance)+instances>std::uint64_t{UINT_MAX}+1)
+            return invalid("Indexed draw range exceeds buffer view",ErrorCode::InvalidArgument);
+        status=inputReady(0,instances,0,firstInstance,true,baseVertex);if(!status)return status;
+        list->DrawIndexedInstanced(indices,instances,firstIndex,baseVertex,firstInstance);return {};
     }
     Result<void> writeTimestamp(UINT index) override {
         auto status = ready(); if (!status) return status;
@@ -453,7 +536,20 @@ public:
     Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (desc.vertex.stage != ShaderStage::Vertex || desc.fragment.stage != ShaderStage::Fragment || desc.vertex.bytes.empty() || desc.fragment.bytes.empty() || !validFormat(desc.colorFormat)) return invalid("Invalid graphics pipeline shaders/format", ErrorCode::InvalidArgument);
+        status=validateVertexLayout(desc.vertexLayout);if(!status)return std::unexpected(status.error());
         auto pipeline = std::make_shared<DXPipeline>(); pipeline->owner = state; pipeline->format = desc.colorFormat; pipeline->sampled = desc.sampledTexture;
+        std::vector<D3D12_INPUT_ELEMENT_DESC> inputs;
+        for(const auto& binding:desc.vertexLayout.buffers) {
+            VertexRequirement requirement{binding.slot,binding.stride,0,1,binding.rate};
+            for(const auto& attribute:desc.vertexLayout.attributes)if(attribute.slot==binding.slot) {
+                UINT bytes=attribute.format==VertexFormat::Float?4:attribute.format==VertexFormat::Float2?8:attribute.format==VertexFormat::Float3?12:attribute.format==VertexFormat::Float4?16:4;
+                requirement.extent=std::max(requirement.extent,attribute.offset+bytes);
+                if(attribute.format!=VertexFormat::UNorm8x4)requirement.alignment=4;
+                inputs.push_back({attribute.semantic.c_str(),attribute.semanticIndex,native(attribute.format),binding.slot,attribute.offset,
+                    binding.rate==VertexInputRate::Vertex?D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA:D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA,binding.rate==VertexInputRate::Vertex?0u:1u});
+            }
+            pipeline->vertexInputs.push_back(requirement);
+        }
         D3D12_DESCRIPTOR_RANGE range{}; range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; range.NumDescriptors = 1;
         D3D12_ROOT_PARAMETER parameter{}; parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
         parameter.DescriptorTable = {1, &range}; parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -471,6 +567,7 @@ public:
         if (FAILED(result)) return failed(result, "Root signature creation failed");
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pso{};
         pso.pRootSignature = pipeline->root.Get(); pso.VS = {desc.vertex.bytes.data(), desc.vertex.bytes.size()}; pso.PS = {desc.fragment.bytes.data(), desc.fragment.bytes.size()};
+        pso.InputLayout={inputs.data(),static_cast<UINT>(inputs.size())};
         pso.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; pso.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; pso.RasterizerState.DepthClipEnable = TRUE;
         auto& blend = pso.BlendState.RenderTarget[0]; blend.BlendEnable = desc.alphaBlend;
         blend.SrcBlend = D3D12_BLEND_SRC_ALPHA; blend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA; blend.BlendOp = D3D12_BLEND_OP_ADD;
@@ -594,7 +691,7 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     int count = WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, nullptr, 0, nullptr, nullptr);
     if (count <= 0) return failed(E_FAIL, "Adapter name conversion failed");
     std::string name(static_cast<size_t>(count), '\0'); WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, name.data(), count, nullptr, nullptr); name.pop_back();
-    state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true};
+    state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true};
     if (desc.validation) { result = state->device.As(&state->info); if (FAILED(result)) return failed(result, "D3D12 InfoQueue unavailable"); }
     D3D12_COMMAND_QUEUE_DESC queue{}; queue.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     result = state->device->CreateCommandQueue(&queue, IID_PPV_ARGS(&state->queue));

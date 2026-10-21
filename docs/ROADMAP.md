@@ -47,7 +47,9 @@ acceptance or later SDK feature milestones.
 - [x] HLSL SM5.1 bootstrap, basic reflection, one sampled binding, timestamp/debug marker.
 - [x] Real triangle/readback, WARP, GPU-based validation and installed consumer checks.
 - [x] Same suite adapter and measured narrow draw-recording optimization.
-- [ ] Vertex/index buffers, generalized binding layouts, depth/MRT and broader correctness coverage.
+- [x] Vertex/index input layouts, UInt16/UInt32 indexed draws, per-instance streams and bounded buffer views; full-image hardware/GBV/WARP tests, state/version/lifetime rejection and installed-consumer checks ([report](PHASE2_VERTEX_INPUT_REPORT.md)).
+- [ ] Generalized resource binding layouts and broader binding correctness coverage.
+- [ ] Depth/MRT and broader render-pass correctness coverage.
 - [ ] Device loss recovery/injection, long-running memory stress and interactive presentation acceptance.
 
 ## Remaining ordered implementation gates

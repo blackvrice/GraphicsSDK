@@ -5,6 +5,11 @@
 `ctest --test-dir out/core -C Release --output-on-failure`:
 
 * core_contracts: backend advertising, Unsupported errors, invalid shader inputs.
+* vertex_layout_contracts: portable input-layout limits, semantics, format, offset/stride and rate validation.
+* vertex_input_gpu / vertex_input_validation / vertex_input_warp: eight complete 64×64 CPU image references,
+  Upload/Device inputs, 16/32-bit indices, draw offsets, signed baseVertex, instance streams,
+  combined vertex/index storage, all public formats, state/range/layout/device/thread rejection,
+  stale Upload writes and destruction of input wrappers/commands before GPU completion.
 * d3d12_hardware: real adapter upload/copy/readback, triangle output, timestamps,
   state scopes, device/thread mismatch, stale snapshot rejection, resource retention,
   sampled texture/reflection/descriptor exhaustion, hidden-window swapchain/present/resize.
@@ -202,3 +207,11 @@ Target-process events/native outputs are versioned; system ETL stays local and i
 The final completion gate now returns exit 0. Scope is process-lifetime VidMm event-based usage
 in the documented Windows D3D12 profile, not frame-only physical VRAM occupancy or other
 platform/stress/device-loss acceptance. See [final GPU memory report](PHASE1_GPU_MEMORY_REPORT.md).
+
+Phase 2 vertex/index input (2026-10-21): current core CTest 8/8, Windows D3D12-OFF CTest 2/2,
+common benchmark correctness CTest 72/72 and Python 56/56 passed. Native ERROR/CORRUPTION count is
+zero in the debug/GBV case. The installed consumer uses the new exported layout validator and
+vertex binding API. All 65,536 pixels of the indexed-instancing example match a separate CPU rectangle
+reference. New SDK package and SDK/common compiler-read inventories pass. Native Linux/macOS,
+broader resource binding, depth/MRT and new performance comparisons were not run/completed.
+See [vertex input report](PHASE2_VERTEX_INPUT_REPORT.md).

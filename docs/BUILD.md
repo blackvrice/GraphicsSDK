@@ -12,11 +12,17 @@ cmake -S tests/consumer -B out/consumer -G "Visual Studio 17 2022" -A x64 -DCMAK
 cmake --build out/consumer --config Release
 ./out/consumer/Release/consumer.exe
 ./out/core/Release/gfx_triangle.exe out/triangle.ppm
+./out/core/Release/gfx_indexed_quads.exe out/indexed-quads.ppm
 ```
 
 SDK 자체에는 다운로드가 없다. D3D12를 끈 빌드는 GPU backend를 제공하지 않으며
 Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux/macOS 실기기 빌드는
 현재 미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
+
+정점/인덱스 입력 확장 후 core CTest는 8개다. GPU validation과 WARP를 포함하고,
+`gfx_vertex_tests --cpu`의 layout 구조 검증은 D3D12 OFF 빌드에서도 실행된다.
+별도 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vertex-input-final.zip`으로 보존한다.
+기존 ZIP과 측정 원본을 덮어쓰지 않았다. [구현·검증 보고서](PHASE2_VERTEX_INPUT_REPORT.md)를 따른다.
 
 ## 경쟁 벤치마크
 
