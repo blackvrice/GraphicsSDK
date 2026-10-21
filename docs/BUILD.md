@@ -75,6 +75,25 @@ SDK 코어를 포함하지 않는 경쟁 SDK 전용 suite는
 `cmake -S benchmarks -B out/bench-independent -A x64 -DGFX_BENCH_WITH_SDK=OFF`로 구성한다.
 이 설정은 GraphicsSDK 소스/라이브러리 target을 사용하지 않는다.
 
+The Forge는 별도 `-Forge` profile을 사용한다. `-Diligent`, `-Bgfx`와 동시에 지정하지 않는다.
+
+```powershell
+./tools/bootstrap_competitors.ps1 -Forge
+ctest --test-dir out/bench-forge -C Release --output-on-failure
+python tools/run_benchmarks.py --exe out/bench-forge/Release/gfx_bench.exe --sdks llgl sdl the_forge graphicssdk --scenarios draw instanced --count 10000 --runs 3 --samples 120 --warmup 20 --output benchmarks/results/my-forge-draw
+python tools/audit_licenses.py --profile benchmarks-forge --output out/my-forge-license-audit
+python tools/report_forge_benchmarks.py
+```
+
+`.deps/TheForge`의 고정 원본과 `out/bench-forge` 레이아웃을 사용한다. 원본의 외부 config
+hook에 정확히 MSVC 194435228 허용을 추가하고, 중복 GUID 3개의 심볼명만 바꾼다.
+구형 NVAPI를 제외하며 Forge helper의 기존 fallback 경로를 선택한다. 생성 config의
+정확한 내용, 실제 compiler flags·header/library 입력·runtime/GPU config copy를 검사한다.
+CTest 10개는 실제 D3D12 hardware/debug layer가 필요하다. GPU 부하 테스트는 성능 측정과
+동시에 실행하지 않는다. 자체 SDK 기본 빌드에는 Forge나 추가 DLL이 포함되지 않는다.
+보고서 생성 명령은 고정 2026-10-21 campaign을 읽고 소스 ZIP을 보존한다. 새 측정에는
+기존 runner와 새 출력 디렉터리를 사용한다. [범위와 native readback 제한](FORGE_BENCHMARK_REPORT.md)을 따른다.
+
 보고서와 PNG를 재생성하려면 선택적으로 `python -m pip install --target .deps/python matplotlib`를
 실행한 뒤 `python tools/report_benchmarks.py`를 사용한다. 이는 SDK 빌드 의존성이 아니다.
 전후 비교는 `tools/compare_results.py baseline/summary.json candidate/summary.json --output 새경로`로 생성한다.

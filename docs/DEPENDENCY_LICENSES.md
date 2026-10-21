@@ -117,3 +117,36 @@ RenderDoc/Aftermath 등 선택형 runtime이 배포물에 포함됐다고 추정
 
 초기 `windows-benchmarks-bgfx-release`는 copy 기반 탐색 빌드의 기록으로 보존한다.
 최종 makeRef 빌드는 `windows-benchmarks-bgfx-final-release`의 실제 artifact hash를 사용한다.
+
+## The Forge 추가 profile
+
+`benchmarks-forge`는 입력 1,102개·분류 39개 및 생성 SDL/config 파일을 기록한다.
+원본 C D3D12 backend, D3D12MA, single-thread resource loader, Windows utility와 필요한
+LZ4/Zstd 소스를 빌드한다. Apache 루트와 AGS/D3D12MA/Agility header MIT, DXC NCSA/MIT,
+RenderDoc API MIT, Sony BSD/Forge Apache, bstrlib BSD, LZ4 BSD, Zstd BSD 선택, STB MIT,
+tiny DDS/KTX/ImageFormat MIT, MurmurHash public-domain 고지를 구분했다.
+
+동봉 legacy NVAPI의 2016 계약은 competitive benchmark 결과 공개를 제한한다. 최종
+프로파일은 NVAPI helper의 기존 fallback을 선택하고 이 proprietary header/library를
+컴파일·링크 입력에서 제외한다. 실제 compiler-read와 linker-read 기록으로 강제하며
+해당 라이브러리를 사용한 탐색 결과를 공개 성능 campaign에 포함하지 않는다.
+NVIDIA 전용 확장이나 공식 VS 2019 sample 전체를 측정한 프로파일이 아니다.
+
+DXC `dxcapi.h`, `dxcompiler.lib`, `dxcompiler.dll`은 공식 v1.8.2405 Windows 배포 ZIP과
+byte-identical이다. [출처·해시 증거](../licenses/provenance/forge-terms-origin.json) 및 공식
+LLVM/NCSA·Microsoft MIT 고지문을 보완했다. `dxil.dll`과 MS binary terms는 참고 고지로만
+보존하고 DLL은 복사하지 않는다. TinyImageFormat의 명시적 MIT 표기는 공식 고정 커밋의
+전체 MIT 원문으로 보완했으며 source-body 전체 일치로 주장하지 않는다.
+
+PIX 1.0.200127001 header 두 개는 compiler-read에 포함되지만 `USE_PIX`를 끄고
+PIX library/DLL은 링크·복사하지 않는다. 동봉 NuGet metadata의 historical licenseUrl은
+현재 다른 문서로 이동하고 primary terms가 없어 header 재배포 조건은 미해결로 남긴다.
+이를 Apache/MIT로 재분류하지 않으며 `LicenseRef-Microsoft-PIX-Event-Runtime`과 한계를
+명시한다. 현재 결과는 로컬 빌드 입력 inventory이며 경쟁 바이너리/헤더의 배포 승인이 아니다.
+
+[정책](../licenses/forge-policy.json),
+[inventory](../licenses/generated/windows-benchmarks-forge-release/inventory.json),
+[고지](../licenses/generated/windows-benchmarks-forge-release/THIRD_PARTY_NOTICES.txt)에 기록했다.
+실제 `/O2 /MD`·no LTO, 생성 외부 config 내용, compiled source fingerprint, 원본·복사본
+AGS/DXC DLL 및 GPU config 파일을 검사한다. 자체 SDK ZIP에는 경쟁 payload를 추가하지
+않았고 기존 SDK package `--check`가 통과했다.

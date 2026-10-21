@@ -80,3 +80,13 @@ PIX/RenderDoc/Nsight/RGP/Xcode/Tracy를 사용한 프로파일 캡처는 수행 
 현재 runner는 `steady_clock`, DXGI adapter identity/driver, Win32 RAM/OS/CPU 조회를 사용한다.
 GPU timestamp 미지원 adapter에서는 null을 기록한다. 프로파일러 도구를 실행하지 않은
 상태에서 측정 병목을 GPU 원인으로 확정하지 않는다.
+
+## The Forge 선택형 프로파일
+
+공통 8개 작업을 동일한 shader/payload/상태/완료 계약으로 실행한다. native readback과
+빈 root signature bootstrap은 측정 밖이며 모든 측정 연산은 Forge 공개 API를 사용한다.
+resource loader는 single-thread, staging은 graphics/copy engine 각각 128 MiB × 1 slot이다.
+대기는 해당 제출 fence를 사용하며 GPU timestamp로 보고하지 않는다. 원본 소스는 그대로
+두고 외부 application config와 MSVC/Windows SDK 호환 심볼 설정을 명시한다.
+구형 NVAPI는 제외한다. [실행 범위·호환 설정·readback 제한과 실제 측정](FORGE_BENCHMARK_REPORT.md)을
+따르며 vendor extension, 공식 전체 sample build, 다른 플랫폼까지 일반화하지 않는다.

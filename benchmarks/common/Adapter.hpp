@@ -41,6 +41,7 @@ std::unique_ptr<Adapter> sdl(bool validation);
 std::unique_ptr<Adapter> graphicsSDK(bool validation);
 std::unique_ptr<Adapter> diligent(bool validation);
 std::unique_ptr<Adapter> bgfxAdapter(bool validation);
+std::unique_ptr<Adapter> forgeAdapter(bool validation);
 std::string quote(std::string_view);
 std::string environment(std::string_view device);
 }

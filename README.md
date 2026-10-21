@@ -8,7 +8,7 @@ The implementation includes buffers/textures and aligned copies, a small graphic
 command recording/submission, resource-state validation, fence-retained lifetimes, one sampled
 texture binding, timestamps, headless rendering and a Win32 swapchain. It includes correctness
 tests, installed-package consumer smoke and LLGL/SDL3/GraphicsSDK benchmark adapters,
-plus optional pinned standalone Diligent Core and single-thread bgfx D3D12 adapters.
+plus optional pinned standalone Diligent Core, single-thread bgfx and The Forge D3D12 adapters.
 Sandbox is a read-only source reference and is not a build dependency or integration target.
 
 ```powershell
@@ -32,6 +32,8 @@ The [Diligent comparison](docs/DILIGENT_BENCHMARK_REPORT.md) adds all eight exis
 with the same shader binaries, readback checks and workload contracts.
 The [bgfx comparison](docs/BGFX_BENCHMARK_REPORT.md) adds six matching workloads and separately
 records pooled buffer allocations. Lazy bgfx program linking is excluded from the PSO workload.
+The [The Forge comparison](docs/FORGE_BENCHMARK_REPORT.md) covers eight matching workloads
+under a documented MSVC compatibility configuration with legacy NVAPI excluded.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

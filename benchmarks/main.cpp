@@ -7,7 +7,7 @@ int main(int argc, char** argv) try {
 #ifndef NDEBUG
     throw std::runtime_error("Performance benchmark requires Release with NDEBUG");
 #endif
-    if (argc != 7) throw std::runtime_error("Usage: gfx_bench <llgl|sdl|graphicssdk|diligent_core|bgfx> <buffers|textures|draw|instanced|upload1080|upload4k|upload4k16f|pipeline> <count> <warmup> <samples> <validation:0|1>");
+    if (argc != 7) throw std::runtime_error("Usage: gfx_bench <llgl|sdl|graphicssdk|diligent_core|bgfx|the_forge> <buffers|textures|draw|instanced|upload1080|upload4k|upload4k16f|pipeline> <count> <warmup> <samples> <validation:0|1>");
     std::string sdk = argv[1], scenario = argv[2];
     auto number = [](const char* s, unsigned max) { size_t n{}; auto v = std::stoul(s, &n); if (s[n] || v > max) throw std::runtime_error("Invalid numeric argument"); return static_cast<unsigned>(v); };
     unsigned count = number(argv[3], 100000), warmup = number(argv[4], 10000), samples = number(argv[5], 100000);
@@ -20,6 +20,9 @@ int main(int argc, char** argv) try {
     std::unique_ptr<bench::Adapter> adapter;
     if (sdk == "llgl") adapter=bench::llgl(validation);
     else if (sdk == "sdl") adapter=bench::sdl(validation);
+#ifdef GFX_BENCH_HAS_FORGE
+    else if (sdk == "the_forge") adapter=bench::forgeAdapter(validation);
+#endif
 #ifdef GFX_BENCH_HAS_BGFX
     else if (sdk == "bgfx") adapter=bench::bgfxAdapter(validation);
 #endif

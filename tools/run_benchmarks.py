@@ -17,6 +17,31 @@ def diligent_dependencies(root=ROOT):
 def bgfx_dependencies(root=ROOT):
     return json.loads((root / "benchmarks/competitors/bgfx-build.lock.json").read_text())["dependencies"]
 
+def forge_dependencies(root=ROOT):
+    return json.loads((root / "benchmarks/competitors/forge-build.lock.json").read_text())["dependencies"]
+
+def forge_fingerprint(root=ROOT):
+    deps=forge_dependencies(root)
+    identity="the_forge|"+deps["the_forge"]["commit"]+"\n"
+    files=sorted([p for pattern in ("*.cpp","*.hpp","*.h","*.cmake") for p in (root/"benchmarks").rglob(pattern)]+[root/"benchmarks/CMakeLists.txt"])
+    for path in files:
+        identity+=path.relative_to(root).as_posix()+"|"+hashlib.sha256(path.read_bytes()).hexdigest()+"\n"
+    return hashlib.sha256(identity.encode()).hexdigest()
+
+def forge_runtime(root, executable):
+    base=root/".deps/TheForge"
+    sources={"amd_ags_x64.dll":"Common_3/Graphics/ThirdParty/OpenSource/ags/ags_lib/lib/amd_ags_x64.dll",
+             "dxcompiler.dll":"Common_3/Graphics/ThirdParty/OpenSource/DirectXShaderCompiler/bin/x64/dxcompiler.dll",
+             "forge-config/gpu.cfg":"Examples_3/Unit_Tests/src/01_Transformations/GPUCfg/gpu.cfg",
+             "forge-config/gpu.data":"Common_3/OS/Windows/pc_gpu.data"}
+    hashes={}
+    for destination,source in sources.items():
+        copied=(executable.parent/destination).read_bytes()
+        if copied!=(base/source).read_bytes():
+            raise RuntimeError(f"Forge runtime/config copy differs from pin: {destination}")
+        hashes[destination]=hashlib.sha256(copied).hexdigest()
+    return hashes
+
 def bgfx_fingerprint(root=ROOT):
     deps = bgfx_dependencies(root)
     identity = "".join(f"{name}|{deps[name]['commit']}\n" for name in ("bgfx", "bx", "bimg"))
@@ -127,12 +152,18 @@ def main():
     lock = json.loads((ROOT / "benchmarks/competitors/sources.lock.json").read_text())
     # Verify built competitor checkout has the recorded version and no local tracked patches.
     for sdk in args.sdks:
-        if sdk not in ("llgl", "sdl", "graphicssdk", "diligent_core", "bgfx"):
+        if sdk not in ("llgl", "sdl", "graphicssdk", "diligent_core", "bgfx", "the_forge"):
             p.error(f"Adapter is not implemented: {sdk}")
         for scenario in args.scenarios:
             if error := scenario_error(sdk, scenario):
                 p.error(error)
         if sdk == "graphicssdk":
+            continue
+        if sdk == "the_forge":
+            deps=forge_dependencies()
+            if deps[sdk]["commit"]!=lock[sdk]["commit"]:
+                raise RuntimeError("Research pin and Forge build pin differ")
+            for dep in deps.values(): verify_source(ROOT/dep["directory"],dep["commit"])
             continue
         if sdk == "bgfx":
             deps = bgfx_dependencies()
@@ -153,6 +184,7 @@ def main():
     executable = args.exe.resolve()
     executable_hash = hashlib.sha256(executable.read_bytes()).hexdigest()
     runtime_hashes = {}
+    forge_hashes=forge_runtime(ROOT,executable) if "the_forge" in args.sdks else {}
     if "diligent_core" in args.sdks:
         built = ROOT / "out/bench-diligent/diligent/Graphics/GraphicsEngineD3D12/Release/GraphicsEngineD3D12_64r.dll"
         copied = executable.parent / built.name
@@ -178,6 +210,8 @@ def main():
             raise RuntimeError("Stale Diligent benchmark build; rebuild after source/pin changes")
         if sdk == "bgfx" and result.get("sdk_build_source_sha256") != bgfx_fingerprint():
             raise RuntimeError("Stale bgfx benchmark library; rebuild after source/pin changes")
+        if sdk == "the_forge" and result.get("sdk_build_source_sha256") != forge_fingerprint():
+            raise RuntimeError("Stale Forge benchmark library; rebuild after source/pin changes")
         source_hash = hashlib.sha256()
         for source_file in sorted(list((ROOT/"src").rglob("*.cpp"))+list((ROOT/"include").rglob("*.hpp"))+[ROOT/"CMakeLists.txt"]):
             source_hash.update((source_file.relative_to(ROOT).as_posix()+"|"+hashlib.sha256(source_file.read_bytes()).hexdigest()+"\n").encode())
@@ -202,6 +236,10 @@ def main():
         if sdk == "bgfx":
             result["build_dependencies"] = bgfx_dependencies()
             result["submission_model"] = "single_thread_sequential_view_frame_then_supplied_D3D12_queue_fence"
+        if sdk == "the_forge":
+            result["build_dependencies"]=forge_dependencies()
+            result["runtime_sha256"]=forge_hashes
+            result["submission_model"]="single_thread_direct_draw_queue_and_resource_loader_graphics_upload_queue_explicit_fence_wait"
         if scenario == "pipeline":
             result["contract"]["gpu_work"] = "none_repeated_pso_creation_driver_cache_uncontrolled"
             result["contract"]["resource_policy"] = "reuse_shader_binaries_create_release_pso_sdk_internal_caching_allowed"

@@ -85,3 +85,18 @@ correctness scenarios and 10,000 draw/instance validation passed again on the fi
 The final bootstrap reproduced the measured executable hash; SDK ZIP and final bgfx inventory
 checks passed. Core CTest remained 4/4 and the optional CPU CTest passed all 8 checks. Remote CI
 and a separate render-thread bgfx profile were not run.
+
+2026-10-21 The Forge expansion: `bootstrap_competitors.ps1 -Forge` passed the pinned
+no-NVAPI Release build and all 10 native CTests (eight workloads plus 10,000 draw/instance).
+The native debug layer rejects ERROR/CORRUPTION through GPU completion and teardown;
+device reset/removal invalidates a run. Core CTest remained 4/4. All 29 Python tests passed,
+including changed external-config fingerprints, runtime/GPU-config copy tampering and legacy
+NVAPI input rejection. The Forge inventory and unchanged own SDK ZIP checks passed.
+
+Draw center/corner and full upload byte readback are checked before and after each campaign.
+The pinned loader's transfer-queue copyResource readback fails current native layout validation;
+the untimed correctness probe therefore uses native CopyTextureRegion on a Forge direct command
+list with Forge barriers/submission/fence. This does not validate that public copyResource path.
+Forge GPU-based validation, long-running stress and official VS 2019 sample acceptance remain
+unperformed. See [Forge report](FORGE_BENCHMARK_REPORT.md) and the retained native CTest log
+under `benchmarks/reports/validation/2026-10-21-forge`.

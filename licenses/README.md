@@ -18,6 +18,13 @@ approval or a claim about every platform, every static-library member or future 
 * [bgfx benchmark inventory](generated/windows-benchmarks-bgfx-final-release/inventory.json),
   [notices](generated/windows-benchmarks-bgfx-final-release/THIRD_PARTY_NOTICES.txt) and
   [additional policy](bgfx-policy.json) cover the optional `-Bgfx` profile at its recorded pins.
+* [The Forge benchmark inventory](generated/windows-benchmarks-forge-release/inventory.json),
+  [notices](generated/windows-benchmarks-forge-release/THIRD_PARTY_NOTICES.txt),
+  [additional policy](forge-policy.json) and [terms provenance](provenance/forge-terms-origin.json)
+  cover `-Forge`: MSVC compatibility config, no legacy NVAPI, actual AGS/DXC binaries and GPU data.
+  PIX headers are conservatively inventoried with incomplete historical primary terms; no PIX
+  library/DLL is linked/copied. Their redistribution requires separate review. This profile
+  is an inventory of local build inputs, not clearance to redistribute Forge binaries/headers.
 
 Before redistributing the reviewed benchmark binaries, retain the full benchmark notice
 file with them. BSD license and non-endorsement terms, MIT notices, Apache terms and upstream
@@ -38,6 +45,8 @@ python tools/audit_licenses.py --profile benchmarks-diligent --output out/dilige
 python tools/audit_licenses.py --profile benchmarks-diligent --output out/diligent-license-audit --check
 python tools/audit_licenses.py --profile benchmarks-bgfx --output out/bgfx-license-audit
 python tools/audit_licenses.py --profile benchmarks-bgfx --output out/bgfx-license-audit --check
+python tools/audit_licenses.py --profile benchmarks-forge --output out/forge-license-audit
+python tools/audit_licenses.py --profile benchmarks-forge --output out/forge-license-audit --check
 ```
 
 The optional `--package` checks the existing ZIP against the actual core library, all public

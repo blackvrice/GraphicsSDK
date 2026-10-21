@@ -213,6 +213,9 @@ def collect(root, profile, package=None):
     elif profile == "benchmarks-bgfx":
         from bgfx_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
+    elif profile == "benchmarks-forge":
+        from forge_license_profile import configure
+        extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
     benchmark = profile != "sdk"
     target_names = list(trace_dirs) if benchmark else ["core"]
     evidence = []
@@ -260,7 +263,8 @@ def collect(root, profile, package=None):
                     blocks.add(text_file(root / sdk_dirs[sdk] / notice).strip())
                 for notice in component.get("extra_notices", []):
                     blocks.add(text_file(root / notice).strip())
-                blocks.update(source_notices(text_file(path)))
+                if path.suffix.casefold() not in {".lib", ".dll"}:
+                    blocks.update(source_notices(text_file(path)))
                 files[relative.casefold()] = {**record_file(root, path), "component": identifier,
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
             elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")):
@@ -340,7 +344,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

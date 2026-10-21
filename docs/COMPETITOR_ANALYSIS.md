@@ -87,6 +87,11 @@ FSL 및 플랫폼 compiler를 연결하고 리소스 로더/메모리 관리, �
 GPU work graph API는 범용 render graph와 구분한다.
 GraphicsSDK에는 명시적 queue/fence와 리소스 로더의 비용 분리를 참고한다.
 
+후속 [D3D12 측정 프로파일](FORGE_BENCHMARK_REPORT.md)은 고정 스냅샷의 8개 공통 작업을
+실행했다. VS 2022 외부 설정·중복 GUID 호환, legacy NVAPI 제외, 측정 밖 native readback을
+명시한 구성이다. 원본의 모든 third-party가 Apache-2.0이라는 뜻은 아니며
+[추가 고지 감사](DEPENDENCY_LICENSES.md#the-forge-추가-profile)를 따로 기록했다.
+
 ## 추가 비교 대상
 
 * **Dawn:** WebGPU C API와 C++ wrapper, native backend와 선택적 wire, WGSL/Tint,

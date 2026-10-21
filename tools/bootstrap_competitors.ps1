@@ -1,12 +1,17 @@
-param([int]$Jobs = 8, [switch]$Diligent, [switch]$Bgfx)
+param([int]$Jobs = 8, [switch]$Diligent, [switch]$Bgfx, [switch]$Forge)
 $ErrorActionPreference = 'Stop'
-if ($Diligent -and $Bgfx) { throw 'Select one reviewed optional build profile: -Diligent or -Bgfx' }
+if (([int]$Diligent.IsPresent + [int]$Bgfx.IsPresent + [int]$Forge.IsPresent) -gt 1) { throw 'Select one reviewed optional build profile: -Diligent, -Bgfx or -Forge' }
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
     $pins = Get-Content -LiteralPath 'benchmarks/competitors/sources.lock.json' -Raw | ConvertFrom-Json
     $sources = @(@{Key='llgl'; Directory='LLGL'}, @{Key='sdl'; Directory='SDL'})
     if ($Diligent) { $sources += @{Key='diligent_core'; Directory='DiligentCore'} }
+    if ($Forge) {
+        $forgePin=(Get-Content -LiteralPath 'benchmarks/competitors/forge-build.lock.json' -Raw | ConvertFrom-Json).dependencies.the_forge
+        if ($forgePin.commit -ne $pins.the_forge.commit) { throw 'Research and Forge build pins differ' }
+        $sources += @{Key='the_forge'; Directory='TheForge'; Pin=$forgePin}
+    }
     if ($Bgfx) {
         $bgfxPins = (Get-Content -LiteralPath 'benchmarks/competitors/bgfx-build.lock.json' -Raw | ConvertFrom-Json).dependencies
         if ($bgfxPins.bgfx.commit -ne $pins.bgfx.commit) { throw 'Research and bgfx build pins differ' }
@@ -38,7 +43,14 @@ try {
     if ($LASTEXITCODE) { throw 'SDL configure failed' }
     cmake --build out/sdl --config Release --parallel $Jobs
     if ($LASTEXITCODE) { throw 'SDL build failed' }
-    if ($Bgfx) {
+    if ($Forge) {
+        cmake -S benchmarks -B out/bench-forge -G 'Visual Studio 17 2022' -A x64 -DGFX_BENCH_WITH_FORGE=ON -DGFX_BENCH_WITH_BGFX=OFF -DGFX_BENCH_WITH_DILIGENT=OFF
+        if ($LASTEXITCODE) { throw 'Forge benchmark configure failed' }
+        cmake --build out/bench-forge --config Release --target gfx_bench --parallel $Jobs
+        if ($LASTEXITCODE) { throw 'Forge benchmark build failed' }
+        ctest --test-dir out/bench-forge -C Release --output-on-failure
+        if ($LASTEXITCODE) { throw 'Forge native validation/readback tests failed' }
+    } elseif ($Bgfx) {
         cmake -S benchmarks -B out/bench-bgfx -G 'Visual Studio 17 2022' -A x64 -DGFX_BENCH_WITH_BGFX=ON -DGFX_BENCH_WITH_DILIGENT=OFF
         if ($LASTEXITCODE) { throw 'bgfx benchmark configure failed' }
         cmake --build out/bench-bgfx --config Release --target gfx_bench bgfx_shader_contracts --parallel $Jobs
