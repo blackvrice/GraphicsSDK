@@ -307,3 +307,17 @@ A separate SDK-free build verifies 193 resources/one device on Intel Agility GBV
 D3D12-OFF 4/4 and Python 102/102 (11 added tests) pass; new own-source inventory is 25/1.
 Hardware GBV growth remains on both GPUs/runtimes. This is no replacement for the rejected
 long-running gate. See the [runtime report](PHASE2_RUNTIME_COMPARISON_REPORT.md).
+
+2026-10-22 presentation: a standalone installed-package Win32 consumer passes six
+fresh hardware/GBV/WARP × VSync cases: 246 full backbuffer images / 44,892,078 RGBA
+pixels, 54 minimize/restore cycles, 12 controlled native recoveries, coalesced resize,
+hide/show and close with HWND alive through GPU shutdown. Two GBV cases observe zero
+native ERROR/CORRUPTION; validation availability in other modes remains null.
+Registered presentation CTest 6/6 separately repeats those contracts; a 60-frame normal
+loop smoke also passes. Core 22/22, D3D12-OFF 4/4 and Python 110/110 pass, including
+eight new evidence/audit tests; four actual native argument/output rejections pass.
+New compiler/linker/package inventory is 33 inputs/1 own component. The SDK and six
+old SDK ZIPs remain unchanged. Common benchmark/other consumer evidence is hash-checked,
+not rerun. Actual compositor output, human input, physical DPI transitions and unexpected
+TDR/hot-unplug remain unaccepted; the failed GBV memory gate stays open.
+See the [presentation report](PHASE2_PRESENTATION_REPORT.md).

@@ -275,3 +275,17 @@ Unsupported, 손실 세대의 조회는 원인이 보존된 DeviceLost다. GPU �
 이는 native device 전체의 메시지를 관측하므로 다른 owner가 유발한 오류도 포함될 수 있다.
 외부 native 인터페이스는 SDK 공개 API로 제공하지 않는다. 독립 진단 도구만 같은 process/adapter의
 native singleton을 관측하여 intentional error/overflow/filter/clear/thread/owner 수명 계약을 검사한다.
+
+## Win32 창 루프에서 SwapChain 사용
+
+[`examples/presentation`](../examples/presentation/README.md)는 설치된 SDK로 빌드하는 실제
+창 예제다. creating thread에서 메시지를 처리하며 WM_SIZE는 client pixel 크기만 기록한다.
+최소화·0 크기·숨김은 렌더링을 중지하고 메시지를 기다린다. 다음 활성 frame에서 resize를
+처리하기 전에 acquired TexturePtr와 해당 backbuffer를 기록한 CommandList를 해제한다.
+프레임은 RenderTarget → Present 상태 전환 후 제출·present·fence wait 순서로 진행한다.
+
+`resize(0,0)`은 SDK에서 InvalidArgument이며 최소화를 표현하는 API가 아니다. 기존 swapchain을
+유지하고 양수 client 크기가 복원될 때까지 대기한다. 창 닫기는 GPU 자원 해제 뒤 HWND를
+파괴한다. 정상 present 성공은 실제 monitor scanout/사용자 육안 승인을 의미하지 않는다.
+현재 SDK는 DXGI occlusion 상태를 별도 노출하지 않는다. 예제의 전체 이미지 readback과
+controlled RemoveDevice 복구는 [별도 자동 검증 범위](PHASE2_PRESENTATION_REPORT.md)다.

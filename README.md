@@ -64,6 +64,11 @@ full-reference stress campaigns and unfiltered cumulative validation error callb
 hardware/WARP memory gates passed, but GBV memory growth failed; long-running acceptance remains
 open. Interactive presentation and unexpected driver TDR/hot-unplug acceptance also remain in Phase 2.
 
+The [windowed presentation example](examples/presentation/README.md) uses the installed SDK
+for Win32 resize, minimize/restore, close and observed-loss recovery. Six automated
+hardware/GBV/WARP and VSync cases pass full backbuffer references; human display and
+unexpected driver-loss acceptance remain separate ([report](docs/PHASE2_PRESENTATION_REPORT.md)).
+
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),
 [retained notices](licenses/README.md), and [competitor license comparison](docs/COMPETITOR_ANALYSIS.md#기능과-라이선스).

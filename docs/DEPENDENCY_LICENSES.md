@@ -247,3 +247,12 @@ SDK library를 링크하지 않는다. 기존 SDK/common 감사와 SDK ZIP 내�
 binary는 Microsoft DirectX 약관이며 MIT header와 구별한다. package header는 컴파일하지 않고
 binary/package는 local Windows 진단 `out/`에만 둔다. SDK ZIP/source archive에는 넣지 않는다.
 컴파일 inventory의 자체 MIT 한 구성요소가 실행용 Microsoft binary까지 포괄한다는 뜻은 아니다.
+
+Win32 창 표시 예제는 별도 `sdk-presentation` profile과
+[33/1 inventory](../licenses/generated/windows-sdk-presentation-release/inventory.json)를 추가한다.
+자체 `Windowed.cpp`만 명시적으로 허용하고 compiler-read에 나타난 설치 public header를 현재
+원본과 byte 단위로 대조한다. 설치 static library도 현재 core와 같아야 한다. 실제 linker-read는
+설치 SDK와 검토된 Windows/CRT library만 허용하며 sample CMake/manifest와 notices를 보존한다.
+새 SDK package나 외부 dependency는 없고 기존 SDK ZIP·SDK/common/stress `--check`도 통과했다.
+이는 자동 창·이미지 검증의 빌드 입력 감사이며 육안 표시/실제 DPI 변경/예상치 못한 장치 손실
+acceptance를 부여하지 않는다.

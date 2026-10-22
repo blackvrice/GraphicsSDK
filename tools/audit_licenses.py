@@ -165,6 +165,22 @@ def sdk_fingerprint(root):
         digest.update((path.relative_to(root).as_posix() + "|" + sha256(path.read_bytes()) + "\n").encode())
     return digest.hexdigest()
 
+
+def installed_presentation_header(root, path):
+    directory = root / "out/install/include/graphics"
+    headers = {header.name.casefold(): header for header in (root / "include/graphics").glob("*.hpp")}
+    relative = path.relative_to(directory)
+    source = headers.get(relative.as_posix().casefold())
+    if source is None or not path.is_file() or path.read_bytes() != source.read_bytes():
+        raise AuditError(f"Unreviewed or stale installed presentation header: {path}")
+    return {**record_file(root, path), "component": "graphicssdk", "verified_source": record_file(root, source)}
+
+
+def verify_presentation_library(root):
+    installed = root / "out/install/lib/GraphicsSDKCore.lib"
+    if not installed.is_file() or installed.read_bytes() != (root / ARTIFACTS["core"]).read_bytes():
+        raise AuditError("Presentation consumer links a missing or stale installed SDK library")
+
 def validate_package_entries(entries, required):
     """Reject unsafe names, collisions, missing notices and unexpected payloads."""
     names = set()
@@ -229,6 +245,7 @@ def collect(root, profile, package=None):
         from forge_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
     stress = profile == "sdk-stress"
+    presentation = profile == "sdk-presentation"
     if stress:
         trace_dirs = {"core": TRACE_DIRS["core"], "memory_stress": "out/core/gfx_memory_stress.dir/Release", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.dir/Release",
                       "native_lifetime": "out/memory-validation-probe/gbv_lifetime_probe.dir/Release", "sdk_lifetime": "out/memory-validation-probe/sdk_lifetime_probe.dir/Release", "runtime_probe": "out/memory-validation-probe/gbv_runtime_probe.dir/Release"}
@@ -236,8 +253,15 @@ def collect(root, profile, package=None):
                          "native_lifetime": "out/memory-validation-probe/Release/gbv_lifetime_probe.exe", "sdk_lifetime": "out/memory-validation-probe/Release/sdk_lifetime_probe.exe", "runtime_probe": "out/memory-validation-probe/Release/gbv_runtime_probe.exe"}
         projects = {"core": PROJECTS["core"], "memory_stress": "out/core/gfx_memory_stress.vcxproj", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.vcxproj",
                     "native_lifetime": "out/memory-validation-probe/gbv_lifetime_probe.vcxproj", "sdk_lifetime": "out/memory-validation-probe/sdk_lifetime_probe.vcxproj", "runtime_probe": "out/memory-validation-probe/gbv_runtime_probe.vcxproj"}
-    benchmark = profile not in ("sdk", "sdk-stress")
-    target_names = list(trace_dirs) if benchmark or stress else ["core"]
+    if presentation:
+        verify_presentation_library(root)
+        trace_dirs = {"core": TRACE_DIRS["core"], "presentation": "out/presentation/gfx_presentation.dir/Release"}
+        artifacts_map = {"core": ARTIFACTS["core"], "presentation": "out/presentation/Release/gfx_presentation.exe",
+                         "installed_core": "out/install/lib/GraphicsSDKCore.lib"}
+        projects = {"core": PROJECTS["core"], "presentation": "out/presentation/gfx_presentation.vcxproj"}
+    benchmark = profile not in ("sdk", "sdk-stress", "sdk-presentation")
+    extended_sdk = stress or presentation
+    target_names = list(trace_dirs) if benchmark or extended_sdk else ["core"]
     evidence = []
     paths = set()
     for name in target_names:
@@ -266,7 +290,7 @@ def collect(root, profile, package=None):
             relative = path.relative_to(root).as_posix()
             sdk = next((sdk for sdk, directory in sorted(sdk_dirs.items(), key=lambda item: -len(item[1])) if path.is_relative_to(root / directory)), None)
             if sdk:
-                if profile in ("sdk", "sdk-stress"):
+                if not benchmark:
                     raise AuditError(f"Competitor source leaked into SDK compilation: {relative}")
                 name = path.relative_to(root / sdk_dirs[sdk]).as_posix()
                 if name.casefold() not in canonical[sdk]:
@@ -287,7 +311,9 @@ def collect(root, profile, package=None):
                     blocks.update(source_notices(text_file(path)))
                 files[relative.casefold()] = {**record_file(root, path), "component": identifier,
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
+            elif presentation and path.is_relative_to(root / "out/install/include/graphics"):
+                files[relative.casefold()] = installed_presentation_header(root, path)
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (presentation and relative.casefold()=="examples/presentation/windowed.cpp") or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -305,7 +331,7 @@ def collect(root, profile, package=None):
     if "sdl-khronos-dual" in notice_blocks:
         text = text_file(root / ".deps/SDL/include/SDL3/SDL_opengles2_khrplatform.h")
         notice_blocks["sdl-khronos-dual"].update(source_notices(text))
-    artifact_names = list(artifacts_map) if benchmark or stress else ["core"]
+    artifact_names = list(artifacts_map) if benchmark or extended_sdk else ["core"]
     artifacts = [record_file(root, root / artifacts_map[name]) for name in artifact_names]
     fingerprint = sdk_fingerprint(root)
     if fingerprint.encode() not in (root / ARTIFACTS["core"]).read_bytes():
@@ -324,7 +350,7 @@ def collect(root, profile, package=None):
         "compiler_read_evidence": evidence, "system_header_count": len(system_inputs),
         "system_input_paths_sha256": sha256("\n".join(sorted(system_inputs)).encode()),
         "system_prerequisites": policy["system_prerequisites"], "artifacts": artifacts,
-        "links": {key: link_evidence(root, projects[key]) for key in (projects if benchmark or stress else ["core"])},
+        "links": {key: link_evidence(root, projects[key]) for key in (projects if benchmark or extended_sdk else ["core"])},
         "d3dx12_origin": origin,
         "exclusions": ["Other platforms/build configurations", "Unbuilt competitor SDKs", "Benchmark assets/examples not in compiler-read logs", "Report-generation Python packages (tools only, not bundled)"]
     }
@@ -335,6 +361,10 @@ def collect(root, profile, package=None):
             extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl", "gpu_etl_export", "gpu_memory_control") if profile=="benchmarks-gpu-memory" else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
     if stress:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("memory_stress", "memory_validation_probe", "native_lifetime", "sdk_lifetime", "runtime_probe"))
+    if presentation:
+        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("presentation",))
+        inventory["presentation_build_inputs"] = [record_file(root, root / "examples/presentation" / name) for name in ("CMakeLists.txt", "app.manifest")]
+        inventory["exclusions"].extend(["Interactive visual acceptance", "Actual cross-monitor DPI change", "Unexpected driver TDR/hot-unplug"])
     if extra:
         inventory[extra.get("review_key", "diligent_build_review")] = extra["evidence"]
     if generated_inputs:
@@ -366,7 +396,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "sdk-presentation", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

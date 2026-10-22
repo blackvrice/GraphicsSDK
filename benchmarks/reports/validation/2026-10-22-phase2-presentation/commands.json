@@ -1,0 +1,176 @@
+[
+  {
+    "name": "configure",
+    "command": [
+      "cmake",
+      "-S",
+      "examples/presentation",
+      "-B",
+      "out/presentation",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/install"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/presentation",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--clean-first"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "native-campaign",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_presentation_validation.py",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation\\campaign"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "presentation-ctest",
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/presentation",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "interactive-loop-smoke",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+      "--mode",
+      "validation",
+      "--frames",
+      "60",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation\\interactive-loop-smoke.jsonl"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "core-ctest",
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/core",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "no-backend-ctest",
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/memory-stress-no-backend",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "presentation-license-create",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-presentation",
+      "--package",
+      "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "--output",
+      "licenses/generated/windows-sdk-presentation-release"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "presentation-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-presentation",
+      "--package",
+      "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "--output",
+      "licenses/generated/windows-sdk-presentation-release",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "sdk-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk",
+      "--package",
+      "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "--output",
+      "licenses/generated/windows-sdk-memory-stress-release",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "benchmark-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "benchmarks-phase1",
+      "--output",
+      "licenses/generated/windows-benchmarks-memory-stress-release",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "stress-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-stress",
+      "--output",
+      "licenses/generated/windows-sdk-runtime-comparison-final-release",
+      "--check"
+    ],
+    "returncode": 0
+  }
+]

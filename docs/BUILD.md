@@ -19,14 +19,28 @@ SDK 자체에는 다운로드가 없다. D3D12를 끈 빌드는 GPU backend를 �
 Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux/macOS 실기기 빌드는
 현재 미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 
-현재 core CTest는 19개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass의
+현재 core CTest는 22개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 4개 CPU CTest).
-최신 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-recovery.zip`이다.
+최신 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip`이다.
 기존 ZIP과 측정 원본을 덮어쓰지 않았다. [복구 구현·검증 보고서](PHASE2_RECOVERY_REPORT.md)를 따른다.
 `gfx_recovery_tests --gpu/--validation/--warp`는 각 독립 process에서 opt-in native RemoveDevice를
 실행한다. 지원하지 않는 adapter/interface는 SKIP이며 완료 증거로 취급하지 않는다.
 설치 후 `out/consumer/Release/recovery_consumer.exe` 및 `--warp`로 재구축·이미지 검증을 실행할 수 있다.
 이 두 검증 실행 파일은 의도적으로 자기 process의 native 장치를 제거한다.
+
+실제 창 표시 예제는 설치 SDK를 소비하는 별도 프로젝트다.
+
+```powershell
+cmake -S examples/presentation -B out/presentation -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/install
+cmake --build out/presentation --config Release --parallel 1
+./out/presentation/Release/gfx_presentation.exe
+ctest --test-dir out/presentation -C Release --output-on-failure
+```
+
+기본은 하드웨어/VSync ON이며 Esc 또는 창 닫기로 종료한다. `--mode validation`,
+`--mode warp`, `--no-vsync`를 선택할 수 있다. 자동 CTest 6개는 실제 창을 잠시 띄워
+크기 변경·최소화·복원·native 제거/복구를 수행한다. 육안 승인은 별도다.
+[상세 실행·검증 범위](../examples/presentation/README.md)를 따른다.
 
 ## 경쟁 벤치마크
 

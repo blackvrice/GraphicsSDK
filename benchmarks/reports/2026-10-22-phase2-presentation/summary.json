@@ -1,0 +1,125 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "production_SDK_unchanged": true,
+  "phase2_complete": false,
+  "memory_stress_accepted": false,
+  "automated_lifecycle_passed": true,
+  "interactive_acceptance": false,
+  "unexpected_loss_acceptance": false,
+  "actual_dpi_transition_tested": false,
+  "campaign": {
+    "path": "benchmarks/reports/validation/2026-10-22-phase2-presentation/campaign/summary.json",
+    "sha256": "2a59394ec75d1c166ea92b52336a1229b8b91cdef80d17fe1dc17b26a53efa0f",
+    "bytes": 8416
+  },
+  "fresh_native_processes": 6,
+  "full_images": 246,
+  "verified_rgba_pixels": 44892078,
+  "minimize_restore_cycles": 54,
+  "controlled_native_recoveries": 12,
+  "GBV_errors_in_two_hardware_cases": 0,
+  "non_validation_error_count": null,
+  "native_rejection_controls": [
+    {
+      "case": "bad-mode",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--mode",
+        "unknown"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "bad-count",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--frames",
+        "0"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "mixed-contract",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--self-test",
+        "--frames",
+        "2"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "existing-output",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation\\campaign\\existing-output.jsonl"
+      ],
+      "returncode": 1
+    }
+  ],
+  "presentation_ctest": 6,
+  "separate_ctest_repeats_not_in_campaign_totals": true,
+  "normal_loop_smoke_frames": 60,
+  "core_ctest": 22,
+  "no_backend_ctest": 4,
+  "python_tests": 110,
+  "added_tests": 8,
+  "compiler_read_inputs": 33,
+  "own_components": 1,
+  "previous_SDK_packages": [
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "sha256": "684da949ad5095a392814d68f8697a5ba41cb05132cd14bacfcf55114cbd7f2c",
+      "bytes": 481914,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64.zip",
+      "sha256": "156f1c060f16001a8f503cafd7143eb1158abe60a4062ef912812f059f3f8098",
+      "bytes": 239778,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-vertex-input-final.zip",
+      "sha256": "68d694d13c8e24d82f46e428deb8e8cfc2dd6c4a721fa7dffb7d83e7d5eb09ba",
+      "bytes": 293718,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-bindings.zip",
+      "sha256": "02209172dcaae6ce768b1f0b13460149b8e1e174daf02ba0e58ae79dd60148f5",
+      "bytes": 362780,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-depth-mrt.zip",
+      "sha256": "6b761e2711b56d78b5b82a430c4774f9abd719f12b77f723eea3f1e45712ec08",
+      "bytes": 424573,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-recovery.zip",
+      "sha256": "445465ac5671a6f32ec42a0f978448496655d4416db4f4f48ae437d95078e6d7",
+      "bytes": 457267,
+      "unchanged": true
+    }
+  ],
+  "previous_same_SDK_evidence_hash_verified_not_rerun": [
+    "common_benchmark_72",
+    "other_installed_consumers",
+    "long_stress",
+    "bounded_reuse",
+    "device_lifetimes",
+    "runtime_comparisons"
+  ],
+  "original_failed_gate_preserved": true,
+  "new_performance_claim": false,
+  "remaining": [
+    "human_display_interaction_acceptance",
+    "physical_cross_monitor_DPI",
+    "unexpected_TDR_hot_unplug",
+    "original_GBV_memory_plateau",
+    "Vulkan_Linux_Metal_macOS"
+  ]
+}
