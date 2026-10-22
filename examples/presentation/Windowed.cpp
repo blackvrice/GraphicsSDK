@@ -1,5 +1,6 @@
 // A single-threaded, one-frame-in-flight public SDK consumer. No native GPU API.
 #include <graphics/Graphics.hpp>
+#include "PresentationPolicy.hpp"
 #include <windows.h>
 #include <array>
 #include <charconv>
@@ -22,14 +23,37 @@ void take(gfx::Result<void> r) { if (!r) throw GpuFailure(r.error()); }
 void check(bool condition, const char* message) { if (!condition) throw std::runtime_error(message); }
 void win32(BOOL ok, const char* message) { check(ok != FALSE, message); }
 
+class MessageWaiter {
+    HANDLE timer{CreateWaitableTimerExW(nullptr,nullptr,CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,TIMER_MODIFY_STATE|SYNCHRONIZE)};
+public:
+    MessageWaiter() { check(timer!=nullptr,"High-resolution waitable timer unavailable (Windows 10 1803+ required)"); }
+    MessageWaiter(const MessageWaiter&)=delete;
+    MessageWaiter& operator=(const MessageWaiter&)=delete;
+    ~MessageWaiter() { if (timer) { CancelWaitableTimer(timer); CloseHandle(timer); } }
+    void timed(std::int64_t ticks) {
+        LARGE_INTEGER due{}; due.QuadPart=-ticks;
+        win32(SetWaitableTimer(timer,&due,0,nullptr,nullptr,FALSE),"Arm frame timer failed");
+        const auto result=MsgWaitForMultipleObjectsEx(1,&timer,INFINITE,QS_ALLINPUT,MWMO_INPUTAVAILABLE);
+        // An input wake must not leave an active timer behind while minimized.
+        const auto cancelled=CancelWaitableTimer(timer);
+        check(result!=WAIT_FAILED,"Frame timer/message wait failed");
+        win32(cancelled,"Cancel frame timer failed");
+    }
+    static void suspended() {
+        check(MsgWaitForMultipleObjectsEx(0,nullptr,INFINITE,QS_ALLINPUT,MWMO_INPUTAVAILABLE)!=WAIT_FAILED,
+              "Suspended window message wait failed");
+    }
+};
+
 struct Options {
     bool selfTest{}, validation{}, warp{}, vsync{true};
     unsigned frames{};
+    unsigned fps{60};
     std::string output;
 };
 Options parse(int argc, char** argv) {
     Options o;
-    bool modeSet=false;
+    bool modeSet=false, fpsSet=false;
     for (int i=1; i<argc; ++i) {
         const std::string_view arg=argv[i];
         if (arg=="--self-test") o.selfTest=true;
@@ -43,8 +67,13 @@ Options parse(int argc, char** argv) {
             const auto result=std::from_chars(value.data(),value.data()+value.size(),o.frames);
             check(result.ec==std::errc{} && result.ptr==value.data()+value.size() && o.frames>0 && o.frames<=1000000,
                   "--frames requires an integer in 1..1000000");
+        } else if (arg=="--fps" && i+1<argc && !fpsSet) {
+            const std::string_view value=argv[++i]; fpsSet=true;
+            const auto result=std::from_chars(value.data(),value.data()+value.size(),o.fps);
+            check(result.ec==std::errc{} && result.ptr==value.data()+value.size() && o.fps>0 && o.fps<=240,
+                  "--fps requires an integer in 1..240");
         } else if (arg=="--output" && i+1<argc && o.output.empty()) o.output=argv[++i];
-        else throw std::runtime_error("Usage: gfx_presentation [--mode gpu|validation|warp] [--no-vsync] [--frames N] [--self-test] [--output new.jsonl]");
+        else throw std::runtime_error("Usage: gfx_presentation [--mode gpu|validation|warp] [--no-vsync] [--fps 1..240] [--frames N] [--self-test] [--output new.jsonl]");
     }
     check(!o.selfTest || !o.frames, "--self-test and --frames cannot be combined");
     return o;
@@ -179,7 +208,8 @@ struct Application {
             check(back->description().width==width && back->description().height==height,"Backbuffer extent is stale");
             const auto footprint=back->footprint();
             if (verify && !readback) readback=take(device->createBuffer({footprint.size,gfx::Memory::Readback}));
-            const unsigned x=width/8+(frames%31)*width/128, y=height/4, w=width/2, h=height/2;
+            const auto rect=*presentation::rectangle(width,height,frames);
+            const auto [x,y,w,h]=rect;
             take(commands->begin());
             take(commands->transition(back,gfx::ResourceState::RenderTarget));
             take(commands->beginRenderPass(back,{0,0,.25f,1}));
@@ -251,6 +281,12 @@ struct Application {
             check(!IsIconic(window.handle) && width==size[0] && height==size[1],"Restored client extent mismatch");
             log << "{\"event\":\"minimize_restore\",\"cycle\":" << cycle << ",\"paused_submissions\":0}\n";
         }
+        // Actual narrow client windows; the default nonclient frame imposes a minimum width.
+        for (const auto& size : std::array<std::array<unsigned,2>,4>{{{127,1},{129,2},{127,3},{257,9}}}) {
+            window.clientSize(size[0],size[1]); rendered(); rendered();
+            check(width==size[0] && height==size[1],"Tiny client extent mismatch");
+        }
+        log << "{\"event\":\"tiny_extents\",\"cases\":4,\"full_images\":8}\n";
         // Several synchronous WM_SIZE events collapse into one GPU resize in step().
         const auto before=resizes;
         window.clientSize(333,199); window.clientSize(511,277); window.clientSize(639,357);
@@ -307,15 +343,35 @@ int main(int argc, char** argv) try {
     Application application(window,options,log);
     if (options.selfTest) application.selfTest();
     else {
+        using Clock=presentation::FramePacer::Clock;
+        MessageWaiter waiter;
+        const auto loopStart=Clock::now();
+        presentation::FramePacer pacer(options.fps,loopStart);
+        unsigned timedWaits{},suspendedWaits{};
         while (!window.closing && (!options.frames || application.frames<options.frames)) {
             window.pump();
-            const bool rendered=application.step();
-            if (!rendered && !window.closing && window.suspended())
-                MsgWaitForMultipleObjectsEx(0,nullptr,INFINITE,QS_ALLINPUT,MWMO_INPUTAVAILABLE);
+            if (window.closing) break;
+            if (window.suspended()) {
+                ++suspendedWaits; MessageWaiter::suspended();
+                pacer.reset(Clock::now());
+                continue;
+            }
+            const auto now=Clock::now();
+            if (pacer.due(now)) {
+                pacer.started(now);
+                if (application.step() && application.frames==1)
+                    log << "{\"event\":\"loop_ready\",\"frames\":1}\n" << std::flush;
+            }
+            if (options.frames && application.frames>=options.frames) break;
+            const auto remaining=pacer.waitTicks100ns(Clock::now());
+            if (remaining) { ++timedWaits; waiter.timed(remaining); }
         }
+        const auto elapsed=std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now()-loopStart).count();
         application.shutdown();
         log << "{\"event\":\"interactive_exit\",\"frames\":" << application.frames
-            << ",\"interactive_acceptance\":false}\n";
+            << ",\"target_fps\":" << options.fps << ",\"loop_elapsed_ns\":" << elapsed
+            << ",\"timed_waits\":" << timedWaits << ",\"suspended_waits\":" << suspendedWaits
+            << ",\"high_resolution_timer\":true,\"interactive_acceptance\":false}\n";
     }
     log.flush(); check(log.good(),"Output write failed");
     return 0;

@@ -1,0 +1,255 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "production_SDK_unchanged": true,
+  "phase2_complete": false,
+  "memory_stress_accepted": false,
+  "automated_lifecycle_passed": true,
+  "automated_pacing_passed": true,
+  "interactive_acceptance": false,
+  "unexpected_loss_acceptance": false,
+  "actual_dpi_transition_tested": false,
+  "campaign": {
+    "path": "benchmarks/reports/validation/2026-10-22-phase2-presentation-pacing/final-campaign/summary.json",
+    "sha256": "d31776ff26b95d0c686d3b88701c124643d736a2341572bbcc2915bd321b35df",
+    "bytes": 11812
+  },
+  "lifecycle_processes": 6,
+  "pacing_processes": 3,
+  "full_images": 294,
+  "verified_rgba_pixels": 44929026,
+  "tiny_window_full_images": 48,
+  "minimize_restore_cycles": 54,
+  "controlled_native_recoveries": 12,
+  "paused_step_checks": 156,
+  "GBV_errors_in_two_hardware_cases": 0,
+  "non_validation_error_count": null,
+  "pacing_cases": [
+    {
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--mode",
+        "gpu",
+        "--no-vsync",
+        "--fps",
+        "30",
+        "--frames",
+        "31",
+        "--output",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation-pacing\\final-campaign\\pacing-30.jsonl"
+      ],
+      "result": {
+        "event": "interactive_exit",
+        "frames": 31,
+        "target_fps": 30,
+        "loop_elapsed_ns": 1006796100,
+        "timed_waits": 34,
+        "suspended_waits": 0,
+        "high_resolution_timer": true,
+        "interactive_acceptance": false
+      },
+      "returncode": 0
+    },
+    {
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--mode",
+        "gpu",
+        "--no-vsync",
+        "--fps",
+        "60",
+        "--frames",
+        "61",
+        "--output",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation-pacing\\final-campaign\\pacing-60.jsonl"
+      ],
+      "result": {
+        "event": "interactive_exit",
+        "frames": 61,
+        "target_fps": 60,
+        "loop_elapsed_ns": 1020820100,
+        "timed_waits": 64,
+        "suspended_waits": 0,
+        "high_resolution_timer": true,
+        "interactive_acceptance": false
+      },
+      "returncode": 0
+    }
+  ],
+  "close_during_pacing": {
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+      "--mode",
+      "gpu",
+      "--no-vsync",
+      "--fps",
+      "1",
+      "--frames",
+      "1000000",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation-pacing\\final-campaign\\pacing-close.jsonl"
+    ],
+    "result": {
+      "event": "interactive_exit",
+      "frames": 1,
+      "target_fps": 1,
+      "loop_elapsed_ns": 229333900,
+      "timed_waits": 43,
+      "suspended_waits": 0,
+      "high_resolution_timer": true,
+      "interactive_acceptance": false
+    },
+    "owned_pid": 31096,
+    "wake_messages": 40,
+    "close_elapsed_seconds": 0.030999999999039574,
+    "returncode": 0
+  },
+  "native_rejection_controls": [
+    {
+      "case": "bad-mode",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--mode",
+        "unknown"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "bad-count",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--frames",
+        "0"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "mixed-contract",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--self-test",
+        "--frames",
+        "2"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "existing-output",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation-pacing\\final-campaign\\existing-output.jsonl"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "zero-fps",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--fps",
+        "0"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "high-fps",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--fps",
+        "241"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "malformed-fps",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--fps",
+        "60fps"
+      ],
+      "returncode": 1
+    },
+    {
+      "case": "duplicate-fps",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+        "--fps",
+        "30",
+        "--fps",
+        "60"
+      ],
+      "returncode": 1
+    }
+  ],
+  "presentation_ctest": 7,
+  "policy_assertions": 2278,
+  "separate_ctest_repeats_not_in_campaign_totals": true,
+  "normal_GBV_smoke_frames": 60,
+  "core_ctest": 22,
+  "no_backend_ctest": 4,
+  "python_tests": 114,
+  "added_python_tests": 4,
+  "compiler_read_inputs": 35,
+  "own_components": 1,
+  "baseline_one_pixel_failure_reproduced": true,
+  "baseline_is_parent_implementation_plus_stimulus": true,
+  "previous_SDK_packages": [
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "sha256": "684da949ad5095a392814d68f8697a5ba41cb05132cd14bacfcf55114cbd7f2c",
+      "bytes": 481914,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64.zip",
+      "sha256": "156f1c060f16001a8f503cafd7143eb1158abe60a4062ef912812f059f3f8098",
+      "bytes": 239778,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-vertex-input-final.zip",
+      "sha256": "68d694d13c8e24d82f46e428deb8e8cfc2dd6c4a721fa7dffb7d83e7d5eb09ba",
+      "bytes": 293718,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-bindings.zip",
+      "sha256": "02209172dcaae6ce768b1f0b13460149b8e1e174daf02ba0e58ae79dd60148f5",
+      "bytes": 362780,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-depth-mrt.zip",
+      "sha256": "6b761e2711b56d78b5b82a430c4774f9abd719f12b77f723eea3f1e45712ec08",
+      "bytes": 424573,
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-recovery.zip",
+      "sha256": "445465ac5671a6f32ec42a0f978448496655d4416db4f4f48ae437d95078e6d7",
+      "bytes": 457267,
+      "unchanged": true
+    }
+  ],
+  "previous_example_binary_rebuilt": true,
+  "previous_same_SDK_evidence_hash_verified_not_rerun": [
+    "common_benchmark_72",
+    "other_installed_consumers",
+    "long_stress",
+    "bounded_reuse",
+    "device_lifetimes",
+    "runtime_comparisons"
+  ],
+  "original_failed_gate_preserved": true,
+  "excluded_exploration": [
+    "campaign",
+    "early coarse-timer inventory"
+  ],
+  "new_performance_claim": false,
+  "remaining": [
+    "human_display_interaction_acceptance",
+    "physical_cross_monitor_DPI",
+    "unexpected_TDR_hot_unplug",
+    "original_GBV_memory_plateau",
+    "Vulkan_Linux_Metal_macOS"
+  ]
+}

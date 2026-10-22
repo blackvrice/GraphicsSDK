@@ -16,25 +16,32 @@ import audit_licenses as audit
 def valid_events(mode="validation", vsync=True):
     extents = [(664,441)] * 2
     extents += [size for size in [(321,181),(641,359),(127,95),(803,451)] * 2 for _ in range(4)]
+    extents += [size for size in [(127,1),(129,2),(127,3),(257,9)] for _ in range(2)]
     extents += [(639,357)] * 7
     images = [{"event":"image", "frame":i, "width":w, "height":h, "row_pitch":((w*4+255)//256)*256}
               for i, (w,h) in enumerate(extents)]
     return [{"event":"device", "adapter":"Test adapter", "warp":mode=="warp", "gbv":mode=="validation", "vsync":vsync},
             *images,
             *[{"event":"minimize_restore", "cycle":i, "paused_submissions":0} for i in range(8)],
+            {"event":"tiny_extents", "cases":4, "full_images":8},
             {"event":"coalesced_resize", "events":3, "gpu_resizes":1},
             {"event":"observed_loss", "native_reason":-2005270523},
             {"event":"observed_loss", "native_reason":-2005270523},
             {"event":"minimized_loss_restore", "paused_submissions":0, "recovery_cycles":1},
             {"event":"hide_restore", "paused_submissions":0},
             {"event":"shutdown", "sdk_objects":0, "sdk_resources":0, "pending_submissions":0, "hwnd_alive":True},
-            {"event":"result", "functional_passed":True, "frames":41, "full_images":41,
-             "verified_pixels":sum(w*h for w,h in extents), "resizes":9, "minimize_restore_cycles":9,
+            {"event":"result", "functional_passed":True, "frames":49, "full_images":49,
+             "verified_pixels":sum(w*h for w,h in extents), "resizes":13, "minimize_restore_cycles":9,
              "paused_checks":26, "recovery_cycles":2, "validation_errors":0 if mode=="validation" else None,
              "per_monitor_v2":True, "interactive_acceptance":False, "unexpected_loss_acceptance":False}]
 
 
 class LifecycleEvidenceTests(unittest.TestCase):
+    def test_tiny_extent_coverage_cannot_be_dropped(self):
+        events = valid_events()
+        next(e for e in events if e["event"]=="tiny_extents")["cases"]=0
+        with self.assertRaises(ValueError):
+            runner.validate_events(events, "validation", True)
     def test_six_modes_and_null_for_unavailable_validation(self):
         for mode in ("gpu", "validation", "warp"):
             for vsync in (True, False):
@@ -76,6 +83,31 @@ class LifecycleEvidenceTests(unittest.TestCase):
             events = valid_events(); next(e for e in events if e["event"]==name)[key]=value
             with self.subTest(key=key), self.assertRaises(ValueError):
                 runner.validate_events(events, "validation", True)
+
+
+class PacingEvidenceTests(unittest.TestCase):
+    def events(self):
+        return [{"event":"device", "warp":False, "gbv":False, "vsync":False},
+                {"event":"loop_ready", "frames":1},
+                {"event":"shutdown", "sdk_objects":0, "hwnd_alive":True},
+                {"event":"interactive_exit", "frames":31, "target_fps":30, "loop_elapsed_ns":1000000020,
+                 "timed_waits":30, "high_resolution_timer":True, "interactive_acceptance":False}]
+
+    def test_real_clock_lower_bound_and_readiness(self):
+        runner.validate_pacing(self.events(),30,31)
+
+    def test_early_frames_no_wait_wrong_cap_and_claimed_acceptance_fail(self):
+        for change in ({"loop_elapsed_ns":999999999}, {"timed_waits":0}, {"target_fps":60},
+                       {"frames":30}, {"high_resolution_timer":False}, {"interactive_acceptance":True}):
+            events=self.events(); events[-1].update(change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                runner.validate_pacing(events,30,31)
+
+    def test_missing_ready_or_injected_recovery_cannot_pass_normal_loop(self):
+        events=self.events(); del events[1]
+        with self.assertRaises(ValueError): runner.validate_pacing(events,30,31)
+        events=self.events(); events.insert(2,{"event":"observed_loss"})
+        with self.assertRaises(ValueError): runner.validate_pacing(events,30,31)
 
 
 class InstalledConsumerAuditTests(unittest.TestCase):

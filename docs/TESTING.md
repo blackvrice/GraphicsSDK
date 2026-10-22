@@ -321,3 +321,16 @@ old SDK ZIPs remain unchanged. Common benchmark/other consumer evidence is hash-
 not rerun. Actual compositor output, human input, physical DPI transitions and unexpected
 TDR/hot-unplug remain unaccepted; the failed GBV memory gate stays open.
 See the [presentation report](PHASE2_PRESENTATION_REPORT.md).
+
+2026-10-22 small-window/pacing follow-up: parent application code reproduces
+`Scissor outside target` at native client height 1. The fix passes 294 full images /
+44,929,026 RGBA pixels over six modes, including 48 tiny-window images. Nine normal
+and lifecycle campaign processes cover 30/60fps caps, 40 owned-window message wakes,
+31ms close while waiting at 1fps, and the prior lifecycle contracts. A separate
+60-frame normal GBV smoke passes. Presentation CTest 7/7 includes 2,278 CPU clock/
+geometry assertions; core 22/22, D3D12-OFF 4/4 and Python 114/114 pass. Four Python
+tests and four native FPS refusal controls are added. Final compiler/linker inventory
+is 35/1. SDK code, six SDK ZIPs and previous raw/source evidence remain unchanged;
+the example executable is rebuilt. Early coarse-timer observations are excluded from
+final-source results. Manual display/DPI/unexpected-loss and original GBV memory
+acceptance remain open. See the [follow-up report](PHASE2_PRESENTATION_PACING_REPORT.md).

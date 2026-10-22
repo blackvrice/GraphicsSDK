@@ -256,3 +256,11 @@ Win32 창 표시 예제는 별도 `sdk-presentation` profile과
 새 SDK package나 외부 dependency는 없고 기존 SDK ZIP·SDK/common/stress `--check`도 통과했다.
 이는 자동 창·이미지 검증의 빌드 입력 감사이며 육안 표시/실제 DPI 변경/예상치 못한 장치 손실
 acceptance를 부여하지 않는다.
+
+작은 창·프레임 속도 조절 보강은 별도
+[최종 35/1 inventory](../licenses/generated/windows-sdk-presentation-pacing-final-release/inventory.json)를
+추가한다. `PresentationPolicy.hpp`와 `PolicyTests.cpp`만 추가 입력으로 허용하고 CPU 정책
+실행 파일의 실제 system-only linker 입력도 검사한다. 고해상도 waitable timer는 기존
+Windows Kernel32 전제조건이며 DLL/package를 배포하지 않고 전역 timer 설정도 바꾸지 않는다.
+초기 coarse-timer inventory와 기존 33/1 inventory는 보존하며, 최종 소스·실행은 새 inventory에
+대응한다. SDK/common/stress·SDK ZIP 감사와 6개 기존 SDK ZIP 해시가 유지된다.

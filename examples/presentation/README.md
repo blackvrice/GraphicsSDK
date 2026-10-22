@@ -11,10 +11,16 @@ cmake --build out/presentation --config Release --parallel 1
 ./out/presentation/Release/gfx_presentation.exe
 ```
 
-Default: hardware, VSync on, validation and native loss injection off.
+Default: hardware, VSync on, 60fps application cap, validation and native loss injection off.
 Use `--mode validation` for full GPU validation, `--mode warp` for WARP,
 `--no-vsync` for Present interval zero, or `--frames 60` for a bounded normal-loop
 smoke. Interval zero does not request tearing or prove its presence/absence.
+`--fps 1..240` changes the normal-loop cap independently of VSync. It is an upper
+bound, not guaranteed display FPS. The example requires Windows 10 1803 or newer
+for its private high-resolution waitable timer. It waits for timer or window input,
+rechecks a monotonic deadline after input, and does not change global timer settings.
+Late frames do not trigger catch-up bursts. Suspension resets the deadline for an
+immediate first restored frame. A failed timer/wait is reported as an error.
 `--output new.jsonl` creates a new file exclusively; it never replaces an old run.
 
 Callbacks record client-pixel extent/suspension; the main loop drops the recorded
@@ -37,15 +43,23 @@ python tools/audit_licenses.py --profile sdk-presentation --package out/Graphics
 
 Six serial fresh-process CTests cover hardware, hardware GBV, WARP × VSync on/off.
 They briefly show their own window and manipulate it programmatically. Each checks
-41 full RGBA backbuffer images before Present, padded readback rows, odd/changing
+49 full RGBA backbuffer images before Present, padded readback rows, odd/changing
 client extents, nine minimize/restore cycles, coalesced sizes, hide/show, native
 removal while active and while minimized, recovery and safe close. Only self-test
 enables native RemoveDevice. Missing support fails rather than passing as a skip.
+Four tiny client extents (127×1, 129×2, 127×3, 257×9) each receive two full-image
+checks. Positive extents always receive a positive in-bounds scissor, including
+1×1 in the CPU policy test. Native nonclient window sizing imposes a minimum width.
+The seventh CTest checks 2,278 geometry/clock boundary assertions without a GPU.
 
-The Python runner checks event coverage and four actual argument/output rejections;
+The Python runner checks event coverage and eight actual argument/output rejections;
 it freezes source, installed headers/library and binary hashes across execution.
 The inventory checks compiler/linker inputs and exact installed SDK identity.
 No new dependency download is required.
+It also runs actual 30/60fps caps and sends 40 wake messages plus close to its own
+child window at 1fps. Only matching process ID and presentation class receive these
+messages. Closing must interrupt the wait and must not render extra early frames.
+Self-test image runs bypass pacing; normal-loop pacing is separate evidence.
 
 For remaining manual acceptance, run normally, drag window borders, minimize and
 restore via the taskbar, maximize/restore, cover/uncover and close via Esc/title bar.
@@ -56,3 +70,5 @@ physical DPI transition is claimed by the automatic checks. Unexpected driver
 TDR/hot-unplug and the original GBV memory plateau remain separate open gates.
 
 See the [measured report](../../docs/PHASE2_PRESENTATION_REPORT.md).
+The [small-window and pacing report](../../docs/PHASE2_PRESENTATION_PACING_REPORT.md)
+records the reproduced failure and current verification.

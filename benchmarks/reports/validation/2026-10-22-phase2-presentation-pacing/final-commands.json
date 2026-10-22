@@ -1,0 +1,139 @@
+[
+  {
+    "name": "final-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/presentation",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--clean-first"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-native-campaign",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_presentation_validation.py",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation-pacing\\final-campaign"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-presentation-ctest",
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/presentation",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-normal-gbv-smoke",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+      "--mode",
+      "validation",
+      "--no-vsync",
+      "--fps",
+      "60",
+      "--frames",
+      "60",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-presentation-pacing\\final-normal-gbv-smoke.jsonl"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-presentation-license-create",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-presentation",
+      "--package",
+      "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "--output",
+      "licenses/generated/windows-sdk-presentation-pacing-final-release"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-presentation-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-presentation",
+      "--package",
+      "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "--output",
+      "licenses/generated/windows-sdk-presentation-pacing-final-release",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-sdk-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk",
+      "--package",
+      "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+      "--output",
+      "licenses/generated/windows-sdk-memory-stress-release",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-benchmark-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "benchmarks-phase1",
+      "--output",
+      "licenses/generated/windows-benchmarks-memory-stress-release",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "final-stress-license-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-stress",
+      "--output",
+      "licenses/generated/windows-sdk-runtime-comparison-final-release",
+      "--check"
+    ],
+    "returncode": 0
+  }
+]

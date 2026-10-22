@@ -38,9 +38,12 @@ ctest --test-dir out/presentation -C Release --output-on-failure
 ```
 
 기본은 하드웨어/VSync ON이며 Esc 또는 창 닫기로 종료한다. `--mode validation`,
-`--mode warp`, `--no-vsync`를 선택할 수 있다. 자동 CTest 6개는 실제 창을 잠시 띄워
+`--mode warp`, `--no-vsync`, `--fps 1..240`을 선택할 수 있다. 기본 속도 상한은 60fps다.
+자동 CTest 6개는 실제 창을 잠시 띄워
 크기 변경·최소화·복원·native 제거/복구를 수행한다. 육안 승인은 별도다.
 [상세 실행·검증 범위](../examples/presentation/README.md)를 따른다.
+별도 CPU 정책 CTest 1개를 합쳐 총 7개이며, 높이 1픽셀 창과 대기 중 메시지·닫기 검증은
+[창 크기·속도 조절 보고서](PHASE2_PRESENTATION_PACING_REPORT.md)에 보존한다.
 
 ## 경쟁 벤치마크
 

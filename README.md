@@ -68,6 +68,9 @@ The [windowed presentation example](examples/presentation/README.md) uses the in
 for Win32 resize, minimize/restore, close and observed-loss recovery. Six automated
 hardware/GBV/WARP and VSync cases pass full backbuffer references; human display and
 unexpected driver-loss acceptance remain separate ([report](docs/PHASE2_PRESENTATION_REPORT.md)).
+The [small-window/pacing follow-up](docs/PHASE2_PRESENTATION_PACING_REPORT.md) fixes
+zero-sized scissors at one-pixel heights and adds a configurable application frame cap
+with a private high-resolution timer and responsive window-message waits.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

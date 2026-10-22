@@ -255,10 +255,12 @@ def collect(root, profile, package=None):
                     "native_lifetime": "out/memory-validation-probe/gbv_lifetime_probe.vcxproj", "sdk_lifetime": "out/memory-validation-probe/sdk_lifetime_probe.vcxproj", "runtime_probe": "out/memory-validation-probe/gbv_runtime_probe.vcxproj"}
     if presentation:
         verify_presentation_library(root)
-        trace_dirs = {"core": TRACE_DIRS["core"], "presentation": "out/presentation/gfx_presentation.dir/Release"}
+        trace_dirs = {"core": TRACE_DIRS["core"], "presentation": "out/presentation/gfx_presentation.dir/Release",
+                      "presentation_policy": "out/presentation/gfx_presentation_policy_tests.dir/Release"}
         artifacts_map = {"core": ARTIFACTS["core"], "presentation": "out/presentation/Release/gfx_presentation.exe",
-                         "installed_core": "out/install/lib/GraphicsSDKCore.lib"}
-        projects = {"core": PROJECTS["core"], "presentation": "out/presentation/gfx_presentation.vcxproj"}
+                         "installed_core": "out/install/lib/GraphicsSDKCore.lib", "presentation_policy": "out/presentation/Release/gfx_presentation_policy_tests.exe"}
+        projects = {"core": PROJECTS["core"], "presentation": "out/presentation/gfx_presentation.vcxproj",
+                    "presentation_policy": "out/presentation/gfx_presentation_policy_tests.vcxproj"}
     benchmark = profile not in ("sdk", "sdk-stress", "sdk-presentation")
     extended_sdk = stress or presentation
     target_names = list(trace_dirs) if benchmark or extended_sdk else ["core"]
@@ -313,7 +315,7 @@ def collect(root, profile, package=None):
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
             elif presentation and path.is_relative_to(root / "out/install/include/graphics"):
                 files[relative.casefold()] = installed_presentation_header(root, path)
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (presentation and relative.casefold()=="examples/presentation/windowed.cpp") or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (presentation and relative.casefold() in ("examples/presentation/windowed.cpp", "examples/presentation/presentationpolicy.hpp", "examples/presentation/policytests.cpp")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -362,7 +364,7 @@ def collect(root, profile, package=None):
     if stress:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("memory_stress", "memory_validation_probe", "native_lifetime", "sdk_lifetime", "runtime_probe"))
     if presentation:
-        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("presentation",))
+        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("presentation", "presentation_policy"))
         inventory["presentation_build_inputs"] = [record_file(root, root / "examples/presentation" / name) for name in ("CMakeLists.txt", "app.manifest")]
         inventory["exclusions"].extend(["Interactive visual acceptance", "Actual cross-monitor DPI change", "Unexpected driver TDR/hot-unplug"])
     if extra:
