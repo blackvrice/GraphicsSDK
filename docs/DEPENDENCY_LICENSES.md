@@ -232,3 +232,11 @@ Depth/MRT 확장은 별도 [SDK inventory](../licenses/generated/windows-sdk-dep
 PSAPI/DXGI/D3D12 debug callback은 기존 Windows 시스템 전제조건이다. 외부 dependency나
 competitor 수정은 없고 이전 다섯 SDK ZIP 및 모든 과거 측정·감사·source archive를 보존했다.
 감사 통과는 메모리 acceptance 통과를 뜻하지 않는다. GBV 증가로 장시간 gate는 실패 상태다.
+
+GBV 자원 재사용과 device lifetime 분리는 각각 이전
+[22/1 inventory](../licenses/generated/windows-sdk-gbv-reclamation-release/inventory.json)와 새
+[24/1 inventory](../licenses/generated/windows-sdk-device-lifetime-final-release/inventory.json)에 보존한다.
+현재 `sdk-stress`는 기존 두 C++ 도구, `ReusableFrame.hpp`, `Lifetime.cpp`, `SDKLifetime.cpp`만
+명시적으로 추가 허용한다. 네 exe의 실제 linker 입력을 감사하며 native-only `gbv_lifetime_probe`는
+SDK library를 링크하지 않는다. 기존 SDK/common 감사와 SDK ZIP 내용 검사는 그대로 통과했다.
+네 Windows runtime DLL은 경로·해시만 기록하며 재배포하지 않는다. 새 외부 dependency는 없다.

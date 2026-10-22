@@ -128,3 +128,11 @@ all three `--check` runs passed. The stress profile explicitly reviews its two o
 and their linker evidence; it does not broadly allow arbitrary tools. Five earlier SDK ZIPs and all
 historical evidence remain unchanged. Build/package auditing does not turn the failed GBV memory
 campaign into acceptance. No new external library or competitor modification was introduced.
+
+Device lifetime tooling adds a fresh
+[24-input/1-component inventory](generated/windows-sdk-device-lifetime-final-release/inventory.json)
+and adjacent notices. The stress profile explicitly adds `ReusableFrame.hpp`, `Lifetime.cpp` and
+`SDKLifetime.cpp`; it covers four actual executable linker closures. The native-only reproduction
+links Windows system libraries without GraphicsSDK. Runtime DLLs are hash-bound prerequisites,
+not redistributed payloads. Earlier stress inventories, packages and failed memory observations
+are preserved. Passing device destruction contracts does not accept the open memory plateau gate.

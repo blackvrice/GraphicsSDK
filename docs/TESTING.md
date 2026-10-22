@@ -287,3 +287,13 @@ and all 20 final isolation/counter cases pass their respective functional contra
 inventory covers 22 compiler-read inputs/1 component; SDK/common inventory checks and six old SDK
 packages are unchanged. Common benchmark correctness/installed consumers are previous same-SDK
 evidence with verified hashes, not newly executed. See the [investigation](PHASE2_GBV_RECLAMATION_REPORT.md).
+
+2026-10-22 device lifetime: 5 fresh processes × 8 normal native device lifetimes pass
+destruction/alias contracts. The native-only reproduction receives all 18,456 resource destruction
+callbacks; the public SDK hardware/WARP cases verify 1,024 frames, 3,072 full images and
+256MiB buffer bytes with full GBV before teardown. SDK statistics are explicitly unavailable after
+dropping Device; real native destruction receipts are separate evidence. Core CTest 22/22,
+D3D12-OFF 4/4 and Python 91/91 (9 added rejection tests) pass. New compiler/linker inventory
+covers 24 own inputs/1 component and confirms no SDK library in the native-only executable.
+These short device lifecycle observations do not accept the original GBV memory gate; CPU private
+commit still grows between some settled cycles. See the [lifetime report](PHASE2_DEVICE_LIFETIME_REPORT.md).

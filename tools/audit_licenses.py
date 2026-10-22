@@ -230,9 +230,12 @@ def collect(root, profile, package=None):
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
     stress = profile == "sdk-stress"
     if stress:
-        trace_dirs = {"core": TRACE_DIRS["core"], "memory_stress": "out/core/gfx_memory_stress.dir/Release", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.dir/Release"}
-        artifacts_map = {"core": ARTIFACTS["core"], "memory_stress": "out/core/Release/gfx_memory_stress.exe", "memory_validation_probe": "out/memory-validation-probe/Release/memory_validation_probe.exe"}
-        projects = {"core": PROJECTS["core"], "memory_stress": "out/core/gfx_memory_stress.vcxproj", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.vcxproj"}
+        trace_dirs = {"core": TRACE_DIRS["core"], "memory_stress": "out/core/gfx_memory_stress.dir/Release", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.dir/Release",
+                      "native_lifetime": "out/memory-validation-probe/gbv_lifetime_probe.dir/Release", "sdk_lifetime": "out/memory-validation-probe/sdk_lifetime_probe.dir/Release"}
+        artifacts_map = {"core": ARTIFACTS["core"], "memory_stress": "out/core/Release/gfx_memory_stress.exe", "memory_validation_probe": "out/memory-validation-probe/Release/memory_validation_probe.exe",
+                         "native_lifetime": "out/memory-validation-probe/Release/gbv_lifetime_probe.exe", "sdk_lifetime": "out/memory-validation-probe/Release/sdk_lifetime_probe.exe"}
+        projects = {"core": PROJECTS["core"], "memory_stress": "out/core/gfx_memory_stress.vcxproj", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.vcxproj",
+                    "native_lifetime": "out/memory-validation-probe/gbv_lifetime_probe.vcxproj", "sdk_lifetime": "out/memory-validation-probe/sdk_lifetime_probe.vcxproj"}
     benchmark = profile not in ("sdk", "sdk-stress")
     target_names = list(trace_dirs) if benchmark or stress else ["core"]
     evidence = []
@@ -284,7 +287,7 @@ def collect(root, profile, package=None):
                     blocks.update(source_notices(text_file(path)))
                 files[relative.casefold()] = {**record_file(root, path), "component": identifier,
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -331,7 +334,7 @@ def collect(root, profile, package=None):
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map,
             extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl", "gpu_etl_export", "gpu_memory_control") if profile=="benchmarks-gpu-memory" else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
     if stress:
-        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("memory_stress", "memory_validation_probe"))
+        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("memory_stress", "memory_validation_probe", "native_lifetime", "sdk_lifetime"))
     if extra:
         inventory[extra.get("review_key", "diligent_build_review")] = extra["evidence"]
     if generated_inputs:
