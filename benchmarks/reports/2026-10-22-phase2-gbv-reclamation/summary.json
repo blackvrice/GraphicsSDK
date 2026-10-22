@@ -1,0 +1,481 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "production_SDK_unchanged": true,
+  "phase2_complete": false,
+  "bounded_working_set_acceptance": {
+    "bounded_working_set_accepted": true,
+    "unbounded_texture_churn_accepted": false,
+    "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+    "measured_seconds": 300.0185681,
+    "frames": 70800,
+    "full_images": 212400,
+    "verified_buffer_bytes": 18559795200,
+    "drained_samples": 61,
+    "tail_samples": 31,
+    "working_set_objects": 105,
+    "working_set_resources": 104,
+    "working_set_allocation_bytes": 11534336,
+    "final_owned_resources": 0,
+    "metrics": {
+      "private_bytes": {
+        "median_drift": 32768,
+        "slope_per_minute": 16704.77202562468,
+        "range": 69632
+      },
+      "handles": {
+        "median_drift": 2,
+        "slope_per_minute": 0.9966095498167562,
+        "range": 4
+      },
+      "gpu_local_bytes": {
+        "median_drift": 0,
+        "slope_per_minute": 0.0,
+        "range": 0
+      },
+      "gpu_nonlocal_bytes": {
+        "median_drift": 0,
+        "slope_per_minute": 0.0,
+        "range": 0
+      }
+    },
+    "bounded_policy_sha256": "eb1e3fbc6a42111de7b38f048fb7465729825d8c99aa8252893fc7fc100d41fa",
+    "memory_limits_policy_sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+  },
+  "unbounded_texture_churn_accepted": false,
+  "original_failed_gate_preserved": true,
+  "isolation_profile_seconds": 5,
+  "isolation_cases": [
+    {
+      "case": "sdk-allocate",
+      "pid": 19760,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "sdk-allocate",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\sdk-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 180224,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 251,
+      "resource_creations": 2008
+    },
+    {
+      "case": "native-allocate",
+      "pid": 7492,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-allocate",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 217088,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 257,
+      "resource_creations": 2056
+    },
+    {
+      "case": "idle-only",
+      "pid": 25940,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "idle-only",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\idle-only.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 0,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 314,
+      "resource_creations": 0
+    },
+    {
+      "case": "submit-empty",
+      "pid": 33008,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "submit-empty",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\submit-empty.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 2494464,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 312,
+      "resource_creations": 0
+    },
+    {
+      "case": "copy-new",
+      "pid": 22648,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "copy-new",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\copy-new.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 4214784,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 273,
+      "resource_creations": 819
+    },
+    {
+      "case": "copy-reuse",
+      "pid": 37980,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "copy-reuse",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\copy-reuse.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 3092480,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 311,
+      "resource_creations": 3
+    },
+    {
+      "case": "texture-allocate",
+      "pid": 30580,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "texture-allocate",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\texture-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 182272000,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 284,
+      "resource_creations": 852
+    },
+    {
+      "case": "clear-new",
+      "pid": 11640,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "clear-new",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\clear-new.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 161644544,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "frames": 244,
+      "full_images": 732
+    },
+    {
+      "case": "draw-new",
+      "pid": 22056,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "draw-new",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\draw-new.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 153415680,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "frames": 229,
+      "full_images": 687
+    },
+    {
+      "case": "native-texture",
+      "pid": 22192,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-texture",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-texture.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 176402432,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 275,
+      "resource_creations": 825
+    },
+    {
+      "case": "native-texture-views",
+      "pid": 26084,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-texture-views",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-texture-views.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 174596096,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 272,
+      "resource_creations": 816
+    },
+    {
+      "case": "native-footprints",
+      "pid": 15884,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-footprints",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-footprints.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 177508352,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 277,
+      "resource_creations": 831
+    },
+    {
+      "case": "footprints-only",
+      "pid": 24308,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "footprints-only",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\footprints-only.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 0,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 314,
+      "resource_creations": 0
+    },
+    {
+      "case": "native-placed",
+      "pid": 16280,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-placed",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-placed.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 169148416,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 263,
+      "resource_creations": 789
+    },
+    {
+      "case": "native-not-zeroed",
+      "pid": 13676,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-not-zeroed",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-not-zeroed.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 181039104,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 282,
+      "resource_creations": 846
+    },
+    {
+      "case": "native-optimized-clear",
+      "pid": 3920,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-optimized-clear",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-optimized-clear.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 190537728,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 297,
+      "resource_creations": 891
+    },
+    {
+      "case": "native-cpu-texture",
+      "pid": 20472,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-cpu-texture",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-cpu-texture.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 122880,
+      "native_only": true,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 273,
+      "resource_creations": 819
+    },
+    {
+      "case": "native-gbv-texture",
+      "pid": 25612,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-gbv-texture",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-gbv-texture.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 177143808,
+      "native_only": true,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 277,
+      "resource_creations": 831
+    },
+    {
+      "case": "native-gbv-no-tracking",
+      "pid": 1312,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-gbv-no-tracking",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-gbv-no-tracking.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 122880,
+      "native_only": true,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 289,
+      "resource_creations": 867
+    },
+    {
+      "case": "counter-contract",
+      "pid": 38020,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "counter-contract",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\counter-contract.jsonl"
+      ],
+      "returncode": 0,
+      "counter_contract_passed": true,
+      "expected_injected_errors": 6,
+      "overflow_filter_clear_worker_shared_owner_teardown": true,
+      "sdk_sha256": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1"
+    }
+  ],
+  "native_only_controls": [
+    {
+      "case": "native-cpu-texture",
+      "resource_creations": 819,
+      "private_growth_bytes": 122880
+    },
+    {
+      "case": "native-gbv-texture",
+      "resource_creations": 831,
+      "private_growth_bytes": 177143808
+    },
+    {
+      "case": "native-gbv-no-tracking",
+      "resource_creations": 867,
+      "private_growth_bytes": 122880
+    }
+  ],
+  "host_adapter": {
+    "adapter": "NVIDIA GeForce GTX 1660 SUPER",
+    "luid_high": 0,
+    "luid_low": 83821897
+  },
+  "current_regressions": {
+    "core_ctest": 22,
+    "no_backend_windows_ctest": 4,
+    "python_tests": 82,
+    "added_gate_negative_tests": 10
+  },
+  "stress_inventory": {
+    "compiler_read_inputs": 22,
+    "components": 1,
+    "path": "licenses/generated/windows-sdk-gbv-reclamation-release"
+  },
+  "previous_evidence_verified_not_rerun": {
+    "common_benchmark_correctness": 72,
+    "installed_consumers": true,
+    "SDK_packages": [
+      {
+        "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+        "sha256": "684da949ad5095a392814d68f8697a5ba41cb05132cd14bacfcf55114cbd7f2c",
+        "bytes": 481914,
+        "unchanged": true
+      },
+      {
+        "path": "out/GraphicsSDK-0.0.1-dev-windows-x64.zip",
+        "sha256": "156f1c060f16001a8f503cafd7143eb1158abe60a4062ef912812f059f3f8098",
+        "bytes": 239778,
+        "unchanged": true
+      },
+      {
+        "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-vertex-input-final.zip",
+        "sha256": "68d694d13c8e24d82f46e428deb8e8cfc2dd6c4a721fa7dffb7d83e7d5eb09ba",
+        "bytes": 293718,
+        "unchanged": true
+      },
+      {
+        "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-bindings.zip",
+        "sha256": "02209172dcaae6ce768b1f0b13460149b8e1e174daf02ba0e58ae79dd60148f5",
+        "bytes": 362780,
+        "unchanged": true
+      },
+      {
+        "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-depth-mrt.zip",
+        "sha256": "6b761e2711b56d78b5b82a430c4774f9abd719f12b77f723eea3f1e45712ec08",
+        "bytes": 424573,
+        "unchanged": true
+      },
+      {
+        "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-recovery.zip",
+        "sha256": "445465ac5671a6f32ec42a0f978448496655d4416db4f4f48ae437d95078e6d7",
+        "bytes": 457267,
+        "unchanged": true
+      }
+    ]
+  },
+  "exploration_excluded_from_acceptance": [
+    "isolation",
+    "render-isolation",
+    "native-isolation",
+    "heap-isolation",
+    "tracking-isolation"
+  ],
+  "native_control_interpretation": "Association with native GBV texture state tracking; exact internal cause unproven",
+  "new_performance_claim": false,
+  "continuous_peak_claim": false,
+  "multi_hour_soak_executed": false,
+  "remote_CI_executed": false,
+  "remaining": [
+    "unbounded_texture_creation_GBV_growth",
+    "long_running_reclamation_acceptance",
+    "interactive_presentation",
+    "unexpected_TDR_hot_unplug",
+    "other_platforms"
+  ]
+}

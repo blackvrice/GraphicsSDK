@@ -1,0 +1,64 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe": "1d3dd2a468edd809d6ae9cb66c3da84980cd6099b00515b5db78fd078a20e79b",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "3018622fb5a9656929e7b717a77809f0a168b4ff095e2e5392edebe98debbd8c",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\main.cpp": "6d645cbcb6f149413b1d9e3fcdada1dd3abb44b381094977d24ddeafb902e2a5",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "3c3ce17a24a073daad5e66339ebb425ef1d066e7a19a9ba037abc893be76c1e4",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\CMakeLists.txt": "d90abd71d1ed63d3f6faf82063df8dc7cbf7857b13c9be0b714fcd512718619d"
+  },
+  "cases": [
+    {
+      "case": "texture-allocate",
+      "pid": 3988,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "texture-allocate",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\render-isolation\\texture-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 556,
+      "resource_creations": 1668,
+      "private_growth_bytes": 354959360,
+      "nonlocal_growth_bytes": 352518144
+    },
+    {
+      "case": "clear-new",
+      "pid": 11328,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "clear-new",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\render-isolation\\clear-new.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "frames": 385,
+      "full_images": 1155,
+      "private_growth_bytes": 250470400,
+      "nonlocal_growth_bytes": 246935552
+    },
+    {
+      "case": "draw-new",
+      "pid": 38800,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "draw-new",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\render-isolation\\draw-new.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "frames": 358,
+      "full_images": 1074,
+      "private_growth_bytes": 238039040,
+      "nonlocal_growth_bytes": 230158336
+    }
+  ],
+  "diagnostic_only": true
+}

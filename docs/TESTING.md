@@ -273,3 +273,17 @@ their bounded memory criteria, but GBV private/nonlocal/handle growth failed. It
 snapshot is not full native error coverage because factor probes exposed native text queue loss.
 The repaired counter and current short probes are separate evidence, not a replacement long soak.
 See the [memory report](PHASE2_MEMORY_STRESS_REPORT.md) and its accepted=false/exit-1 gate.
+
+2026-10-22 GBV reclamation investigation: native-only controls isolate texture-creation growth
+with full GBV state tracking; disabling that tracking is confined to a reduced-validation diagnostic.
+The SDK default remains full GBV. A public-API reusable frame-slot helper passes a separate
+30-second warmup + 300-second full-GBV profile: 70,800 frames, 212,400 full images and
+18,559,795,200 verified buffer bytes, zero native errors and final SDK ownership zero.
+Its 61 drained checkpoints pass the original private/handle/DXGI plateau limits. This does not
+accept the original repeated-creation campaign or finish Phase 2 memory reclamation.
+
+Current core CTest 22/22, Windows D3D12-OFF 4/4, Python 82/82 (10 new gate-negative tests)
+and all 20 final isolation/counter cases pass their respective functional contracts. New sdk-stress
+inventory covers 22 compiler-read inputs/1 component; SDK/common inventory checks and six old SDK
+packages are unchanged. Common benchmark correctness/installed consumers are previous same-SDK
+evidence with verified hashes, not newly executed. See the [investigation](PHASE2_GBV_RECLAMATION_REPORT.md).

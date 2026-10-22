@@ -1,0 +1,64 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe": "729c9730b72c0afd9b5614fbd83e9d1ad467fb145c9e9d143ea86884f36e09c2",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "3018622fb5a9656929e7b717a77809f0a168b4ff095e2e5392edebe98debbd8c",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\main.cpp": "0645158f0477336e46ef7cdfc33609e471c93b86b9e33caa5d2d655650af775c",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "3c3ce17a24a073daad5e66339ebb425ef1d066e7a19a9ba037abc893be76c1e4",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\CMakeLists.txt": "d90abd71d1ed63d3f6faf82063df8dc7cbf7857b13c9be0b714fcd512718619d"
+  },
+  "cases": [
+    {
+      "case": "native-placed",
+      "pid": 11772,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-placed",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\heap-isolation\\native-placed.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 507,
+      "resource_creations": 1521,
+      "private_growth_bytes": 324153344,
+      "nonlocal_growth_bytes": 322109440
+    },
+    {
+      "case": "native-not-zeroed",
+      "pid": 33364,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-not-zeroed",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\heap-isolation\\native-not-zeroed.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 588,
+      "resource_creations": 1764,
+      "private_growth_bytes": 375828480,
+      "nonlocal_growth_bytes": 373489664
+    },
+    {
+      "case": "native-optimized-clear",
+      "pid": 31340,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-optimized-clear",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\heap-isolation\\native-optimized-clear.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 563,
+      "resource_creations": 1689,
+      "private_growth_bytes": 360206336,
+      "nonlocal_growth_bytes": 357761024
+    }
+  ],
+  "diagnostic_only": true
+}

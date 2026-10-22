@@ -1,0 +1,355 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "profile": "isolation",
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe": "44dc338121a1405940d489adade2b790de41a3d16c1f6e838d8c0949b5d1500a",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "3c3ce17a24a073daad5e66339ebb425ef1d066e7a19a9ba037abc893be76c1e4",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\main.cpp": "55f4a3086503924ac9e4bc082f340d596e49fe405e90bfebe74c47d29eaf7232",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\ReusableFrame.hpp": "8a35e6181c7d387903b9b5e03b7ed231f86d81731b7beee866cb826f8a8f6cfe",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\run.py": "80a7575d43a6b703f1a58299422118e0571c002ecbde96304b9958b05755a453",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\CMakeLists.txt": "d90abd71d1ed63d3f6faf82063df8dc7cbf7857b13c9be0b714fcd512718619d",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "3018622fb5a9656929e7b717a77809f0a168b4ff095e2e5392edebe98debbd8c"
+  },
+  "diagnostic_only": true,
+  "memory_acceptance_claim": false,
+  "cases": [
+    {
+      "case": "sdk-allocate",
+      "pid": 19760,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "sdk-allocate",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\sdk-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 180224,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 251,
+      "resource_creations": 2008
+    },
+    {
+      "case": "native-allocate",
+      "pid": 7492,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-allocate",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 217088,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 257,
+      "resource_creations": 2056
+    },
+    {
+      "case": "idle-only",
+      "pid": 25940,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "idle-only",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\idle-only.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 0,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 314,
+      "resource_creations": 0
+    },
+    {
+      "case": "submit-empty",
+      "pid": 33008,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "submit-empty",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\submit-empty.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 2494464,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 312,
+      "resource_creations": 0
+    },
+    {
+      "case": "copy-new",
+      "pid": 22648,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "copy-new",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\copy-new.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 4214784,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 273,
+      "resource_creations": 819
+    },
+    {
+      "case": "copy-reuse",
+      "pid": 37980,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "copy-reuse",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\copy-reuse.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 3092480,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 311,
+      "resource_creations": 3
+    },
+    {
+      "case": "texture-allocate",
+      "pid": 30580,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "texture-allocate",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\texture-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 182272000,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 284,
+      "resource_creations": 852
+    },
+    {
+      "case": "clear-new",
+      "pid": 11640,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "clear-new",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\clear-new.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 161644544,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "frames": 244,
+      "full_images": 732
+    },
+    {
+      "case": "draw-new",
+      "pid": 22056,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "draw-new",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\draw-new.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 153415680,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "frames": 229,
+      "full_images": 687
+    },
+    {
+      "case": "native-texture",
+      "pid": 22192,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-texture",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-texture.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 176402432,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 275,
+      "resource_creations": 825
+    },
+    {
+      "case": "native-texture-views",
+      "pid": 26084,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-texture-views",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-texture-views.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 174596096,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 272,
+      "resource_creations": 816
+    },
+    {
+      "case": "native-footprints",
+      "pid": 15884,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-footprints",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-footprints.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 177508352,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 277,
+      "resource_creations": 831
+    },
+    {
+      "case": "footprints-only",
+      "pid": 24308,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "footprints-only",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\footprints-only.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 0,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 314,
+      "resource_creations": 0
+    },
+    {
+      "case": "native-placed",
+      "pid": 16280,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-placed",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-placed.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 169148416,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 263,
+      "resource_creations": 789
+    },
+    {
+      "case": "native-not-zeroed",
+      "pid": 13676,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-not-zeroed",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-not-zeroed.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 181039104,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 282,
+      "resource_creations": 846
+    },
+    {
+      "case": "native-optimized-clear",
+      "pid": 3920,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-optimized-clear",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-optimized-clear.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 190537728,
+      "native_only": false,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 297,
+      "resource_creations": 891
+    },
+    {
+      "case": "native-cpu-texture",
+      "pid": 20472,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-cpu-texture",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-cpu-texture.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 122880,
+      "native_only": true,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 273,
+      "resource_creations": 819
+    },
+    {
+      "case": "native-gbv-texture",
+      "pid": 25612,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-gbv-texture",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-gbv-texture.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 177143808,
+      "native_only": true,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 277,
+      "resource_creations": 831
+    },
+    {
+      "case": "native-gbv-no-tracking",
+      "pid": 1312,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-gbv-no-tracking",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\native-gbv-no-tracking.jsonl"
+      ],
+      "returncode": 0,
+      "private_growth_bytes": 122880,
+      "native_only": true,
+      "isolation_passed": true,
+      "validation_errors": 0,
+      "iterations": 289,
+      "resource_creations": 867
+    },
+    {
+      "case": "counter-contract",
+      "pid": 38020,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "counter-contract",
+        "5",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\final-isolation\\counter-contract.jsonl"
+      ],
+      "returncode": 0,
+      "counter_contract_passed": true,
+      "expected_injected_errors": 6,
+      "overflow_filter_clear_worker_shared_owner_teardown": true,
+      "sdk_sha256": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1"
+    }
+  ]
+}

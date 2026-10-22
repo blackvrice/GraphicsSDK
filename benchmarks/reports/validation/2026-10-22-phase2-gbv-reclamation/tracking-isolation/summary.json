@@ -1,0 +1,67 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe": "f72127e1d057159f65ef18768aab60086465ae671f8161c0641c4b5ef0c874bf",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "3018622fb5a9656929e7b717a77809f0a168b4ff095e2e5392edebe98debbd8c",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\main.cpp": "35a416da945f2421175ddcf75b15b83367388eef484421e0319288c0f79d451c",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "3c3ce17a24a073daad5e66339ebb425ef1d066e7a19a9ba037abc893be76c1e4",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\CMakeLists.txt": "d90abd71d1ed63d3f6faf82063df8dc7cbf7857b13c9be0b714fcd512718619d"
+  },
+  "cases": [
+    {
+      "case": "native-cpu-texture",
+      "pid": 29244,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-cpu-texture",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\tracking-isolation\\native-cpu-texture.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "native_only": true,
+      "validation_errors": 0,
+      "iterations": 533,
+      "resource_creations": 1599,
+      "private_growth_bytes": 131072,
+      "nonlocal_growth_bytes": 0
+    },
+    {
+      "case": "native-gbv-texture",
+      "pid": 6076,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-gbv-texture",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\tracking-isolation\\native-gbv-texture.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "native_only": true,
+      "validation_errors": 0,
+      "iterations": 522,
+      "resource_creations": 1566,
+      "private_growth_bytes": 332681216,
+      "nonlocal_growth_bytes": 331563008
+    },
+    {
+      "case": "native-gbv-no-tracking",
+      "pid": 16112,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-gbv-no-tracking",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\tracking-isolation\\native-gbv-no-tracking.jsonl"
+      ],
+      "returncode": 0,
+      "isolation_passed": true,
+      "native_only": true,
+      "validation_errors": 0,
+      "iterations": 550,
+      "resource_creations": 1650,
+      "private_growth_bytes": -770048,
+      "nonlocal_growth_bytes": 0
+    }
+  ],
+  "diagnostic_only": true
+}

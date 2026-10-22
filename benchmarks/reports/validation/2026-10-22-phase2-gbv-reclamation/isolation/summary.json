@@ -1,0 +1,115 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe": "2884b5a37181fb2a4d08f1d037a8cfb6c1df6fa8ce825518428f58cf979bcc6a",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "3018622fb5a9656929e7b717a77809f0a168b4ff095e2e5392edebe98debbd8c",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\main.cpp": "c80fcc793598d637d7a655255d99fa3622195f03ebe33191a1a53f086e50bc0c",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "3c3ce17a24a073daad5e66339ebb425ef1d066e7a19a9ba037abc893be76c1e4",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\CMakeLists.txt": "d90abd71d1ed63d3f6faf82063df8dc7cbf7857b13c9be0b714fcd512718619d"
+  },
+  "cases": [
+    {
+      "case": "sdk-allocate",
+      "pid": 38824,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "sdk-allocate",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\isolation\\sdk-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "wall_seconds": 10.719000000000051,
+      "iterations": 467,
+      "resource_creations": 3736,
+      "private_growth_bytes": 315392,
+      "nonlocal_growth_bytes": 0,
+      "references_passed": true
+    },
+    {
+      "case": "native-allocate",
+      "pid": 3380,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "native-allocate",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\isolation\\native-allocate.jsonl"
+      ],
+      "returncode": 0,
+      "wall_seconds": 10.609999999999673,
+      "iterations": 475,
+      "resource_creations": 3800,
+      "private_growth_bytes": 253952,
+      "nonlocal_growth_bytes": 0,
+      "references_passed": true
+    },
+    {
+      "case": "idle-only",
+      "pid": 23952,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "idle-only",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\isolation\\idle-only.jsonl"
+      ],
+      "returncode": 0,
+      "wall_seconds": 10.609000000000378,
+      "iterations": 639,
+      "resource_creations": 0,
+      "private_growth_bytes": 0,
+      "nonlocal_growth_bytes": 0,
+      "references_passed": true
+    },
+    {
+      "case": "submit-empty",
+      "pid": 36128,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "submit-empty",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\isolation\\submit-empty.jsonl"
+      ],
+      "returncode": 0,
+      "wall_seconds": 10.70299999999952,
+      "iterations": 631,
+      "resource_creations": 0,
+      "private_growth_bytes": 2494464,
+      "nonlocal_growth_bytes": 2355200,
+      "references_passed": true
+    },
+    {
+      "case": "copy-new",
+      "pid": 15648,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "copy-new",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\isolation\\copy-new.jsonl"
+      ],
+      "returncode": 0,
+      "wall_seconds": 11.219000000000051,
+      "iterations": 510,
+      "resource_creations": 1530,
+      "private_growth_bytes": 3174400,
+      "nonlocal_growth_bytes": 2420736,
+      "references_passed": true
+    },
+    {
+      "case": "copy-reuse",
+      "pid": 18792,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "copy-reuse",
+        "10",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-gbv-reclamation\\isolation\\copy-reuse.jsonl"
+      ],
+      "returncode": 0,
+      "wall_seconds": 11.155999999999949,
+      "iterations": 625,
+      "resource_creations": 3,
+      "private_growth_bytes": 3358720,
+      "nonlocal_growth_bytes": 1896448,
+      "references_passed": true
+    }
+  ],
+  "diagnostic_only": true
+}
