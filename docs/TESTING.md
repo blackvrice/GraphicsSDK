@@ -373,3 +373,16 @@ Debugger instrumentation and a different executable remain separate from the nor
 memory gate. Early debug-text byte-length failure stays rejected and local-only;
 an initial compiler AV passes on an unchanged-source retry. See
 [capture report](PHASE2_CRASH_CAPTURE_REPORT.md) for final regressions and scope.
+
+2026-10-22 public memory budgets: core 28/28, Windows D3D12-OFF 6/6, common
+correctness 72/72, presentation 7/7 and Python 147/147 pass on the new SDK.
+Two dedicated native processes compare 48 local/nonlocal snapshots against stable
+independent DXGI brackets, including valid zero fields. Four hardware 64MiB
+retain/release controls pass; 393,216 readback bytes are verified across six adapter
+runs. Thread/invalid-segment/observed-loss/retired-generation/same-ID recovery and
+unchanged SDK resource ownership are checked. Both installed budget consumer modes
+pass 24 total snapshots and six recoveries without native headers. Existing window
+campaigns pass 441 images separately from registered CTests. All consumers and
+SDK-bearing diagnostics are rebuilt; five current audits/new SDK ZIP pass and seven
+old SDK ZIPs remain unchanged. The original GBV memory gate and Intel AV cause
+stay unresolved; no new long soak is claimed. See [budget report](PHASE2_MEMORY_BUDGET_REPORT.md).

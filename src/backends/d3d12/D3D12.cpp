@@ -732,6 +732,22 @@ public:
     explicit DXDevice(std::shared_ptr<State> value) : state(std::move(value)) {}
     const DeviceCaps& caps() const override { return state->caps; }
     Result<void> checkStatus() override {return state->check();}
+    Result<MemoryBudget> queryMemoryBudget(MemorySegment segment) override {
+        auto status=state->check();if(!status)return std::unexpected(status.error());
+        if(segment!=MemorySegment::Local && segment!=MemorySegment::NonLocal)
+            return invalid("Invalid memory segment",ErrorCode::InvalidArgument);
+        ComPtr<IDXGIAdapter3> adapter;
+        auto hr=state->factory->EnumAdapterByLuid(state->device->GetAdapterLuid(),IID_PPV_ARGS(&adapter));
+        if(hr==E_NOINTERFACE || hr==DXGI_ERROR_UNSUPPORTED)
+            return std::unexpected(Error{ErrorCode::Unsupported,"Adapter memory budget query is unavailable",hr});
+        if(FAILED(hr))return state->failure(hr,"Memory budget adapter lookup failed");
+        DXGI_QUERY_VIDEO_MEMORY_INFO info{};
+        hr=adapter->QueryVideoMemoryInfo(0,segment==MemorySegment::Local?DXGI_MEMORY_SEGMENT_GROUP_LOCAL:DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL,&info);
+        if(hr==DXGI_ERROR_UNSUPPORTED || hr==E_NOTIMPL)
+            return std::unexpected(Error{ErrorCode::Unsupported,"Memory segment query is unavailable",hr});
+        if(FAILED(hr))return state->failure(hr,"Memory budget query failed");
+        return MemoryBudget{adapterId(state->device->GetAdapterLuid()),segment,info.Budget,info.CurrentUsage,info.AvailableForReservation,info.CurrentReservation};
+    }
     Result<ResourceStatistics> resourceStatistics() override {
         auto done=state->completed();if(!done)return std::unexpected(done.error());
         ResourceStatistics result;

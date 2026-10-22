@@ -291,3 +291,14 @@ local 진단 artifact로 해시를 남기며 SDK ZIP/source archive에 재배포
 Windows SDK/system 전제조건이다. dump는 local `out/`에만 두고 Git·배포에서 제외한다.
 처음 [27/1 snapshot](../licenses/generated/windows-sdk-crash-capture-release/inventory.json)은
 기존 5개 closure만 포함한 중간 snapshot이며 새 3개 closure의 증거는 최종본을 따른다.
+
+공개 memory budget API에는 새 [SDK 19/1](../licenses/generated/windows-sdk-memory-budget-release/inventory.json),
+[공통 977/22](../licenses/generated/windows-benchmarks-memory-budget-release/inventory.json),
+[예산·어댑터·설치·창 39/1](../licenses/generated/windows-sdk-memory-budget-validation-release/inventory.json),
+[stress 25/1](../licenses/generated/windows-sdk-memory-budget-stress-release/inventory.json),
+[crash 27/1](../licenses/generated/windows-sdk-memory-budget-crash-release/inventory.json) inventory를 생성했다.
+`sdk-budget`는 기존 어댑터 profile에 `MemoryBudgetTests.cpp`/설치 `budget.cpp`만 추가 허용하고
+총 6개 actual linker closure와 설치 header/library 일치를 검사한다. SDK 변경으로 모든 관련
+도구를 재빌드했으며 다섯 `--check`와 새 SDK ZIP 검사가 통과했다. DXGI는 기존 Windows
+전제조건이며 외부 dependency나 runtime 배포는 추가하지 않았다. 과거 7개 SDK ZIP과 감사·
+측정·source archives는 보존한다. 새 공개 virtual API의 소비자는 재빌드가 필요하다.

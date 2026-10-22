@@ -314,6 +314,40 @@ Unsupported, 손실 세대의 조회는 원인이 보존된 DeviceLost다. GPU �
 외부 native 인터페이스는 SDK 공개 API로 제공하지 않는다. 독립 진단 도구만 같은 process/adapter의
 native singleton을 관측하여 intentional error/overflow/filter/clear/thread/owner 수명 계약을 검사한다.
 
+## OS 메모리 사용량·예산 snapshot
+
+```cpp
+auto snapshot = device->queryMemoryBudget(gfx::MemorySegment::Local);
+if (snapshot) {
+    const auto& b = *snapshot;
+    // This is a current OS process/adapter observation. It can change immediately.
+    auto overBudget = b.usageBytes > b.budgetBytes;
+    (void)overBudget;
+} else {
+    // Preserve Unsupported/native failures; a failed query is not a zero reading.
+}
+```
+
+`MemorySegment::Local`과 `NonLocal`을 각각 조회한다. D3D12 구현은 실제 device의 LUID로
+DXGI adapter를 찾아 node 0을 조회한다. 반환 `MemoryBudget`에는 `adapterId`, `segment`와
+네 가지 byte 값 `budgetBytes`, `usageBytes`, `availableForReservationBytes`, `reservationBytes`가
+있다. mapping은 [DXGI 계약](https://learn.microsoft.com/en-us/windows/win32/api/dxgi1_4/ns-dxgi1_4-dxgi_query_video_memory_info)을
+따른다. budget은 OS가 정한 process 목표치이며 usage가 budget보다 커질 수 있다.
+available-for-reservation은 budget−usage나 빈 VRAM이 아니고, reservation은 OS working-set
+힌트다. 이 API는 예약량·자원·residency 정책을 바꾸지 않는다.
+
+사용량은 이 process가 해당 adapter에서 보유한 다른 device/native owner도 포함할 수 있다.
+`resourceStatistics()`의 SDK 보유 allocation 합, 물리 VRAM 총량, free memory, process private
+commit 또는 연속 peak와 다르다. UMA/WARP/nonlocal의 성공한 0 값도 그대로 반환하며, 실패를
+0으로 합성하지 않는다. query/interface가 미지원이면 `Unsupported`와 native code를 반환한다.
+그 밖의 native 실패도 보존한다. 두 segment의 호출은 서로 다른 시점의 관측이다.
+
+creating thread 전용이다. query는 GPU 완료 대기, fence signal, SDK 객체 회수나 GPU 자원 할당을
+요청하지 않는다. 상태를 확인한 뒤 segment를 검증하므로 잘못된 enum은 건강한 장치에서
+`InvalidArgument`, 다른 thread는 `InvalidState`, 손실/퇴역 세대는 보존된 원인의 `DeviceLost`다.
+정확한 ID로 복구한 새 device에서 다시 조회한다. 새 virtual API이므로 개발 버전 소비자는
+재빌드한다. 이 API의 기능 검증은 장시간 메모리 plateau 합격을 뜻하지 않는다.
+
 ## Win32 창 루프에서 SwapChain 사용
 
 [`examples/presentation`](../examples/presentation/README.md)는 설치된 SDK로 빌드하는 실제

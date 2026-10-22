@@ -19,9 +19,9 @@ SDK 자체에는 다운로드가 없다. D3D12를 끈 빌드는 GPU backend를 �
 Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux/macOS 실기기 빌드는
 현재 미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 
-현재 core CTest는 25개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter의
-portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 5개 CPU CTest).
-최신 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-adapters.zip`이다.
+현재 core CTest는 28개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
+portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).
+최신 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-memory-budget.zip`이다.
 기존 ZIP과 측정 원본을 덮어쓰지 않았다. [복구 구현·검증 보고서](PHASE2_RECOVERY_REPORT.md)를 따른다.
 `gfx_recovery_tests --gpu/--validation/--warp`는 각 독립 process에서 opt-in native RemoveDevice를
 실행한다. 지원하지 않는 adapter/interface는 SKIP이며 완료 증거로 취급하지 않는다.
@@ -51,6 +51,12 @@ ctest --test-dir out/presentation -C Release --output-on-failure
 다르면 오류이며 다른 GPU로 바꾸지 않는다. ID는 재부팅 후 재조회한다.
 `out/consumer/Release/adapter_consumer.exe` 및 `--validation`은 설치 API만으로 전체 후보의
 선택·이미지·native RemoveDevice 복구를 검증한다. [어댑터 보고서](PHASE2_ADAPTER_REPORT.md)를 따른다.
+
+`out/consumer/Release/budget_consumer.exe` 및 `--validation`은 설치 public API만으로
+전체 후보의 local/nonlocal memory budget과 같은 ID의 손실·복구를 검사한다.
+`gfx_budget_tests --gpu/--validation`은 독립 DXGI bracket의 네 필드와 64MiB 보유·해제 대조도
+검사한다. 새 Device virtual API를 소비하는 앱은 재빌드한다.
+[메모리 예산 보고서](PHASE2_MEMORY_BUDGET_REPORT.md)를 따른다.
 
 ## 경쟁 벤치마크
 

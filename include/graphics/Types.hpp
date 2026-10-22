@@ -22,6 +22,14 @@ struct AdapterInfo {
 };
 enum class Format { RGBA8UNorm, RGBA16Float, D32Float };
 enum class Memory { Device, Upload, Readback };
+enum class MemorySegment { Local, NonLocal };
+// OS process/adapter snapshot, not SDK allocation accounting or total/free VRAM.
+// All amounts are bytes; usage may exceed budget. Success can contain zero values.
+struct MemoryBudget {
+    AdapterId adapterId;
+    MemorySegment segment{MemorySegment::Local};
+    std::uint64_t budgetBytes{}, usageBytes{}, availableForReservationBytes{}, reservationBytes{};
+};
 enum class ResourceState { Common, CopySource, CopyDestination, ShaderRead, RenderTarget, Present, VertexBuffer, IndexBuffer, VertexAndIndexBuffer, ConstantBuffer, DepthWrite, DepthRead };
 enum class IndexFormat { UInt16, UInt32 };
 struct Color { float r{}, g{}, b{}, a{1}; };

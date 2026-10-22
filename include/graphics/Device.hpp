@@ -10,6 +10,10 @@ public:
     [[nodiscard]] virtual Result<void> checkStatus() = 0;
     // Creating thread only. Diagnostic traversal; does not wait for in-flight work.
     [[nodiscard]] virtual Result<ResourceStatistics> resourceStatistics() = 0;
+    // Creating thread only, no GPU wait. D3D12 queries node 0 of the actual device's
+    // adapter. OS usage includes other owners on that adapter in this process.
+    // Unsupported queries return an error, never a synthesized zero snapshot.
+    [[nodiscard]] virtual Result<MemoryBudget> queryMemoryBudget(MemorySegment segment) = 0;
     // On loss, retire this generation and return a fresh device with the same selection policy.
     // Old handles keep CPU descriptions, but all their native operations remain DeviceLost.
     [[nodiscard]] virtual Result<std::unique_ptr<Device>> recover() = 0;

@@ -11,6 +11,10 @@ tests, installed-package consumer smoke and LLGL/SDL3/GraphicsSDK benchmark adap
 plus optional pinned standalone Diligent Core, single-thread bgfx and The Forge D3D12 adapters.
 Sandbox is a read-only source reference and is not a build dependency or integration target.
 
+Public `Device::queryMemoryBudget` reports exact-adapter local/nonlocal OS process
+usage, budgets and reservation values alongside the separate SDK ownership statistics.
+See the [memory budget contract and validation](docs/PHASE2_MEMORY_BUDGET_REPORT.md).
+
 ```powershell
 cmake --preset windows
 cmake --build --preset windows-release

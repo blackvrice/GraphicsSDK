@@ -1,0 +1,39 @@
+[
+  {
+    "name": "build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/core",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--target",
+      "gfx_budget_tests"
+    ],
+    "returncode": 0,
+    "log": "build-1.log"
+  },
+  {
+    "name": "native-gpu",
+    "attempt": 1,
+    "command": [
+      "out/core/Release/gfx_budget_tests.exe",
+      "--gpu"
+    ],
+    "returncode": 0,
+    "log": "native-gpu-1.log"
+  },
+  {
+    "name": "native-validation",
+    "attempt": 1,
+    "command": [
+      "out/core/Release/gfx_budget_tests.exe",
+      "--validation"
+    ],
+    "returncode": 0,
+    "log": "native-validation-1.log"
+  }
+]

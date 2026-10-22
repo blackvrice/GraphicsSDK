@@ -35,3 +35,10 @@ API는 0.0.1 초기 개발 단계로 아직 ABI/API 안정성 계약이 없다. 
 정확히 선택하고 native Device의 실제 LUID를 다시 확인한다. 같은 descriptor를 복구에 보존해
 재시도 동안 선택이 바뀌지 않는다. 기본 descriptor는 기존 OS 선호 정책을 유지한다.
 Topology 변화에 따른 영속 ID·자동 GPU 대체 정책은 제공하지 않는다.
+
+`queryMemoryBudget`는 creating thread의 건강한 native device LUID로 adapter를 찾고 node 0의
+local/nonlocal OS process budget을 각각 조회한다. SDK allocation traversal이나 fence 완료
+정리를 호출하지 않는다. 같은 process/adapter의 다른 native owner 비용을 포함할 수 있는
+동적 관측이므로 SDK 보유 통계·정적 adapter capacity와 구분한다. 반환은 네 native byte 필드를
+변형하지 않으며 미지원/오류를 0으로 바꾸지 않는다. 손실·퇴역은 기존 상태 guard로 native
+참조 접근 전에 거부하고 복구 뒤에는 새 generation의 같은 ID에서 다시 조회한다.
