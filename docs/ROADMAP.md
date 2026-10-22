@@ -50,7 +50,9 @@ acceptance or later SDK feature milestones.
 - [x] Vertex/index input layouts, UInt16/UInt32 indexed draws, per-instance streams and bounded buffer views; full-image hardware/GBV/WARP tests, state/version/lifetime rejection and installed-consumer checks ([report](PHASE2_VERTEX_INPUT_REPORT.md)).
 - [x] Explicit graphics binding layouts: bounded Texture2D/constant-buffer arrays, register spaces/stage visibility, static point/linear clamp/repeat samplers, shader compatibility and full-image/state/version/lifetime validation ([report](PHASE2_BINDINGS_REPORT.md)). Storage/UAV/compute, dynamic sampler arrays and unbounded bindings remain outside this graphics gate.
 - [x] D32 depth attachments, eight compare functions/write masks, read-only/depth-only passes, up to eight mixed-format color attachments, Clear/Load and pipeline/pass compatibility; full color/depth references, MRT postprocess, atomic rejection and retained lifetimes on hardware/GBV/WARP ([report](PHASE2_DEPTH_MRT_REPORT.md)). Stencil/MSAA/resolve and fragment depth export are outside this initial gate.
-- [ ] Device loss recovery/injection, long-running memory stress and interactive presentation acceptance.
+- [x] Observed-loss status/reason caching, native opt-in RemoveDevice injection and explicit generation retirement/re-creation; old handle/fence rejection, blocked-recovery retry and rebuilt full images/swapchains on hardware/GBV/WARP ([report](PHASE2_RECOVERY_REPORT.md)).
+- [ ] Long-running memory stress and measured reclamation acceptance; bounded recovery churn is only a regression smoke.
+- [ ] Interactive presentation acceptance and unexpected driver TDR/hot-unplug recovery acceptance. Native RemoveDevice and hidden-window tests have separate, narrower evidence.
 
 ## Remaining ordered implementation gates
 

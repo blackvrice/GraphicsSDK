@@ -190,3 +190,50 @@ color texture·buffer에는 DepthWrite/DepthRead를 허용하지 않는다. D32�
 RenderTarget도 거부한다. 모든 attachment는 기존 submit version 검사와 fence retention에 참여한다.
 caps.depthAttachment/multipleRenderTargets는 D3D12에서 true다. 새 virtual 함수와 descriptor로
 개발 버전 consumer는 다시 빌드해야 한다. Stencil, MSAA/resolve, discard/store 선택, subpass는 미지원이다.
+
+## 장치 손실과 복구
+
+`Device::checkStatus()`는 장치가 정상인지 확인한다. 손실을 관찰하면 DeviceLost와 nativeCode를
+저장하고 이후 이 세대의 native 조작은 같은 원인으로 실패한다. begin/submit/wait, 자원 생성·CPU
+접근 및 present/resize에서도 상태를 확인한다. native API 실패 역시 실제 제거 원인을 확인하고
+손실을 저장한다. command recording은 매 draw마다 driver를 poll하지 않으며, 아직 관찰하지 않은
+비동기 손실은 checkStatus/begin/submit/wait 등 상태 확인 지점에서 발견한다.
+
+```cpp
+auto status = device->checkStatus();
+if (!status && status.error().code == gfx::ErrorCode::DeviceLost) {
+    auto recovered = device->recover();
+    if (recovered) {
+        device = std::move(recovered.value());
+        // Rebuild buffers/textures/pipelines/swapchains from application CPU data.
+    }
+}
+```
+
+`recover()`는 손실된 native 세대를 퇴역시키고 같은 DeviceDesc 선택 정책으로 새 Device를 반환한다.
+이전 CPU wrapper를 보관해도 native 자원·descriptor·PSO/root·명령·swapchain과 pending batch를
+해제한다. 약한 참조 등록은 wrapper를 영구 소유하지 않으며, 퇴역 중에는 전체 snapshot을 먼저
+강하게 고정해 다른 자원의 해제로 인한 수명 문제를 막는다. lost device에서는 GPU 완료를 기다리지 않는다.
+새 장치는 새 resource/fence identity를 사용한다. 예전 wrapper의 description/footprint/caps는 읽을
+수 있지만 조작은 계속 DeviceLost이고 새 장치에서 사용하면 WrongDevice다.
+shader bytecode와 애플리케이션 CPU asset data는 재사용할 수 있다. 자원 내용은 자동 복원하지 않는다.
+
+정상 장치의 recover는 InvalidState이며 기존 자원을 버리지 않는다. 성공한 이전 세대의 두 번째
+recover도 InvalidState다. 새 장치 생성에 실패하면 이전 세대는 손실·퇴역 상태로 남고 recover를
+재시도할 수 있다. D3D12는 같은 process/adapter의 native device를 공유하므로 다른 SDK Device나
+외부 native owner가 제거된 장치를 계속 보유하면 재생성을 막을 수 있다. 다른 owner를 정리한 뒤
+재시도한다. recover는 해당 Device 세대만 정리한다. 다른 장치나 외부 라이브러리를 대신 폐기하지 않는다.
+hardware 선택을 WARP로 자동 전환하지 않으며 adapter 연결 변화 때 같은 물리 adapter의 복귀를 보장하지 않는다.
+
+`DeviceDesc::enableDeviceLossTesting`의 기본값은 false다. 명시적으로 켠 테스트 장치만
+`removeForTesting()`을 호출할 수 있다. 이 함수는 성공한 호출의 Result<void>를 반환하면서
+D3D12 runtime의 실제 RemoveDevice로 장치를 제거한다. 다음 checkStatus는 DeviceLost다.
+driver TDR/무한 GPU 작업이나 시스템 정책 변경을 사용하지 않는다. 같은 process/adapter의 다른
+native owner도 영향을 받을 수 있으므로 독립 테스트 process에서 사용한다. 기본 설정의 호출은
+Unsupported다. caps.deviceRecovery는 복구 구현 여부, deviceLossInjection은 native injection
+interface 가용성으로 opt-in 여부와 별개다. RemoveDevice 검증 환경은 Windows build 20348 이상이다.
+세 API는 장치 생성 thread에서 호출한다. 새 virtual 함수와 descriptor 때문에 기존 consumer는 재빌드해야 한다.
+
+`tests/consumer/recovery.cpp`는 설치된 SDK만으로 제거 전후 전체 이미지와 stale buffer 거부를 검증한다.
+Native RemoveDevice와 hidden-window 재표시는 예상치 못한 driver TDR/물리 hot-unplug,
+장시간 leak stress 또는 interactive presentation 검증을 대체하지 않는다.

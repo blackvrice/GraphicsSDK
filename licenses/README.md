@@ -111,3 +111,10 @@ The Depth/MRT extension has separate
 with adjacent notices: 19 own compiler-read inputs / 1 component and 977 inputs / 22 components.
 The fresh SDK ZIP and both snapshots passed `--check`. All earlier packages, source archives,
 measurements and inventories remain preserved; no external dependency or competitor code changed.
+
+Explicit device recovery has fresh
+[SDK](generated/windows-sdk-recovery-release/inventory.json) and
+[common benchmark](generated/windows-benchmarks-recovery-release/inventory.json) snapshots with
+adjacent notices: 19 own compiler-read inputs / 1 component and 977 inputs / 22 components.
+The new recovery SDK ZIP and both `--check` runs passed. Four previous SDK ZIPs and every prior
+inventory/source archive remain unchanged. Native D3D12 removal introduces no new external package.

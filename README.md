@@ -56,8 +56,10 @@ with portable layout validation, hardware/GBV/WARP image checks and the `gfx_ind
 It also supports [graphics binding layouts](docs/PHASE2_BINDINGS_REPORT.md), bounded texture/constant-buffer
 arrays, register spaces and stage visibility with immutable binding snapshots.
 [Depth/MRT](docs/PHASE2_DEPTH_MRT_REPORT.md) adds D32 depth testing, read-only/depth-only passes,
-up to eight mixed-format color targets, Clear/Load and full-image validation. Device-loss recovery,
-long-running stress and interactive presentation acceptance remain in Phase 2.
+up to eight mixed-format color targets, Clear/Load and full-image validation.
+[Device recovery](docs/PHASE2_RECOVERY_REPORT.md) retires lost generations and recreates devices,
+with native removal tests and rebuilt image/swapchain checks. Long-running memory stress,
+interactive presentation and unexpected driver TDR/hot-unplug acceptance remain in Phase 2.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

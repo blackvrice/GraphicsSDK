@@ -7,6 +7,12 @@ class Device {
 public:
     virtual ~Device() = default;
     [[nodiscard]] virtual const DeviceCaps& caps() const = 0;
+    [[nodiscard]] virtual Result<void> checkStatus() = 0;
+    // On loss, retire this generation and return a fresh device with the same selection policy.
+    // Old handles keep CPU descriptions, but all their native operations remain DeviceLost.
+    [[nodiscard]] virtual Result<std::unique_ptr<Device>> recover() = 0;
+    // Native device removal, only when explicitly enabled in DeviceDesc. Never a driver TDR.
+    [[nodiscard]] virtual Result<void> removeForTesting() = 0;
     [[nodiscard]] virtual Result<BufferPtr> createBuffer(BufferDesc) = 0;
     [[nodiscard]] virtual Result<TexturePtr> createTexture(TextureDesc) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) = 0;

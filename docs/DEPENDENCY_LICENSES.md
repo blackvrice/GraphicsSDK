@@ -215,3 +215,9 @@ Depth/MRT 확장은 별도 [SDK inventory](../licenses/generated/windows-sdk-dep
 추가했다. 각각 compiler-read 입력 19개/자체 구성요소 1개와 입력 977개/구성요소 22개다.
 새 SDK ZIP과 두 `--check`가 통과했고 인접 고지문을 보존한다. 새 외부 의존성과 competitor 수정은
 없으며 최초 SDK/vertex-input/bindings ZIP과 모든 과거 감사·측정·소스 archive를 보존한다.
+
+장치 손실 복구의 별도 [SDK](../licenses/generated/windows-sdk-recovery-release/inventory.json)와
+[공통 benchmark](../licenses/generated/windows-benchmarks-recovery-release/inventory.json) inventory는
+입력 19개/자체 구성요소 1개 및 입력 977개/구성요소 22개를 기록한다. 새 복구 SDK ZIP과
+두 `--check`가 통과했고 인접 고지문을 보존한다. Native D3D12 RemoveDevice는 기존 Windows
+시스템 전제조건이며 새 외부 package나 competitor 수정은 없다. 이전 네 SDK ZIP·감사·측정·archive는 그대로다.

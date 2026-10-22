@@ -15,6 +15,9 @@ int main() {
         device=gfx::createDevice({gfx::Backend::D3D12,false,true});
     }
     if (!device) { std::cerr << device.error().message; return 1; }
+    if(!(*device)->checkStatus())return 1;
+    auto healthy=(*device)->recover();if(healthy||healthy.error().code!=gfx::ErrorCode::InvalidState)return 1;
+    auto disabled=(*device)->removeForTesting();if(disabled||disabled.error().code!=gfx::ErrorCode::Unsupported)return 1;
     auto buffer = (*device)->createBuffer({4096});
     if (!buffer) return 1;
     if (!(*device)->caps().vertexInput || !(*device)->caps().indexedDrawing || !(*device)->caps().bindingLayouts || !(*device)->caps().depthAttachment || !(*device)->caps().multipleRenderTargets) return 1;

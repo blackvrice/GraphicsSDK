@@ -18,7 +18,7 @@ struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; };
 struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA8UNorm}; bool renderTarget{}, depthStencil{}; };
 struct TextureFootprint { std::uint64_t size{}; std::uint32_t rowPitch{}, rowBytes{}, height{}; };
 struct Fence { std::uint64_t value{}, device{}; };
-struct DeviceDesc { Backend backend{Backend::D3D12}; bool validation{}; bool softwareAdapter{}; };
+struct DeviceDesc { Backend backend{Backend::D3D12}; bool validation{}; bool softwareAdapter{}; bool enableDeviceLossTesting{}; };
 struct DeviceCaps {
     Backend backend{};
     std::string adapterName;
@@ -26,5 +26,6 @@ struct DeviceCaps {
     bool vertexInput{}, indexedDrawing{};
     bool bindingLayouts{};
     bool depthAttachment{}, multipleRenderTargets{};
+    bool deviceRecovery{}, deviceLossInjection{};
 };
 }

@@ -11,6 +11,10 @@
 * render_pass_gpu / render_pass_validation / render_pass_warp: 61 complete color/depth images,
   eight compare functions and write masks, read-only/depth-only passes, mixed-format eight-MRT,
   load preservation, alpha blending, postprocess, D32 copies, atomic rejection and lifetime/version checks.
+* device_recovery_gpu / device_recovery_validation / device_recovery_warp: four native RemoveDevice
+  cycles each, eight full before/after images, opt-in/thread/loss reason contracts, retained stale
+  buffers/textures/pipelines/commands/fences/swapchains, blocked re-creation retry and rebuilt hidden-window
+  present/resize. Native/GBV checks run before deliberate removal and on each recovered device.
 * resource_bindings_gpu / resource_bindings_validation / resource_bindings_warp: Texture2D/CBV arrays,
   VS/PS register reuse, nonzero spaces, immutable snapshots, point/linear clamp/repeat references,
   full image readback, malformed sets, shader compatibility, descriptor capacity, state/version/
@@ -98,6 +102,14 @@ external GPU import, and PIX/RenderDoc vendor profiler captures are unverified.
 Hidden-window presentation does not establish interactive window-system acceptance.
 Validation error count does not by itself prove absence of every leak or data race.
 CI configuration is provided separately; creating the file does not mean a remote run passed.
+
+2026-10-21 device recovery expansion: SDK CTest 19/19, Windows backend-disabled 4/4,
+common benchmark 72/72, Python 56/56 and both installed consumer targets passed.
+Hardware/debug+GBV/WARP each passed four native removal/recovery cycles and eight complete
+images; the installed recovery consumer verified 2,048 pixels per hardware/WARP run.
+Unexpected native/GBV errors were zero before deliberate removal and on fresh devices.
+Intentional removal diagnostics on the lost device are a separate expected outcome. See the
+[recovery report](PHASE2_RECOVERY_REPORT.md) for exact contracts and remaining acceptance.
 
 2026-10-21 Depth/MRT expansion: SDK CTest 16/16, Windows backend-disabled CTest 4/4,
 common benchmark CTest 72/72, Python 56/56 and the installed consumer passed without skips.

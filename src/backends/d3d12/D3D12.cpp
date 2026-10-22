@@ -16,12 +16,13 @@
 #include <unordered_set>
 
 namespace gfx {
+Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc);
 namespace {
 using Microsoft::WRL::ComPtr;
 auto invalid(std::string text, ErrorCode code = ErrorCode::InvalidState) { return std::unexpected(Error{code, std::move(text)}); }
 auto failed(HRESULT code, std::string operation) {
     auto kind = code == E_OUTOFMEMORY ? ErrorCode::OutOfMemory :
-        code == DXGI_ERROR_DEVICE_REMOVED || code == DXGI_ERROR_DEVICE_RESET || code == DXGI_ERROR_DEVICE_HUNG ? ErrorCode::DeviceLost : ErrorCode::BackendFailure;
+        code == DXGI_ERROR_DEVICE_REMOVED || code == DXGI_ERROR_DEVICE_RESET || code == DXGI_ERROR_DEVICE_HUNG || code == DXGI_ERROR_DRIVER_INTERNAL_ERROR ? ErrorCode::DeviceLost : ErrorCode::BackendFailure;
     return std::unexpected(Error{kind, std::move(operation), code});
 }
 DXGI_FORMAT native(Format format) {
@@ -63,6 +64,7 @@ D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
 }
 struct Tracker { ResourceState state{ResourceState::Common}; std::uint64_t version{}, lastUse{}; };
 struct Batch { std::uint64_t fence{}; std::vector<ComPtr<IUnknown>> objects; };
+struct Retirable { virtual ~Retirable()=default; virtual void releaseNative()=0; };
 struct State {
     ComPtr<IDXGIFactory6> factory;
     ComPtr<ID3D12Device> device;
@@ -70,20 +72,49 @@ struct State {
     ComPtr<ID3D12Fence> fence;
     ComPtr<ID3D12InfoQueue> info;
     DeviceCaps caps;
+    DeviceDesc description;
+    HRESULT lostReason{S_OK};
+    bool retired{},recoverySucceeded{};
+    std::vector<std::weak_ptr<Retirable>> children;
+    unsigned registrations{};
     std::thread::id thread{std::this_thread::get_id()};
     std::uint64_t id{}, last{};
     std::deque<Batch> pending;
-    Result<void> check() const {
+    auto loss() const {return std::unexpected(Error{ErrorCode::DeviceLost,"Device generation is lost; recreate resources on the recovered device",lostReason});}
+    auto failure(HRESULT code,std::string operation) {
+        if(FAILED(lostReason))return loss();
+        const auto removed=device?device->GetDeviceRemovedReason():S_OK;
+        if(FAILED(removed))lostReason=removed;
+        else if(code==DXGI_ERROR_DEVICE_REMOVED || code==DXGI_ERROR_DEVICE_RESET || code==DXGI_ERROR_DEVICE_HUNG || code==DXGI_ERROR_DRIVER_INTERNAL_ERROR)lostReason=code;
+        if(FAILED(lostReason))return loss();
+        return failed(code,std::move(operation));
+    }
+    void track(const std::shared_ptr<Retirable>& object) {
+        if(++registrations%256==0)std::erase_if(children,[](const auto& child){return child.expired();});
+        children.push_back(object);
+    }
+    void retire() {
+        // Lock the entire snapshot before releasing native references. Releasing one child can
+        // otherwise destroy another wrapper. Weak registration does not create a State cycle.
+        std::vector<std::shared_ptr<Retirable>> live;
+        for(auto& child:children)if(auto object=child.lock())live.push_back(std::move(object));
+        retired=true;
+        for(auto& child:live)child->releaseNative();
+        pending.clear();children.clear();info.Reset();queue.Reset();fence.Reset();device.Reset();factory.Reset();
+    }
+    Result<void> check() {
         if (thread != std::this_thread::get_id()) return invalid("Device operations must run on the creating thread");
+        if(FAILED(lostReason))return loss();
         HRESULT status = device->GetDeviceRemovedReason();
-        if (FAILED(status)) return failed(status, "D3D12 device removed");
+        if (FAILED(status)) {lostReason=status;return loss();}
         return {};
     }
     Result<std::uint64_t> completed() {
         auto status = check(); if (!status) return std::unexpected(status.error());
         auto value = fence->GetCompletedValue();
-        if (value == UINT64_MAX) return failed(DXGI_ERROR_DEVICE_REMOVED, "Fence reports device removal");
+        if (value == UINT64_MAX) {auto reason=device->GetDeviceRemovedReason();lostReason=FAILED(reason)?reason:DXGI_ERROR_DEVICE_REMOVED;return loss();}
         while (!pending.empty() && pending.front().fence <= value) pending.pop_front();
+        std::erase_if(children,[](const auto& child){return child.expired();});
         return value;
     }
     Result<void> wait(std::uint64_t value, std::chrono::milliseconds timeout) {
@@ -92,14 +123,14 @@ struct State {
         if (*done >= value) return {};
         if (timeout.count() < 0 || timeout.count() >= INFINITE) return invalid("Invalid fence timeout", ErrorCode::InvalidArgument);
         HANDLE event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-        if (!event) return failed(HRESULT_FROM_WIN32(GetLastError()), "CreateEvent failed");
+        if (!event) return failure(HRESULT_FROM_WIN32(GetLastError()), "CreateEvent failed");
         HRESULT result = fence->SetEventOnCompletion(value, event);
-        if (FAILED(result)) { CloseHandle(event); return failed(result, "SetEventOnCompletion failed"); }
+        if (FAILED(result)) { CloseHandle(event); return failure(result, "SetEventOnCompletion failed"); }
         DWORD waited = WaitForSingleObject(event, static_cast<DWORD>(timeout.count()));
         DWORD error = waited == WAIT_FAILED ? GetLastError() : 0;
         CloseHandle(event);
         if (waited == WAIT_TIMEOUT) return invalid("GPU fence timeout", ErrorCode::Timeout);
-        if (waited != WAIT_OBJECT_0) return failed(HRESULT_FROM_WIN32(error), "Fence wait failed");
+        if (waited != WAIT_OBJECT_0) return failure(HRESULT_FROM_WIN32(error), "Fence wait failed");
         done = completed(); if (!done) return std::unexpected(done.error());
         if (*done < value) return invalid("Fence woke before completion");
         return {};
@@ -109,7 +140,7 @@ struct State {
         if (last >= UINT64_MAX-1) return invalid("Fence timeline exhausted");
         // Present may enqueue DXGI work after the last render submission.
         HRESULT result = queue->Signal(fence.Get(), last+1);
-        if (FAILED(result)) return failed(result, "Idle queue signal failed");
+        if (FAILED(result)) return failure(result, "Idle queue signal failed");
         ++last;
         return wait(last, std::chrono::seconds(30));
     }
@@ -139,14 +170,15 @@ Result<ComPtr<ID3D12Resource>> makeBuffer(State& state, std::uint64_t size, Memo
     auto initial = memory == Memory::Upload ? D3D12_RESOURCE_STATE_GENERIC_READ : memory == Memory::Readback ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_COMMON;
     ComPtr<ID3D12Resource> resource;
     HRESULT result = state.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, initial, nullptr, IID_PPV_ARGS(&resource));
-    if (FAILED(result)) return failed(result, "CreateCommittedResource(buffer) failed");
+    if (FAILED(result)) return state.failure(result, "CreateCommittedResource(buffer) failed");
     return resource;
 }
-struct DXBuffer final : Buffer {
+struct DXBuffer final : Buffer, Retirable {
     std::shared_ptr<State> owner;
     std::shared_ptr<Tracker> tracker{std::make_shared<Tracker>()};
     ComPtr<ID3D12Resource> resource;
     BufferDesc desc;
+    void releaseNative() override {resource.Reset();}
     BufferDesc description() const override { return desc; }
     Result<void> write(std::uint64_t offset, std::span<const std::byte> bytes) override {
         auto status = owner->completed(); if (!status) return std::unexpected(status.error());
@@ -155,7 +187,7 @@ struct DXBuffer final : Buffer {
         if (tracker->version == UINT64_MAX) return invalid("Resource version exhausted");
         D3D12_RANGE range{0, 0}; void* data{};
         HRESULT result = resource->Map(0, &range, &data);
-        if (FAILED(result)) return failed(result, "Upload Map failed");
+        if (FAILED(result)) return owner->failure(result, "Upload Map failed");
         if (!bytes.empty()) std::memcpy(static_cast<std::byte*>(data) + offset, bytes.data(), bytes.size());
         D3D12_RANGE written{static_cast<SIZE_T>(offset), static_cast<SIZE_T>(offset + bytes.size())};
         resource->Unmap(0, &written); ++tracker->version;
@@ -168,13 +200,13 @@ struct DXBuffer final : Buffer {
         std::vector<std::byte> output(static_cast<size_t>(size));
         D3D12_RANGE range{static_cast<SIZE_T>(offset), static_cast<SIZE_T>(offset + size)}; void* data{};
         HRESULT result = resource->Map(0, &range, &data);
-        if (FAILED(result)) return failed(result, "Readback Map failed");
+        if (FAILED(result)) return owner->failure(result, "Readback Map failed");
         if (size) std::memcpy(output.data(), static_cast<std::byte*>(data) + offset, static_cast<size_t>(size));
         D3D12_RANGE written{0, 0}; resource->Unmap(0, &written);
         return output;
     }
 };
-struct DXTexture final : Texture {
+struct DXTexture final : Texture, Retirable {
     std::shared_ptr<State> owner;
     std::shared_ptr<Tracker> tracker{std::make_shared<Tracker>()};
     ComPtr<ID3D12Resource> resource;
@@ -184,6 +216,7 @@ struct DXTexture final : Texture {
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT placed{};
     TextureFootprint layout;
     bool backbuffer{};
+    void releaseNative() override {resource.Reset();rtv.Reset();dsv.Reset();}
     TextureDesc description() const override { return desc; }
     TextureFootprint footprint() const override { return layout; }
     Result<void> initViews() {
@@ -194,13 +227,13 @@ struct DXTexture final : Texture {
         if (desc.renderTarget) {
             D3D12_DESCRIPTOR_HEAP_DESC heap{}; heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; heap.NumDescriptors = 1;
             HRESULT result = owner->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&rtv));
-            if (FAILED(result)) return failed(result, "Create RTV heap failed");
+            if (FAILED(result)) return owner->failure(result, "Create RTV heap failed");
             owner->device->CreateRenderTargetView(resource.Get(), nullptr, rtv->GetCPUDescriptorHandleForHeapStart());
         }
         if(desc.depthStencil) {
             D3D12_DESCRIPTOR_HEAP_DESC heap{};heap.Type=D3D12_DESCRIPTOR_HEAP_TYPE_DSV;heap.NumDescriptors=2;
             HRESULT result=owner->device->CreateDescriptorHeap(&heap,IID_PPV_ARGS(&dsv));
-            if(FAILED(result))return failed(result,"Create DSV heap failed");
+            if(FAILED(result))return owner->failure(result,"Create DSV heap failed");
             auto handle=dsv->GetCPUDescriptorHandleForHeapStart();
             D3D12_DEPTH_STENCIL_VIEW_DESC view{};view.Format=DXGI_FORMAT_D32_FLOAT;view.ViewDimension=D3D12_DSV_DIMENSION_TEXTURE2D;
             owner->device->CreateDepthStencilView(resource.Get(),&view,handle);
@@ -211,7 +244,7 @@ struct DXTexture final : Texture {
     }
 };
 struct VertexRequirement { UINT slot{},stride{},extent{},alignment{}; VertexInputRate rate{}; };
-struct DXPipeline final : Pipeline {
+struct DXPipeline final : Pipeline, Retirable {
     std::shared_ptr<State> owner;
     ComPtr<ID3D12PipelineState> pso;
     ComPtr<ID3D12RootSignature> root;
@@ -222,18 +255,30 @@ struct DXPipeline final : Pipeline {
     std::vector<UINT> minimumBytes;
     UINT descriptorSize{};
     std::vector<VertexRequirement> vertexInputs;
+    void releaseNative() override {pso.Reset();root.Reset();}
 };
 struct Use { std::shared_ptr<Tracker> tracker; ComPtr<ID3D12Resource> resource; std::uint64_t observedVersion{}; ResourceState state{}; Memory memory{Memory::Device}; };
-struct DXCommands final : CommandList {
-    std::shared_ptr<State> owner;
+struct NativeCommands final : Retirable {
     ComPtr<ID3D12CommandAllocator> allocator;
     ComPtr<ID3D12GraphicsCommandList> list;
     ComPtr<ID3D12DescriptorHeap> descriptors;
     ComPtr<ID3D12QueryHeap> query;
     ComPtr<ID3D12Resource> queryReadback;
     std::vector<ComPtr<IUnknown>> references;
-    std::unordered_set<IUnknown*> retained;
     std::vector<Use> uses;
+    void releaseNative() override {list.Reset();allocator.Reset();descriptors.Reset();query.Reset();queryReadback.Reset();references.clear();uses.clear();}
+};
+struct DXCommands final : CommandList {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativeCommands> objects{std::make_shared<NativeCommands>()};
+    ComPtr<ID3D12CommandAllocator>& allocator{objects->allocator};
+    ComPtr<ID3D12GraphicsCommandList>& list{objects->list};
+    ComPtr<ID3D12DescriptorHeap>& descriptors{objects->descriptors};
+    ComPtr<ID3D12QueryHeap>& query{objects->query};
+    ComPtr<ID3D12Resource>& queryReadback{objects->queryReadback};
+    std::vector<ComPtr<IUnknown>>& references{objects->references};
+    std::vector<Use>& uses{objects->uses};
+    std::unordered_set<IUnknown*> retained;
     std::shared_ptr<DXPipeline> pipeline;
     std::vector<std::shared_ptr<DXTexture>> colorTargets;
     std::shared_ptr<DXTexture> depthTarget;
@@ -253,6 +298,7 @@ struct DXCommands final : CommandList {
         // Device removal is checked at begin/submit/wait, rather than polling the
         // driver for every recorded draw. Recording itself does not execute GPU work.
         if (owner->thread != std::this_thread::get_id()) return invalid("Command recording must run on the creating thread");
+        if(FAILED(owner->lostReason))return owner->loss();
         if (!recording || (outsidePass && renderPass)) return invalid("Command operation is outside its recording/pass scope");
         return {};
     }
@@ -294,8 +340,8 @@ struct DXCommands final : CommandList {
     Result<void> begin() override {
         auto done = owner->completed(); if (!done) return std::unexpected(done.error());
         if (recording || (submitted && *done < submitted)) return invalid("Command allocator is still recording or in flight");
-        HRESULT result = allocator->Reset(); if (FAILED(result)) return failed(result, "Allocator reset failed");
-        result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return failed(result, "Command list reset failed");
+        HRESULT result = allocator->Reset(); if (FAILED(result)) return owner->failure(result, "Allocator reset failed");
+        result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return owner->failure(result, "Command list reset failed");
         references.clear(); retained.clear(); uses.clear(); pipeline.reset(); colorTargets.clear();depthTarget.reset();passWidth=passHeight=0;depthReadOnly=false;
         boundResources.clear();
         vertexBuffers={};indexBuffer.reset();indexSize=indexElementSize=0;
@@ -305,7 +351,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> end() override {
         auto status = ready(true); if (!status) return status;
-        HRESULT result = list->Close(); if (FAILED(result)) return failed(result, "Command list close failed");
+        HRESULT result = list->Close(); if (FAILED(result)) return owner->failure(result, "Command list close failed");
         recording = false; ended = true; return {};
     }
     Result<void> transition(const BufferPtr& ptr, ResourceState next) override {
@@ -565,9 +611,9 @@ struct DXCommands final : CommandList {
         auto done = owner->completed(); if (!done) return std::unexpected(done.error());
         if (!submitted || *done < submitted || !timestampsResolved) return invalid("GPU timestamps are not ready");
         UINT64 frequency{}; HRESULT result = owner->queue->GetTimestampFrequency(&frequency);
-        if (FAILED(result) || !frequency) return failed(FAILED(result) ? result : E_FAIL, "Timestamp frequency unavailable");
+        if (FAILED(result) || !frequency) return owner->failure(FAILED(result) ? result : E_FAIL, "Timestamp frequency unavailable");
         void* data{}; D3D12_RANGE range{0, 16}; result = queryReadback->Map(0, &range, &data);
-        if (FAILED(result)) return failed(result, "Timestamp Map failed");
+        if (FAILED(result)) return owner->failure(result, "Timestamp Map failed");
         UINT64 values[2]{}; std::memcpy(values, data, 16); D3D12_RANGE written{0, 0}; queryReadback->Unmap(0, &written);
         if (values[1] < values[0]) return invalid("Timestamps written in reverse order");
         return 1000.0 * static_cast<double>(values[1] - values[0]) / static_cast<double>(frequency);
@@ -578,9 +624,14 @@ struct DXCommands final : CommandList {
         list->SetMarker(0, text.data(), static_cast<UINT>(text.size())); return {};
     }
 };
+struct NativeSwapChain final : Retirable {
+    ComPtr<IDXGISwapChain3> chain;
+    void releaseNative() override {chain.Reset();}
+};
 struct DXSwapChain final : SwapChain {
     std::shared_ptr<State> owner;
-    ComPtr<IDXGISwapChain3> chain;
+    std::shared_ptr<NativeSwapChain> objects{std::make_shared<NativeSwapChain>()};
+    ComPtr<IDXGISwapChain3>& chain{objects->chain};
     SwapChainDesc desc;
     std::vector<std::shared_ptr<DXTexture>> buffers;
     Result<void> rebuild() {
@@ -589,8 +640,9 @@ struct DXSwapChain final : SwapChain {
             texture->desc = {desc.width, desc.height, Format::RGBA8UNorm, true}; texture->backbuffer = true;
             texture->tracker->state = ResourceState::Present;
             HRESULT result = chain->GetBuffer(i, IID_PPV_ARGS(&texture->resource));
-            if (FAILED(result)) return failed(result, "Get swapchain buffer failed");
+            if (FAILED(result)) return owner->failure(result, "Get swapchain buffer failed");
             auto status = texture->initViews(); if (!status) return status;
+            owner->track(texture);
             buffers.push_back(std::move(texture));
         }
         return {};
@@ -606,7 +658,7 @@ struct DXSwapChain final : SwapChain {
         auto texture = buffers[chain->GetCurrentBackBufferIndex()];
         if (texture->tracker->state != ResourceState::Present) return invalid("Backbuffer must be submitted in Present state");
         HRESULT result = chain->Present(desc.vsync ? 1 : 0, 0);
-        if (FAILED(result)) return failed(result, "Present failed"); return {};
+        if (FAILED(result)) return owner->failure(result, "Present failed"); return {};
     }
     Result<void> resize(UINT width, UINT height) override {
         auto status = owner->check(); if (!status) return status;
@@ -615,7 +667,12 @@ struct DXSwapChain final : SwapChain {
         status = owner->idle(); if (!status) return status;
         buffers.clear();
         HRESULT result = chain->ResizeBuffers(desc.buffers, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
-        if (FAILED(result)) { auto restored = rebuild(); (void)restored; return failed(result, "ResizeBuffers failed"); }
+        if (FAILED(result)) {
+            auto error=owner->failure(result,"ResizeBuffers failed");
+            if(error.error().code==ErrorCode::DeviceLost)return error;
+            auto restored=rebuild();if(!restored && restored.error().code==ErrorCode::DeviceLost)return restored;
+            return error;
+        }
         desc.width = width; desc.height = height; return rebuild();
     }
     ~DXSwapChain() override {
@@ -627,6 +684,27 @@ class DXDevice final : public Device, public CommandQueue {
 public:
     explicit DXDevice(std::shared_ptr<State> value) : state(std::move(value)) {}
     const DeviceCaps& caps() const override { return state->caps; }
+    Result<void> checkStatus() override {return state->check();}
+    Result<void> removeForTesting() override {
+        auto status=state->check();if(!status)return status;
+        if(!state->description.enableDeviceLossTesting)return invalid("Native removal requires enableDeviceLossTesting",ErrorCode::Unsupported);
+        ComPtr<ID3D12Device5> device5;
+        if(FAILED(state->device.As(&device5)))return invalid("Native device removal is unavailable",ErrorCode::Unsupported);
+        device5->RemoveDevice();
+        auto removed=state->check();
+        if(removed)return invalid("Native removal did not report device loss",ErrorCode::BackendFailure);
+        return {};
+    }
+    Result<std::unique_ptr<Device>> recover() override {
+        if(state->thread!=std::this_thread::get_id())return invalid("Recovery must run on the creating thread");
+        if(state->recoverySucceeded)return invalid("This generation has already been recovered");
+        auto status=state->check();
+        if(status || status.error().code!=ErrorCode::DeviceLost)return invalid("Recovery requires an observed device loss");
+        if(!state->retired)state->retire();
+        auto fresh=createD3D12Device(state->description);
+        if(fresh)state->recoverySucceeded=true;
+        return fresh;
+    }
     CommandQueue& queue() override { return *this; }
     Result<BufferPtr> createBuffer(BufferDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
@@ -635,6 +713,7 @@ public:
         auto buffer = std::make_shared<DXBuffer>(); buffer->owner = state; buffer->resource = std::move(*resource); buffer->desc = desc;
         if (desc.memory == Memory::Upload) buffer->tracker->state = ResourceState::CopySource;
         if (desc.memory == Memory::Readback) buffer->tracker->state = ResourceState::CopyDestination;
+        state->track(buffer);
         return buffer;
     }
     Result<TexturePtr> createTexture(TextureDesc desc) override {
@@ -648,8 +727,9 @@ public:
         if(desc.depthStencil)nativeDesc.Flags=D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL|D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
         D3D12_HEAP_PROPERTIES heap{}; heap.Type = D3D12_HEAP_TYPE_DEFAULT;
         HRESULT result = state->device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&texture->resource));
-        if (FAILED(result)) return failed(result, "Create texture failed");
+        if (FAILED(result)) return state->failure(result, "Create texture failed");
         status = texture->initViews(); if (!status) return std::unexpected(status.error());
+        state->track(texture);
         return texture;
     }
     Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {
@@ -695,10 +775,10 @@ public:
         if(hasFragment){status=validateShader(desc.fragment);if(!status)return std::unexpected(status.error());
             ComPtr<ID3D12ShaderReflection> reflection;
             HRESULT hr=D3DReflect(desc.fragment.bytes.data(),desc.fragment.bytes.size(),IID_PPV_ARGS(&reflection));
-            if(FAILED(hr))return failed(hr,"Pixel output reflection failed");
-            D3D12_SHADER_DESC shader{};hr=reflection->GetDesc(&shader);if(FAILED(hr))return failed(hr,"Pixel output description failed");
+            if(FAILED(hr))return state->failure(hr,"Pixel output reflection failed");
+            D3D12_SHADER_DESC shader{};hr=reflection->GetDesc(&shader);if(FAILED(hr))return state->failure(hr,"Pixel output description failed");
             UINT mask=0;
-            for(UINT i=0;i<shader.OutputParameters;++i){D3D12_SIGNATURE_PARAMETER_DESC output{};hr=reflection->GetOutputParameterDesc(i,&output);if(FAILED(hr))return failed(hr,"Pixel output parameter failed");
+            for(UINT i=0;i<shader.OutputParameters;++i){D3D12_SIGNATURE_PARAMETER_DESC output{};hr=reflection->GetOutputParameterDesc(i,&output);if(FAILED(hr))return state->failure(hr,"Pixel output parameter failed");
                 if(output.SystemValueType!=D3D_NAME_TARGET)return invalid("Only floating-point SV_Target color outputs are supported",ErrorCode::Unsupported);
                 if(output.SemanticIndex>=targets.colors.size() || output.ComponentType!=D3D_REGISTER_COMPONENT_FLOAT32)return invalid("Pixel output does not match color attachments",ErrorCode::InvalidArgument);
                 mask|=1u<<output.SemanticIndex;
@@ -738,9 +818,9 @@ public:
         root.NumStaticSamplers=static_cast<UINT>(samplers.size());root.pStaticSamplers=samplers.data();
         ComPtr<ID3DBlob> binary, errors;
         HRESULT result = D3D12SerializeRootSignature(&root, D3D_ROOT_SIGNATURE_VERSION_1, &binary, &errors);
-        if (FAILED(result)) return failed(result, "Root signature serialization failed");
+        if (FAILED(result)) return state->failure(result, "Root signature serialization failed");
         result = state->device->CreateRootSignature(0, binary->GetBufferPointer(), binary->GetBufferSize(), IID_PPV_ARGS(&pipeline->root));
-        if (FAILED(result)) return failed(result, "Root signature creation failed");
+        if (FAILED(result)) return state->failure(result, "Root signature creation failed");
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pso{};
         pso.pRootSignature = pipeline->root.Get(); pso.VS = {desc.vertex.bytes.data(), desc.vertex.bytes.size()}; pso.PS = {desc.fragment.bytes.data(), desc.fragment.bytes.size()};
         pso.InputLayout={inputs.data(),static_cast<UINT>(inputs.size())};
@@ -756,25 +836,27 @@ public:
         pso.SampleMask = UINT_MAX; pso.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         pso.NumRenderTargets=static_cast<UINT>(targets.colors.size());for(UINT i=0;i<pso.NumRenderTargets;++i)pso.RTVFormats[i]=native(targets.colors[i]);pso.SampleDesc.Count=1;
         result = state->device->CreateGraphicsPipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
-        if (FAILED(result)) return failed(result, "Graphics pipeline creation failed");
+        if (FAILED(result)) return state->failure(result, "Graphics pipeline creation failed");
+        state->track(pipeline);
         return pipeline;
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         auto commands = std::make_unique<DXCommands>(); commands->owner = state;
         HRESULT result = state->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commands->allocator));
-        if (FAILED(result)) return failed(result, "Create allocator failed");
+        if (FAILED(result)) return state->failure(result, "Create allocator failed");
         result = state->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commands->allocator.Get(), nullptr, IID_PPV_ARGS(&commands->list));
-        if (FAILED(result)) return failed(result, "Create command list failed");
-        result = commands->list->Close(); if (FAILED(result)) return failed(result, "Initial command list close failed");
+        if (FAILED(result)) return state->failure(result, "Create command list failed");
+        result = commands->list->Close(); if (FAILED(result)) return state->failure(result, "Initial command list close failed");
         D3D12_DESCRIPTOR_HEAP_DESC heap{}; heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; heap.NumDescriptors = 256; heap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         result = state->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&commands->descriptors));
-        if (FAILED(result)) return failed(result, "Create command descriptor heap failed");
+        if (FAILED(result)) return state->failure(result, "Create command descriptor heap failed");
         D3D12_QUERY_HEAP_DESC queries{}; queries.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP; queries.Count = 2;
         result = state->device->CreateQueryHeap(&queries, IID_PPV_ARGS(&commands->query));
-        if (FAILED(result)) return failed(result, "Create timestamp query heap failed");
+        if (FAILED(result)) return state->failure(result, "Create timestamp query heap failed");
         auto readback = makeBuffer(*state, 16, Memory::Readback); if (!readback) return std::unexpected(readback.error());
         commands->queryReadback = *readback;
+        state->track(commands->objects);
         return std::unique_ptr<CommandList>(std::move(commands));
     }
     Result<Fence> submit(CommandList& commands) override {
@@ -794,7 +876,7 @@ public:
         ++state->last; cmd->submitted = state->last;
         for (auto& usage : cmd->uses) { usage.tracker->state = usage.state; usage.tracker->lastUse = state->last; ++usage.tracker->version; }
         HRESULT result = state->queue->Signal(state->fence.Get(), state->last);
-        if (FAILED(result)) return failed(result, "Queue signal failed after execution");
+        if (FAILED(result)) return state->failure(result, "Queue signal failed after execution");
         return Fence{state->last, state->id};
     }
     Result<void> wait(Fence fence, std::chrono::milliseconds timeout) override {
@@ -809,9 +891,9 @@ public:
         std::uint64_t errors = 0;
         for (UINT64 i = 0; i < state->info->GetNumStoredMessagesAllowedByRetrievalFilter(); ++i) {
             SIZE_T bytes{}; HRESULT result = state->info->GetMessage(i, nullptr, &bytes);
-            if (FAILED(result)) return failed(result, "Validation message query failed");
+            if (FAILED(result)) return state->failure(result, "Validation message query failed");
             std::vector<std::byte> storage(bytes); auto* message = reinterpret_cast<D3D12_MESSAGE*>(storage.data());
-            result = state->info->GetMessage(i, message, &bytes); if (FAILED(result)) return failed(result, "Validation message read failed");
+            result = state->info->GetMessage(i, message, &bytes); if (FAILED(result)) return state->failure(result, "Validation message read failed");
             if (message->Severity == D3D12_MESSAGE_SEVERITY_CORRUPTION || message->Severity == D3D12_MESSAGE_SEVERITY_ERROR) ++errors;
         }
         return errors;
@@ -827,11 +909,12 @@ public:
         nativeDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         ComPtr<IDXGISwapChain1> chain;
         HRESULT result = state->factory->CreateSwapChainForHwnd(state->queue.Get(), static_cast<HWND>(surface.window), &nativeDesc, nullptr, nullptr, &chain);
-        if (FAILED(result)) return failed(result, "Create swapchain failed");
-        result = chain.As(&swap->chain); if (FAILED(result)) return failed(result, "Swapchain3 interface unavailable");
+        if (FAILED(result)) return state->failure(result, "Create swapchain failed");
+        result = chain.As(&swap->chain); if (FAILED(result)) return state->failure(result, "Swapchain3 interface unavailable");
         result = state->factory->MakeWindowAssociation(static_cast<HWND>(surface.window), DXGI_MWA_NO_ALT_ENTER);
-        if (FAILED(result)) return failed(result, "Window association failed");
+        if (FAILED(result)) return state->failure(result, "Window association failed");
         status = swap->rebuild(); if (!status) return std::unexpected(status.error());
+        state->track(swap->objects);
         return std::unique_ptr<SwapChain>(std::move(swap));
     }
 };
@@ -844,6 +927,7 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
         if (SUCCEEDED(debug.As(&debug1))) debug1->SetEnableGPUBasedValidation(TRUE);
     }
     auto state = std::make_shared<State>();
+    state->description=desc;
     static std::atomic<std::uint64_t> identifiers{1}; state->id = identifiers.fetch_add(1);
     HRESULT result = CreateDXGIFactory2(desc.validation ? DXGI_CREATE_FACTORY_DEBUG : 0, IID_PPV_ARGS(&state->factory));
     if (FAILED(result)) return failed(result, "Create DXGI factory failed");
@@ -861,22 +945,25 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
             if (!(info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)) {
                 result = D3D12CreateDevice(selected.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&state->device));
                 if (SUCCEEDED(result)) break;
+                if(result==DXGI_ERROR_DEVICE_REMOVED || result==DXGI_ERROR_DEVICE_RESET || result==DXGI_ERROR_DEVICE_HUNG || result==DXGI_ERROR_DRIVER_INTERNAL_ERROR)return failed(result,"Adapter device is still removed; release other native device owners before retrying recovery");
             }
             selected.Reset();
         }
     }
+    if(desc.softwareAdapter && FAILED(result) && (result==DXGI_ERROR_DEVICE_REMOVED || result==DXGI_ERROR_DEVICE_RESET || result==DXGI_ERROR_DEVICE_HUNG || result==DXGI_ERROR_DRIVER_INTERNAL_ERROR))return failed(result,"WARP device is still removed; release other native device owners before retrying recovery");
     if (!state->device) return invalid("No D3D12 adapter supports feature level 11.0", ErrorCode::Unsupported);
     DXGI_ADAPTER_DESC1 info{}; selected->GetDesc1(&info);
     int count = WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, nullptr, 0, nullptr, nullptr);
     if (count <= 0) return failed(E_FAIL, "Adapter name conversion failed");
     std::string name(static_cast<size_t>(count), '\0'); WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, name.data(), count, nullptr, nullptr); name.pop_back();
     state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true, true, true, true};
-    if (desc.validation) { result = state->device.As(&state->info); if (FAILED(result)) return failed(result, "D3D12 InfoQueue unavailable"); }
+    ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
+    if (desc.validation) { result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable"); }
     D3D12_COMMAND_QUEUE_DESC queue{}; queue.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     result = state->device->CreateCommandQueue(&queue, IID_PPV_ARGS(&state->queue));
-    if (FAILED(result)) return failed(result, "Create command queue failed");
+    if (FAILED(result)) return state->failure(result, "Create command queue failed");
     result = state->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&state->fence));
-    if (FAILED(result)) return failed(result, "Create fence failed");
+    if (FAILED(result)) return state->failure(result, "Create fence failed");
     return std::unique_ptr<Device>(std::make_unique<DXDevice>(std::move(state)));
 }
 }
