@@ -1,0 +1,57 @@
+[
+  {
+    "name": "python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 2.594000000000051
+  },
+  {
+    "name": "replay",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/analyze_virtual_ranges.py",
+      "--trace-manifest",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\virtual-call-paths.json",
+      "--symbols",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\resolved-virtual-call-paths.json",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-virtual-ranges\\replay"
+    ],
+    "returncode": 0,
+    "seconds": 28.51600000000053
+  },
+  {
+    "name": "audit-recheck",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-crash",
+      "--output",
+      "licenses/generated/windows-sdk-thread-snapshot-crash-release",
+      "--check"
+    ],
+    "returncode": 0,
+    "seconds": 0.43699999999989814
+  },
+  {
+    "name": "git-prestage-fsck",
+    "command": [
+      "git",
+      "fsck",
+      "--full",
+      "--strict"
+    ],
+    "returncode": 0,
+    "seconds": 0.5159999999996217
+  }
+]

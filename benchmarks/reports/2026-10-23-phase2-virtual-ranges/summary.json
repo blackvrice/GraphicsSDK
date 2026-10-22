@@ -1,0 +1,463 @@
+{
+  "SDK_source_fingerprint": "50fe75fea32a5444531868da9f1a225a05573d78ba12c52bb622a1ea80d35edf",
+  "production_SDK_changed": false,
+  "memory_acceptance": false,
+  "phase2_complete": false,
+  "Intel_AV_cause_resolved": false,
+  "tool": "tools/analyze_virtual_ranges.py",
+  "new_contract_tests": 13,
+  "python_tests": 182,
+  "native_regression_rerun": false,
+  "new_GPU_workload": false,
+  "new_trace": false,
+  "cases": [
+    {
+      "case": "adapter-0-full",
+      "adapter": "NVIDIA GeForce GTX 1660 SUPER",
+      "summary": {
+        "events": 1136,
+        "event_counts": {
+          "VirtualAlloc": 676,
+          "VirtualFree": 460
+        },
+        "pid": 31048,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 36077568,
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1290240
+        },
+        "introduced_observed_bytes": {
+          "other": 36077568,
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1290240
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "gbv_resource_info_other": 1290240,
+          "other": 36077568,
+          "gbv_resource_info_command_buffer": 320028672
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 327995392,
+        "peak_upper_bound_bytes": 327995392,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 845,
+          "time_us": 905348,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 327995392,
+          "origins": {
+            "gbv_resource_info_command_buffer": 320028672,
+            "gbv_resource_info_other": 299008,
+            "other": 7667712
+          },
+          "within_timestamp_peak_upper_bound_bytes": 327995392
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1191936,
+          "other": 7667712
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1191936,
+          "other": 7667712
+        },
+        "free_bytes_outside_observed_live_ranges": 6993297408,
+        "disjoint_same_time_events": 0,
+        "surviving_ranges": []
+      }
+    },
+    {
+      "case": "adapter-0-no-tracking",
+      "adapter": "NVIDIA GeForce GTX 1660 SUPER",
+      "summary": {
+        "events": 657,
+        "event_counts": {
+          "VirtualAlloc": 286,
+          "VirtualFree": 371
+        },
+        "pid": 12380,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 31379456
+        },
+        "introduced_observed_bytes": {
+          "other": 31379456
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "other": 31379456
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 2850816,
+        "peak_upper_bound_bytes": 2850816,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 621,
+          "time_us": 1761600,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 2850816,
+          "origins": {
+            "gbv_resource_info_command_buffer": 0,
+            "gbv_resource_info_other": 0,
+            "other": 2850816
+          },
+          "within_timestamp_peak_upper_bound_bytes": 2850816
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 2850816
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 2850816
+        },
+        "free_bytes_outside_observed_live_ranges": 6690975744,
+        "disjoint_same_time_events": 2,
+        "surviving_ranges": []
+      }
+    },
+    {
+      "case": "adapter-1-full",
+      "adapter": "Intel(R) UHD Graphics 770",
+      "summary": {
+        "events": 16125,
+        "event_counts": {
+          "VirtualAlloc": 15750,
+          "VirtualFree": 375
+        },
+        "pid": 20312,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 50184192,
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38273024
+        },
+        "introduced_observed_bytes": {
+          "other": 50184192,
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38273024
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "other": 50184192,
+          "gbv_resource_info_other": 38273024,
+          "gbv_resource_info_command_buffer": 111587328
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 156868608,
+        "peak_upper_bound_bytes": 156868608,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 15536,
+          "time_us": 1316294,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 156868608,
+          "origins": {
+            "gbv_resource_info_command_buffer": 111587328,
+            "gbv_resource_info_other": 38084608,
+            "other": 7196672
+          },
+          "within_timestamp_peak_upper_bound_bytes": 156868608
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38084608,
+          "other": 8876032
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38084608,
+          "other": 8876032
+        },
+        "free_bytes_outside_observed_live_ranges": 4603633664,
+        "disjoint_same_time_events": 2,
+        "surviving_ranges": []
+      }
+    },
+    {
+      "case": "adapter-1-no-tracking",
+      "adapter": "Intel(R) UHD Graphics 770",
+      "summary": {
+        "events": 286,
+        "event_counts": {
+          "VirtualAlloc": 104,
+          "VirtualFree": 182
+        },
+        "pid": 31268,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 15491072
+        },
+        "introduced_observed_bytes": {
+          "other": 15491072
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "other": 15491072
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 5787648,
+        "peak_upper_bound_bytes": 5787648,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 88,
+          "time_us": 448252,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 5787648,
+          "origins": {
+            "gbv_resource_info_command_buffer": 0,
+            "gbv_resource_info_other": 0,
+            "other": 5787648
+          },
+          "within_timestamp_peak_upper_bound_bytes": 5787648
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 5787648
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 5787648
+        },
+        "free_bytes_outside_observed_live_ranges": 4450177024,
+        "disjoint_same_time_events": 1,
+        "surviving_ranges": []
+      }
+    }
+  ],
+  "events": 18204,
+  "interval_oracle_operations": 700,
+  "all_observed_ranges_retired": true,
+  "whole_process_memory_claim": false,
+  "VRAM_claim": false,
+  "original_policy_unchanged": true,
+  "prior_evidence_preserved": true,
+  "eleven_SDK_packages_preserved": true,
+  "SDK_repackaged": false,
+  "SDK_package": {
+    "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-copy-atomicity.zip",
+    "sha256": "b3a1ccc350d58d0cdd307dfc79197b3a0d47200f452a46dddb85a8dc1d49c1c8",
+    "bytes": 512658,
+    "status": "inventory_verified",
+    "competitor_payload": false,
+    "files": [
+      {
+        "path": "include/graphics/Backend.hpp",
+        "sha256": "bbcd4b9b74732a18c70652788ec161e39c67c7ecb5e5afb81f9d409ad73cbdb4",
+        "bytes": 533
+      },
+      {
+        "path": "include/graphics/Bindings.hpp",
+        "sha256": "134d02d86bcff4528c9c8588f73e7d05635c02a6c3e3b884f845193ccfc13730",
+        "bytes": 1303
+      },
+      {
+        "path": "include/graphics/CommandList.hpp",
+        "sha256": "5ce778322e916ab5e15d6832aef5f7d1cc166fbeb2744237a45e0e20eea56f16",
+        "bytes": 2840
+      },
+      {
+        "path": "include/graphics/CommandQueue.hpp",
+        "sha256": "c6d978c5db58d90fd236436233dac460cd781c35276bd9ad3a1e677b03644045",
+        "bytes": 725
+      },
+      {
+        "path": "include/graphics/Device.hpp",
+        "sha256": "a970edce3c529332edd9ff1b0df6066f5986d8b09f306681c63e84c0af34d1d4",
+        "bytes": 2019
+      },
+      {
+        "path": "include/graphics/Graphics.hpp",
+        "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27",
+        "bytes": 58
+      },
+      {
+        "path": "include/graphics/Pipeline.hpp",
+        "sha256": "375aceaca096c027786e9eba35386c6c097c3f933db059dd3508e12e60263631",
+        "bytes": 1150
+      },
+      {
+        "path": "include/graphics/RenderPass.hpp",
+        "sha256": "ec3d89ef60c7cc1bf546149843677961e682bcbcc6cf3e7af375e0ce2da0c5e4",
+        "bytes": 1025
+      },
+      {
+        "path": "include/graphics/Resources.hpp",
+        "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde",
+        "bytes": 719
+      },
+      {
+        "path": "include/graphics/Shader.hpp",
+        "sha256": "e4f7f4be17503cddc498af36cc8ec9f2f96083b2e953a65f6398690067ee6ce6",
+        "bytes": 752
+      },
+      {
+        "path": "include/graphics/Surface.hpp",
+        "sha256": "d3dc852b56fcd477dc1eddb9ec4a794b12a280de871bb6a47ed2abfb42c089ab",
+        "bytes": 328
+      },
+      {
+        "path": "include/graphics/SwapChain.hpp",
+        "sha256": "a0a8a171c818ac9f9f6ed7c0b8b74a3e5ae537bde8ee3345860f54705cc3f6a5",
+        "bytes": 604
+      },
+      {
+        "path": "include/graphics/Types.hpp",
+        "sha256": "fb41ae8c6f621347b193fca5b4799f32a1c16099644f0e1e36759813253ff9aa",
+        "bytes": 3071
+      },
+      {
+        "path": "lib/GraphicsSDKCore.lib",
+        "sha256": "cebe340ed4e5a9003f581950099725b95d53a0f19cef076981341de2a0be9234",
+        "bytes": 3090492
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfig.cmake",
+        "sha256": "b7a8b47444f27643ecc1253e2135ccb45ba2347b294a04070d1b4dcdd779b4eb",
+        "bytes": 1012
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfigVersion.cmake",
+        "sha256": "7888d65181f9bce3b8dac512377e62517e2543b7d09a56fc5f51e7f0eafc6d35",
+        "bytes": 3332
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets-release.cmake",
+        "sha256": "7f6b1fe649ce86a62fcc833c3c0d9e0e04fb76f6e37b21dcb138226b18d5827d",
+        "bytes": 893
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets.cmake",
+        "sha256": "b98fe153bf676214c98a3d2274eb1c1699520cb25abf800acac9c8ccfcd553be",
+        "bytes": 4401
+      },
+      {
+        "path": "share/GraphicsSDK/BUILD.md",
+        "sha256": "8a0e1279a27edecd139af3739e0a764e318dec720ec9921e2dade12c6573b37c",
+        "bytes": 23306
+      },
+      {
+        "path": "share/GraphicsSDK/LICENSE",
+        "sha256": "925ea65f6a1cecdd5b92d82d244a23531aacfb1ce07a87a4ae2050361175c18b",
+        "bytes": 1081
+      },
+      {
+        "path": "share/GraphicsSDK/README.md",
+        "sha256": "04e4c6dcfcd0bac4989113db2bf07993e0c51f93c9fd9d05e106b3fef909c77c",
+        "bytes": 7038
+      }
+    ]
+  },
+  "commands": [
+    {
+      "name": "python-tests",
+      "command": [
+        "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_*.py"
+      ],
+      "returncode": 0,
+      "seconds": 2.594000000000051
+    },
+    {
+      "name": "replay",
+      "command": [
+        "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "tools/analyze_virtual_ranges.py",
+        "--trace-manifest",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\virtual-call-paths.json",
+        "--symbols",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\resolved-virtual-call-paths.json",
+        "--output",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-virtual-ranges\\replay"
+      ],
+      "returncode": 0,
+      "seconds": 28.51600000000053
+    },
+    {
+      "name": "audit-recheck",
+      "command": [
+        "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "tools/audit_licenses.py",
+        "--profile",
+        "sdk-crash",
+        "--output",
+        "licenses/generated/windows-sdk-thread-snapshot-crash-release",
+        "--check"
+      ],
+      "returncode": 0,
+      "seconds": 0.43699999999989814
+    },
+    {
+      "name": "git-prestage-fsck",
+      "command": [
+        "git",
+        "fsck",
+        "--full",
+        "--strict"
+      ],
+      "returncode": 0,
+      "seconds": 0.5159999999996217
+    }
+  ]
+}

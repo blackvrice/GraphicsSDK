@@ -412,3 +412,12 @@ campaigns pass 441 images separately from registered CTests. All consumers and
 SDK-bearing diagnostics are rebuilt; five current audits/new SDK ZIP pass and seven
 old SDK ZIPs remain unchanged. The original GBV memory gate and Intel AV cause
 stay unresolved; no new long soak is claimed. See [budget report](PHASE2_MEMORY_BUDGET_REPORT.md).
+
+2026-10-23 virtual-range reconstruction: all 182 Python tests pass without skips,
+including 13 new range/evidence contracts and an independent 700-operation page
+oracle. Four frozen target traces (18,204 events) replay with matching peak bounds,
+zero live-range recommit overlap and explicit later retirement. The previous
+SDK-crash compiler/linker inventory still passes `--check`; SDK/library/policy and
+eleven SDK packages remain unchanged. This is offline analysis development, with
+no new native regression/soak or long-memory/Intel-crash acceptance claim. See the
+[range analysis report](PHASE2_VIRTUAL_RANGES_REPORT.md).

@@ -1,0 +1,323 @@
+{
+  "schema": 1,
+  "diagnostic_only": true,
+  "memory_acceptance": false,
+  "input_hashes": {
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\virtual-call-paths.json": "36ae7d996a3ed0b4527adc37492f49a1fe9721ca2c61fb74fac78295e113a0da",
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\resolved-virtual-call-paths.json": "562ecf27d6d227043083014499d66306965c0922a3906a62decc52fff191f109",
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\virtual-origin\\adapter-0-full-target-events.jsonl.gz": "5e4a168313752ff272374d3fd8c5a6c2a4bcabcda54ffed687abc083fa7ea5b2",
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\virtual-origin\\adapter-0-no-tracking-target-events.jsonl.gz": "210921ba9ad3df5ea544317c79ea64cd279edd6ab94d263d842f2abaa07dd0f2",
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\virtual-origin\\adapter-1-full-target-events.jsonl.gz": "923890bb52987b55b2e4631b28f46cde331732b6224ff102779a6e8916051d40",
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-fault-investigation\\virtual-origin\\adapter-1-no-tracking-target-events.jsonl.gz": "10da3cb76fc6d3389fde7ae1842d05b8bddd17ec431aaa5a62119bc95e877aea"
+  },
+  "cases": [
+    {
+      "case": "adapter-0-full",
+      "adapter": "NVIDIA GeForce GTX 1660 SUPER",
+      "input": {
+        "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/virtual-origin/adapter-0-full-target-events.jsonl.gz",
+        "sha256": "5e4a168313752ff272374d3fd8c5a6c2a4bcabcda54ffed687abc083fa7ea5b2",
+        "bytes": 72535
+      },
+      "summary": {
+        "events": 1136,
+        "event_counts": {
+          "VirtualAlloc": 676,
+          "VirtualFree": 460
+        },
+        "pid": 31048,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 36077568,
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1290240
+        },
+        "introduced_observed_bytes": {
+          "other": 36077568,
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1290240
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "gbv_resource_info_other": 1290240,
+          "other": 36077568,
+          "gbv_resource_info_command_buffer": 320028672
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 327995392,
+        "peak_upper_bound_bytes": 327995392,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 845,
+          "time_us": 905348,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 327995392,
+          "origins": {
+            "gbv_resource_info_command_buffer": 320028672,
+            "gbv_resource_info_other": 299008,
+            "other": 7667712
+          },
+          "within_timestamp_peak_upper_bound_bytes": 327995392
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1191936,
+          "other": 7667712
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 320028672,
+          "gbv_resource_info_other": 1191936,
+          "other": 7667712
+        },
+        "free_bytes_outside_observed_live_ranges": 6993297408,
+        "disjoint_same_time_events": 0,
+        "surviving_ranges": []
+      },
+      "timeline": {
+        "path": "adapter-0-full-timeline.jsonl",
+        "sha256": "f9f2034319634e0391cdbe79120319cb61cb1bd90772bede479c20ee9d948a51",
+        "bytes": 283314
+      }
+    },
+    {
+      "case": "adapter-0-no-tracking",
+      "adapter": "NVIDIA GeForce GTX 1660 SUPER",
+      "input": {
+        "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/virtual-origin/adapter-0-no-tracking-target-events.jsonl.gz",
+        "sha256": "210921ba9ad3df5ea544317c79ea64cd279edd6ab94d263d842f2abaa07dd0f2",
+        "bytes": 41220
+      },
+      "summary": {
+        "events": 657,
+        "event_counts": {
+          "VirtualAlloc": 286,
+          "VirtualFree": 371
+        },
+        "pid": 12380,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 31379456
+        },
+        "introduced_observed_bytes": {
+          "other": 31379456
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "other": 31379456
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 2850816,
+        "peak_upper_bound_bytes": 2850816,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 621,
+          "time_us": 1761600,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 2850816,
+          "origins": {
+            "gbv_resource_info_command_buffer": 0,
+            "gbv_resource_info_other": 0,
+            "other": 2850816
+          },
+          "within_timestamp_peak_upper_bound_bytes": 2850816
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 2850816
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 2850816
+        },
+        "free_bytes_outside_observed_live_ranges": 6690975744,
+        "disjoint_same_time_events": 2,
+        "surviving_ranges": []
+      },
+      "timeline": {
+        "path": "adapter-0-no-tracking-timeline.jsonl",
+        "sha256": "d737fe2e17c0e346c2f1b95feeb809e8cb003b169f97ff81e06d9a7377a239e0",
+        "bytes": 151567
+      }
+    },
+    {
+      "case": "adapter-1-full",
+      "adapter": "Intel(R) UHD Graphics 770",
+      "input": {
+        "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/virtual-origin/adapter-1-full-target-events.jsonl.gz",
+        "sha256": "923890bb52987b55b2e4631b28f46cde331732b6224ff102779a6e8916051d40",
+        "bytes": 1476694
+      },
+      "summary": {
+        "events": 16125,
+        "event_counts": {
+          "VirtualAlloc": 15750,
+          "VirtualFree": 375
+        },
+        "pid": 20312,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 50184192,
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38273024
+        },
+        "introduced_observed_bytes": {
+          "other": 50184192,
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38273024
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "other": 50184192,
+          "gbv_resource_info_other": 38273024,
+          "gbv_resource_info_command_buffer": 111587328
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 156868608,
+        "peak_upper_bound_bytes": 156868608,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 15536,
+          "time_us": 1316294,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 156868608,
+          "origins": {
+            "gbv_resource_info_command_buffer": 111587328,
+            "gbv_resource_info_other": 38084608,
+            "other": 7196672
+          },
+          "within_timestamp_peak_upper_bound_bytes": 156868608
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38084608,
+          "other": 8876032
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 111587328,
+          "gbv_resource_info_other": 38084608,
+          "other": 8876032
+        },
+        "free_bytes_outside_observed_live_ranges": 4603633664,
+        "disjoint_same_time_events": 2,
+        "surviving_ranges": []
+      },
+      "timeline": {
+        "path": "adapter-1-full-timeline.jsonl",
+        "sha256": "a2d63f809772d14389093b9acff9b643df540a38b65f00ab58713ffa5cda731b",
+        "bytes": 4062937
+      }
+    },
+    {
+      "case": "adapter-1-no-tracking",
+      "adapter": "Intel(R) UHD Graphics 770",
+      "input": {
+        "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/virtual-origin/adapter-1-no-tracking-target-events.jsonl.gz",
+        "sha256": "10da3cb76fc6d3389fde7ae1842d05b8bddd17ec431aaa5a62119bc95e877aea",
+        "bytes": 20437
+      },
+      "summary": {
+        "events": 286,
+        "event_counts": {
+          "VirtualAlloc": 104,
+          "VirtualFree": 182
+        },
+        "pid": 31268,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "scope": "Only observed commit ranges minus observed frees; no initial-state/private-bytes/residency/VRAM/whole-process peak claim",
+        "attribution": "First observed still-live commit; overlapping recommits preserve original tag",
+        "commit_call_bytes": {
+          "other": 15491072
+        },
+        "introduced_observed_bytes": {
+          "other": 15491072
+        },
+        "overlapping_recommit_bytes": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "retired_observed_bytes": {
+          "other": 15491072
+        },
+        "final_observed_live_bytes": 0,
+        "final_origins": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 0
+        },
+        "peak_observed_live_bytes": 5787648,
+        "peak_upper_bound_bytes": 5787648,
+        "peak_scope": "Lower bound at timestamp boundaries; upper bound allows all disjoint tied commits before frees",
+        "peak_snapshot": {
+          "event_index": 88,
+          "time_us": 448252,
+          "events_at_timestamp": 1,
+          "observed_live_bytes": 5787648,
+          "origins": {
+            "gbv_resource_info_command_buffer": 0,
+            "gbv_resource_info_other": 0,
+            "other": 5787648
+          },
+          "within_timestamp_peak_upper_bound_bytes": 5787648
+        },
+        "individual_origin_peaks": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 5787648
+        },
+        "individual_origin_peak_upper_bounds": {
+          "gbv_resource_info_command_buffer": 0,
+          "gbv_resource_info_other": 0,
+          "other": 5787648
+        },
+        "free_bytes_outside_observed_live_ranges": 4450177024,
+        "disjoint_same_time_events": 1,
+        "surviving_ranges": []
+      },
+      "timeline": {
+        "path": "adapter-1-no-tracking-timeline.jsonl",
+        "sha256": "0046763fb139ed02edd4d92eeb848fba5309165e3eb8ce5aba07c446426b011c",
+        "bytes": 65889
+      }
+    }
+  ]
+}
