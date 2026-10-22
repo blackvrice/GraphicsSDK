@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.25)
+project(GBVAllocationOrigin LANGUAGES CXX)
+add_executable(gbv_allocation_origin main.cpp)
+target_compile_features(gbv_allocation_origin PRIVATE cxx_std_23)
+target_compile_options(gbv_allocation_origin PRIVATE /W4 /permissive- /utf-8 /Zi)
+target_link_options(gbv_allocation_origin PRIVATE /DEBUG)
+target_link_libraries(gbv_allocation_origin PRIVATE d3d12 dxgi dxguid psapi)

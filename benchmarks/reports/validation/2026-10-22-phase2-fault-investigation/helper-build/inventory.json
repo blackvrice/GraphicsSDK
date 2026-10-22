@@ -1,0 +1,286 @@
+{
+  "scope": "Conservative actual MSVC Release compiler-read inputs for four SDK-free investigation executables; Windows SDK/MSVC/CRT are system prerequisites, not redistributed. No competitor dependency; not linker symbol reachability or legal approval.",
+  "own_input_union": [
+    {
+      "path": "OUT/GBV-ALLOCATION-ORIGIN/MAIN.CPP",
+      "sha256": "ce9b4218ad1e6b8ac0eae83836d985caf6d58de390b91341daddc94a302840cd",
+      "bytes": 7072
+    },
+    {
+      "path": "OUT/GBV-RETENTION-CONTROL/MAIN.CPP",
+      "sha256": "6fef62cccace5c64f8cb7f759d96403d7be90cf6bbf3c87e27ef5c332738a193",
+      "bytes": 8410
+    },
+    {
+      "path": "OUT/GBV-SPACED-CONTROL/MAIN.CPP",
+      "sha256": "ec1c44ee4d69f12394d4f6de3ef71ccc6a9c9e5da51c165f667a918017df4482",
+      "bytes": 8422
+    },
+    {
+      "path": "OUT/PRIVATE-VIRTUAL-CONTROLLER/MAIN.CPP",
+      "sha256": "7a1c23a95dd740e0b28dcfd3896b8a56ac71f00a1193f90921d4fc602b14f7b6",
+      "bytes": 3543
+    },
+    {
+      "path": "TOOLS/MEMORY_VALIDATION_PROBE/LIFETIME.CPP",
+      "sha256": "486dcf4ab179fc45aedfff81acda9ecc16b07ba358efe8e62b1c1ae73a394754",
+      "bytes": 10351
+    }
+  ],
+  "projects": [
+    {
+      "project": "gbv-allocation-origin",
+      "own_compiler_inputs": [
+        {
+          "path": "OUT/GBV-ALLOCATION-ORIGIN/MAIN.CPP",
+          "sha256": "ce9b4218ad1e6b8ac0eae83836d985caf6d58de390b91341daddc94a302840cd",
+          "bytes": 7072
+        },
+        {
+          "path": "TOOLS/MEMORY_VALIDATION_PROBE/LIFETIME.CPP",
+          "sha256": "486dcf4ab179fc45aedfff81acda9ecc16b07ba358efe8e62b1c1ae73a394754",
+          "bytes": 10351
+        }
+      ],
+      "platform_input_count": 296,
+      "platform_input_paths_sha256": "cfd6c6c93944596cf4364fb474ba34a80334d7e3f008e3a8d5b58b5ad98bae32",
+      "artifacts_local_only": [
+        {
+          "path": "out/gbv-allocation-origin/build/Release/gbv_allocation_origin.exe",
+          "sha256": "611b2fc53a0cc4e2a18f111524849b8e6075ad4aca8cb3dfe205b42a3e51395d",
+          "bytes": 91136
+        },
+        {
+          "path": "out/gbv-allocation-origin/build/Release/gbv_allocation_origin.pdb",
+          "sha256": "2a69c6ef5fe1eaad36fe5a9a91543ced9070d53099b41df56e7d7951b30e9d3d",
+          "bytes": 2183168
+        }
+      ],
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-allocation-origin/main.cpp",
+          "sha256": "ce9b4218ad1e6b8ac0eae83836d985caf6d58de390b91341daddc94a302840cd",
+          "bytes": 7072
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-allocation-origin/CMakeLists.txt",
+          "sha256": "9f5f95b3d728813abb56ac1de5766ca4a50dc06e65956aee27e2848557e353ed",
+          "bytes": 410
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-allocation-origin/build/gbv_allocation_origin.dir/Release/gbv_allo.A45582BF.tlog/CL.read.1.tlog",
+          "sha256": "ae2445647dbf10d0e19a71838aee78d11ea373cb5bcf288bdfaf2b9a1ab67de8",
+          "bytes": 52690
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-allocation-origin/build/gbv_allocation_origin.dir/Release/gbv_allo.A45582BF.tlog/link.read.1.tlog",
+          "sha256": "a67c6ee30c186e50769c96dea05664b8cb85fcaa08cf85fed90c282f43c616c7",
+          "bytes": 4060
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-allocation-origin/build/ALL_BUILD.vcxproj",
+          "sha256": "081e909abed143ded84d9b6c97ae1b83b72717a59fbc981661fcb75e84078417",
+          "bytes": 54653
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-allocation-origin/build/gbv_allocation_origin.vcxproj",
+          "sha256": "e7329b69851d858dd2c80fb069dd528c15b2b0eacf2510ae974d32e9738bf394",
+          "bytes": 68246
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-allocation-origin/build/ZERO_CHECK.vcxproj",
+          "sha256": "a766123f806a14a78281df20e83dab002a13da3a87319792b8573baafcb0e1b5",
+          "bytes": 54731
+        }
+      ]
+    },
+    {
+      "project": "gbv-retention-control",
+      "own_compiler_inputs": [
+        {
+          "path": "OUT/GBV-RETENTION-CONTROL/MAIN.CPP",
+          "sha256": "6fef62cccace5c64f8cb7f759d96403d7be90cf6bbf3c87e27ef5c332738a193",
+          "bytes": 8410
+        },
+        {
+          "path": "TOOLS/MEMORY_VALIDATION_PROBE/LIFETIME.CPP",
+          "sha256": "486dcf4ab179fc45aedfff81acda9ecc16b07ba358efe8e62b1c1ae73a394754",
+          "bytes": 10351
+        }
+      ],
+      "platform_input_count": 296,
+      "platform_input_paths_sha256": "cfd6c6c93944596cf4364fb474ba34a80334d7e3f008e3a8d5b58b5ad98bae32",
+      "artifacts_local_only": [
+        {
+          "path": "out/gbv-retention-control/build/Release/gbv_retention_control.exe",
+          "sha256": "888a74d0966f38631df11b471be368dfceda5dc7a35b9e62016dbf28101cd769",
+          "bytes": 95232
+        },
+        {
+          "path": "out/gbv-retention-control/build/Release/gbv_retention_control.pdb",
+          "sha256": "e25551ebf6ff39cdb1502517df1f859eaea9ff12db3ebc45d39a520f6063d411",
+          "bytes": 2183168
+        }
+      ],
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-retention-control/main.cpp",
+          "sha256": "6fef62cccace5c64f8cb7f759d96403d7be90cf6bbf3c87e27ef5c332738a193",
+          "bytes": 8410
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-retention-control/CMakeLists.txt",
+          "sha256": "12432c9dc1b387a2da429a250d58c0a52317bbbc1a77be83efdbef8ad74c1c24",
+          "bytes": 417
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-retention-control/build/gbv_retention_control.dir/Release/gbv_rete.E8F44657.tlog/CL.read.1.tlog",
+          "sha256": "4c2f112795f1e4f2f74e293bb7ec381f766740ae02bfaf8ef37bb4e3819f12f2",
+          "bytes": 52690
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-retention-control/build/gbv_retention_control.dir/Release/gbv_rete.E8F44657.tlog/link.read.1.tlog",
+          "sha256": "7978f42699f30c6341ffd0c9ecee1b5d06b75fe74e0c1e6e9938fea57fba0bc1",
+          "bytes": 4060
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-retention-control/build/ALL_BUILD.vcxproj",
+          "sha256": "97fa7336c8985cbd2e9b6118b1733ed2657182526794a66d30945be412be7d4b",
+          "bytes": 54653
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-retention-control/build/gbv_retention_control.vcxproj",
+          "sha256": "cc74ea74afc21adcb7aef54325049f3dab2be2012f31bd4fa00cebb2c5f8f499",
+          "bytes": 68246
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-retention-control/build/ZERO_CHECK.vcxproj",
+          "sha256": "adb6dca36c8542d26aa45157ba09fe3f71e6771bd7697d40d2114cd535091d86",
+          "bytes": 54731
+        }
+      ]
+    },
+    {
+      "project": "gbv-spaced-control",
+      "own_compiler_inputs": [
+        {
+          "path": "OUT/GBV-SPACED-CONTROL/MAIN.CPP",
+          "sha256": "ec1c44ee4d69f12394d4f6de3ef71ccc6a9c9e5da51c165f667a918017df4482",
+          "bytes": 8422
+        },
+        {
+          "path": "TOOLS/MEMORY_VALIDATION_PROBE/LIFETIME.CPP",
+          "sha256": "486dcf4ab179fc45aedfff81acda9ecc16b07ba358efe8e62b1c1ae73a394754",
+          "bytes": 10351
+        }
+      ],
+      "platform_input_count": 296,
+      "platform_input_paths_sha256": "cfd6c6c93944596cf4364fb474ba34a80334d7e3f008e3a8d5b58b5ad98bae32",
+      "artifacts_local_only": [
+        {
+          "path": "out/gbv-spaced-control/build/Release/gbv_spaced_control.exe",
+          "sha256": "c9472ec60c708ad51453f58a4f6461c610d55743b2d96a48b39f65c05bfa1888",
+          "bytes": 95232
+        },
+        {
+          "path": "out/gbv-spaced-control/build/Release/gbv_spaced_control.pdb",
+          "sha256": "c4241920dae2bf16cdab8ad1e077e7d631d2e3a1a7e473572ed22ae9ca3b2a6c",
+          "bytes": 2183168
+        }
+      ],
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-spaced-control/main.cpp",
+          "sha256": "ec1c44ee4d69f12394d4f6de3ef71ccc6a9c9e5da51c165f667a918017df4482",
+          "bytes": 8422
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-spaced-control/CMakeLists.txt",
+          "sha256": "b76066c0f5a73ff6beb8b2d63af6e52366bf27428c86be5e842180971c24571c",
+          "bytes": 399
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-spaced-control/build/gbv_spaced_control.dir/Release/gbv_spac.BF2CCDD7.tlog/CL.read.1.tlog",
+          "sha256": "7e6ed388a1f27d602558be34f40837f47847806f7a8ecb238b4e1ee40e2fd759",
+          "bytes": 52684
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-spaced-control/build/gbv_spaced_control.dir/Release/gbv_spac.BF2CCDD7.tlog/link.read.1.tlog",
+          "sha256": "9a0605196a5e67e471d10d1a371c171d93adcda0435eb24e25167509b95312c7",
+          "bytes": 4024
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-spaced-control/build/ALL_BUILD.vcxproj",
+          "sha256": "03c5757edfdf26204b27797bf0dec4626fd4283e83e8c96dd9a4d515d68d00b2",
+          "bytes": 54542
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-spaced-control/build/gbv_spaced_control.vcxproj",
+          "sha256": "f2e35e49f56eb2e7ce24fb58e3ec98bff9d14a340dee7ec99a203c03f5eb72bb",
+          "bytes": 68054
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/gbv-spaced-control/build/ZERO_CHECK.vcxproj",
+          "sha256": "e1a89e11552c8df62cbff3dc3eb70d1830431bfbcfc62626d2b362f4d208478b",
+          "bytes": 54620
+        }
+      ]
+    },
+    {
+      "project": "private-virtual-controller",
+      "own_compiler_inputs": [
+        {
+          "path": "OUT/PRIVATE-VIRTUAL-CONTROLLER/MAIN.CPP",
+          "sha256": "7a1c23a95dd740e0b28dcfd3896b8a56ac71f00a1193f90921d4fc602b14f7b6",
+          "bytes": 3543
+        }
+      ],
+      "platform_input_count": 246,
+      "platform_input_paths_sha256": "0bb14d828ccaa1ac793b1322d1971b79baec2d75aabe7dd96a11a308ecb941f3",
+      "artifacts_local_only": [
+        {
+          "path": "out/private-virtual-controller/build/Release/private_virtual_controller.exe",
+          "sha256": "b6df7e391d6187516cb5f44801ae5ce5f029d0a15c0d2d50712702c32dc157a1",
+          "bytes": 45568
+        }
+      ],
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/private-virtual-controller/main.cpp",
+          "sha256": "7a1c23a95dd740e0b28dcfd3896b8a56ac71f00a1193f90921d4fc602b14f7b6",
+          "bytes": 3543
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/private-virtual-controller/CMakeLists.txt",
+          "sha256": "9a4779d0b1a7499c89ee99342bfd8b61517004441861b55d9da02c307df6a6bc",
+          "bytes": 356
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/private-virtual-controller/build/private_virtual_controller.dir/Release/private_.99321E0F.tlog/CL.read.1.tlog",
+          "sha256": "3951985f46d5ca531aeeacd3765ac3bcbefd90c54a92178e61ff70fab34c5f1d",
+          "bytes": 44874
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/private-virtual-controller/build/private_virtual_controller.dir/Release/private_.99321E0F.tlog/link.read.1.tlog",
+          "sha256": "0eb6557b98c40398dbdba7d126d23e8fce0fda2f43bca314a782f560884dd8b0",
+          "bytes": 3310
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/private-virtual-controller/build/ALL_BUILD.vcxproj",
+          "sha256": "ee9ebb6e441b5492da4037f1485732953e678716c9b4c713ab11eec24b338f85",
+          "bytes": 54838
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/private-virtual-controller/build/private_virtual_controller.vcxproj",
+          "sha256": "69d87f52fc0a915b7db9d62d78e725a07e89662cfa23dae39e42a7b199f876f0",
+          "bytes": 68446
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-22-phase2-fault-investigation/helper-build/private-virtual-controller/build/ZERO_CHECK.vcxproj",
+          "sha256": "99411e704e951b981c0d5aa62d5d4f9a02c551bf4bb701c572ad64ec51a197f9",
+          "bytes": 54908
+        }
+      ]
+    }
+  ]
+}

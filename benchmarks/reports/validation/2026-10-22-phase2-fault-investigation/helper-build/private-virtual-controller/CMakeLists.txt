@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.25)
+project(OwnPrivateVirtualTrace LANGUAGES CXX)
+add_executable(private_virtual_controller main.cpp)
+target_compile_features(private_virtual_controller PRIVATE cxx_std_23)
+target_compile_options(private_virtual_controller PRIVATE /W4 /permissive- /utf-8)
+target_link_libraries(private_virtual_controller PRIVATE advapi32)

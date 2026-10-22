@@ -91,6 +91,10 @@ The [copy rejection fix](docs/PHASE2_COPY_ATOMICITY_REPORT.md) prevents rejected
 copies/transitions from retaining new resources or poisoning later submissions.
 The [bounded thread snapshot collector](docs/PHASE2_THREAD_SNAPSHOT_REPORT.md) records
 fault and other live thread contexts/stacks, with explicit truncation receipts for crash diagnosis.
+The [allocation-path investigation](docs/PHASE2_FAULT_INVESTIGATION_REPORT.md) traces
+SDK-free growth through GBV resource-info registration and internal command buffers,
+with delayed post-device reclamation. Five fresh long Intel runs do not reproduce
+the historical AV; its cause and the original memory acceptance remain open.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),
