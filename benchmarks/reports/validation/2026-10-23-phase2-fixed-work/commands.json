@@ -1,0 +1,384 @@
+[
+  {
+    "name": "configure",
+    "command": [
+      "cmake",
+      "-S",
+      "tools/memory_fixed_work",
+      "-B",
+      "out/memory-fixed-work",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.10900000000037835
+  },
+  {
+    "name": "build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/memory-fixed-work",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 3.82799999999952
+  },
+  {
+    "name": "python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 3.5
+  },
+  {
+    "name": "intel-a",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_fixed_memory.py",
+      "run",
+      "--adapter",
+      "107499",
+      "--rounds",
+      "16",
+      "--warmup-rounds",
+      "2",
+      "--checkpoint-rounds",
+      "4",
+      "--max-seconds",
+      "60",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-a"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 8.015999999999622
+  },
+  {
+    "name": "intel-b",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_fixed_memory.py",
+      "run",
+      "--adapter",
+      "107499",
+      "--rounds",
+      "16",
+      "--warmup-rounds",
+      "2",
+      "--checkpoint-rounds",
+      "4",
+      "--max-seconds",
+      "60",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-b"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 6.563000000000102
+  },
+  {
+    "name": "nvidia-gpu",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "97383",
+      "--mode",
+      "gpu",
+      "--rounds",
+      "16",
+      "--warmup-rounds",
+      "2",
+      "--checkpoint-rounds",
+      "4",
+      "--max-seconds",
+      "60",
+      "--max-private-growth-mib",
+      "512",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\nvidia-gpu.jsonl"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 1.5460000000002765
+  },
+  {
+    "name": "nvidia-gbv",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "97383",
+      "--mode",
+      "validation",
+      "--rounds",
+      "16",
+      "--warmup-rounds",
+      "2",
+      "--checkpoint-rounds",
+      "4",
+      "--max-seconds",
+      "60",
+      "--max-private-growth-mib",
+      "512",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\nvidia-gbv.jsonl"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 2.7349999999996726
+  },
+  {
+    "name": "warp",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "107396",
+      "--mode",
+      "warp",
+      "--rounds",
+      "16",
+      "--warmup-rounds",
+      "2",
+      "--checkpoint-rounds",
+      "4",
+      "--max-seconds",
+      "60",
+      "--max-private-growth-mib",
+      "512",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\warp.jsonl"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.35900000000037835
+  },
+  {
+    "name": "intel-guard",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "107499",
+      "--mode",
+      "validation",
+      "--rounds",
+      "1000",
+      "--warmup-rounds",
+      "0",
+      "--checkpoint-rounds",
+      "4",
+      "--max-seconds",
+      "60",
+      "--max-private-growth-mib",
+      "1",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-guard.jsonl"
+    ],
+    "returncode": 2,
+    "expected_exit": 2,
+    "seconds": 0.9219999999995707
+  },
+  {
+    "name": "intel-deadline",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "107499",
+      "--mode",
+      "validation",
+      "--rounds",
+      "100000",
+      "--warmup-rounds",
+      "0",
+      "--checkpoint-rounds",
+      "4",
+      "--max-seconds",
+      "1",
+      "--max-private-growth-mib",
+      "4096",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-deadline.jsonl"
+    ],
+    "returncode": 3,
+    "expected_exit": 3,
+    "seconds": 1.780999999999949
+  },
+  {
+    "name": "comparison",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_fixed_memory.py",
+      "compare",
+      "--before",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-a\\case.json",
+      "--after",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-b\\case.json",
+      "--change",
+      "none",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\comparison.json"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.125
+  },
+  {
+    "name": "no-driver-change",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_fixed_memory.py",
+      "compare",
+      "--before",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-a\\case.json",
+      "--after",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-b\\case.json",
+      "--change",
+      "selected-driver",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\no-driver-change.json"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.125
+  },
+  {
+    "name": "comparison-overwrite",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_fixed_memory.py",
+      "compare",
+      "--before",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-a\\case.json",
+      "--after",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-b\\case.json",
+      "--change",
+      "none",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\comparison.json"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.09400000000005093
+  },
+  {
+    "name": "native-overwrite",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "97383",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\nvidia-gbv.jsonl"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.01599999999962165
+  },
+  {
+    "name": "zero-rounds",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "107499",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\zero-rounds.jsonl",
+      "--rounds",
+      "0"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.01599999999962165
+  },
+  {
+    "name": "duplicate",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "107499",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\duplicate.jsonl",
+      "--rounds",
+      "1",
+      "--rounds",
+      "2"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.015000000000327418
+  },
+  {
+    "name": "warmup-bound",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "107499",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\warmup-bound.jsonl",
+      "--warmup-rounds",
+      "10001"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.01599999999962165
+  },
+  {
+    "name": "checkpoint-bound",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+      "--adapter",
+      "107499",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\checkpoint-bound.jsonl",
+      "--rounds",
+      "1",
+      "--checkpoint-rounds",
+      "2"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.014999999999417923
+  },
+  {
+    "name": "audit-recheck",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-crash",
+      "--output",
+      "licenses/generated/windows-sdk-thread-snapshot-crash-release",
+      "--check"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.4530000000004293
+  },
+  {
+    "name": "git-prestage-fsck",
+    "command": [
+      "git",
+      "-c",
+      "gc.auto=0",
+      "fsck",
+      "--full",
+      "--strict"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.7039999999997235
+  }
+]

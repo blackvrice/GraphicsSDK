@@ -431,3 +431,14 @@ failure is preserved separately. No real driver change, new long soak, native
 rebuild/regression or memory/AV acceptance is claimed. The existing SDK-crash
 inventory recheck and eleven SDK package hashes remain intact. See the
 [environment report](PHASE2_MEMORY_ENVIRONMENT_REPORT.md).
+
+2026-10-23 fixed-work diagnostics: all 208 Python tests pass without skips,
+including 12 new exact-work/schema/abort/policy-binding contracts. Five fresh
+serial NVIDIA/Intel/WARP cases each complete 2 warmup + 16 measured rounds:
+720 frames, 2,160 full images and 188,743,680 buffer bytes. Guard/deadline exits
+2/3 preserve verified prefixes of 8/88 frames separately; overwrite/invalid-option
+and comparison controls pass. Fresh helper compiler/linker evidence covers 15
+own compiler inputs; old SDK-crash inventory still passes. The timed executable,
+SDK/policy/packages and prior evidence are unchanged. No full native regression,
+new long acceptance or Intel crash fix is claimed. See the
+[fixed-work report](PHASE2_FIXED_WORK_REPORT.md).

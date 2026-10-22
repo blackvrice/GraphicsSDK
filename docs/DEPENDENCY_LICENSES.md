@@ -343,3 +343,11 @@ ZIP·과거 감사·측정을 보존한다. 새 외부 dependency/runtime 배포
 보존한다. 기존 `sdk-crash` profile의 compiler-read 28개 자체 input, 1개 component와 8개
 executable linker closure를 다시 검사한다. DbgHelp는 기존 Windows 의존성이다. SDK source와
 library·기존 11개 SDK ZIP은 그대로이며 새 runtime, PDB, dump 또는 SDK ZIP을 배포하지 않는다.
+
+고정 작업량 진단 도구는 기존 Core를 그대로 링크하며, 새
+[core/helper 22개 input·1개 component 감사](../licenses/generated/windows-sdk-fixed-work-release/inventory.json)에
+Core의 실제 compiler-read closure와 helper의 15개 자체 compiler input을 합친다.
+실제 helper linker-read 로그의 Core·Windows SDK/MSVC library 경로와 해시, 새 executable/PDB의
+로컬 해시를 기록하고 원본 MIT notices를 보존한다. 생성·해시 검증은 이번 고정 검증 스크립트에
+보존하며, 기존 sdk-crash `--check`도 통과한다. 네이티브 helper는 로컬 진단용이며 Git/source ZIP에는
+자체 소스·감사·검증 근거만 넣는다. 기존 SDK ZIP 11개와 과거 inventory는 수정하지 않는다.

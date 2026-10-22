@@ -101,6 +101,9 @@ timestamp peak bounds. The tagged command-buffer ranges coexist and are later re
 The [normal-run environment wrapper](docs/PHASE2_MEMORY_ENVIRONMENT_REPORT.md) records
 before/after driver/runtime/workload identities and rejects confounded driver
 comparisons. Its short same-environment controls do not close the memory or AV gates.
+The [fixed-work diagnostic](docs/PHASE2_FIXED_WORK_REPORT.md) fixes warmup/measurement
+round counts and compares matching work checkpoints, with full readback references
+and separate guard/deadline abort receipts. Timed acceptance remains unchanged.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

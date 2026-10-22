@@ -1,0 +1,118 @@
+{
+  "schema": "fixed_case_v1",
+  "status": "completed",
+  "memory_acceptance": false,
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe": "1ac49faadfe22697059e75e755a055f3b8d23c87c6c066dc715c7424b110c5d1",
+    "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.pdb": "ff9afbccd2ad33d8f9e5125713eae87eb764452be72a49bc94e35facb0baab64",
+    "D:\\source\\GraphicsSDK\\tools\\run_fixed_memory.py": "5b39ae52cab559913e79a62c584bb13bed8ed62c3ba80c20e39a56af0261d72d",
+    "D:\\source\\GraphicsSDK\\tools\\memory_fixed_work\\FixedWork.cpp": "e77afcfcbf363c96ecc3ef86db1d0b30ae64236cc6f10126edfb8ede59704a50",
+    "D:\\source\\GraphicsSDK\\tools\\memory_fixed_work\\CMakeLists.txt": "cf2a7891e2f8cb2dcb59278d4df094d0043f27ff6cb21d078c42593bf27b1db6",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "04a93ec808b009d3b0594b0c30d10915e606f67060477ae62c7cfe1726ced16f",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "cebe340ed4e5a9003f581950099725b95d53a0f19cef076981341de2a0be9234",
+    "D:\\source\\GraphicsSDK\\tools\\memory_stress_policy.json": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+  },
+  "command": [
+    "D:\\source\\GraphicsSDK\\out\\memory-fixed-work\\Release\\gfx_memory_fixed_work.exe",
+    "--mode",
+    "validation",
+    "--adapter",
+    "107499",
+    "--rounds",
+    "16",
+    "--warmup-rounds",
+    "2",
+    "--checkpoint-rounds",
+    "4",
+    "--max-seconds",
+    "60",
+    "--max-private-growth-mib",
+    "512",
+    "--output",
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-fixed-work\\intel-b\\memory.jsonl"
+  ],
+  "pid": 12136,
+  "native_exit_code": 0,
+  "references": {
+    "outcome": "completed",
+    "completed": true,
+    "adapter_id": 107499,
+    "mode": "validation",
+    "frames": 144,
+    "full_images": 432,
+    "verified_buffer_bytes": 37748736,
+    "warmup_rounds_verified": 2,
+    "measured_rounds_verified": 16,
+    "validation_errors": 0,
+    "diagnostic_only": true,
+    "memory_acceptance": false,
+    "reference_field_projection_schema": 3,
+    "public_memory_budget": {
+      "recorded": true,
+      "segments": {
+        "local": {
+          "snapshots": 11,
+          "available": 11,
+          "unsupported": 0,
+          "stable_native_matches": 11,
+          "unstable_native_brackets": 0
+        },
+        "nonlocal": {
+          "snapshots": 11,
+          "available": 11,
+          "unsupported": 0,
+          "stable_native_matches": 11,
+          "unstable_native_brackets": 0
+        }
+      }
+    },
+    "checkpoints": [
+      {
+        "measured_round": 4,
+        "frames": 48,
+        "private_bytes": 274997248,
+        "elapsed": 0.4488155
+      },
+      {
+        "measured_round": 8,
+        "frames": 80,
+        "private_bytes": 281677824,
+        "elapsed": 1.1203689
+      },
+      {
+        "measured_round": 12,
+        "frames": 112,
+        "private_bytes": 282394624,
+        "elapsed": 1.5067574
+      },
+      {
+        "measured_round": 16,
+        "frames": 144,
+        "private_bytes": 283283456,
+        "elapsed": 1.7236773
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "environment-after.json",
+      "sha256": "9b0173ca9dd80b291eea713f2a20765f27e46cc5f4a316a8c0d003fa5a0c65f3"
+    },
+    {
+      "path": "environment-before.json",
+      "sha256": "2f3f610fead42841be6d11d93c8cff1de4e6904a5fa258bc9ca3732e2fd7a898"
+    },
+    {
+      "path": "memory.jsonl",
+      "sha256": "b3fa4b41e48677bc9bc455c605f98c8a35428cf2f4ba2b4e28976b0a799ea407"
+    },
+    {
+      "path": "native.log",
+      "sha256": "42c2055e38ec08aaab21c1de992a7b6229c70182c8142647895b9ef69ac77bdd"
+    },
+    {
+      "path": "policy.json",
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    }
+  ]
+}
