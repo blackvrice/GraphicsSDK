@@ -1,0 +1,67 @@
+[
+  {
+    "name": "final-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/crash-capture",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native-controls",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/crash_capture/validate.py",
+      "--output",
+      "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "enumeration",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+      "--list-adapters"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "intel-full-gbv",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/capture_memory_failure.py",
+      "--adapter",
+      "106703",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-crash-capture\\intel-full-gbv",
+      "--dump",
+      "D:\\source\\GraphicsSDK\\out\\intel-gbv-crash-capture.dmp"
+    ],
+    "returncode": 1,
+    "expected": 1
+  }
+]

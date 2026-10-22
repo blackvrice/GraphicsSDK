@@ -282,3 +282,12 @@ DXGI/D3D12는 기존 Windows 전제조건이며 외부 dependency나 runtime 배
 closure를 다시 검사했다. SDK 19/1, 공통 benchmark 977/22, 어댑터 37/1과 기존 SDK ZIP 감사는
 `--check`로 그대로 일치한다. SDK library/public source·runtime/외부 dependency 배포는 바꾸지
 않고 새 SDK ZIP도 생성하지 않는다. 원래의 메모리 gate와 Intel 액세스 위반 원인은 미해결이다.
+
+자체 자식 process의 예외 수집은 `sdk-crash` profile과 별도
+[최종 27/1 inventory](../licenses/generated/windows-sdk-crash-capture-final-release/inventory.json)를
+추가한다. `Capture.cpp`/`Fixture.cpp`만 새 compiler 입력으로 허용하고 기존 다섯 도구와
+수집기·fixture·심볼 포함 소비자의 총 8개 actual linker closure를 검사한다. 세 자체 PDB는
+local 진단 artifact로 해시를 남기며 SDK ZIP/source archive에 재배포하지 않는다. DbgHelp는
+Windows SDK/system 전제조건이다. dump는 local `out/`에만 두고 Git·배포에서 제외한다.
+처음 [27/1 snapshot](../licenses/generated/windows-sdk-crash-capture-release/inventory.json)은
+기존 5개 closure만 포함한 중간 snapshot이며 새 3개 closure의 증거는 최종본을 따른다.

@@ -359,3 +359,17 @@ the shared helper. An earlier Intel 512MiB run crashes at 112.875 seconds with
 tooling validation, not the long memory acceptance gate. SDK source/library/ZIPs,
 common and presentation evidence remain unchanged and are hash-checked, not newly
 executed acceptance. See [campaign report](PHASE2_MEMORY_CAMPAIGN_REPORT.md).
+
+2026-10-22 crash capture: the standalone own-child x64 debugger passes real handled
+exceptions, exact Unicode/empty/quoted/trailing-slash arguments, exit 7, null-PC
+access violation with a local minidump and labelled caller candidate, unhandled
+application breakpoint, timeout/reap, 1,000-message text-budget and overwrite controls.
+Eight added synthetic parser tests reject incomplete contexts/exits, swallowed
+breakpoints, altered scope, missing counters, failed dumps and timeout disagreements.
+An Intel `/O2 /MD /Zi /DEBUG` public-workload diagnostic completes 30s + 300s,
+17,696 frames / 53,088 full images / 4,638,900,224 buffer bytes, with SDK validation
+errors zero and no second-chance exception. Earlier AV is not reproduced or resolved.
+Debugger instrumentation and a different executable remain separate from the normal
+memory gate. Early debug-text byte-length failure stays rejected and local-only;
+an initial compiler AV passes on an unchanged-source retry. See
+[capture report](PHASE2_CRASH_CAPTURE_REPORT.md) for final regressions and scope.

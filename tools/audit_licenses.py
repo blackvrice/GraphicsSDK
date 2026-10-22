@@ -244,7 +244,8 @@ def collect(root, profile, package=None):
     elif profile == "benchmarks-forge":
         from forge_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
-    stress = profile == "sdk-stress"
+    stress = profile in ("sdk-stress", "sdk-crash")
+    crash = profile == "sdk-crash"
     adapters = profile == "sdk-adapters"
     presentation = profile in ("sdk-presentation", "sdk-adapters")
     if stress:
@@ -267,7 +268,13 @@ def collect(root, profile, package=None):
             trace_dirs[name]=f"{folder}/{target}.dir/Release"
             artifacts_map[name]=f"{folder}/Release/{target}.exe"
             projects[name]=f"{folder}/{target}.vcxproj"
-    benchmark = profile not in ("sdk", "sdk-stress", "sdk-presentation", "sdk-adapters")
+    if crash:
+        for target in ("gfx_crash_capture", "gfx_crash_fixture", "gfx_memory_stress_symbols"):
+            trace_dirs[target]=f"out/crash-capture/{target}.dir/Release"
+            artifacts_map[target]=f"out/crash-capture/Release/{target}.exe"
+            artifacts_map[target+"_symbols"]=f"out/crash-capture/Release/{target}.pdb"
+            projects[target]=f"out/crash-capture/{target}.vcxproj"
+    benchmark = profile not in ("sdk", "sdk-stress", "sdk-crash", "sdk-presentation", "sdk-adapters")
     extended_sdk = stress or presentation
     target_names = list(trace_dirs) if benchmark or extended_sdk else ["core"]
     evidence = []
@@ -321,7 +328,7 @@ def collect(root, profile, package=None):
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
             elif presentation and path.is_relative_to(root / "out/install/include/graphics"):
                 files[relative.casefold()] = installed_presentation_header(root, path)
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (adapters and relative.casefold() in ("tests/adaptertests.cpp", "tests/consumer/adapter.cpp")) or (presentation and relative.casefold() in ("examples/presentation/windowed.cpp", "examples/presentation/presentationpolicy.hpp", "examples/presentation/policytests.cpp")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (adapters and relative.casefold() in ("tests/adaptertests.cpp", "tests/consumer/adapter.cpp")) or (presentation and relative.casefold() in ("examples/presentation/windowed.cpp", "examples/presentation/presentationpolicy.hpp", "examples/presentation/policytests.cpp")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (crash and relative.casefold() in ("tools/crash_capture/capture.cpp", "tools/crash_capture/fixture.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -368,7 +375,13 @@ def collect(root, profile, package=None):
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map,
             extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl", "gpu_etl_export", "gpu_memory_control") if profile=="benchmarks-gpu-memory" else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
     if stress:
-        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("memory_stress", "memory_validation_probe", "native_lifetime", "sdk_lifetime", "runtime_probe"))
+        names=("memory_stress", "memory_validation_probe", "native_lifetime", "sdk_lifetime", "runtime_probe")
+        if crash:
+            names += ("gfx_crash_capture", "gfx_crash_fixture", "gfx_memory_stress_symbols")
+        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, names)
+    if crash:
+        inventory["crash_capture_build_inputs"] = [record_file(root, root / "tools/crash_capture/CMakeLists.txt")]
+        inventory["exclusions"].extend(["Local diagnostic minidumps (not redistributed)", "Debugger-instrumented timing and memory acceptance"])
     if presentation:
         names=("presentation", "presentation_policy", "adapter_tests", "adapter_consumer") if adapters else ("presentation", "presentation_policy")
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, names)
@@ -405,7 +418,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "sdk-presentation", "sdk-adapters", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "sdk-crash", "sdk-presentation", "sdk-adapters", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

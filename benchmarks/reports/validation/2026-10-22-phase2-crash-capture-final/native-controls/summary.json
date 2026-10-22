@@ -1,0 +1,229 @@
+{
+  "cases": [
+    {
+      "case": "handled",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\handled.jsonl",
+        "--timeout-ms",
+        "15000",
+        "--",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe",
+        "handled"
+      ],
+      "returncode": 0,
+      "result": {
+        "child_exit_code": 0,
+        "timed_out": false,
+        "unhandled_exceptions": [],
+        "first_chance_count": 2,
+        "second_chance_count": 0,
+        "context_available": null,
+        "capture_complete": true,
+        "diagnostic_only": true,
+        "memory_acceptance": false
+      }
+    },
+    {
+      "case": "arguments",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\arguments.jsonl",
+        "--timeout-ms",
+        "15000",
+        "--",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe",
+        "arguments",
+        "",
+        "space and \ud55c\uae00",
+        "quote\"here",
+        "trailing slash\\"
+      ],
+      "returncode": 0,
+      "result": {
+        "child_exit_code": 0,
+        "timed_out": false,
+        "unhandled_exceptions": [],
+        "first_chance_count": 1,
+        "second_chance_count": 0,
+        "context_available": null,
+        "capture_complete": true,
+        "diagnostic_only": true,
+        "memory_acceptance": false
+      }
+    },
+    {
+      "case": "exit-seven",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\exit-seven.jsonl",
+        "--timeout-ms",
+        "15000",
+        "--",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe",
+        "exit-seven"
+      ],
+      "returncode": 7,
+      "result": {
+        "child_exit_code": 7,
+        "timed_out": false,
+        "unhandled_exceptions": [],
+        "first_chance_count": 1,
+        "second_chance_count": 0,
+        "context_available": null,
+        "capture_complete": true,
+        "diagnostic_only": true,
+        "memory_acceptance": false
+      }
+    },
+    {
+      "case": "null-call",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\null-call.jsonl",
+        "--timeout-ms",
+        "15000",
+        "--dump",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\null-call.dmp",
+        "--",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe",
+        "null-call"
+      ],
+      "returncode": 3221225477,
+      "result": {
+        "child_exit_code": 3221225477,
+        "timed_out": false,
+        "unhandled_exceptions": [
+          {
+            "event": "exception",
+            "thread_id": 21528,
+            "code": 3221225477,
+            "first_chance": false,
+            "loader_breakpoint": false,
+            "address": 0,
+            "module": null,
+            "module_base": null,
+            "module_offset": null,
+            "parameters": [
+              8,
+              0
+            ]
+          }
+        ],
+        "first_chance_count": 2,
+        "second_chance_count": 1,
+        "context_available": true,
+        "capture_complete": true,
+        "diagnostic_only": true,
+        "memory_acceptance": false,
+        "local_minidump_sha256": "01e1fb85cb5295d2013239cc48b222b96980368b7acf515f39e06068fd28c174"
+      }
+    },
+    {
+      "case": "breakpoint",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\breakpoint.jsonl",
+        "--timeout-ms",
+        "15000",
+        "--",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe",
+        "breakpoint"
+      ],
+      "returncode": 2147483651,
+      "result": {
+        "child_exit_code": 2147483651,
+        "timed_out": false,
+        "unhandled_exceptions": [
+          {
+            "event": "exception",
+            "thread_id": 5348,
+            "code": 2147483651,
+            "first_chance": false,
+            "loader_breakpoint": false,
+            "address": 140734927615730,
+            "module": "\\\\?\\C:\\Windows\\System32\\KernelBase.dll",
+            "module_base": 140734926487552,
+            "module_offset": 1128178,
+            "parameters": [
+              0
+            ]
+          }
+        ],
+        "first_chance_count": 2,
+        "second_chance_count": 1,
+        "context_available": true,
+        "capture_complete": true,
+        "diagnostic_only": true,
+        "memory_acceptance": false
+      }
+    },
+    {
+      "case": "sleep",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\sleep.jsonl",
+        "--timeout-ms",
+        "150",
+        "--",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe",
+        "sleep"
+      ],
+      "returncode": 124,
+      "result": {
+        "child_exit_code": 124,
+        "timed_out": true,
+        "unhandled_exceptions": [],
+        "first_chance_count": 1,
+        "second_chance_count": 0,
+        "context_available": null,
+        "capture_complete": true,
+        "diagnostic_only": true,
+        "memory_acceptance": false
+      }
+    },
+    {
+      "case": "debug-spam",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe",
+        "--output",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture-controls-final-v2\\debug-spam.jsonl",
+        "--timeout-ms",
+        "15000",
+        "--",
+        "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe",
+        "debug-spam"
+      ],
+      "returncode": 0,
+      "result": {
+        "child_exit_code": 0,
+        "timed_out": false,
+        "unhandled_exceptions": [],
+        "first_chance_count": 1,
+        "second_chance_count": 0,
+        "context_available": null,
+        "capture_complete": true,
+        "diagnostic_only": true,
+        "memory_acceptance": false
+      }
+    }
+  ],
+  "overwrite_refused": true,
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_capture.exe": "27269618f7cc540c20e64f44f6a85279b5b1d21816614ab64de912f9fbb4aa29",
+    "D:\\source\\GraphicsSDK\\out\\crash-capture\\Release\\gfx_crash_fixture.exe": "6a46763395d19f85e32adb58c6e5312d1cc08a798a09ec7a6c5d47daab91a29e",
+    "D:\\source\\GraphicsSDK\\tools\\crash_capture\\Capture.cpp": "8454f58c405186d44f86a8056e94f141cf5a00d980939a06d548b56e62e8b992",
+    "D:\\source\\GraphicsSDK\\tools\\crash_capture\\Fixture.cpp": "918d66b112d086cf3557d5def01bb4b73901a62c52d75d789366f5a41a94a169",
+    "D:\\source\\GraphicsSDK\\tools\\crash_capture\\validate.py": "78e23e0063b6fd15d75a65f13fd68e38e6338f2ad825edb70ba95ebf21f1c3ce",
+    "D:\\source\\GraphicsSDK\\tools\\crash_capture\\evidence.py": "bfb53cd69f34c3a25af39d0628c512e8fac5aac5caa203e4a4ab49bc9fac9b57",
+    "D:\\source\\GraphicsSDK\\tools\\crash_capture\\CMakeLists.txt": "3062703940138c00c5a20a623f678dbfa44fdbda7498168522d8f9322bfd677f"
+  },
+  "diagnostic_only": true,
+  "memory_acceptance": false
+}

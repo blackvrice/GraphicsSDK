@@ -42,6 +42,11 @@ memory policy. A failed runner exits 1; diagnostic completion exits 0 while memo
 acceptance stays false. Historical schema 1 observations remain analyzable but do
 not establish a newly requested exact ID.
 
+For an unexplained native exit without a memory footer, use the separate
+[own-child crash collector](../crash_capture/README.md). It preserves second-chance
+exception/context/module/stack receipts and an optional local-only minidump. Its
+debugger-instrumented workload remains diagnostic and cannot accept this memory gate.
+
 `gbv_lifetime_probe` is a native reproduction: no GraphicsSDK header or library.
 The dedicated CMake project needs `Lifetime.cpp`, `Runtime.cpp` and `native/CMakeLists.txt`,
 preserving that relative layout; it can be built outside this repository:
