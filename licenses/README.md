@@ -136,3 +136,10 @@ and adjacent notices. The stress profile explicitly adds `ReusableFrame.hpp`, `L
 links Windows system libraries without GraphicsSDK. Runtime DLLs are hash-bound prerequisites,
 not redistributed payloads. Earlier stress inventories, packages and failed memory observations
 are preserved. Passing device destruction contracts does not accept the open memory plateau gate.
+
+Runtime comparison adds `Runtime.cpp` and the fifth tool linker closure to a fresh
+[25-input/1-component inventory](generated/windows-sdk-runtime-comparison-final-release/inventory.json).
+The separately pinned Microsoft.Direct3D.D3D12 1.619.6 binaries use Microsoft DirectX terms;
+its MIT headers are not compiled. Package/runtime/license hashes and signer identity are recorded
+for local Windows diagnostics. Runtime binaries are not redistributed in Git, source archives or
+SDK packages, and the own-source MIT inventory does not relicense them.

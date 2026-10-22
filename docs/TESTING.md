@@ -297,3 +297,13 @@ D3D12-OFF 4/4 and Python 91/91 (9 added rejection tests) pass. New compiler/link
 covers 24 own inputs/1 component and confirms no SDK library in the native-only executable.
 These short device lifecycle observations do not accept the original GBV memory gate; CPU private
 commit still grows between some settled cycles. See the [lifetime report](PHASE2_DEVICE_LIFETIME_REPORT.md).
+
+2026-10-22 runtime selection: final source runs 18 fresh native processes across NVIDIA/Intel,
+global/inbox-factory/Agility-factory paths and CPU-debug/hardware-GBV/WARP-GBV modes. Actual
+provider DLL pairs, SDKVersion 616/619, validation flags and device LUIDs match their selections.
+All 27,666 resource and 18 device destruction callbacks pass; 18 intentional overflowed ERRORs
+are observed separately from zero unexpected errors. Three real bad-selection runs fail closed.
+A separate SDK-free build verifies 193 resources/one device on Intel Agility GBV. Core 22/22,
+D3D12-OFF 4/4 and Python 102/102 (11 added tests) pass; new own-source inventory is 25/1.
+Hardware GBV growth remains on both GPUs/runtimes. This is no replacement for the rejected
+long-running gate. See the [runtime report](PHASE2_RUNTIME_COMPARISON_REPORT.md).

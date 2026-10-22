@@ -5,7 +5,7 @@ SDK validation, act as an allocator workaround or accept the original long stres
 Use fresh output paths and run GPU tests serially.
 
 `gbv_lifetime_probe` is a native reproduction: no GraphicsSDK header or library.
-The dedicated CMake project needs only `Lifetime.cpp` and `native/CMakeLists.txt`,
+The dedicated CMake project needs `Lifetime.cpp`, `Runtime.cpp` and `native/CMakeLists.txt`,
 preserving that relative layout; it can be built outside this repository:
 
 ```powershell
@@ -50,3 +50,33 @@ Existing `memory_validation_probe` and `run.py` keep their factor/isolation/boun
 reuse profiles. The fixed-set 300-second gate is analyzed by
 `tools/analyze_bounded_gbv.py`; none of the lifetime probes can satisfy it or the
 original resource-churn gate. See [the lifetime report](../../docs/PHASE2_DEVICE_LIFETIME_REPORT.md).
+
+## Runtime and adapter comparison
+
+`gbv_runtime_probe` also has no SDK header/library dependency. It compares the global
+API, inbox device factory and a pinned app-local Agility device factory. It queries
+the actual device configuration, provider module and adapter LUID; it rejects a
+fallback runtime or reduced GBV. Each process deliberately injects one ERROR after
+overflowing native text storage, checks the unfiltered callback, and keeps that error
+separate from unexpected errors. This is allocation/destruction diagnosis, without
+rendering or a long-running memory acceptance claim.
+
+Prepare the pinned runtime under a fresh local output directory. It uses Microsoft
+DirectX binary license terms, separately from the MIT headers; package headers and
+runtime DLLs are not added to the SDK distribution. `--package` can supply a local
+copy matching the exact official package pin instead of downloading it.
+
+```powershell
+python tools/memory_validation_probe/prepare_runtime.py --output out/agility-runtime-new
+cmake --build out/memory-validation-probe --config Release --parallel 1 --target gbv_runtime_probe
+python tools/memory_validation_probe/runtime_compare.py --runtime out/agility-runtime-new --adapter-index 0 --iterations 512 --output out/runtime-adapter0-new
+python tools/memory_validation_probe/runtime_compare.py --runtime out/agility-runtime-new --adapter-index 1 --iterations 512 --output out/runtime-adapter1-new
+```
+
+Hardware indices enumerate DXGI non-software adapters; an absent index fails rather
+than selecting another GPU. WARP remains explicitly selected in each nine-process
+profile. Do not assume a second hardware adapter exists on another host. The raw
+output records both DXGI segments, private commit, counters and loaded module paths;
+the runner checks the selected runtime pair against frozen package/system DLL hashes.
+It does not use SetSDKVersion, ApplyToGlobalState, experimental features or change
+Windows Developer Mode. See [the runtime comparison](../../docs/PHASE2_RUNTIME_COMPARISON_REPORT.md).

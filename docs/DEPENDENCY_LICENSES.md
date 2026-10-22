@@ -240,3 +240,10 @@ GBV 자원 재사용과 device lifetime 분리는 각각 이전
 명시적으로 추가 허용한다. 네 exe의 실제 linker 입력을 감사하며 native-only `gbv_lifetime_probe`는
 SDK library를 링크하지 않는다. 기존 SDK/common 감사와 SDK ZIP 내용 검사는 그대로 통과했다.
 네 Windows runtime DLL은 경로·해시만 기록하며 재배포하지 않는다. 새 외부 dependency는 없다.
+
+추가 runtime 비교는 [최종 25/1 inventory](../licenses/generated/windows-sdk-runtime-comparison-final-release/inventory.json)에
+`Runtime.cpp`와 다섯 번째 도구의 실제 linker 입력을 명시적으로 포함한다. 별도 provenance는
+공식 Microsoft.Direct3D.D3D12 1.619.6 package/DLL/license 해시와 Microsoft 서명을 기록한다.
+binary는 Microsoft DirectX 약관이며 MIT header와 구별한다. package header는 컴파일하지 않고
+binary/package는 local Windows 진단 `out/`에만 둔다. SDK ZIP/source archive에는 넣지 않는다.
+컴파일 inventory의 자체 MIT 한 구성요소가 실행용 Microsoft binary까지 포괄한다는 뜻은 아니다.
