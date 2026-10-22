@@ -83,7 +83,18 @@ bool validState(ResourceState state) { return state >= ResourceState::Common && 
 D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
     return visibility==ShaderVisibility::Vertex?D3D12_SHADER_VISIBILITY_VERTEX:visibility==ShaderVisibility::Fragment?D3D12_SHADER_VISIBILITY_PIXEL:D3D12_SHADER_VISIBILITY_ALL;
 }
-struct Tracker { ResourceState state{ResourceState::Common}; std::uint64_t version{}, lastUse{}; };
+// Non-owning presentation identity: retaining a texture/command cannot keep a
+// destroyed swapchain usable or retain the public wrapper through this identity.
+struct SwapChainScope { IDXGISwapChain3* chain{}; };
+struct Tracker {
+    ResourceState state{ResourceState::Common}; std::uint64_t version{}, lastUse{};
+    bool backbuffer{}; UINT bufferIndex{}; std::weak_ptr<SwapChainScope> swapchain;
+    bool available() const {
+        if(!backbuffer)return true;
+        const auto scope=swapchain.lock();
+        return scope&&scope->chain&&scope->chain->GetCurrentBackBufferIndex()==bufferIndex;
+    }
+};
 struct Batch { std::uint64_t fence{}; std::vector<ComPtr<IUnknown>> objects; };
 struct Retirable {
     virtual ~Retirable()=default;
@@ -351,6 +362,7 @@ struct DXCommands final : CommandList {
     template<class T> Result<std::shared_ptr<T>> owned(const std::shared_ptr<typename std::conditional_t<std::is_same_v<T, DXBuffer>, Buffer, Texture>>& ptr) {
         auto object = std::dynamic_pointer_cast<T>(ptr);
         if (!object || object->owner != owner) return invalid("Null or foreign resource", ErrorCode::WrongDevice);
+        if (!object->tracker->available()) return invalid("Backbuffer is not current or its swapchain has been destroyed");
         return object;
     }
     template<class T> ResourceState current(const T& buffer) const {
@@ -662,8 +674,10 @@ struct DXCommands final : CommandList {
     }
 };
 struct NativeSwapChain final : Retirable {
+    std::shared_ptr<SwapChainScope> scope{std::make_shared<SwapChainScope>()};
     ComPtr<IDXGISwapChain3> chain;
-    void releaseNative() override {chain.Reset();}
+    void releaseNative() override {scope->chain=nullptr;chain.Reset();}
+    ~NativeSwapChain() override {scope->chain=nullptr;}
 };
 struct DXSwapChain final : SwapChain {
     std::shared_ptr<State> owner;
@@ -676,6 +690,7 @@ struct DXSwapChain final : SwapChain {
             auto texture = std::make_shared<DXTexture>(); texture->owner = owner;
             texture->desc = {desc.width, desc.height, Format::RGBA8UNorm, true}; texture->backbuffer = true;
             texture->tracker->state = ResourceState::Present;
+            texture->tracker->backbuffer=true;texture->tracker->bufferIndex=i;texture->tracker->swapchain=objects->scope;
             HRESULT result = chain->GetBuffer(i, IID_PPV_ARGS(&texture->resource));
             if (FAILED(result)) return owner->failure(result, "Get swapchain buffer failed");
             auto status = texture->initViews(); if (!status) return status;
@@ -694,8 +709,12 @@ struct DXSwapChain final : SwapChain {
         if (buffers.size() != desc.buffers) return invalid("Swapchain buffers unavailable");
         auto texture = buffers[chain->GetCurrentBackBufferIndex()];
         if (texture->tracker->state != ResourceState::Present) return invalid("Backbuffer must be submitted in Present state");
+        if (texture->tracker->version == UINT64_MAX) return invalid("Backbuffer version exhausted");
         HRESULT result = chain->Present(desc.vsync ? 1 : 0, 0);
-        if (FAILED(result)) return owner->failure(result, "Present failed"); return {};
+        if (FAILED(result)) return owner->failure(result, "Present failed");
+        // Invalidate recordings from before presentation, even after the ring
+        // rotates back to this same buffer without another application submit.
+        ++texture->tracker->version;return {};
     }
     Result<void> resize(UINT width, UINT height) override {
         auto status = owner->check(); if (!status) return status;
@@ -941,8 +960,11 @@ public:
         if (!cmd || cmd->owner != state) return invalid("Command list belongs to another device", ErrorCode::WrongDevice);
         if (!cmd->ended || cmd->recording || cmd->submitted) return invalid("Command list is not executable or was already submitted");
         if (state->last >= UINT64_MAX-1) return invalid("Fence timeline exhausted");
-        for (const auto& usage : cmd->uses) if (usage.observedVersion != usage.tracker->version || usage.tracker->version == UINT64_MAX)
-            return invalid("Resource changed after recording; re-record the command list");
+        for (const auto& usage : cmd->uses) {
+            if(!usage.tracker->available())return invalid("Recorded backbuffer is not current or its swapchain has been destroyed");
+            if(usage.observedVersion != usage.tracker->version || usage.tracker->version == UINT64_MAX)
+                return invalid("Resource changed after recording; re-record the command list");
+        }
         Batch batch; batch.fence = state->last+1; batch.objects = cmd->references;
         auto add = [&](const auto& ptr) { ComPtr<IUnknown> ref; ptr.As(&ref); batch.objects.push_back(std::move(ref)); };
         add(cmd->allocator); add(cmd->list); add(cmd->descriptors); add(cmd->query); add(cmd->queryReadback);
@@ -980,6 +1002,7 @@ public:
         HRESULT result = state->factory->CreateSwapChainForHwnd(state->queue.Get(), static_cast<HWND>(surface.window), &nativeDesc, nullptr, nullptr, &chain);
         if (FAILED(result)) return state->failure(result, "Create swapchain failed");
         result = chain.As(&swap->chain); if (FAILED(result)) return state->failure(result, "Swapchain3 interface unavailable");
+        swap->objects->scope->chain=swap->chain.Get();
         result = state->factory->MakeWindowAssociation(static_cast<HWND>(surface.window), DXGI_MWA_NO_ALT_ENTER);
         if (FAILED(result)) return state->failure(result, "Window association failed");
         status = swap->rebuild(); if (!status) return std::unexpected(status.error());

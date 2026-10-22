@@ -5,6 +5,11 @@
 `ctest --test-dir out/core -C Release --output-on-failure`:
 
 * core_contracts: backend advertising, Unsupported errors, invalid shader inputs.
+* swapchain_guards_gpu / swapchain_guards_validation: exact adapter selection on all hardware/WARP,
+  2/3/4-buffer rings, current/expired-chain input rejection, stale submit before and after a full
+  ring rotation, unchanged fence timeline on rejection, atomic attachment/copy rejection,
+  retained-wrapper reuse when current again, resize, independent windows and loss/recovery.
+  Each adapter verifies 15 complete clear/readback images. Invalid GPU work is never submitted.
 * fence_wait_gpu / fence_wait_validation: all freshly enumerated hardware/WARP adapters,
   native two-gate queues with 4,096 zero polls and 64 timed retries per adapter, counted
   actual SetEventOnCompletion calls, earlier-target retries, stale wake, timeout-boundary

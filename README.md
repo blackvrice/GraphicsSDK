@@ -84,6 +84,9 @@ with strict receipt validation. The original long-running GBV memory gate remain
 The [fence-wait fix](docs/PHASE2_FENCE_WAIT_REPORT.md) validates timeouts even after
 completion, makes zero-timeout polling event-free and reuses bounded native wait
 registrations across retries while preserving resource ownership and loss handling.
+The [swapchain guard fix](docs/PHASE2_SWAP_GUARD_REPORT.md) rejects noncurrent or
+destroyed-chain backbuffers during recording/submission and invalidates recordings
+across presentation, including after a full buffer-ring rotation.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

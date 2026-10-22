@@ -1,0 +1,33 @@
+[
+  {
+    "name": "pilot-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/core",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--target",
+      "gfx_swap_tests"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "pilot-gpu",
+    "command": [
+      "out/core/Release/gfx_swap_tests.exe",
+      "--gpu"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "pilot-validation",
+    "command": [
+      "out/core/Release/gfx_swap_tests.exe",
+      "--validation"
+    ],
+    "returncode": 0
+  }
+]

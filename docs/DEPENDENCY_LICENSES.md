@@ -320,3 +320,12 @@ private `FenceWait.hpp`는 자체 SDK 입력이며 CMake/Python fingerprint에�
 `sdk-waits`는 budget profile에 `tests/FenceWaitTests.cpp`만 명시적으로 추가하고 7개 실제
 executable linker closure를 검사한다. 전체 관련 소비자를 재빌드하고 새 SDK ZIP을 감사하며
 기존 8개 ZIP·과거 감사·측정 원본을 보존한다. 외부 dependency나 runtime 배포는 추가하지 않는다.
+
+백버퍼 수명 수정은 새 [SDK 20/1](../licenses/generated/windows-sdk-swap-guards-release/inventory.json),
+[공통 978/22](../licenses/generated/windows-benchmarks-swap-guards-release/inventory.json),
+[swap/설치/창 42/1](../licenses/generated/windows-sdk-swap-guards-validation-release/inventory.json),
+[stress 26/1](../licenses/generated/windows-sdk-swap-guards-stress-release/inventory.json),
+[crash 28/1](../licenses/generated/windows-sdk-swap-guards-crash-release/inventory.json)에 보존한다.
+`sdk-swaps`는 waits profile에 `tests/SwapChainTests.cpp`만 명시적으로 추가하고 실제 8개
+executable linker closure를 검사한다. SDK 수정으로 관련 소비자/도구를 다시 빌드하고 새
+SDK ZIP을 감사하며 기존 9개 ZIP과 과거 근거를 보존한다. 외부 dependency/runtime는 추가하지 않는다.

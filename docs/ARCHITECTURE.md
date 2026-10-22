@@ -38,6 +38,12 @@ D3D12의 private `FenceWaiter`는 양수 대기의 이벤트를 generation별로
 resource batch 소유권은 유지한다. private backend header도 CMake/Python source fingerprint에
 포함하며 설치 public header에 Win32 타입을 추가하지 않는다.
 
+백버퍼 tracker는 swapchain별 약한 scope와 buffer index를 가진다. 명시적인 texture
+입력과 submit은 scope 생존 및 native current index를 확인한다. 공개 swapchain 파괴/퇴역은
+scope를 무효화하며, 이 scope는 public wrapper를 강하게 보유하지 않는다. 성공한 present는
+해당 tracker version을 증가시켜 한 바퀴 회전 뒤에도 오래된 기록을 거부한다. 일반 texture/
+buffer에는 native index 조회를 추가하지 않으며 SDK의 단일 생성 thread 계약을 유지한다.
+
 어댑터 열거는 장치를 만들지 않는 backend dispatch이며 독립 factory의 CPU 메타데이터 snapshot을
 반환한다. backend-scoped opaque ID를 DeviceDesc에 지정하면 D3D12는 EnumAdapterByLuid로
 정확히 선택하고 native Device의 실제 LUID를 다시 확인한다. 같은 descriptor를 복구에 보존해

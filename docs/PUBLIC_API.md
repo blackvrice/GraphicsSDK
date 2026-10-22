@@ -371,6 +371,20 @@ creating thread 전용이다. query는 GPU 완료 대기, fence signal, SDK 객�
 처리하기 전에 acquired TexturePtr와 해당 backbuffer를 기록한 CommandList를 해제한다.
 프레임은 RenderTarget → Present 상태 전환 후 제출·present·fence wait 순서로 진행한다.
 
+acquire가 반환한 TexturePtr를 보유해도, 명시적인 texture 입력은 해당 swapchain이 살아 있고
+그 texture가 현재 native backbuffer일 때만 허용된다. 다른 버퍼로 회전했거나 swapchain을
+파괴했다면 texture transition/render attachment/copy와 해당 texture를 기록한 명령의 제출을
+`InvalidState`로 거부한다. 거부된 submit은 native 실행·fence signal·resource state commit을
+수행하지 않는다. 다른 device/generation은 기존 `WrongDevice`, 손실/퇴역은 `DeviceLost`가
+먼저 적용된다. Texture의 CPU description/footprint는 swapchain 파괴 뒤에도 읽을 수 있다.
+
+성공한 present는 제시한 backbuffer의 version을 변경한다. 따라서 present 전에 기록한
+미제출 명령은 버퍼 순환으로 동일 texture가 다시 current가 되어도 새로 기록해야 한다.
+보유한 TexturePtr 자체는 동일 버퍼가 다시 current가 되면 새 명령에 사용할 수 있다.
+다른 swapchain의 present/파괴는 이 version이나 유효성을 바꾸지 않는다. 정상 frame의
+submit → present 흐름과 backbuffer/command 참조를 해제한 뒤 resize하는 규칙은 유지한다.
+[백버퍼 수명 보고서](PHASE2_SWAP_GUARD_REPORT.md)를 따른다.
+
 `resize(0,0)`은 SDK에서 InvalidArgument이며 최소화를 표현하는 API가 아니다. 기존 swapchain을
 유지하고 양수 client 크기가 복원될 때까지 대기한다. 창 닫기는 GPU 자원 해제 뒤 HWND를
 파괴한다. 정상 present 성공은 실제 monitor scanout/사용자 육안 승인을 의미하지 않는다.
