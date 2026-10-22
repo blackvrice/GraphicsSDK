@@ -1,4 +1,5 @@
 #include <graphics/Graphics.hpp>
+#include "FenceWait.hpp"
 #include <Windows.h>
 #include <d3d12.h>
 #include <d3d12sdklayers.h>
@@ -90,6 +91,7 @@ struct Retirable {
     virtual void appendResources(std::vector<ComPtr<ID3D12Resource>>&) const {}
 };
 struct State {
+    detail::FenceWaiter waiter;
     ComPtr<IDXGIFactory6> factory;
     ComPtr<ID3D12Device> device;
     ComPtr<ID3D12CommandQueue> queue;
@@ -140,7 +142,7 @@ struct State {
         retired=true;
         detachMessages();
         for(auto& child:live)child->releaseNative();
-        pending.clear();children.clear();info.Reset();queue.Reset();fence.Reset();device.Reset();factory.Reset();
+        pending.clear();children.clear();info.Reset();queue.Reset();fence.Reset();waiter.reset();device.Reset();factory.Reset();
     }
     Result<void> check() {
         if (thread != std::this_thread::get_id()) return invalid("Device operations must run on the creating thread");
@@ -158,22 +160,10 @@ struct State {
         return value;
     }
     Result<void> wait(std::uint64_t value, std::chrono::milliseconds timeout) {
-        auto done = completed(); if (!done) return std::unexpected(done.error());
+        auto status = check(); if (!status) return status;
         if (value > last) return invalid("Cannot wait for a fence that has not been submitted", ErrorCode::InvalidArgument);
-        if (*done >= value) return {};
-        if (timeout.count() < 0 || timeout.count() >= INFINITE) return invalid("Invalid fence timeout", ErrorCode::InvalidArgument);
-        HANDLE event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-        if (!event) return failure(HRESULT_FROM_WIN32(GetLastError()), "CreateEvent failed");
-        HRESULT result = fence->SetEventOnCompletion(value, event);
-        if (FAILED(result)) { CloseHandle(event); return failure(result, "SetEventOnCompletion failed"); }
-        DWORD waited = WaitForSingleObject(event, static_cast<DWORD>(timeout.count()));
-        DWORD error = waited == WAIT_FAILED ? GetLastError() : 0;
-        CloseHandle(event);
-        if (waited == WAIT_TIMEOUT) return invalid("GPU fence timeout", ErrorCode::Timeout);
-        if (waited != WAIT_OBJECT_0) return failure(HRESULT_FROM_WIN32(error), "Fence wait failed");
-        done = completed(); if (!done) return std::unexpected(done.error());
-        if (*done < value) return invalid("Fence woke before completion");
-        return {};
+        return waiter.wait(*fence.Get(),value,timeout,[this]{return completed();},
+                           [this](HRESULT code,std::string operation){return failure(code,std::move(operation));});
     }
     Result<void> idle() {
         auto status = check(); if (!status) return status;

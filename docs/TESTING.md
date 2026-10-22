@@ -5,6 +5,13 @@
 `ctest --test-dir out/core -C Release --output-on-failure`:
 
 * core_contracts: backend advertising, Unsupported errors, invalid shader inputs.
+* fence_wait_gpu / fence_wait_validation: all freshly enumerated hardware/WARP adapters,
+  native two-gate queues with 4,096 zero polls and 64 timed retries per adapter, counted
+  actual SetEventOnCompletion calls, earlier-target retries, stale wake, timeout-boundary
+  loss and owned-event closure. Public copy readback, invalid completed timeout, finite
+  maximum, future/foreign/thread rejection and controlled removal/recovery are also checked.
+  Process-wide handle counts are observations; the exact owned handle/registration contracts
+  are checked independently of validation/runtime handles. These are not long-soak acceptance.
 * vertex_layout_contracts: portable input-layout limits, semantics, format, offset/stride and rate validation.
 * binding_layout_contracts: portable graphics register/space/visibility limits and overlap rejection.
 * render_pass_contracts: portable texture usage, output layout, attachment size/duplicate/load/clear contracts.

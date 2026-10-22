@@ -11,6 +11,16 @@ SPEC.loader.exec_module(audit)
 
 
 class CompilerEvidenceTests(unittest.TestCase):
+    def test_private_backend_headers_are_part_of_sdk_source_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=pathlib.Path(directory)
+            (root/"src").mkdir();(root/"include").mkdir()
+            (root/"CMakeLists.txt").write_text("project(test)")
+            header=root/"src/Private.hpp";header.write_text("first")
+            first=audit.sdk_fingerprint(root)
+            header.write_text("second")
+            self.assertNotEqual(first,audit.sdk_fingerprint(root))
+
     def test_utf16_batched_sources_and_headers(self):
         data = '^D:\\src\\a.cpp|D:\\src\\b.cpp\r\nD:\\src\\header.h\r\nD:\\src\\header.h\r\n'
         self.assertEqual(audit.parse_tlog(data.encode("utf-16")), [r'D:\src\a.cpp', r'D:\src\b.cpp', r'D:\src\header.h'])

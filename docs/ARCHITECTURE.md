@@ -30,6 +30,14 @@ driver cache/descriptor heap/PSO/residency는 별도 OS observer 범위다. 진�
 API는 0.0.1 초기 개발 단계로 아직 ABI/API 안정성 계약이 없다. 외부 소비자 설치 검증은
 지원하지만 v0.1 전체 크로스플랫폼 출시와는 구분한다.
 
+D3D12의 private `FenceWaiter`는 양수 대기의 이벤트를 generation별로 재사용한다.
+미완료 등록의 기준은 단일 증가 fence의 다음 미완료 값이며 timeout 뒤에도 같은 등록을
+유지한다. 완료/지연 신호를 다시 확인하고 원래 deadline을 유지하므로 더 이른 목표의 재시도나
+오래된 이벤트 wake를 잘못 완료로 처리하지 않는다. 0ms 조회는 이벤트를 만들거나 등록하지
+않는다. 퇴역은 fence native 참조 해제 뒤 이벤트를 닫는다. 기존 안전 종료의 GPU drain과
+resource batch 소유권은 유지한다. private backend header도 CMake/Python source fingerprint에
+포함하며 설치 public header에 Win32 타입을 추가하지 않는다.
+
 어댑터 열거는 장치를 만들지 않는 backend dispatch이며 독립 factory의 CPU 메타데이터 snapshot을
 반환한다. backend-scoped opaque ID를 DeviceDesc에 지정하면 D3D12는 EnumAdapterByLuid로
 정확히 선택하고 native Device의 실제 LUID를 다시 확인한다. 같은 descriptor를 복구에 보존해

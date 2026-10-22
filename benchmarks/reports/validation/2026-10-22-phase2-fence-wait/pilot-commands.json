@@ -1,0 +1,33 @@
+[
+  {
+    "name": "pilot-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/core",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--target",
+      "gfx_fence_wait_tests"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "pilot-gpu",
+    "command": [
+      "out/core/Release/gfx_fence_wait_tests.exe",
+      "--gpu"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "pilot-validation",
+    "command": [
+      "out/core/Release/gfx_fence_wait_tests.exe",
+      "--validation"
+    ],
+    "returncode": 1
+  }
+]

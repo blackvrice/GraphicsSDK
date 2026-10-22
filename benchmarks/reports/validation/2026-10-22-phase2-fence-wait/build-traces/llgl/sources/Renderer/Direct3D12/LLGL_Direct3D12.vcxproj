@@ -1,0 +1,485 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{183CCE30-96C6-399E-A757-F07B23506D7D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>LLGL_Direct3D12</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\source\GraphicsSDK\out\llgl\build\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">LLGL_Direct3D12.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">LLGL_Direct3D12D</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\llgl\build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LLGL_Direct3D12.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LLGL_Direct3D12</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\source\GraphicsSDK\out\llgl\build\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">LLGL_Direct3D12.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">LLGL_Direct3D12</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\source\GraphicsSDK\out\llgl\build\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">LLGL_Direct3D12.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">LLGL_Direct3D12</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4250;4251;4290;4103</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_DEBUG;LLGL_ENABLE_CHECKED_CAST;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR="Debug";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_DEBUG;LLGL_ENABLE_CHECKED_CAST;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR=\"Debug\";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\build\Debug\LLGLD.lib;..\..\..\build\Debug\LLGL_DXCommonD.lib;d3d12.lib;dxgi.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/llgl/build/Debug/LLGL_Direct3D12D.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/llgl/build/Debug/LLGL_Direct3D12D.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DisableSpecificWarnings>4250;4251;4290;4103</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR="Release";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR=\"Release\";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\build\Release\LLGL.lib;..\..\..\build\Release\LLGL_DXCommon.lib;d3d12.lib;dxgi.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/llgl/build/Release/LLGL_Direct3D12.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/llgl/build/Release/LLGL_Direct3D12.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DisableSpecificWarnings>4250;4251;4290;4103</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR="MinSizeRel";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR=\"MinSizeRel\";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\build\MinSizeRel\LLGL.lib;..\..\..\build\MinSizeRel\LLGL_DXCommon.lib;d3d12.lib;dxgi.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/llgl/build/MinSizeRel/LLGL_Direct3D12.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/llgl/build/MinSizeRel/LLGL_Direct3D12.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4250;4251;4290;4103</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR="RelWithDebInfo";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;LLGL_D3D12_ENABLE_FEATURELEVEL=0;CMAKE_INTDIR=\"RelWithDebInfo\";LLGL_Direct3D12_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\build\RelWithDebInfo\LLGL.lib;..\..\..\build\RelWithDebInfo\LLGL_DXCommon.lib;d3d12.lib;dxgi.lib;D3DCompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/llgl/build/RelWithDebInfo/LLGL_Direct3D12.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/llgl/build/RelWithDebInfo/LLGL_Direct3D12.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/source/GraphicsSDK/.deps/LLGL/sources/Renderer/Direct3D12/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/.deps/LLGL -BD:/source/GraphicsSDK/out/llgl --check-stamp-file D:/source/GraphicsSDK/out/llgl/sources/Renderer/Direct3D12/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\source\GraphicsSDK\out\llgl\sources\Renderer\Direct3D12\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/source/GraphicsSDK/.deps/LLGL/sources/Renderer/Direct3D12/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/.deps/LLGL -BD:/source/GraphicsSDK/out/llgl --check-stamp-file D:/source/GraphicsSDK/out/llgl/sources/Renderer/Direct3D12/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\llgl\sources\Renderer\Direct3D12\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/source/GraphicsSDK/.deps/LLGL/sources/Renderer/Direct3D12/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/.deps/LLGL -BD:/source/GraphicsSDK/out/llgl --check-stamp-file D:/source/GraphicsSDK/out/llgl/sources/Renderer/Direct3D12/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\source\GraphicsSDK\out\llgl\sources\Renderer\Direct3D12\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/source/GraphicsSDK/.deps/LLGL/sources/Renderer/Direct3D12/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/.deps/LLGL -BD:/source/GraphicsSDK/out/llgl --check-stamp-file D:/source/GraphicsSDK/out/llgl/sources/Renderer/Direct3D12/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\source\GraphicsSDK\out\llgl\sources\Renderer\Direct3D12\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12Device.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12Device.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12ModuleInterface.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12ObjectUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12ObjectUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12RenderSystem.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12RenderSystem.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12Resource.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12SharedDeviceObjects.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12SubresourceContext.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12SubresourceContext.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12SwapChain.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12SwapChain.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12Types.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\D3D12Types.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12Buffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12Buffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12BufferArray.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12BufferArray.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12BufferConstantsPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12BufferConstantsPool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12CPUAccessBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12CPUAccessBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12IntermediateBufferPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12IntermediateBufferPool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12StagingBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12StagingBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12StagingBufferPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Buffer\D3D12StagingBufferPool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12CommandBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12CommandBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12CommandContext.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12CommandContext.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12CommandQueue.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12CommandQueue.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12SignatureFactory.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Command\D3D12SignatureFactory.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12BuiltinShaderFactory.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12BuiltinShaderFactory.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12RootParameter.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12RootParameter.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12RootSignature.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12RootSignature.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12Shader.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\D3D12Shader.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Shader\Builtin\D3D12Builtin.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12ComputePSO.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12ComputePSO.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12DescriptorCache.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12DescriptorCache.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12DescriptorHeap.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12DescriptorHeap.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12Fence.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12Fence.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12GraphicsPSO.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12GraphicsPSO.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12MeshPSO.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12MeshPSO.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PSOUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineCache.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineCache.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineLayout.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineLayout.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineState.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineState.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineStateUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12PipelineStateUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12QueryHeap.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12QueryHeap.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12RenderPSOBase.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12RenderPSOBase.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12RenderPass.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12RenderPass.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12ResourceHeap.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12ResourceHeap.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12StagingDescriptorHeap.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12StagingDescriptorHeap.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12StagingDescriptorHeapPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\RenderState\D3D12StagingDescriptorHeapPool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12MipGenerator.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12MipGenerator.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12RenderTarget.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12RenderTarget.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12Sampler.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12Sampler.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12Texture.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Direct3D12\Texture\D3D12Texture.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Direct3D12\NativeHandle.h" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\source\GraphicsSDK\out\llgl\ZERO_CHECK.vcxproj">
+      <Project>{D983DCB3-EBE5-307F-8ECF-639AF4889627}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\source\GraphicsSDK\out\llgl\LLGL.vcxproj">
+      <Project>{DD8555FC-6EE1-381C-822D-3D0813F4DABB}</Project>
+      <Name>LLGL</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\source\GraphicsSDK\out\llgl\sources\Renderer\DXCommon\LLGL_DXCommon.vcxproj">
+      <Project>{92013E6E-E412-32AF-AD6F-5E0815E02045}</Project>
+      <Name>LLGL_DXCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

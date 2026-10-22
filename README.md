@@ -81,6 +81,9 @@ list/select adapters; missing explicit targets fail without switching GPUs.
 The [memory-budget campaign](docs/PHASE2_BUDGET_CAMPAIGN_REPORT.md) records public
 local/nonlocal snapshots alongside independent native queries during resource churn,
 with strict receipt validation. The original long-running GBV memory gate remains open.
+The [fence-wait fix](docs/PHASE2_FENCE_WAIT_REPORT.md) validates timeouts even after
+completion, makes zero-timeout polling event-free and reuses bounded native wait
+registrations across retries while preserving resource ownership and loss handling.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

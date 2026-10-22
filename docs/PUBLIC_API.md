@@ -14,6 +14,21 @@ Device는 장치 정보/기능, 자원/파이프라인/명령 목록/스왑체�
 queue는 submit 결과로 Fence를 반환하고 wait/waitIdle/completedValue를 제공한다.
 GPU 비동기 완료를 명시적으로 기다린 뒤 readback을 읽는다.
 
+`queue().wait(fence, timeout)`는 생성 thread 전용이다. D3D12의 유효 timeout은
+0..4,294,967,294ms이며, 음수·INFINITE(4,294,967,295ms)·그보다 큰 값은 이미 완료된
+펜스에서도 `InvalidArgument`다. 0ms는 완료 여부를 조회하고 미완료면 `Timeout`을 반환하며
+이벤트 생성/등록이나 GPU 완료 대기를 하지 않는다. 완료된 제출의 소유권 정리는 수행할 수 있다.
+미제출 값은 `InvalidArgument`, 다른 장치/세대의 펜스는 `WrongDevice`다.
+
+제한 시간 초과는 제출 취소나 자원 해제가 아니다. 같은 펜스 또는 더 이른 펜스를 다시 기다릴
+수 있으며 실제 완료 전까지 native 제출 소유권을 유지한다. 양수 대기는 generation에 이벤트
+하나를 재사용하고 아직 미완료인 native 등록은 하나만 유지한다. 단일 증가 timeline의 다음
+미완료 값을 등록하므로 중간 완료에서 깨어날 수 있지만 요청 값과 원래 deadline을 계속 확인한다.
+native 호출/스케줄링 시간까지 포함하는 hard real-time 상한은 아니다.
+건강한 같은 세대에서는 timeout을 검증하고, 관측된 손실/퇴역은 원래 원인의 `DeviceLost`로
+반환한다. 다른 장치 펜스의 `WrongDevice` 검사는 기존과 같이 generation 상태 검사보다 먼저다.
+[펜스 대기 수정과 검증 범위](PHASE2_FENCE_WAIT_REPORT.md)를 따른다.
+
 Texture::footprint는 buffer-texture copy의 총 바이트, aligned rowPitch,
 유효 rowBytes 및 높이를 반환한다. 행 padding을 이미지 데이터로 해석하지 않는다.
 Buffer::write는 Upload, Buffer::read는 Readback 메모리에만 허용한다.

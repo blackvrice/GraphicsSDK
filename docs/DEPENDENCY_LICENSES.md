@@ -310,3 +310,13 @@ Windows SDK/system 전제조건이다. dump는 local `out/`에만 두고 Git·�
 linker closure를 다시 감사한다. 공유 helper 소비자와 심볼 포함 stress 실행 파일은 재빌드한다.
 SDK public source/library·설치본·기존 8개 SDK ZIP·외부 dependency 배포는 바꾸지 않는다.
 기존 SDK/common/budget 검증 inventory와 package의 `--check`도 유지한다.
+
+펜스 대기의 SDK 구현 변경에는 새 [SDK 20/1](../licenses/generated/windows-sdk-fence-wait-release/inventory.json),
+[공통 978/22](../licenses/generated/windows-benchmarks-fence-wait-release/inventory.json),
+[wait/설치/창 41/1](../licenses/generated/windows-sdk-fence-wait-validation-release/inventory.json),
+[stress 26/1](../licenses/generated/windows-sdk-fence-wait-stress-release/inventory.json),
+[crash 28/1](../licenses/generated/windows-sdk-fence-wait-crash-release/inventory.json) inventory를 생성한다.
+private `FenceWait.hpp`는 자체 SDK 입력이며 CMake/Python fingerprint에도 포함한다.
+`sdk-waits`는 budget profile에 `tests/FenceWaitTests.cpp`만 명시적으로 추가하고 7개 실제
+executable linker closure를 검사한다. 전체 관련 소비자를 재빌드하고 새 SDK ZIP을 감사하며
+기존 8개 ZIP·과거 감사·측정 원본을 보존한다. 외부 dependency나 runtime 배포는 추가하지 않는다.
