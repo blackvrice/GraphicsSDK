@@ -16,6 +16,10 @@ int main() {
     }
     if (!device) { std::cerr << device.error().message; return 1; }
     if(!(*device)->checkStatus())return 1;
+    auto empty=(*device)->resourceStatistics();if(!empty||empty->trackedObjects||empty->uniqueResources||empty->resourceAllocationBytes||empty->pendingSubmissions||empty->pendingObjectReferences)return 1;
+    {auto held=(*device)->createBuffer({67108864});if(!held)return 1;auto stats=(*device)->resourceStatistics();if(!stats||stats->uniqueResources!=1||stats->trackedObjects!=1||stats->resourceAllocationBytes!=67108864)return 1;}
+    empty=(*device)->resourceStatistics();if(!empty||empty->uniqueResources||empty->trackedObjects||empty->resourceAllocationBytes)return 1;
+    std::cout<<"Installed resource statistics: 64MiB retain/release verified\n";
     auto healthy=(*device)->recover();if(healthy||healthy.error().code!=gfx::ErrorCode::InvalidState)return 1;
     auto disabled=(*device)->removeForTesting();if(disabled||disabled.error().code!=gfx::ErrorCode::Unsupported)return 1;
     auto buffer = (*device)->createBuffer({4096});

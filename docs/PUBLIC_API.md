@@ -237,3 +237,41 @@ interface 가용성으로 opt-in 여부와 별개다. RemoveDevice 검증 환경
 `tests/consumer/recovery.cpp`는 설치된 SDK만으로 제거 전후 전체 이미지와 stale buffer 거부를 검증한다.
 Native RemoveDevice와 hidden-window 재표시는 예상치 못한 driver TDR/물리 hot-unplug,
 장시간 leak stress 또는 interactive presentation 검증을 대체하지 않는다.
+
+## 자원 보유 진단
+
+`Device::resourceStatistics()`는 생성 thread에서 호출하는 진단용 snapshot이다. 완료된 제출과
+만료된 weak registry 항목을 먼저 정리하지만 GPU 완료를 기다리지는 않는다. 잘못된 thread는
+InvalidState, 손실되거나 퇴역한 세대는 저장된 원인의 DeviceLost를 반환한다.
+
+- `trackedObjects`: 살아 있는 buffer/texture/pipeline/native command payload/swapchain payload의 수.
+- `uniqueResources`: wrapper, 녹화된 command 또는 미완료 제출 batch가 보유한 고유 native resource 수.
+  wrapper/command/batch의 중복 참조는 한 번만 센다. command의 timestamp readback도 포함한다.
+- `resourceAllocationBytes`: 각 고유 resource의 D3D12 GetResourceAllocationInfo 크기의 합.
+  현재 구현은 committed resources다. driver/OS cache, descriptor heap, PSO, 실제 residency나
+  총 VRAM 사용량을 뜻하지 않는다. OS process memory와 DXGI 사용량은 별도 관측값이다.
+- `pendingSubmissions`, `pendingObjectReferences`: 완료 정리 후 남은 제출 batch와 그 COM 참조 수.
+  참조 수는 고유 객체 수가 아니며 resource 외 allocator/list/heap/query/PSO 등을 포함한다.
+
+자원 wrapper를 지워도 녹화되거나 제출된 command가 native resource를 보유할 수 있다.
+관련 command와 자원 wrapper를 모두 해제하고 `queue().waitIdle()`을 마친 뒤 조회하면,
+다른 장기 보유 자원이 없는 장치의 다섯 값은 모두 0이다. 실제 GPU가 이미 끝났으면 조회 시
+미완료 batch가 0일 수도 있다. 이 API는 traversal/COM query/임시 메모리를 사용하므로 draw마다
+호출하는 경량 성능 카운터로 취급하지 않는다. 새 virtual 함수로 개발 버전 consumer는 재빌드한다.
+
+스트레스 도구의 생성·제출·해제 및 전체 readback 계약은
+[메모리 검증 보고서](PHASE2_MEMORY_STRESS_REPORT.md)를 따른다.
+
+`validationErrorCount()`는 이 Device의 unfiltered native 메시지 콜백 등록 이후 발생한
+ERROR/CORRUPTION의 누적 snapshot이다. native text queue가 가득 차거나 storage/retrieval
+filter가 설정되거나 외부 코드가 ClearStoredMessages를 호출해도 집계는 사라지지 않는다.
+SDK가 대기열을 지우거나 무제한으로 늘리지는 않는다. validation=true 장치는
+ID3D12InfoQueue1이 필요하며 미지원이면 생성이 Unsupported다. validation=false의 조회는
+Unsupported, 손실 세대의 조회는 원인이 보존된 DeviceLost다. GPU 작업 검증에는 완료 대기 뒤
+조회한다. callback은 다른 thread에서도 호출될 수 있어 원자 카운터만 갱신하며 D3D API를
+호출하지 않는다. 퇴역·파괴는 진행 중인 callback의 종료까지 기다리는 native unregister를 수행한다.
+
+같은 native 장치를 공유하는 SDK Device도 각자의 등록 시점부터 독립적으로 집계한다.
+이는 native device 전체의 메시지를 관측하므로 다른 owner가 유발한 오류도 포함될 수 있다.
+외부 native 인터페이스는 SDK 공개 API로 제공하지 않는다. 독립 진단 도구만 같은 process/adapter의
+native singleton을 관측하여 intentional error/overflow/filter/clear/thread/owner 수명 계약을 검사한다.

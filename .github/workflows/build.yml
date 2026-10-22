@@ -7,7 +7,9 @@ jobs:
       - uses: actions/checkout@v4
       - run: cmake --preset windows
       - run: cmake --build --preset windows-release
-      - run: ctest --preset windows-release
+      # Hosted runners do not provide hardware/GBV acceptance. Keep the strict WARP
+      # memory smoke; execute the full unexcluded GPU matrix on a GPU-equipped host.
+      - run: ctest --preset windows-release --exclude-regex "^memory_reclamation_(gpu|validation)$"
       - run: cmake --install out/core --config Release --prefix out/install
       - run: python tools/audit_licenses.py --profile sdk --output out/license-audit
       - shell: pwsh

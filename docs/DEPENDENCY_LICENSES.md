@@ -221,3 +221,14 @@ Depth/MRT 확장은 별도 [SDK inventory](../licenses/generated/windows-sdk-dep
 입력 19개/자체 구성요소 1개 및 입력 977개/구성요소 22개를 기록한다. 새 복구 SDK ZIP과
 두 `--check`가 통과했고 인접 고지문을 보존한다. Native D3D12 RemoveDevice는 기존 Windows
 시스템 전제조건이며 새 외부 package나 competitor 수정은 없다. 이전 네 SDK ZIP·감사·측정·archive는 그대로다.
+
+메모리 진단과 오류 callback 수정에는 별도
+[SDK](../licenses/generated/windows-sdk-memory-stress-release/inventory.json),
+[스트레스/진단 도구](../licenses/generated/windows-sdk-stress-release/inventory.json),
+[공통 benchmark](../licenses/generated/windows-benchmarks-memory-stress-release/inventory.json) inventory와
+인접 notices를 생성했다. 각각 compiler-read 입력/구성요소는 19/1, 21/1, 977/22다.
+`sdk-stress`는 SDK 외에 `tools/MemoryStress.cpp`, `tools/memory_validation_probe/main.cpp`만
+명시적으로 허용하며 두 exe의 실제 linker 입력도 검사한다. 새 SDK ZIP과 세 `--check`가 통과했다.
+PSAPI/DXGI/D3D12 debug callback은 기존 Windows 시스템 전제조건이다. 외부 dependency나
+competitor 수정은 없고 이전 다섯 SDK ZIP 및 모든 과거 측정·감사·source archive를 보존했다.
+감사 통과는 메모리 acceptance 통과를 뜻하지 않는다. GBV 증가로 장시간 gate는 실패 상태다.

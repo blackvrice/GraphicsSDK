@@ -1,0 +1,304 @@
+{
+  "memory_stress_tooling_implemented": true,
+  "memory_stress_accepted": false,
+  "validation_counter_overflow_repaired": true,
+  "phase2_complete": false,
+  "remaining": [
+    "GBV_memory_growth_in_repeated_resource_creation",
+    "long_running_memory_stress_acceptance",
+    "interactive_presentation_acceptance",
+    "unexpected_driver_TDR_and_hot_unplug_recovery_acceptance"
+  ],
+  "core_ctest": 22,
+  "no_backend_windows_ctest": 4,
+  "common_benchmark_correctness_ctest": 72,
+  "python_tests": 72,
+  "campaigns": [
+    {
+      "mode": "gpu",
+      "accepted": true,
+      "measured_seconds": 900.0421814,
+      "frames": 93312,
+      "full_images": 279936,
+      "verified_buffer_bytes": 24461180928,
+      "drained_samples": 181,
+      "tail_samples": 91,
+      "owned_after_drain": 0,
+      "metrics": {
+        "private_bytes": {
+          "supported": true,
+          "median_drift": 8028160.0,
+          "slope_per_minute": 1244162.0638578855,
+          "range": 10215424,
+          "tail_checkpoint_maximum": 116170752
+        },
+        "handles": {
+          "supported": true,
+          "median_drift": 2.0,
+          "slope_per_minute": 0.3141531380568129,
+          "range": 2,
+          "tail_checkpoint_maximum": 332
+        },
+        "gpu_local_bytes": {
+          "supported": true,
+          "median_drift": 77824.0,
+          "slope_per_minute": 7048.76087262696,
+          "range": 77824,
+          "tail_checkpoint_maximum": 11493376
+        },
+        "gpu_nonlocal_bytes": {
+          "supported": true,
+          "median_drift": 3276800.0,
+          "slope_per_minute": 296789.9314790299,
+          "range": 3276800,
+          "tail_checkpoint_maximum": 32538624
+        }
+      },
+      "functional_references_passed": true,
+      "validation_enabled": false,
+      "native_error_coverage": "not_requested",
+      "final_private_bytes": 116170752,
+      "maximum_observed_live_pending_submissions": 2
+    },
+    {
+      "mode": "validation",
+      "accepted": false,
+      "gate_error": "Memory plateau gate failed: private_bytes",
+      "measured_seconds": 300.0636524,
+      "frames": 18008,
+      "full_images": 54024,
+      "verified_buffer_bytes": 4720689152,
+      "drained_samples": 61,
+      "tail_samples": 31,
+      "owned_after_drain": 0,
+      "metrics": {
+        "private_bytes": {
+          "supported": true,
+          "median_drift": 5553463296,
+          "slope_per_minute": 2790262764.674729,
+          "range": 7187210240,
+          "tail_checkpoint_maximum": 15392358400
+        },
+        "handles": {
+          "supported": true,
+          "median_drift": 12,
+          "slope_per_minute": 6.018612856599783,
+          "range": 15,
+          "tail_checkpoint_maximum": 435
+        },
+        "gpu_local_bytes": {
+          "supported": true,
+          "median_drift": 7340032,
+          "slope_per_minute": 3881214.5463939235,
+          "range": 10485760,
+          "tail_checkpoint_maximum": 37040128
+        },
+        "gpu_nonlocal_bytes": {
+          "supported": true,
+          "median_drift": 5517803520,
+          "slope_per_minute": 2771904016.5938015,
+          "range": 7140016128,
+          "tail_checkpoint_maximum": 15215149056
+        }
+      },
+      "failed_metrics": [
+        "private_bytes",
+        "handles",
+        "gpu_nonlocal_bytes"
+      ],
+      "functional_references_passed": true,
+      "validation_enabled": true,
+      "native_error_coverage": "unproven: native queue overflow observed in same-source factor probes",
+      "final_private_bytes": 15392358400,
+      "maximum_observed_live_pending_submissions": 0
+    },
+    {
+      "mode": "warp",
+      "accepted": true,
+      "measured_seconds": 300.029609,
+      "frames": 59672,
+      "full_images": 179016,
+      "verified_buffer_bytes": 15642656768,
+      "drained_samples": 61,
+      "tail_samples": 31,
+      "owned_after_drain": 0,
+      "metrics": {
+        "private_bytes": {
+          "supported": true,
+          "median_drift": 49152,
+          "slope_per_minute": -135990.2088628026,
+          "range": 2510848,
+          "tail_checkpoint_maximum": 78864384
+        },
+        "handles": {
+          "supported": true,
+          "median_drift": 0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 194
+        },
+        "gpu_local_bytes": {
+          "supported": true,
+          "median_drift": 0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 0
+        },
+        "gpu_nonlocal_bytes": {
+          "supported": true,
+          "median_drift": 0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 0
+        }
+      },
+      "functional_references_passed": true,
+      "validation_enabled": false,
+      "native_error_coverage": "not_requested",
+      "final_private_bytes": 78815232,
+      "maximum_observed_live_pending_submissions": 1
+    }
+  ],
+  "total_full_images": 512976,
+  "total_frames": 170992,
+  "total_verified_buffer_bytes": 44824526848,
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "observed_SDK_source_fingerprint": "ee53ebe89c94f62604280b5f8dc233451547fe070262c4640a55f2c91383917a",
+  "post_repair_factor_probes": [
+    {
+      "case": "reuse-pipeline",
+      "pid": 20444,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "reuse-pipeline",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\reuse-pipeline.jsonl"
+      ],
+      "returncode": 0,
+      "frames": 2968,
+      "full_images": 8904,
+      "private_growth_bytes": 2535964672,
+      "private_before_message_clear": 2674495488,
+      "private_after_message_clear": 2674495488,
+      "stored_messages_before_live_report": 1024,
+      "discarded_messages": 7881,
+      "SDK_owned_after_release": 0,
+      "diagnostic_only": true
+    },
+    {
+      "case": "reuse-commands",
+      "pid": 7704,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "reuse-commands",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\reuse-commands.jsonl"
+      ],
+      "returncode": 0,
+      "frames": 3424,
+      "full_images": 10272,
+      "private_growth_bytes": 2913943552,
+      "private_before_message_clear": 3062751232,
+      "private_after_message_clear": 3062919168,
+      "stored_messages_before_live_report": 1024,
+      "discarded_messages": 9249,
+      "SDK_owned_after_release": 0,
+      "diagnostic_only": true
+    },
+    {
+      "case": "churn-pipeline",
+      "pid": 21456,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "churn-pipeline",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\churn-pipeline.jsonl"
+      ],
+      "returncode": 0,
+      "frames": 3448,
+      "full_images": 10344,
+      "private_growth_bytes": 2943840256,
+      "private_before_message_clear": 3093196800,
+      "private_after_message_clear": 3093196800,
+      "stored_messages_before_live_report": 1024,
+      "discarded_messages": 9321,
+      "SDK_owned_after_release": 0,
+      "diagnostic_only": true
+    },
+    {
+      "case": "counter-contract",
+      "pid": 38884,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "counter-contract",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\counter-contract.jsonl"
+      ],
+      "returncode": 0,
+      "counter_contract_passed": true,
+      "expected_injected_errors": 6,
+      "overflow_filter_clear_worker_shared_owner_teardown": true,
+      "sdk_sha256": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1"
+    }
+  ],
+  "observed_GBV_zero_counter_not_full_coverage": true,
+  "strict_memory_gate_exit": 1,
+  "SDK_package": {
+    "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip",
+    "sha256": "684da949ad5095a392814d68f8697a5ba41cb05132cd14bacfcf55114cbd7f2c"
+  },
+  "previous_SDK_packages": [
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64.zip",
+      "sha256": "156f1c060f16001a8f503cafd7143eb1158abe60a4062ef912812f059f3f8098",
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-vertex-input-final.zip",
+      "sha256": "68d694d13c8e24d82f46e428deb8e8cfc2dd6c4a721fa7dffb7d83e7d5eb09ba",
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-bindings.zip",
+      "sha256": "02209172dcaae6ce768b1f0b13460149b8e1e174daf02ba0e58ae79dd60148f5",
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-depth-mrt.zip",
+      "sha256": "6b761e2711b56d78b5b82a430c4774f9abd719f12b77f723eea3f1e45712ec08",
+      "unchanged": true
+    },
+    {
+      "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-recovery.zip",
+      "sha256": "445465ac5671a6f32ec42a0f978448496655d4416db4f4f48ae437d95078e6d7",
+      "unchanged": true
+    }
+  ],
+  "new_performance_claim": false,
+  "continuous_memory_peak_claim": false,
+  "multi_hour_soak_executed": false,
+  "remote_CI_executed": false,
+  "native_Linux_Metal_Vulkan_executed": false,
+  "interactive_presentation_executed": false,
+  "unexpected_driver_TDR_hot_unplug_executed": false,
+  "post_repair_factor_probe_debug_GBV_errors": 0,
+  "intentional_counter_probe_errors": 6,
+  "recovery_regression_native_cycles": 12,
+  "recovery_regression_assertions": {
+    "hardware": 24754,
+    "debug_GBV": 24763,
+    "WARP": 24754
+  },
+  "policy": {
+    "path": "tools/memory_stress_policy.json",
+    "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+  },
+  "installed_consumer": "64MiB resource statistics retain/release plus 1024 pixel render",
+  "installed_recovery_consumer_modes": [
+    "hardware",
+    "WARP"
+  ],
+  "installed_recovery_consumer_reference_pixels_per_mode": 2048,
+  "initial_pilot_failure": "CBV binding-layout index in stress tool corrected; original retained under exploration; not accepted as soak",
+  "hosted_CI_configuration_only": "Exclude strict hardware/GBV memory smokes on hosted Windows runner; keep WARP; full local 22-test matrix passed; remote CI not executed"
+}

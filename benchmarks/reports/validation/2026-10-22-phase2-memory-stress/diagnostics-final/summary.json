@@ -1,0 +1,90 @@
+{
+  "SDK_source_fingerprint": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1",
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe": "1de9d42d1aa36cec6392b91bb7fa029801fcf7adcd51985ac18e887b05eaba49",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "3c3ce17a24a073daad5e66339ebb425ef1d066e7a19a9ba037abc893be76c1e4",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\main.cpp": "99f6374e69a120f7f3728c1fdd75b94ec46350dc70093f7883e8685d1cf82ab3",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\run.py": "5fbbac7ea8ebfaa0c44d2677c7fa170de12fa2ba1329ed9aa3fe34cbc58e784f",
+    "D:\\source\\GraphicsSDK\\tools\\memory_validation_probe\\CMakeLists.txt": "d90abd71d1ed63d3f6faf82063df8dc7cbf7857b13c9be0b714fcd512718619d",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "3018622fb5a9656929e7b717a77809f0a168b4ff095e2e5392edebe98debbd8c"
+  },
+  "diagnostic_only": true,
+  "memory_acceptance_claim": false,
+  "cases": [
+    {
+      "case": "reuse-pipeline",
+      "pid": 20444,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "reuse-pipeline",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\reuse-pipeline.jsonl"
+      ],
+      "returncode": 0,
+      "frames": 2968,
+      "full_images": 8904,
+      "private_growth_bytes": 2535964672,
+      "private_before_message_clear": 2674495488,
+      "private_after_message_clear": 2674495488,
+      "stored_messages_before_live_report": 1024,
+      "discarded_messages": 7881,
+      "SDK_owned_after_release": 0,
+      "diagnostic_only": true
+    },
+    {
+      "case": "reuse-commands",
+      "pid": 7704,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "reuse-commands",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\reuse-commands.jsonl"
+      ],
+      "returncode": 0,
+      "frames": 3424,
+      "full_images": 10272,
+      "private_growth_bytes": 2913943552,
+      "private_before_message_clear": 3062751232,
+      "private_after_message_clear": 3062919168,
+      "stored_messages_before_live_report": 1024,
+      "discarded_messages": 9249,
+      "SDK_owned_after_release": 0,
+      "diagnostic_only": true
+    },
+    {
+      "case": "churn-pipeline",
+      "pid": 21456,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "churn-pipeline",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\churn-pipeline.jsonl"
+      ],
+      "returncode": 0,
+      "frames": 3448,
+      "full_images": 10344,
+      "private_growth_bytes": 2943840256,
+      "private_before_message_clear": 3093196800,
+      "private_after_message_clear": 3093196800,
+      "stored_messages_before_live_report": 1024,
+      "discarded_messages": 9321,
+      "SDK_owned_after_release": 0,
+      "diagnostic_only": true
+    },
+    {
+      "case": "counter-contract",
+      "pid": 38884,
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+        "counter-contract",
+        "30",
+        "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\diagnostics-final\\counter-contract.jsonl"
+      ],
+      "returncode": 0,
+      "counter_contract_passed": true,
+      "expected_injected_errors": 6,
+      "overflow_filter_clear_worker_shared_owner_teardown": true,
+      "sdk_sha256": "833978d58dc9e18daf939d12ef24eb69ca965b323caab41fd30682131baa89f1"
+    }
+  ]
+}

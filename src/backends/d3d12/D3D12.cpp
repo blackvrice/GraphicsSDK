@@ -64,13 +64,32 @@ D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
 }
 struct Tracker { ResourceState state{ResourceState::Common}; std::uint64_t version{}, lastUse{}; };
 struct Batch { std::uint64_t fence{}; std::vector<ComPtr<IUnknown>> objects; };
-struct Retirable { virtual ~Retirable()=default; virtual void releaseNative()=0; };
+struct Retirable {
+    virtual ~Retirable()=default;
+    virtual void releaseNative()=0;
+    virtual void appendResources(std::vector<ComPtr<ID3D12Resource>>&) const {}
+};
 struct State {
     ComPtr<IDXGIFactory6> factory;
     ComPtr<ID3D12Device> device;
     ComPtr<ID3D12CommandQueue> queue;
     ComPtr<ID3D12Fence> fence;
     ComPtr<ID3D12InfoQueue> info;
+    ComPtr<ID3D12InfoQueue1> messageSource;
+    DWORD messageCookie{};
+    bool messageCallbackRegistered{};
+    std::atomic<std::uint64_t> validationErrors{};
+    static void CALLBACK onMessage(D3D12_MESSAGE_CATEGORY,D3D12_MESSAGE_SEVERITY severity,D3D12_MESSAGE_ID,LPCSTR,void* context) {
+        if(severity!=D3D12_MESSAGE_SEVERITY_ERROR && severity!=D3D12_MESSAGE_SEVERITY_CORRUPTION)return;
+        auto& count=static_cast<State*>(context)->validationErrors;
+        auto previous=count.load(std::memory_order_relaxed);
+        while(previous!=UINT64_MAX && !count.compare_exchange_weak(previous,previous+1,std::memory_order_relaxed)){}
+    }
+    void detachMessages() {
+        // Unregister waits for outstanding callbacks before State or its context can die.
+        if(messageCallbackRegistered){(void)messageSource->UnregisterMessageCallback(messageCookie);messageCallbackRegistered=false;}
+        messageSource.Reset();
+    }
     DeviceCaps caps;
     DeviceDesc description;
     HRESULT lostReason{S_OK};
@@ -99,6 +118,7 @@ struct State {
         std::vector<std::shared_ptr<Retirable>> live;
         for(auto& child:children)if(auto object=child.lock())live.push_back(std::move(object));
         retired=true;
+        detachMessages();
         for(auto& child:live)child->releaseNative();
         pending.clear();children.clear();info.Reset();queue.Reset();fence.Reset();device.Reset();factory.Reset();
     }
@@ -155,6 +175,7 @@ struct State {
                 while (fence->GetCompletedValue() < last && SUCCEEDED(device->GetDeviceRemovedReason())) SwitchToThread();
             }
         }
+        detachMessages();
     }
 };
 D3D12_RESOURCE_DESC bufferDescription(std::uint64_t size) {
@@ -179,6 +200,7 @@ struct DXBuffer final : Buffer, Retirable {
     ComPtr<ID3D12Resource> resource;
     BufferDesc desc;
     void releaseNative() override {resource.Reset();}
+    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {if(resource)out.push_back(resource);}
     BufferDesc description() const override { return desc; }
     Result<void> write(std::uint64_t offset, std::span<const std::byte> bytes) override {
         auto status = owner->completed(); if (!status) return std::unexpected(status.error());
@@ -217,6 +239,7 @@ struct DXTexture final : Texture, Retirable {
     TextureFootprint layout;
     bool backbuffer{};
     void releaseNative() override {resource.Reset();rtv.Reset();dsv.Reset();}
+    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {if(resource)out.push_back(resource);}
     TextureDesc description() const override { return desc; }
     TextureFootprint footprint() const override { return layout; }
     Result<void> initViews() {
@@ -267,6 +290,10 @@ struct NativeCommands final : Retirable {
     std::vector<ComPtr<IUnknown>> references;
     std::vector<Use> uses;
     void releaseNative() override {list.Reset();allocator.Reset();descriptors.Reset();query.Reset();queryReadback.Reset();references.clear();uses.clear();}
+    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {
+        if(queryReadback)out.push_back(queryReadback);
+        for(const auto& use:uses)if(use.resource)out.push_back(use.resource);
+    }
 };
 struct DXCommands final : CommandList {
     std::shared_ptr<State> owner;
@@ -685,6 +712,29 @@ public:
     explicit DXDevice(std::shared_ptr<State> value) : state(std::move(value)) {}
     const DeviceCaps& caps() const override { return state->caps; }
     Result<void> checkStatus() override {return state->check();}
+    Result<ResourceStatistics> resourceStatistics() override {
+        auto done=state->completed();if(!done)return std::unexpected(done.error());
+        ResourceStatistics result;
+        std::vector<ComPtr<ID3D12Resource>> resources;
+        for(const auto& child:state->children)if(auto live=child.lock()) {
+            ++result.trackedObjects;live->appendResources(resources);
+        }
+        result.pendingSubmissions=state->pending.size();
+        for(const auto& batch:state->pending)for(const auto& object:batch.objects) {
+            ++result.pendingObjectReferences;
+            ComPtr<ID3D12Resource> resource;
+            if(object && SUCCEEDED(object.As(&resource)))resources.push_back(std::move(resource));
+        }
+        std::unordered_set<ID3D12Resource*> unique;
+        for(const auto& resource:resources)if(unique.insert(resource.Get()).second) {
+            const auto desc=resource->GetDesc();
+            const auto bytes=state->device->GetResourceAllocationInfo(0,1,&desc).SizeInBytes;
+            if(bytes==UINT64_MAX || bytes>UINT64_MAX-result.resourceAllocationBytes)
+                return invalid("Resource allocation statistics overflow",ErrorCode::BackendFailure);
+            ++result.uniqueResources;result.resourceAllocationBytes+=bytes;
+        }
+        return result;
+    }
     Result<void> removeForTesting() override {
         auto status=state->check();if(!status)return status;
         if(!state->description.enableDeviceLossTesting)return invalid("Native removal requires enableDeviceLossTesting",ErrorCode::Unsupported);
@@ -888,15 +938,8 @@ public:
     Result<std::uint64_t> validationErrorCount() override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (!state->info) return invalid("Validation was not requested", ErrorCode::Unsupported);
-        std::uint64_t errors = 0;
-        for (UINT64 i = 0; i < state->info->GetNumStoredMessagesAllowedByRetrievalFilter(); ++i) {
-            SIZE_T bytes{}; HRESULT result = state->info->GetMessage(i, nullptr, &bytes);
-            if (FAILED(result)) return state->failure(result, "Validation message query failed");
-            std::vector<std::byte> storage(bytes); auto* message = reinterpret_cast<D3D12_MESSAGE*>(storage.data());
-            result = state->info->GetMessage(i, message, &bytes); if (FAILED(result)) return state->failure(result, "Validation message read failed");
-            if (message->Severity == D3D12_MESSAGE_SEVERITY_CORRUPTION || message->Severity == D3D12_MESSAGE_SEVERITY_ERROR) ++errors;
-        }
-        return errors;
+        // Storage/retrieval filters and the bounded native text queue cannot hide errors.
+        return state->validationErrors.load(std::memory_order_relaxed);
     }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
@@ -958,7 +1001,13 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     std::string name(static_cast<size_t>(count), '\0'); WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, name.data(), count, nullptr, nullptr); name.pop_back();
     state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true, true, true, true};
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
-    if (desc.validation) { result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable"); }
+    if (desc.validation) {
+        result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable");
+        if(FAILED(state->info.As(&state->messageSource)))return invalid("Reliable validation accounting requires ID3D12InfoQueue1",ErrorCode::Unsupported);
+        result=state->messageSource->RegisterMessageCallback(State::onMessage,D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS,state.get(),&state->messageCookie);
+        if(FAILED(result))return state->failure(result,"Validation message callback registration failed");
+        state->messageCallbackRegistered=true;
+    }
     D3D12_COMMAND_QUEUE_DESC queue{}; queue.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     result = state->device->CreateCommandQueue(&queue, IID_PPV_ARGS(&state->queue));
     if (FAILED(result)) return state->failure(result, "Create command queue failed");

@@ -1,0 +1,68 @@
+{
+  "reason": "original runner stopped after real GBV memory gate failure; finish the unchanged WARP workload independently",
+  "command": [
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+    "--mode",
+    "warp",
+    "--seconds",
+    "300",
+    "--warmup",
+    "30",
+    "--interval",
+    "5",
+    "--output",
+    "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-stress\\campaign\\warp.jsonl"
+  ],
+  "pid": 14360,
+  "returncode": 0,
+  "wall_seconds": 330.2350000000001,
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe": "f8bf00c1a4ff03675f4deda633b318d1b52fc36aa47afc0fe16101ecefc32d65",
+    "D:\\source\\GraphicsSDK\\tools\\memory_stress_policy.json": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba",
+    "D:\\source\\GraphicsSDK\\tools\\run_memory_stress.py": "fba300e736224af8eed27bf51d581a2549a91c95ca4ea7899b1077ae66454926",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "3c3ce17a24a073daad5e66339ebb425ef1d066e7a19a9ba037abc893be76c1e4",
+    "D:\\source\\GraphicsSDK\\tools\\analyze_memory_stress.py": "c4a234c48b12dd3a660cb7b6b52c56071a5c030c222e05bd0ee1d87ce04ddf10",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "f4c6e795e80e0573b66d360a6f83fdd146d3171da5dea72989f2bb3bd1157dd2"
+  },
+  "analysis": {
+    "mode": "warp",
+    "accepted": true,
+    "measured_seconds": 300.029609,
+    "frames": 59672,
+    "full_images": 179016,
+    "verified_buffer_bytes": 15642656768,
+    "drained_samples": 61,
+    "tail_samples": 31,
+    "owned_after_drain": 0,
+    "metrics": {
+      "private_bytes": {
+        "supported": true,
+        "median_drift": 49152,
+        "slope_per_minute": -135990.2088628026,
+        "range": 2510848,
+        "tail_checkpoint_maximum": 78864384
+      },
+      "handles": {
+        "supported": true,
+        "median_drift": 0,
+        "slope_per_minute": 0.0,
+        "range": 0,
+        "tail_checkpoint_maximum": 194
+      },
+      "gpu_local_bytes": {
+        "supported": true,
+        "median_drift": 0,
+        "slope_per_minute": 0.0,
+        "range": 0,
+        "tail_checkpoint_maximum": 0
+      },
+      "gpu_nonlocal_bytes": {
+        "supported": true,
+        "median_drift": 0,
+        "slope_per_minute": 0.0,
+        "range": 0,
+        "tail_checkpoint_maximum": 0
+      }
+    }
+  }
+}

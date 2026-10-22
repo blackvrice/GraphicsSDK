@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "D:\source\GraphicsSDK\tools\analyze_memory_stress.py", line 130, in <module>
+    main()
+  File "D:\source\GraphicsSDK\tools\analyze_memory_stress.py", line 122, in main
+    results = [analyze(read_records(path), args.fingerprint) for path in args.inputs]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\source\GraphicsSDK\tools\analyze_memory_stress.py", line 111, in analyze
+    require(drift <= limits["median_drift"] and slope <= limits["slope_per_minute"] and spread <= limits["range"], "Memory plateau gate failed: " + name)
+  File "D:\source\GraphicsSDK\tools\analyze_memory_stress.py", line 17, in require
+    raise ValueError(message)
+ValueError: Memory plateau gate failed: private_bytes

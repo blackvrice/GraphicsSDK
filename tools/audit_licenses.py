@@ -228,8 +228,13 @@ def collect(root, profile, package=None):
     elif profile == "benchmarks-forge":
         from forge_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
-    benchmark = profile != "sdk"
-    target_names = list(trace_dirs) if benchmark else ["core"]
+    stress = profile == "sdk-stress"
+    if stress:
+        trace_dirs = {"core": TRACE_DIRS["core"], "memory_stress": "out/core/gfx_memory_stress.dir/Release", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.dir/Release"}
+        artifacts_map = {"core": ARTIFACTS["core"], "memory_stress": "out/core/Release/gfx_memory_stress.exe", "memory_validation_probe": "out/memory-validation-probe/Release/memory_validation_probe.exe"}
+        projects = {"core": PROJECTS["core"], "memory_stress": "out/core/gfx_memory_stress.vcxproj", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.vcxproj"}
+    benchmark = profile not in ("sdk", "sdk-stress")
+    target_names = list(trace_dirs) if benchmark or stress else ["core"]
     evidence = []
     paths = set()
     for name in target_names:
@@ -258,7 +263,7 @@ def collect(root, profile, package=None):
             relative = path.relative_to(root).as_posix()
             sdk = next((sdk for sdk, directory in sorted(sdk_dirs.items(), key=lambda item: -len(item[1])) if path.is_relative_to(root / directory)), None)
             if sdk:
-                if profile == "sdk":
+                if profile in ("sdk", "sdk-stress"):
                     raise AuditError(f"Competitor source leaked into SDK compilation: {relative}")
                 name = path.relative_to(root / sdk_dirs[sdk]).as_posix()
                 if name.casefold() not in canonical[sdk]:
@@ -279,7 +284,7 @@ def collect(root, profile, package=None):
                     blocks.update(source_notices(text_file(path)))
                 files[relative.casefold()] = {**record_file(root, path), "component": identifier,
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -297,7 +302,7 @@ def collect(root, profile, package=None):
     if "sdl-khronos-dual" in notice_blocks:
         text = text_file(root / ".deps/SDL/include/SDL3/SDL_opengles2_khrplatform.h")
         notice_blocks["sdl-khronos-dual"].update(source_notices(text))
-    artifact_names = list(artifacts_map) if benchmark else ["core"]
+    artifact_names = list(artifacts_map) if benchmark or stress else ["core"]
     artifacts = [record_file(root, root / artifacts_map[name]) for name in artifact_names]
     fingerprint = sdk_fingerprint(root)
     if fingerprint.encode() not in (root / ARTIFACTS["core"]).read_bytes():
@@ -316,7 +321,7 @@ def collect(root, profile, package=None):
         "compiler_read_evidence": evidence, "system_header_count": len(system_inputs),
         "system_input_paths_sha256": sha256("\n".join(sorted(system_inputs)).encode()),
         "system_prerequisites": policy["system_prerequisites"], "artifacts": artifacts,
-        "links": {key: link_evidence(root, projects[key]) for key in (projects if benchmark else ["core"])},
+        "links": {key: link_evidence(root, projects[key]) for key in (projects if benchmark or stress else ["core"])},
         "d3dx12_origin": origin,
         "exclusions": ["Other platforms/build configurations", "Unbuilt competitor SDKs", "Benchmark assets/examples not in compiler-read logs", "Report-generation Python packages (tools only, not bundled)"]
     }
@@ -325,6 +330,8 @@ def collect(root, profile, package=None):
     if benchmark:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map,
             extra.get("link_names", ("benchmark", "llgl", "llgl_d3d12", "diligent_shared")) if extra else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl", "gpu_etl_export", "gpu_memory_control") if profile=="benchmarks-gpu-memory" else ("benchmark", "llgl", "llgl_d3d12", "phase1", "phase1_sdl") if profile=="benchmarks-phase1" else ("benchmark", "llgl", "llgl_d3d12"))
+    if stress:
+        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("memory_stress", "memory_validation_probe"))
     if extra:
         inventory[extra.get("review_key", "diligent_build_review")] = extra["evidence"]
     if generated_inputs:
@@ -356,7 +363,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

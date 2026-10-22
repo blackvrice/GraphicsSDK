@@ -8,6 +8,16 @@
 * vertex_layout_contracts: portable input-layout limits, semantics, format, offset/stride and rate validation.
 * binding_layout_contracts: portable graphics register/space/visibility limits and overlap rejection.
 * render_pass_contracts: portable texture usage, output layout, attachment size/duplicate/load/clear contracts.
+* memory_reclamation_gpu / memory_reclamation_validation / memory_reclamation_warp: short 2-second
+  regressions for native resource accounting/deduplication, recorded ownership after wrapper release,
+  bounded eight-frame submission churn, full MRT/depth/buffer references and zero retained resources
+  after every drain. CPU/GPU retain/release positive controls and thread affinity are also exercised.
+  These smokes do not satisfy the separate 900/300/300-second memory campaign gate.
+
+The independent `memory_validation_probe` also tests cumulative unfiltered error accounting with
+six intentionally injected errors across an 8-message storage limit, filters, text clearing, a worker
+thread and multiple native-device owners. These expected errors run in their own process and are
+separate from zero-error render workloads. Validation devices require native ID3D12InfoQueue1.
 * render_pass_gpu / render_pass_validation / render_pass_warp: 61 complete color/depth images,
   eight compare functions and write masks, read-only/depth-only passes, mixed-format eight-MRT,
   load preservation, alpha blending, postprocess, D32 copies, atomic rejection and lifetime/version checks.
@@ -37,8 +47,10 @@ The three GPU modes each verified eight complete binding images (9,216 pixels pe
 debug+GBV completed with zero ERROR/CORRUPTION messages. See the
 [binding report](PHASE2_BINDINGS_REPORT.md) for contracts and raw evidence.
 
-GPU/debug-layer unavailable returns 77 and CTest reports SKIP. A skipped test is not verified
-GPU acceptance. Compile/runtime failures are errors. Tests check a red triangle center,
+The existing functional GPU/recovery tests return 77 when GPU/debug-layer support is unavailable
+and CTest reports SKIP. The memory-stress executable requires its requested mode and fails if
+unavailable; it never converts missing observations into passing acceptance. A skipped test is not
+verified GPU acceptance. Compile/runtime failures are errors. Tests check a red triangle center,
 blue clear corner, green sampled result, all uploaded bytes in odd-pitch texture rows and
 buffer copies. Resource wrappers and command lists are deliberately destroyed before GPU completion.
 
@@ -248,3 +260,16 @@ vertex binding API. All 65,536 pixels of the indexed-instancing example match a 
 reference. New SDK package and SDK/common compiler-read inventories pass. Native Linux/macOS,
 broader resource binding, depth/MRT and new performance comparisons were not run/completed.
 See [vertex input report](PHASE2_VERTEX_INPUT_REPORT.md).
+
+2026-10-22 memory diagnostics: current core CTest 22/22, Windows D3D12-OFF 4/4,
+common benchmark correctness 72/72, Python 72/72 and installed/render/recovery consumers passed.
+Three current 30-second GBV factor probes passed full references with unfiltered callback error
+counts zero; a separate positive counter probe counted six injected errors despite native queue
+overflow, filters, clearing and multiple thread/owner lifetimes. Fresh SDK/common/stress inventories
+and the new package passed; five older packages remain unchanged.
+
+The preserved pre-repair 900/300/300-second campaign is **not accepted**: hardware/WARP passed
+their bounded memory criteria, but GBV private/nonlocal/handle growth failed. Its old zero-error
+snapshot is not full native error coverage because factor probes exposed native text queue loss.
+The repaired counter and current short probes are separate evidence, not a replacement long soak.
+See the [memory report](PHASE2_MEMORY_STRESS_REPORT.md) and its accepted=false/exit-1 gate.

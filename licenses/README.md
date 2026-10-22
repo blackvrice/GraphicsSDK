@@ -118,3 +118,13 @@ Explicit device recovery has fresh
 adjacent notices: 19 own compiler-read inputs / 1 component and 977 inputs / 22 components.
 The new recovery SDK ZIP and both `--check` runs passed. Four previous SDK ZIPs and every prior
 inventory/source archive remain unchanged. Native D3D12 removal introduces no new external package.
+
+Memory diagnostics and reliable validation callbacks have separate
+[SDK](generated/windows-sdk-memory-stress-release/inventory.json),
+[stress/probe](generated/windows-sdk-stress-release/inventory.json), and
+[common benchmark](generated/windows-benchmarks-memory-stress-release/inventory.json) inventories
+with adjacent notices: 19/1, 21/1 and 977/22 compiler-read inputs/components. The new SDK ZIP and
+all three `--check` runs passed. The stress profile explicitly reviews its two own C++ tool inputs
+and their linker evidence; it does not broadly allow arbitrary tools. Five earlier SDK ZIPs and all
+historical evidence remain unchanged. Build/package auditing does not turn the failed GBV memory
+campaign into acceptance. No new external library or competitor modification was introduced.

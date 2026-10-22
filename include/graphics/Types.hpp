@@ -19,6 +19,12 @@ struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA
 struct TextureFootprint { std::uint64_t size{}; std::uint32_t rowPitch{}, rowBytes{}, height{}; };
 struct Fence { std::uint64_t value{}, device{}; };
 struct DeviceDesc { Backend backend{Backend::D3D12}; bool validation{}; bool softwareAdapter{}; bool enableDeviceLossTesting{}; };
+// Diagnostic snapshot after pruning completed submissions. Allocation bytes describe
+// unique SDK-held resource allocations, not residency, driver caches or total VRAM.
+struct ResourceStatistics {
+    std::uint64_t trackedObjects{}, uniqueResources{}, resourceAllocationBytes{};
+    std::uint64_t pendingSubmissions{}, pendingObjectReferences{};
+};
 struct DeviceCaps {
     Backend backend{};
     std::string adapterName;

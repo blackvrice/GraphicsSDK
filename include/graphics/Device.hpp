@@ -8,6 +8,8 @@ public:
     virtual ~Device() = default;
     [[nodiscard]] virtual const DeviceCaps& caps() const = 0;
     [[nodiscard]] virtual Result<void> checkStatus() = 0;
+    // Creating thread only. Diagnostic traversal; does not wait for in-flight work.
+    [[nodiscard]] virtual Result<ResourceStatistics> resourceStatistics() = 0;
     // On loss, retire this generation and return a fresh device with the same selection policy.
     // Old handles keep CPU descriptions, but all their native operations remain DeviceLost.
     [[nodiscard]] virtual Result<std::unique_ptr<Device>> recover() = 0;
@@ -19,6 +21,8 @@ public:
     [[nodiscard]] virtual Result<std::unique_ptr<CommandList>> createCommandList() = 0;
     [[nodiscard]] virtual Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) = 0;
     [[nodiscard]] virtual CommandQueue& queue() = 0;
+    // Cumulative ERROR/CORRUPTION count since callback registration, independent of
+    // native text queue limits/filters/clearing. Validation devices require InfoQueue1.
     [[nodiscard]] virtual Result<std::uint64_t> validationErrorCount() = 0;
 };
 [[nodiscard]] Result<std::unique_ptr<Device>> createDevice(DeviceDesc desc = {});

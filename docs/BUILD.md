@@ -235,3 +235,42 @@ python tools/audit_licenses.py --profile benchmarks-gpu-memory --output out/<new
 이전 WPR 오류/관리자 취소 이력은 보존했다. 새 승인 후 전용 capture/TDH 해독·프로세스
 수명 분석을 실제로 통과했다. [GPU 메모리 보고서](PHASE1_GPU_MEMORY_REPORT.md)의 범위와
 raw ETL 로컬 보존 조건을 따른다. 이전 병렬 MSVC crash의 원인 미확정 이력은 그대로다.
+
+## Phase 2 메모리 스트레스
+
+Windows D3D12 테스트 빌드에 `gfx_memory_stress`를 포함한다. 일반 CTest는 mode별 2초 회귀 검사이며
+장시간 gate를 충족하지 않는다. 별도 campaign은 hardware 900초, debug+GBV 300초, WARP 300초를
+각각 30초 warmup 후 순차 실행한다. 전체 실행 동안 다른 GPU workload/benchmark/build를 겹치지 않는다.
+
+```powershell
+cmake --build out/core --config Release --parallel 1
+ctest --test-dir out/core -C Release --output-on-failure
+python tools/run_memory_stress.py --output out/<new-memory-campaign>
+python tools/analyze_memory_stress.py out/<new-memory-campaign>/gpu.jsonl out/<new-memory-campaign>/validation.jsonl out/<new-memory-campaign>/warp.jsonl --fingerprint <SDK-buildFingerprint> --output out/<new-acceptance>.json
+python tools/audit_licenses.py --profile sdk-stress --output out/<new-stress-inventory>
+```
+
+Runner는 새 폴더만 만들고 exe/library/SDK source/policy/tool source hash를 실행 전후 확인한다.
+도구의 `--mode gpu|validation|warp --seconds N --warmup N --interval N --output <new.jsonl>`은
+개별 실행을 지원한다. 기존 출력은 기본 거부하며 CTest만 명시적 `--replace 1`을 사용한다.
+측정 중 5초 간격의 live/drained snapshot과 마지막 결과를 즉시 저장한다. 실패한 native 실행,
+짧은 smoke, 누락된 footer/reference, 비정상 증가 및 기준 미달을 성공으로 바꾸지 않는다.
+실패 출력은 새 경로에서 보존한 뒤 원인을 수정한다. Windows 관리자 권한이나 ETW는 필요 없다.
+
+현재의 보존 campaign은 GBV 증가 기준을 실패해 runner/strict analyzer가 exit 1이다. runner는
+실패 시 다음 mode를 시작하지 않는다. 보존된 WARP는 같은 바이너리로 위 개별 실행 명령을 사용한
+별도 측정이며 supplemental manifest에 명령·PID·해시를 기록했다. 실패한 측정을 완료로 표시하지 않는다.
+`report_memory_stress.py`는 실패를 포함한 **보고서 생성** 도구다. 생성 성공이 acceptance 성공을
+뜻하지 않으며 `accepted=false`와 strict gate의 exit 1을 보존한다.
+
+```powershell
+cmake -S tools/memory_validation_probe -B out/memory-validation-probe -G "Visual Studio 17 2022" -A x64
+cmake --build out/memory-validation-probe --config Release --parallel 1
+python tools/memory_validation_probe/run.py --output out/<new-factor-probes>
+python tools/report_memory_stress.py --campaign out/<complete-campaign> --output out/<new-report>
+```
+
+요인 검사는 30초짜리 세 render case와 의도적 메시지 주입 counter 계약이다. 15분/5분 gate를
+대체하지 않는다. 진단 도구는 현재 `out/core/Release/GraphicsSDKCore.lib`에 연결하므로 SDK를 먼저
+빌드한다. 이전 관측을 오류 집계 수정 후 source와 섞지 않도록 원래 source ZIP과 frozen input
+사본을 보존했다. 이 자료의 보고서 재생성에는 `--observed-inputs <observed-inputs.json>`을 추가한다.
