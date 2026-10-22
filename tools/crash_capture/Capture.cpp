@@ -66,28 +66,54 @@ void address(std::ostream& out,DWORD64 pc,const std::map<DWORD64,Module>& module
     if(it!=modules.begin()){--it;const auto& m=it->second;if(pc-m.base<m.size){out<<",\"module\":"<<json(utf8(m.path))<<",\"module_base\":"<<m.base<<",\"module_offset\":"<<pc-m.base;return;}}
     out<<",\"module\":null,\"module_base\":null,\"module_offset\":null";
 }
-void stack(Log& log,HANDLE process,HANDLE thread,DWORD tid,CONTEXT context,const std::map<DWORD64,Module>& modules,const std::filesystem::path& search){
-    SymSetOptions(SYMOPT_DEFERRED_LOADS|SYMOPT_UNDNAME|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS|SYMOPT_IGNORE_NT_SYMPATH);
-    const bool symbols=SymInitializeW(process,search.c_str(),FALSE)!=FALSE;
-    if(symbols)for(const auto& [base,m]:modules)if(!m.path.empty())(void)SymLoadModuleExW(process,nullptr,m.path.c_str(),nullptr,base,static_cast<DWORD>(m.size),nullptr,0);
+constexpr unsigned threadLimit=16,frameLimit=64;
+struct Symbols {
+    HANDLE process;bool available;
+    Symbols(HANDLE p,const std::map<DWORD64,Module>& modules,const std::filesystem::path& search):process(p){
+        SymSetOptions(SYMOPT_DEFERRED_LOADS|SYMOPT_UNDNAME|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS|SYMOPT_IGNORE_NT_SYMPATH);
+        available=SymInitializeW(process,search.c_str(),FALSE)!=FALSE;
+        if(available)for(const auto& [base,m]:modules)if(!m.path.empty())(void)SymLoadModuleExW(process,nullptr,m.path.c_str(),nullptr,base,static_cast<DWORD>(m.size),nullptr,0);
+    }
+    ~Symbols(){if(available)(void)SymCleanup(process);}
+};
+unsigned stack(Log& log,HANDLE process,HANDLE thread,DWORD tid,CONTEXT context,const std::map<DWORD64,Module>& modules,bool symbols,unsigned snapshot,bool fault){
     auto frame=[&](DWORD64 pc,unsigned index,const char* kind){
-        std::ostringstream row;row<<"{\"event\":\"stack\",\"thread_id\":"<<tid<<",\"index\":"<<index<<",\"kind\":"<<json(kind)<<',';address(row,pc,modules);
+        std::ostringstream row;row<<"{\"event\":\"stack\",\"snapshot_id\":"<<snapshot<<",\"thread_id\":"<<tid<<",\"index\":"<<index<<",\"kind\":"<<json(kind)<<',';address(row,pc,modules);
         alignas(SYMBOL_INFO) char storage[sizeof(SYMBOL_INFO)+MAX_SYM_NAME]{};auto* symbol=reinterpret_cast<SYMBOL_INFO*>(storage);symbol->SizeOfStruct=sizeof(SYMBOL_INFO);symbol->MaxNameLen=MAX_SYM_NAME;DWORD64 displacement{};
         if(symbols&&SymFromAddr(process,pc,&displacement,symbol))row<<",\"symbol\":"<<json(std::string_view(symbol->Name,symbol->NameLen))<<",\"symbol_displacement\":"<<displacement;
         else row<<",\"symbol\":null,\"symbol_displacement\":null";
         row<<'}';log.row(row.str());
     };
-    frame(context.Rip,0,"exception_pc");unsigned index=1;
+    frame(context.Rip,0,fault?"exception_pc":"thread_pc");unsigned index=1;
     // A null function call has no unwind metadata. The stack top is a candidate
     // return PC, explicitly labelled, rather than an invented resolved fault module.
-    if(context.Rip==0){DWORD64 candidate{};if(read(process,context.Rsp,candidate)&&candidate){frame(candidate,index++,"null_pc_stack_top_candidate");context.Rip=candidate;context.Rsp+=8;}}
+    if(fault&&context.Rip==0){DWORD64 candidate{};if(read(process,context.Rsp,candidate)&&candidate){frame(candidate,index++,"null_pc_stack_top_candidate");context.Rip=candidate;context.Rsp+=8;}}
     STACKFRAME64 f{};f.AddrPC={context.Rip,0,AddrModeFlat};f.AddrStack={context.Rsp,0,AddrModeFlat};f.AddrFrame={context.Rbp,0,AddrModeFlat};
     DWORD64 previousPC=UINT64_MAX,previousSP=UINT64_MAX;
-    if(symbols)while(index<64&&StackWalk64(IMAGE_FILE_MACHINE_AMD64,process,thread,&f,&context,nullptr,SymFunctionTableAccess64,SymGetModuleBase64,nullptr)){
+    if(symbols)while(index<frameLimit&&StackWalk64(IMAGE_FILE_MACHINE_AMD64,process,thread,&f,&context,nullptr,SymFunctionTableAccess64,SymGetModuleBase64,nullptr)){
         if(!f.AddrPC.Offset||(f.AddrPC.Offset==previousPC&&f.AddrStack.Offset==previousSP))break;
         frame(f.AddrPC.Offset,index++,"unwound");previousPC=f.AddrPC.Offset;previousSP=f.AddrStack.Offset;
     }
-    if(symbols)(void)SymCleanup(process);
+    return index;
+}
+CONTEXT snapshot(Log& log,HANDLE process,DWORD fault,const std::map<DWORD,HANDLE>& threads,const std::map<DWORD64,Module>& modules,const std::filesystem::path& search,unsigned id,bool& faultAvailable){
+    // Windows suspends all child threads for this debug event. Do not add suspend
+    // counts or resume threads; ContinueDebugEvent owns that operation.
+    Symbols symbols(process,modules,search);CONTEXT faultContext{};
+    std::vector<DWORD> selected{fault};
+    for(const auto& [tid,handle]:threads)if(tid!=fault&&selected.size()<threadLimit)selected.push_back(tid);
+    unsigned available=0,frames=0;
+    for(auto tid:selected){
+        CONTEXT context{};context.ContextFlags=CONTEXT_FULL;const auto it=threads.find(tid);
+        const bool have=it!=threads.end()&&GetThreadContext(it->second,&context);
+        const DWORD error=have?0:it==threads.end()?ERROR_INVALID_HANDLE:GetLastError();
+        if(tid==fault){faultContext=context;faultAvailable=have;}
+        std::ostringstream row;row<<"{\"event\":"<<json(tid==fault?"context":"thread_context")<<",\"snapshot_id\":"<<id<<",\"thread_id\":"<<tid<<",\"available\":"<<(have?"true":"false")<<",\"win32_error\":"<<error<<",\"rip\":"<<context.Rip<<",\"rsp\":"<<context.Rsp<<",\"rbp\":"<<context.Rbp<<'}';log.row(row.str());
+        if(have){++available;frames+=stack(log,process,it->second,tid,context,modules,symbols.available,id,tid==fault);}
+    }
+    const auto observed=threads.size()+(threads.contains(fault)?0:1),omitted=observed-selected.size();
+    std::ostringstream row;row<<"{\"event\":\"thread_snapshot\",\"snapshot_id\":"<<id<<",\"fault_thread_id\":"<<fault<<",\"observed_threads\":"<<observed<<",\"captured_threads\":"<<selected.size()<<",\"omitted_threads\":"<<omitted<<",\"contexts_available\":"<<available<<",\"stack_frames\":"<<frames<<",\"symbols_available\":"<<(symbols.available?"true":"false")<<",\"all_threads_captured\":"<<(!omitted&&available==observed?"true":"false")<<'}';log.row(row.str());
+    return faultContext;
 }
 }
 int wmain(int argc,wchar_t** argv)try {
@@ -106,7 +132,7 @@ int wmain(int argc,wchar_t** argv)try {
     Handle process(pi.hProcess),initialThread(pi.hThread);
     check(DebugSetProcessKillOnExit(TRUE)!=FALSE,"Keep own-child kill-on-debugger-exit enabled");
     BOOL wow64{};check(IsWow64Process(process.value,&wow64)&&!wow64,"Only x64 child processes are supported");
-    log.row("{\"event\":\"launch\",\"schema\":1,\"pid\":"+std::to_string(pi.dwProcessId)+",\"child\":"+json(utf8(exe.native()))+",\"timeout_ms\":"+std::to_string(timeout)+",\"debug_only_this_process\":true,\"diagnostic_only\":true}");
+    log.row("{\"event\":\"launch\",\"schema\":2,\"thread_limit\":"+std::to_string(threadLimit)+",\"frame_limit\":"+std::to_string(frameLimit)+",\"pid\":"+std::to_string(pi.dwProcessId)+",\"child\":"+json(utf8(exe.native()))+",\"timeout_ms\":"+std::to_string(timeout)+",\"debug_only_this_process\":true,\"diagnostic_only\":true}");
     std::map<DWORD,HANDLE> threads;std::map<DWORD64,Module> modules;bool loaderBreakpoint=false,timedOut=false,complete=false;DWORD exitCode=1;unsigned firstChance=0,secondChance=0,debugMessages=0;std::size_t debugBytes=0;bool dumpFailed=false;
     auto elapsed=[&]{return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now()-started).count();};
     while(!complete){
@@ -151,9 +177,7 @@ int wmain(int argc,wchar_t** argv)try {
                 row<<",\"parameters\":[";for(DWORD n=0;n<std::min<DWORD>(e.ExceptionRecord.NumberParameters,EXCEPTION_MAXIMUM_PARAMETERS);++n){if(n)row<<',';row<<e.ExceptionRecord.ExceptionInformation[n];}row<<"]}";log.row(row.str());}
             if(!first){
                 for(const auto& [base,m]:modules)log.row("{\"event\":\"module\",\"base\":"+std::to_string(base)+",\"size\":"+std::to_string(m.size)+",\"path\":"+json(utf8(m.path))+'}');
-                CONTEXT context{};context.ContextFlags=CONTEXT_FULL;const auto it=threads.find(event.dwThreadId);const bool have=it!=threads.end()&&GetThreadContext(it->second,&context);
-                log.row("{\"event\":\"context\",\"thread_id\":"+std::to_string(event.dwThreadId)+",\"available\":"+(have?"true":"false")+",\"rip\":"+std::to_string(context.Rip)+",\"rsp\":"+std::to_string(context.Rsp)+",\"rbp\":"+std::to_string(context.Rbp)+'}');
-                if(have)stack(log,process.value,it->second,event.dwThreadId,context,modules,exe.parent_path());
+                bool have=false;auto context=snapshot(log,process.value,event.dwThreadId,threads,modules,exe.parent_path(),secondChance,have);
                 if(!dump.empty()){
                     Handle file(CreateFileW(dump.c_str(),GENERIC_WRITE,0,nullptr,CREATE_NEW,FILE_ATTRIBUTE_NORMAL,nullptr));EXCEPTION_POINTERS pointers{&e.ExceptionRecord,&context};MINIDUMP_EXCEPTION_INFORMATION info{event.dwThreadId,&pointers,FALSE};
                     const bool ok=have&&file.value!=INVALID_HANDLE_VALUE&&MiniDumpWriteDump(process.value,pi.dwProcessId,file.value,static_cast<MINIDUMP_TYPE>(MiniDumpNormal|MiniDumpWithThreadInfo|MiniDumpWithUnloadedModules),&info,nullptr,nullptr);

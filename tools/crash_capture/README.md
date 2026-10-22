@@ -30,6 +30,22 @@ server. Missing private runtime/driver PDBs remain unresolved. For RIP=0 the fau
 module stays null; the stack-top candidate return address is labelled explicitly.
 A caller candidate or nearby stack frame alone does not identify the root cause.
 
+Schema 2 also records other live threads at that same second-chance debug stop.
+Windows suspends the child's threads during a debug event; the collector does not
+add SuspendThread/ResumeThread calls. It prioritizes the faulting thread, then takes
+ascending thread IDs up to a fixed total of 16, each with at most 64 frames. The fault
+PC stays `exception_pc`; other stopped PCs are `thread_pc`, never fault attribution.
+One local symbol session is shared across the snapshot and cleaned up afterward.
+
+`thread_snapshot` records observed/captured/omitted counts, available contexts,
+frame count and symbol availability. Each context/frame carries a snapshot ID.
+`all_threads_captured` requires no omitted threads and every selected context to be
+available; it does not certify complete unwind/symbol resolution or a crash cause.
+Failed contexts retain their Win32 error and have no invented stack. No snapshot is
+synthesized for normal exits or watchdog termination. The parser keeps historical
+schema 1 support, but current runners refuse a stale schema 1 collector. Real worker
+faults with blocked waiters and an oversized thread set exercise these contracts.
+
 Debugger strings use the advertised byte count, stop at their first terminator,
 and have a total 64KiB read budget. Invalid UTF-16 is marked and converted with
 replacement; optional text cannot terminate exception collection. The total

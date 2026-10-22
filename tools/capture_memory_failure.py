@@ -59,6 +59,7 @@ def run(args):
         result["collector_exit_code"] = code
         records = read_records(args.output/"capture.jsonl")
         require(records and records[-1].get("event") == "exit", "Incomplete debugger receipt")
+        require(records[0].get("schema") == 2, "Rebuild the current thread-snapshot collector")
         child_code = records[-1]["child_exit_code"]
         receipt = validate(records, child_code, code)
         result.update(capture=receipt, capture_complete=True, status="crashed" if receipt["second_chance_count"] else

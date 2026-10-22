@@ -391,6 +391,15 @@ memory gate. Early debug-text byte-length failure stays rejected and local-only;
 an initial compiler AV passes on an unchanged-source retry. See
 [capture report](PHASE2_CRASH_CAPTURE_REPORT.md) for final regressions and scope.
 
+The [thread snapshot extension](PHASE2_THREAD_SNAPSHOT_REPORT.md) adds real worker
+crashes with three blocked waiters and a 24-waiter truncation control. Schema 2
+prioritizes the fault thread, caps captured contexts at 16 and frames at 64 per thread,
+and records omissions/context failures explicitly. Ten added Python tests reject
+missing worker stacks, false completeness, broken correlation, raised bounds,
+downgraded schemas and invalid frame sequences. Historical schema 1 is still readable;
+current native controls and memory wrapper require schema 2. These are diagnostic
+controls; the original long-running memory and Intel fault gates stay open.
+
 2026-10-22 public memory budgets: core 28/28, Windows D3D12-OFF 6/6, common
 correctness 72/72, presentation 7/7 and Python 147/147 pass on the new SDK.
 Two dedicated native processes compare 48 local/nonlocal snapshots against stable

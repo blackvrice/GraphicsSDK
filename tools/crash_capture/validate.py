@@ -19,6 +19,7 @@ def run(output, binary):
     hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
     cases = []
     for mode, code in (("handled", 0), ("arguments", 0), ("exit-seven", 7), ("null-call", 0xc0000005),
+                       ("worker-crash", 0xc0000005), ("thread-limit", 0xc0000005),
                        ("breakpoint", 0x80000003), ("sleep", 124), ("debug-spam", 0)):
         path = output/(mode+".jsonl")
         dump = output/(mode+".dmp")
@@ -30,7 +31,9 @@ def run(output, binary):
             command += ["", "space and 한글", 'quote"here', "trailing slash\\"]
         process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=30)
         (output/(mode+".log")).write_bytes(process.stdout)
-        result = validate(read_records(path), code, process.returncode)
+        records = read_records(path)
+        require(records[0].get("schema") == 2, "Rebuild the current thread-snapshot collector")
+        result = validate(records, code, process.returncode)
         if mode == "handled":
             require(result["first_chance_count"] >= 2 and result["second_chance_count"] == 0, "Handled exception was swallowed/reclassified")
         if mode == "arguments":
@@ -44,6 +47,17 @@ def run(output, binary):
             result["local_minidump_sha256"] = hashlib.sha256(dump.read_bytes()).hexdigest()
         if mode == "breakpoint":
             require(result["second_chance_count"] == 1, "Application breakpoint swallowed")
+        if mode in ("worker-crash", "thread-limit"):
+            require(result["second_chance_count"] == 1 and result["context_available"], "Missing worker fault")
+            snapshot = result["thread_snapshots"][0]
+            require(snapshot["contexts_available"] == snapshot["captured_threads"], "Missing real worker contexts")
+            waiters = {r["thread_id"] for r in records if r.get("event") == "stack" and "fixtureWaiter" in (r.get("symbol") or "")}
+            require(len(waiters) >= (3 if mode == "worker-crash" else 13), "Missing independently waiting worker stacks")
+            if mode == "worker-crash":
+                require(snapshot["observed_threads"] >= 5 and snapshot["all_threads_captured"], "Incomplete small thread set")
+            else:
+                require(snapshot["observed_threads"] >= 26 and snapshot["captured_threads"] == 16
+                        and snapshot["omitted_threads"] >= 10 and not snapshot["all_threads_captured"], "Thread cap/truncation not exercised")
         if mode == "debug-spam":
             footer = read_records(path)[-1]
             require(footer["debug_message_count"] == 1000 and 0 < footer["debug_text_bytes"] <= 65536,

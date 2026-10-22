@@ -338,3 +338,8 @@ SDK ZIP을 감사하며 기존 9개 ZIP과 과거 근거를 보존한다. 외부
 `sdk-copy`는 swaps profile에 `tests/CopyAtomicityTests.cpp`만 추가 허용하고 실제 9개 executable
 linker closure를 검사한다. 관련 소비자와 도구를 재빌드하고 새 SDK ZIP을 감사하며 기존 10개
 ZIP·과거 감사·측정을 보존한다. 새 외부 dependency/runtime 배포는 없다.
+
+다중 스레드 충돌 수집기 변경은 새 [crash 28/1 감사](../licenses/generated/windows-sdk-thread-snapshot-crash-release/inventory.json)에
+보존한다. 기존 `sdk-crash` profile의 compiler-read 28개 자체 input, 1개 component와 8개
+executable linker closure를 다시 검사한다. DbgHelp는 기존 Windows 의존성이다. SDK source와
+library·기존 11개 SDK ZIP은 그대로이며 새 runtime, PDB, dump 또는 SDK ZIP을 배포하지 않는다.

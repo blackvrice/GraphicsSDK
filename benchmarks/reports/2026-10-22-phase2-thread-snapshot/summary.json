@@ -1,0 +1,302 @@
+{
+  "SDK_source_fingerprint": "50fe75fea32a5444531868da9f1a225a05573d78ba12c52bb622a1ea80d35edf",
+  "production_SDK_changed": false,
+  "phase2_complete": false,
+  "memory_stress_accepted": false,
+  "Intel_AV_cause_resolved": false,
+  "native_controls": 9,
+  "overwrite_refused": true,
+  "schema1_replay_cases": 7,
+  "thread_limit": 16,
+  "frame_limit": 64,
+  "snapshots": [
+    {
+      "case": "null-call",
+      "event": "thread_snapshot",
+      "snapshot_id": 1,
+      "fault_thread_id": 584,
+      "observed_threads": 4,
+      "captured_threads": 4,
+      "omitted_threads": 0,
+      "contexts_available": 4,
+      "stack_frames": 21,
+      "symbols_available": true,
+      "all_threads_captured": true
+    },
+    {
+      "case": "worker-crash",
+      "event": "thread_snapshot",
+      "snapshot_id": 1,
+      "fault_thread_id": 21116,
+      "observed_threads": 8,
+      "captured_threads": 8,
+      "omitted_threads": 0,
+      "contexts_available": 8,
+      "stack_frames": 46,
+      "symbols_available": true,
+      "all_threads_captured": true
+    },
+    {
+      "case": "thread-limit",
+      "event": "thread_snapshot",
+      "snapshot_id": 1,
+      "fault_thread_id": 6660,
+      "observed_threads": 29,
+      "captured_threads": 16,
+      "omitted_threads": 13,
+      "contexts_available": 16,
+      "stack_frames": 94,
+      "symbols_available": true,
+      "all_threads_captured": false
+    },
+    {
+      "case": "breakpoint",
+      "event": "thread_snapshot",
+      "snapshot_id": 1,
+      "fault_thread_id": 24840,
+      "observed_threads": 4,
+      "captured_threads": 4,
+      "omitted_threads": 0,
+      "contexts_available": 4,
+      "stack_frames": 21,
+      "symbols_available": true,
+      "all_threads_captured": true
+    }
+  ],
+  "core_ctest": 34,
+  "python_tests": 169,
+  "short_diagnostics": [
+    {
+      "adapter": "NVIDIA GeForce GTX 1660 SUPER",
+      "mode": "validation",
+      "adapter_id": 96650,
+      "frames": 152,
+      "full_images": 456,
+      "verified_buffer_bytes": 39845888,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "passed",
+      "accepted": false,
+      "public_memory_budget": {
+        "recorded": true,
+        "segments": {
+          "local": {
+            "snapshots": 11,
+            "available": 11,
+            "unsupported": 0,
+            "stable_native_matches": 11,
+            "unstable_native_brackets": 0
+          },
+          "nonlocal": {
+            "snapshots": 11,
+            "available": 11,
+            "unsupported": 0,
+            "stable_native_matches": 11,
+            "unstable_native_brackets": 0
+          }
+        }
+      }
+    },
+    {
+      "adapter": "Intel(R) UHD Graphics 770",
+      "mode": "validation",
+      "adapter_id": 106766,
+      "frames": 112,
+      "full_images": 336,
+      "verified_buffer_bytes": 29360128,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "passed",
+      "accepted": false,
+      "public_memory_budget": {
+        "recorded": true,
+        "segments": {
+          "local": {
+            "snapshots": 11,
+            "available": 11,
+            "unsupported": 0,
+            "stable_native_matches": 11,
+            "unstable_native_brackets": 0
+          },
+          "nonlocal": {
+            "snapshots": 11,
+            "available": 11,
+            "unsupported": 0,
+            "stable_native_matches": 11,
+            "unstable_native_brackets": 0
+          }
+        }
+      }
+    },
+    {
+      "adapter": "Microsoft Basic Render Driver",
+      "mode": "warp",
+      "adapter_id": 106679,
+      "frames": 936,
+      "full_images": 2808,
+      "verified_buffer_bytes": 245366784,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "passed",
+      "accepted": false,
+      "public_memory_budget": {
+        "recorded": true,
+        "segments": {
+          "local": {
+            "snapshots": 11,
+            "available": 11,
+            "unsupported": 0,
+            "stable_native_matches": 11,
+            "unstable_native_brackets": 0
+          },
+          "nonlocal": {
+            "snapshots": 11,
+            "available": 11,
+            "unsupported": 0,
+            "stable_native_matches": 11,
+            "unstable_native_brackets": 0
+          }
+        }
+      }
+    }
+  ],
+  "full_images": 3600,
+  "verified_buffer_bytes": 314572800,
+  "new_long_soak_claim": false,
+  "continuous_peak_claim": false,
+  "performance_claim": false,
+  "original_policy_unchanged": true,
+  "original_failed_memory_gate_preserved": true,
+  "old_evidence_and_eleven_SDK_packages_preserved": true,
+  "audit": {
+    "profile": "sdk-crash",
+    "compiler_inputs": 28,
+    "components": 1,
+    "linker_closures": 8,
+    "inventory": {
+      "path": "licenses/generated/windows-sdk-thread-snapshot-crash-release/inventory.json",
+      "sha256": "de78e7ab0fd6006c121d8c0b1c9a3c8bcdafc44a6bc4e2495c554d6c43bf170b",
+      "bytes": 57479
+    }
+  },
+  "SDK_package": {
+    "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-copy-atomicity.zip",
+    "sha256": "b3a1ccc350d58d0cdd307dfc79197b3a0d47200f452a46dddb85a8dc1d49c1c8",
+    "bytes": 512658,
+    "status": "inventory_verified",
+    "competitor_payload": false,
+    "files": [
+      {
+        "path": "include/graphics/Backend.hpp",
+        "sha256": "bbcd4b9b74732a18c70652788ec161e39c67c7ecb5e5afb81f9d409ad73cbdb4",
+        "bytes": 533
+      },
+      {
+        "path": "include/graphics/Bindings.hpp",
+        "sha256": "134d02d86bcff4528c9c8588f73e7d05635c02a6c3e3b884f845193ccfc13730",
+        "bytes": 1303
+      },
+      {
+        "path": "include/graphics/CommandList.hpp",
+        "sha256": "5ce778322e916ab5e15d6832aef5f7d1cc166fbeb2744237a45e0e20eea56f16",
+        "bytes": 2840
+      },
+      {
+        "path": "include/graphics/CommandQueue.hpp",
+        "sha256": "c6d978c5db58d90fd236436233dac460cd781c35276bd9ad3a1e677b03644045",
+        "bytes": 725
+      },
+      {
+        "path": "include/graphics/Device.hpp",
+        "sha256": "a970edce3c529332edd9ff1b0df6066f5986d8b09f306681c63e84c0af34d1d4",
+        "bytes": 2019
+      },
+      {
+        "path": "include/graphics/Graphics.hpp",
+        "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27",
+        "bytes": 58
+      },
+      {
+        "path": "include/graphics/Pipeline.hpp",
+        "sha256": "375aceaca096c027786e9eba35386c6c097c3f933db059dd3508e12e60263631",
+        "bytes": 1150
+      },
+      {
+        "path": "include/graphics/RenderPass.hpp",
+        "sha256": "ec3d89ef60c7cc1bf546149843677961e682bcbcc6cf3e7af375e0ce2da0c5e4",
+        "bytes": 1025
+      },
+      {
+        "path": "include/graphics/Resources.hpp",
+        "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde",
+        "bytes": 719
+      },
+      {
+        "path": "include/graphics/Shader.hpp",
+        "sha256": "e4f7f4be17503cddc498af36cc8ec9f2f96083b2e953a65f6398690067ee6ce6",
+        "bytes": 752
+      },
+      {
+        "path": "include/graphics/Surface.hpp",
+        "sha256": "d3dc852b56fcd477dc1eddb9ec4a794b12a280de871bb6a47ed2abfb42c089ab",
+        "bytes": 328
+      },
+      {
+        "path": "include/graphics/SwapChain.hpp",
+        "sha256": "a0a8a171c818ac9f9f6ed7c0b8b74a3e5ae537bde8ee3345860f54705cc3f6a5",
+        "bytes": 604
+      },
+      {
+        "path": "include/graphics/Types.hpp",
+        "sha256": "fb41ae8c6f621347b193fca5b4799f32a1c16099644f0e1e36759813253ff9aa",
+        "bytes": 3071
+      },
+      {
+        "path": "lib/GraphicsSDKCore.lib",
+        "sha256": "cebe340ed4e5a9003f581950099725b95d53a0f19cef076981341de2a0be9234",
+        "bytes": 3090492
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfig.cmake",
+        "sha256": "b7a8b47444f27643ecc1253e2135ccb45ba2347b294a04070d1b4dcdd779b4eb",
+        "bytes": 1012
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfigVersion.cmake",
+        "sha256": "7888d65181f9bce3b8dac512377e62517e2543b7d09a56fc5f51e7f0eafc6d35",
+        "bytes": 3332
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets-release.cmake",
+        "sha256": "7f6b1fe649ce86a62fcc833c3c0d9e0e04fb76f6e37b21dcb138226b18d5827d",
+        "bytes": 893
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets.cmake",
+        "sha256": "b98fe153bf676214c98a3d2274eb1c1699520cb25abf800acac9c8ccfcd553be",
+        "bytes": 4401
+      },
+      {
+        "path": "share/GraphicsSDK/BUILD.md",
+        "sha256": "8a0e1279a27edecd139af3739e0a764e318dec720ec9921e2dade12c6573b37c",
+        "bytes": 23306
+      },
+      {
+        "path": "share/GraphicsSDK/LICENSE",
+        "sha256": "925ea65f6a1cecdd5b92d82d244a23531aacfb1ce07a87a4ae2050361175c18b",
+        "bytes": 1081
+      },
+      {
+        "path": "share/GraphicsSDK/README.md",
+        "sha256": "04e4c6dcfcd0bac4989113db2bf07993e0c51f93c9fd9d05e106b3fef909c77c",
+        "bytes": 7038
+      }
+    ]
+  },
+  "local_dump": {
+    "path": "out/thread-snapshot-null-call.dmp",
+    "sha256": "49cce11837c497c46b556db86606b3e5aa8602cc476c968eabab16d60f31d8a1",
+    "bytes": 23822,
+    "redistributed": false
+  }
+}
