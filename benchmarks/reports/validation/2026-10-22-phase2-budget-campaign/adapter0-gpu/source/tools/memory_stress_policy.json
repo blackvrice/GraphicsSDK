@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "scope": "Bounded Windows D3D12 process stress; checkpoint trends, not continuous peaks or an unlimited leak-free claim",
+  "minimum_seconds": {"gpu": 900, "validation": 300, "warp": 300},
+  "minimum_warmup_seconds": 30,
+  "maximum_sample_gap_seconds": 15,
+  "minimum_measured_frames_per_second": 8,
+  "cpu_control_minimum_delta_bytes": 25165824,
+  "gpu_control_minimum_allocation_bytes": 67108864,
+  "hardware_gpu_control_minimum_usage_delta_bytes": 33554432,
+  "tail_fraction": 0.5,
+  "limits": {
+    "private_bytes": {"median_drift": 33554432, "slope_per_minute": 8388608, "range": 134217728},
+    "handles": {"median_drift": 16, "slope_per_minute": 4, "range": 64},
+    "gpu_local_bytes": {"median_drift": 16777216, "slope_per_minute": 4194304, "range": 134217728},
+    "gpu_nonlocal_bytes": {"median_drift": 16777216, "slope_per_minute": 4194304, "range": 134217728}
+  }
+}

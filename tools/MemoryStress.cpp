@@ -42,6 +42,7 @@ struct Observer {
         hr(factory->EnumAdapterByLuid(luid,IID_PPV_ARGS(&adapter)));hr(adapter->GetDesc1(&desc));
         check(identity(desc.AdapterLuid)==caps.adapterId.value&&utf8(desc.Description)==caps.adapterName&&bool(desc.Flags&DXGI_ADAPTER_FLAG_SOFTWARE)==caps.softwareAdapter,"Telemetry adapter identity mismatch");
     }
+    // Native-only diagnostics keep their original observation path and schema.
     void write(std::ostream& out){
         const auto p=processMemory();
         DWORD handles{};check(GetProcessHandleCount(GetCurrentProcess(),&handles)!=0,"Handle count query");
@@ -51,6 +52,40 @@ struct Observer {
            <<",\"gpu_local_hresult\":"<<static_cast<std::int32_t>(a)<<",\"gpu_nonlocal_hresult\":"<<static_cast<std::int32_t>(b);
         out<<",\"gpu_local_bytes\":"<<(SUCCEEDED(a)?std::to_string(local.CurrentUsage):"null")<<",\"gpu_nonlocal_bytes\":"<<(SUCCEEDED(b)?std::to_string(nonlocal.CurrentUsage):"null")
            <<",\"gpu_local_budget\":"<<(SUCCEEDED(a)?std::to_string(local.Budget):"null")<<",\"gpu_nonlocal_budget\":"<<(SUCCEEDED(b)?std::to_string(nonlocal.Budget):"null");
+    }
+    void write(std::ostream& out,gfx::Device& device){
+        const auto p=processMemory();
+        DWORD handles{};check(GetProcessHandleCount(GetCurrentProcess(),&handles)!=0,"Handle count query");
+        out<<",\"private_bytes\":"<<p.PrivateUsage<<",\"working_set_bytes\":"<<p.WorkingSetSize<<",\"handles\":"<<handles;
+        for(auto segment:{gfx::MemorySegment::Local,gfx::MemorySegment::NonLocal}){
+            const auto name=segment==gfx::MemorySegment::Local?"local":"nonlocal";
+            const auto group=segment==gfx::MemorySegment::Local?DXGI_MEMORY_SEGMENT_GROUP_LOCAL:DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL;
+            DXGI_QUERY_VIDEO_MEMORY_INFO before{},after{};
+            const auto first=adapter->QueryVideoMemoryInfo(0,group,&before);
+            const auto sdk=device.queryMemoryBudget(segment);
+            const auto last=adapter->QueryVideoMemoryInfo(0,group,&after);
+            // Keep the original native counters for the unchanged plateau policy.
+            const std::string prefix=std::string(",\"gpu_")+name;
+            out<<prefix<<"_hresult\":"<<static_cast<std::int32_t>(first)
+               <<prefix<<"_bytes\":"<<(SUCCEEDED(first)?std::to_string(before.CurrentUsage):"null")
+               <<prefix<<"_budget\":"<<(SUCCEEDED(first)?std::to_string(before.Budget):"null")
+               <<prefix<<"_available_for_reservation\":"<<(SUCCEEDED(first)?std::to_string(before.AvailableForReservation):"null")
+               <<prefix<<"_reservation\":"<<(SUCCEEDED(first)?std::to_string(before.CurrentReservation):"null")
+               <<prefix<<"_after\":{\"hresult\":"<<static_cast<std::int32_t>(last)
+               <<",\"usage_bytes\":"<<(SUCCEEDED(last)?std::to_string(after.CurrentUsage):"null")
+               <<",\"budget_bytes\":"<<(SUCCEEDED(last)?std::to_string(after.Budget):"null")
+               <<",\"available_for_reservation_bytes\":"<<(SUCCEEDED(last)?std::to_string(after.AvailableForReservation):"null")
+               <<",\"reservation_bytes\":"<<(SUCCEEDED(last)?std::to_string(after.CurrentReservation):"null")<<"}";
+            if(sdk)check(sdk->adapterId==device.caps().adapterId&&sdk->segment==segment,"SDK budget identity/segment mismatch");
+            else check(sdk.error().code==gfx::ErrorCode::Unsupported,"Unexpected SDK budget query failure");
+            out<<",\"sdk_budget_"<<name<<"\":{\"status\":"<<quote(sdk?"ok":"unsupported")
+               <<",\"adapter_id\":"<<device.caps().adapterId.value<<",\"segment\":"<<quote(name)
+               <<",\"native_code\":"<<(sdk?0:sdk.error().nativeCode)
+               <<",\"usage_bytes\":"<<(sdk?std::to_string(sdk->usageBytes):"null")
+               <<",\"budget_bytes\":"<<(sdk?std::to_string(sdk->budgetBytes):"null")
+               <<",\"available_for_reservation_bytes\":"<<(sdk?std::to_string(sdk->availableForReservationBytes):"null")
+               <<",\"reservation_bytes\":"<<(sdk?std::to_string(sdk->reservationBytes):"null")<<"}";
+        }
     }
 };
 void writeStats(std::ostream& out,const gfx::ResourceStatistics& s){
@@ -112,9 +147,9 @@ int main(int argc,char** argv)try{
     std::ifstream exists(output);check(replace||!exists.good(),"Refusing to overwrite stress evidence");exists.close();std::ofstream out(output);check(out.good(),"Open stress evidence");out.exceptions(std::ios::badbit|std::ios::failbit);out<<std::setprecision(12);const auto start=Clock::now();
     auto elapsed=[&]{return std::chrono::duration<double>(Clock::now()-start).count();};
     const auto baselinePrivate=processMemory().PrivateUsage,guardBytes=maxGrowthMiB*MiB;
-    out<<"{\"type\":\"header\",\"schema\":2,\"mode\":"<<quote(mode)<<",\"adapter\":"<<quote(d->caps().adapterName)<<",\"adapter_id\":"<<d->caps().adapterId.value<<",\"observer_adapter_id\":"<<identity(observer.desc.AdapterLuid)<<",\"requested_adapter_id\":"<<(selected?std::to_string(selected->value):"null")<<",\"software\":"<<(d->caps().softwareAdapter?"true":"false")<<",\"gpu_validation\":"<<(mode=="validation"?"true":"false")<<",\"gpu_state_tracking\":"<<(mode=="validation"?"true":"false")<<",\"private_growth_limit_bytes\":"<<guardBytes<<",\"guard_baseline_private_bytes\":"<<baselinePrivate<<",\"luid_high\":"<<observer.desc.AdapterLuid.HighPart<<",\"luid_low\":"<<observer.desc.AdapterLuid.LowPart<<",\"sdk_sha256\":"<<quote(gfx::buildFingerprint())<<",\"seconds\":"<<seconds<<",\"warmup\":"<<warmup<<",\"interval\":"<<interval<<",\"ring\":"<<ring<<",\"side\":"<<side<<",\"copy_bytes\":"<<copyBytes<<"}\n";
+    out<<"{\"type\":\"header\",\"schema\":3,\"mode\":"<<quote(mode)<<",\"adapter\":"<<quote(d->caps().adapterName)<<",\"adapter_id\":"<<d->caps().adapterId.value<<",\"observer_adapter_id\":"<<identity(observer.desc.AdapterLuid)<<",\"requested_adapter_id\":"<<(selected?std::to_string(selected->value):"null")<<",\"software\":"<<(d->caps().softwareAdapter?"true":"false")<<",\"gpu_validation\":"<<(mode=="validation"?"true":"false")<<",\"gpu_state_tracking\":"<<(mode=="validation"?"true":"false")<<",\"private_growth_limit_bytes\":"<<guardBytes<<",\"guard_baseline_private_bytes\":"<<baselinePrivate<<",\"luid_high\":"<<observer.desc.AdapterLuid.HighPart<<",\"luid_low\":"<<observer.desc.AdapterLuid.LowPart<<",\"sdk_sha256\":"<<quote(gfx::buildFingerprint())<<",\"seconds\":"<<seconds<<",\"warmup\":"<<warmup<<",\"interval\":"<<interval<<",\"ring\":"<<ring<<",\"side\":"<<side<<",\"copy_bytes\":"<<copyBytes<<"}\n";
     std::uint64_t frames=0,rounds=0;
-    auto sample=[&](std::string_view phase){out<<"{\"type\":\"sample\",\"phase\":"<<quote(phase)<<",\"elapsed\":"<<elapsed()<<",\"frames\":"<<frames<<",\"rounds\":"<<rounds;writeStats(out,take(d->resourceStatistics()));observer.write(out);out<<"}\n";out.flush();};
+    auto sample=[&](std::string_view phase){out<<"{\"type\":\"sample\",\"phase\":"<<quote(phase)<<",\"elapsed\":"<<elapsed()<<",\"frames\":"<<frames<<",\"rounds\":"<<rounds;writeStats(out,take(d->resourceStatistics()));observer.write(out,*d);out<<"}\n";out.flush();};
     sample("baseline");
     {void* pages=VirtualAlloc(nullptr,32*MiB,MEM_COMMIT|MEM_RESERVE,PAGE_READWRITE);check(pages!=nullptr,"CPU positive control allocation");std::memset(pages,0x5a,32*MiB);sample("cpu_held");check(VirtualFree(pages,0,MEM_RELEASE)!=0,"CPU positive control release");}sample("cpu_released");
     {auto held=take(d->createBuffer({64*MiB}));{auto upload=take(d->createBuffer({64*MiB,gfx::Memory::Upload}));auto c=take(d->createCommandList());take(c->begin());take(c->transition(held,S::CopyDestination));take(c->copyBuffer(upload,held,64*MiB));take(c->end());take(d->queue().wait(take(d->queue().submit(*c))));}take(d->queue().waitIdle());sample("gpu_held");}take(d->queue().waitIdle());sample("gpu_released");

@@ -1,0 +1,330 @@
+[
+  {
+    "name": "core-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/core",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--target",
+      "gfx_memory_stress"
+    ],
+    "returncode": 0,
+    "log": "core-build.log"
+  },
+  {
+    "name": "core-ctest",
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/core",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "log": "core-ctest.log"
+  },
+  {
+    "name": "python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0,
+    "log": "python-tests.log"
+  },
+  {
+    "name": "diagnostic-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/memory-validation-probe",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "diagnostic-build.log"
+  },
+  {
+    "name": "symbol-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/crash-capture",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--target",
+      "gfx_memory_stress_symbols"
+    ],
+    "returncode": 0,
+    "log": "symbol-build.log"
+  },
+  {
+    "name": "adapters",
+    "command": [
+      "out/presentation/Release/gfx_presentation.exe",
+      "--list-adapters"
+    ],
+    "returncode": 0,
+    "log": "adapters.log"
+  },
+  {
+    "name": "adapter0-gpu",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "gpu",
+      "--adapter",
+      "96650",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\adapter0-gpu"
+    ],
+    "returncode": 0,
+    "log": "adapter0-gpu.log"
+  },
+  {
+    "name": "adapter0-validation",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "validation",
+      "--adapter",
+      "96650",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\adapter0-validation"
+    ],
+    "returncode": 0,
+    "log": "adapter0-validation.log"
+  },
+  {
+    "name": "adapter1-gpu",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "gpu",
+      "--adapter",
+      "106766",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\adapter1-gpu"
+    ],
+    "returncode": 0,
+    "log": "adapter1-gpu.log"
+  },
+  {
+    "name": "adapter1-validation",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "validation",
+      "--adapter",
+      "106766",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\adapter1-validation"
+    ],
+    "returncode": 0,
+    "log": "adapter1-validation.log"
+  },
+  {
+    "name": "adapter2-warp",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "warp",
+      "--adapter",
+      "106679",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\adapter2-warp"
+    ],
+    "returncode": 0,
+    "log": "adapter2-warp.log"
+  },
+  {
+    "name": "guard-control",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "validation",
+      "--adapter",
+      "96650",
+      "--diagnostic-seconds",
+      "3",
+      "--max-private-growth-mib",
+      "1",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\guard-control"
+    ],
+    "returncode": 1,
+    "log": "guard-control.log"
+  },
+  {
+    "name": "native-observer",
+    "command": [
+      "out/memory-validation-probe/Release/memory_validation_probe.exe",
+      "native-cpu-texture",
+      "1",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\native-observer.jsonl"
+    ],
+    "returncode": 0,
+    "log": "native-observer.log"
+  },
+  {
+    "name": "sdk-lifetime",
+    "command": [
+      "out/memory-validation-probe/Release/sdk_lifetime_probe.exe",
+      "hardware",
+      "2",
+      "2",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\sdk-lifetime.jsonl"
+    ],
+    "returncode": 0,
+    "log": "sdk-lifetime.log"
+  },
+  {
+    "name": "symbol-capture",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/capture_memory_failure.py",
+      "--mode",
+      "gpu",
+      "--adapter",
+      "96650",
+      "--diagnostic-seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-budget-campaign\\symbol-capture"
+    ],
+    "returncode": 0,
+    "log": "symbol-capture.log"
+  },
+  {
+    "name": "sdk-stress-create",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-stress",
+      "--output",
+      "licenses/generated/windows-sdk-budget-campaign-release"
+    ],
+    "returncode": 0,
+    "log": "sdk-stress-create.log"
+  },
+  {
+    "name": "sdk-stress-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-stress",
+      "--output",
+      "licenses/generated/windows-sdk-budget-campaign-release",
+      "--check"
+    ],
+    "returncode": 0,
+    "log": "sdk-stress-check.log"
+  },
+  {
+    "name": "sdk-crash-create",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-crash",
+      "--output",
+      "licenses/generated/windows-sdk-budget-campaign-crash-release"
+    ],
+    "returncode": 0,
+    "log": "sdk-crash-create.log"
+  },
+  {
+    "name": "sdk-crash-check",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-crash",
+      "--output",
+      "licenses/generated/windows-sdk-budget-campaign-crash-release",
+      "--check"
+    ],
+    "returncode": 0,
+    "log": "sdk-crash-check.log"
+  },
+  {
+    "name": "sdk-unchanged",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk",
+      "--output",
+      "licenses/generated/windows-sdk-memory-budget-release",
+      "--check",
+      "--package",
+      "D:\\source\\GraphicsSDK\\out\\GraphicsSDK-0.0.1-dev-windows-x64-memory-budget.zip"
+    ],
+    "returncode": 0,
+    "log": "sdk-unchanged.log"
+  },
+  {
+    "name": "sdk-budget-unchanged",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-budget",
+      "--output",
+      "licenses/generated/windows-sdk-memory-budget-validation-release",
+      "--check",
+      "--package",
+      "D:\\source\\GraphicsSDK\\out\\GraphicsSDK-0.0.1-dev-windows-x64-memory-budget.zip"
+    ],
+    "returncode": 0,
+    "log": "sdk-budget-unchanged.log"
+  },
+  {
+    "name": "benchmarks-phase1-unchanged",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "benchmarks-phase1",
+      "--output",
+      "licenses/generated/windows-benchmarks-memory-budget-release",
+      "--check"
+    ],
+    "returncode": 0,
+    "log": "benchmarks-phase1-unchanged.log"
+  }
+]

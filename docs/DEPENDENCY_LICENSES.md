@@ -302,3 +302,11 @@ Windows SDK/system 전제조건이다. dump는 local `out/`에만 두고 Git·�
 도구를 재빌드했으며 다섯 `--check`와 새 SDK ZIP 검사가 통과했다. DXGI는 기존 Windows
 전제조건이며 외부 dependency나 runtime 배포는 추가하지 않았다. 과거 7개 SDK ZIP과 감사·
 측정·source archives는 보존한다. 새 공개 virtual API의 소비자는 재빌드가 필요하다.
+
+공개 memory budget을 resource-churn campaign에 연결한 변경은 새
+[stress 25/1](../licenses/generated/windows-sdk-budget-campaign-release/inventory.json)과
+[crash 27/1](../licenses/generated/windows-sdk-budget-campaign-crash-release/inventory.json)에 보존한다.
+기존 명시적 자체 입력 범위 안의 `MemoryStress.cpp`만 변경하고 다섯/여덟 실행 파일의 actual
+linker closure를 다시 감사한다. 공유 helper 소비자와 심볼 포함 stress 실행 파일은 재빌드한다.
+SDK public source/library·설치본·기존 8개 SDK ZIP·외부 dependency 배포는 바꾸지 않는다.
+기존 SDK/common/budget 검증 inventory와 package의 `--check`도 유지한다.

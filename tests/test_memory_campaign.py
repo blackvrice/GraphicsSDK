@@ -35,6 +35,18 @@ def aborted(mode="validation"):
     return records
 
 
+def with_budgets(records):
+    records[0]["schema"] = 3
+    for sample in records[1:-1]:
+        for segment in ("local", "nonlocal"):
+            sample[f"gpu_{segment}_available_for_reservation"] = 2**30
+            sample[f"gpu_{segment}_reservation"] = 0
+            values = dict(zip(analyzer.BUDGET_FIELDS, (sample[f"gpu_{segment}_{n}"] for n in analyzer.NATIVE_SUFFIXES)))
+            sample[f"gpu_{segment}_after"] = dict(hresult=0, **values)
+            sample["sdk_budget_"+segment] = dict(status="ok", native_code=0, adapter_id=records[0]["adapter_id"], segment=segment, **values)
+    return records
+
+
 class MemoryIdentityTests(unittest.TestCase):
     def test_zero_unsigned_high_bits_and_all_modes(self):
         for mode in ("gpu", "validation", "warp"):
@@ -148,6 +160,7 @@ class CampaignReceiptsTests(unittest.TestCase):
                     records = aborted(mode) if self.returncode else current(mode)
                     if mode == "warp":
                         records = current(mode, 2)
+                    records = with_budgets(records)
                     if mutate:
                         mutate(root, records, mode)
                     pathlib.Path(command[command.index("--output")+1]).write_text("".join(json.dumps(r)+"\n" for r in records))
@@ -197,6 +210,15 @@ class CampaignReceiptsTests(unittest.TestCase):
         self.assertIn("0xc0000005", acceptance["errors"][0]["error"])
         self.assertEqual(manifest["processes"][-1]["mode"], "warp")
         self.assertFalse(acceptance["accepted"])
+
+    def test_old_executable_or_corrupt_budget_cannot_pass_current_runner(self):
+        for mutate, message in ((lambda root, records, mode: records[0].update(schema=2), "requires public budget"),
+                                (lambda root, records, mode: records[8]["sdk_budget_local"].update(adapter_id=3), "budget identity")):
+            code, manifest, acceptance = self.campaign(mutate)
+            self.assertEqual(code, 1)
+            self.assertFalse(acceptance["accepted"])
+            self.assertEqual(len(manifest["processes"]), 3)
+            self.assertIn(message, acceptance["errors"][0]["error"])
 
 
 if __name__ == "__main__":

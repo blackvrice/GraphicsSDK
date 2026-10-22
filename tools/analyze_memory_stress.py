@@ -36,8 +36,8 @@ def read_records(path):
 
 
 def validate_identity(header, footer, expected_adapter=None):
-    """Schema 1 stays historical; schema 2 binds request, SDK and DXGI observer."""
-    require(type(header.get("schema")) is int and header["schema"] in (1, 2), "Unknown evidence schema")
+    """Schema 1 is historical; 2 binds identity; 3 adds public budget receipts."""
+    require(type(header.get("schema")) is int and header["schema"] in (1, 2, 3), "Unknown evidence schema")
     require(type(header.get("luid_high")) is int and -(2**31) <= header["luid_high"] < 2**31
             and type(header.get("luid_low")) is int and 0 <= header["luid_low"] < 2**32, "Invalid LUID")
     identity = ((header["luid_high"] & 0xffffffff) << 32) | header["luid_low"]
@@ -57,6 +57,73 @@ def validate_identity(header, footer, expected_adapter=None):
     return identity
 
 
+BUDGET_FIELDS = ("usage_bytes", "budget_bytes", "available_for_reservation_bytes", "reservation_bytes")
+NATIVE_SUFFIXES = ("bytes", "budget", "available_for_reservation", "reservation")
+
+
+def validate_budget_samples(records, policy=None):
+    """Compare only stable independent native brackets; never invent a tolerance.
+
+    Old schemas make no public-API claim. Dynamic/unstable brackets stay counted
+    separately, and successful zero/over-budget values are legal uint64 snapshots.
+    """
+    h, footer = records[0], records[-1]
+    if h["schema"] < 3:
+        return {"recorded": False}
+    policy = json.loads(POLICY.read_text()) if policy is None else policy
+    identity = validate_identity(h, footer)
+    result = {"recorded": True, "segments": {}}
+    for segment in ("local", "nonlocal"):
+        counts = dict(snapshots=0, available=0, unsupported=0, stable_native_matches=0, unstable_native_brackets=0)
+        for sample in records[1:-1]:
+            require(sample.get("type") == "sample", "Invalid budget checkpoint")
+            sdk = sample.get("sdk_budget_" + segment)
+            after = sample.get(f"gpu_{segment}_after")
+            require(isinstance(sdk, dict) and isinstance(after, dict), "Missing SDK/native budget snapshot")
+            require(all(n in sdk and n in after for n in BUDGET_FIELDS)
+                    and all(f"gpu_{segment}_{n}" in sample for n in NATIVE_SUFFIXES), "Missing budget byte counter")
+            require(type(sdk.get("adapter_id")) is int and sdk["adapter_id"] == identity
+                    and sdk.get("segment") == segment, "SDK budget identity/segment mismatch")
+            code = sdk.get("native_code")
+            require(type(code) is int and -(2**63) <= code < 2**63, "Invalid SDK budget native code")
+            first, last = sample.get(f"gpu_{segment}_hresult"), after.get("hresult")
+            require(all(type(v) is int and -(2**31) <= v < 2**31 for v in (first, last)), "Invalid budget native HRESULT")
+            before = dict(zip(BUDGET_FIELDS, (sample.get(f"gpu_{segment}_{n}") for n in NATIVE_SUFFIXES)))
+            for status, values in ((first, before), (last, after)):
+                require(all((status < 0 and values.get(n) is None) or
+                            (status >= 0 and type(values.get(n)) is int and 0 <= values[n] < 2**64)
+                            for n in BUDGET_FIELDS), "Native budget status/value mismatch")
+            counts["snapshots"] += 1
+            if sdk.get("status") == "unsupported":
+                require(h["mode"] == "warp" and first == last == code and first < 0
+                        and all(sdk.get(n) is None for n in BUDGET_FIELDS), "Unsupported SDK budget needs explicit failed WARP queries")
+                require(code in (-2147467262, -2147467263, -2005270524), "Unexpected Unsupported budget HRESULT")
+                counts["unsupported"] += 1
+                continue
+            require(sdk.get("status") == "ok" and code == 0, "Failed SDK budget query")
+            require(first >= 0 and last >= 0, "Successful SDK budget needs native observations")
+            require(all(type(sdk.get(n)) is int and 0 <= sdk[n] < 2**64 for n in BUDGET_FIELDS), "Invalid SDK budget byte counter")
+            counts["available"] += 1
+            if first == last and first >= 0 and all(before[n] == after[n] for n in BUDGET_FIELDS):
+                require(all(sdk[n] == before[n] for n in BUDGET_FIELDS), "Stable native/SDK budget mapping mismatch")
+                counts["stable_native_matches"] += 1
+            else:
+                counts["unstable_native_brackets"] += 1
+        require(counts["snapshots"] > 0, "Missing budget checkpoints")
+        require(not (counts["available"] and counts["unsupported"]), "Intermittent SDK budget support")
+        require(not counts["available"] or counts["stable_native_matches"] > 0, "No stable native budget comparison")
+        result["segments"][segment] = counts
+    if h["mode"] != "warp":
+        controls = {r.get("phase"): r for r in records[1:-1] if r.get("phase") in ("cpu_released", "gpu_held", "gpu_released")}
+        require(len(controls) == 3, "Missing SDK budget retain/release controls")
+        usage = {phase: r["sdk_budget_local"]["usage_bytes"] for phase, r in controls.items()}
+        # Same positive-control threshold as the native observer, not a new policy.
+        minimum = policy["hardware_gpu_control_minimum_usage_delta_bytes"]
+        require(usage["gpu_held"] - max(usage["cpu_released"], usage["gpu_released"]) >= minimum,
+                "SDK GPU usage retain/release control failed")
+    return result
+
+
 def analyze(records, expected_fingerprint, policy=None):
     policy = json.loads(POLICY.read_text()) if policy is None else policy
     require(len(records) >= 10, "Missing evidence records")
@@ -64,8 +131,9 @@ def analyze(records, expected_fingerprint, policy=None):
     require(h.get("type") == "header" and f.get("type") == "footer", "Header/footer missing")
     identity = validate_identity(h, f)
     require(f.get("status") != "aborted" and not any(r.get("phase") == "guard_aborted" for r in records), "Memory growth guard aborted; incomplete soak")
-    if h["schema"] == 2:
+    if h["schema"] >= 2:
         require(f.get("stop_reason") == "completed", "Incomplete native stop reason")
+    budget_receipts = validate_budget_samples(records, policy)
     require(re.fullmatch(r"[a-f0-9]{64}", expected_fingerprint) is not None and h.get("sdk_sha256") == expected_fingerprint, "SDK source fingerprint mismatch")
     mode = h.get("mode")
     require(mode in policy["minimum_seconds"], "Unknown mode")
@@ -136,7 +204,7 @@ def analyze(records, expected_fingerprint, policy=None):
         spread = max(values) - min(values)
         require(drift <= limits["median_drift"] and slope <= limits["slope_per_minute"] and spread <= limits["range"], "Memory plateau gate failed: " + name)
         metrics[name] = {"supported": True, "median_drift": drift, "slope_per_minute": slope, "range": spread, "tail_checkpoint_maximum": max(values)}
-    return {"mode": mode, "adapter_id": identity, "accepted": True, "measured_seconds": f["measured_seconds"], "frames": f["frames"], "full_images": f["full_images"], "verified_buffer_bytes": f["verified_buffer_bytes"], "drained_samples": len(drained), "tail_samples": len(tail), "owned_after_drain": 0, "metrics": metrics}
+    return {"mode": mode, "adapter_id": identity, "accepted": True, "measured_seconds": f["measured_seconds"], "frames": f["frames"], "full_images": f["full_images"], "verified_buffer_bytes": f["verified_buffer_bytes"], "drained_samples": len(drained), "tail_samples": len(tail), "owned_after_drain": 0, "metrics": metrics, "public_memory_budget": budget_receipts}
 
 
 def validate_campaign(results):

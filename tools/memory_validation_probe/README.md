@@ -6,6 +6,28 @@ Use fresh output paths and run GPU tests serially.
 
 ## Exact-adapter resource-churn campaign
 
+Current stress executions emit schema 3. Every checkpoint includes public
+`Device::queryMemoryBudget` local/nonlocal snapshots and an independent native
+query immediately before and after each SDK query. All four fields (usage,
+budget, available reservation and current reservation) must match when both native
+endpoints are equal. Changing brackets are counted separately without claiming an
+exact comparison; at least one stable comparison per available segment is required.
+These are sequential observations, not atomic snapshots or continuous peaks.
+
+The runner checks receipts even for short diagnostic and growth-guard exits.
+Missing snapshots, wrong identity/segment, invalid uint64 fields, hidden failures
+and stable mapping mismatches fail validation. Unsupported WARP observations need
+matching failed native queries, the original error code and explicit null values;
+successful zero and usage over budget remain valid. Hardware also needs the SDK
+64MiB retain/release control, using the existing native minimum-delta threshold.
+Native plateau metrics, workload, durations and limits remain unchanged. Extra
+queries add observation overhead; new runs are not performance comparisons with
+historical runs. The current runner requires a rebuilt schema-3 executable.
+Historical schemas 1/2 remain analyzable with `public_memory_budget.recorded=false`.
+Native-only and bounded-reuse diagnostics keep their existing schemas.
+
+See the [budget campaign report](../../docs/PHASE2_BUDGET_CAMPAIGN_REPORT.md).
+
 `tools/MemoryStress.cpp` now binds its DXGI observer to the public device's opaque
 adapter ID using `EnumAdapterByLuid`; adapter names are descriptive metadata.
 Schema 2 records the requested, SDK, observer and final device IDs. A missing ID or

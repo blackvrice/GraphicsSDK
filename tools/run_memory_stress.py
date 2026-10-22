@@ -9,7 +9,7 @@ import sys
 import time
 
 from audit_licenses import sdk_fingerprint
-from analyze_memory_stress import POLICY, OWNED, analyze, read_records, require, validate_identity, validate_campaign
+from analyze_memory_stress import POLICY, OWNED, analyze, read_records, require, validate_identity, validate_campaign, validate_budget_samples
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -27,8 +27,9 @@ def adapter_argument(text):
 def validate_native(records, fingerprint, mode, adapter, code):
     require(len(records) >= 4 and records[0].get("type") == "header" and records[-1].get("type") == "footer", "Incomplete native receipts")
     h, f = records[0], records[-1]
-    require(h.get("schema") == 2 and h.get("mode") == mode and h.get("sdk_sha256") == fingerprint, "Stale/wrong native workload")
+    require(type(h.get("schema")) is int and h["schema"] in (2, 3) and h.get("mode") == mode and h.get("sdk_sha256") == fingerprint, "Stale/wrong native workload")
     identity = validate_identity(h, f, adapter)
+    budget_receipts = validate_budget_samples(records)
     require(code in (0, 2) and f.get("status") == ("passed" if code == 0 else "aborted")
             and f.get("stop_reason") == ("completed" if code == 0 else "private_growth_limit"), "Native exit/footer disagreement")
     require(type(f.get("frames")) is int and f["frames"] > 0 and f.get("full_images") == f["frames"]*3
@@ -46,7 +47,7 @@ def validate_native(records, fingerprint, mode, adapter, code):
                 and stops[0]["private_bytes"] - h["guard_baseline_private_bytes"] > h["private_growth_limit_bytes"], "Guard threshold not observed")
     return {"mode": mode, "adapter_id": identity, "frames": f["frames"], "full_images": f["full_images"],
             "verified_buffer_bytes": f["verified_buffer_bytes"], "functional_references_passed": True,
-            "validation_errors": 0, "status": f["status"], "accepted": False}
+            "validation_errors": 0, "status": f["status"], "accepted": False, "public_memory_budget": budget_receipts}
 
 
 def run(args):
@@ -111,6 +112,7 @@ def run(args):
             try:
                 require(code in (0, 2), f"Native process failed: {mode}, exit={code} (0x{code & 0xffffffff:08x})")
                 records = read_records(args.output/(mode+".jsonl"))
+                require(records and records[0].get("schema") == 3, "Current runner requires public budget receipts; rebuild stress executable")
                 result = validate_native(records, fingerprint, mode, args.adapter, code)
                 results.append(result)
                 if code == 2:
