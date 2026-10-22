@@ -334,3 +334,14 @@ is 35/1. SDK code, six SDK ZIPs and previous raw/source evidence remain unchange
 the example executable is rebuilt. Early coarse-timer observations are excluded from
 final-source results. Manual display/DPI/unexpected-loss and original GBV memory
 acceptance remain open. See the [follow-up report](PHASE2_PRESENTATION_PACING_REPORT.md).
+
+2026-10-22 adapter API: core 25/25, D3D12-OFF 5/5, common correctness 72/72,
+presentation 7/7 and Python 124/124 pass. Native selection tests independently remove
+the requested NVIDIA/Intel/WARP singleton, verify exact loss and blocked-recovery
+retry, then rebuild full images on the same ID. Both modes of an installed consumer
+pass all three selections/recoveries. Explicit window cases pass 147 images /
+22,464,513 pixels; default cases pass 294 / 44,929,026 plus pacing/wake/close. Ten
+Python tests and eight real CLI selection refusals are added. Two preserved serial
+CL.exe access violations pass on unchanged-source retries; their cause is unresolved.
+New SDK package/inventories bind the current fingerprint. Long GBV memory, physical
+hot-unplug/TDR, manual display and DPI remain open. See [adapter report](PHASE2_ADAPTER_REPORT.md).

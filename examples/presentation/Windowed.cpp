@@ -49,6 +49,8 @@ struct Options {
     bool selfTest{}, validation{}, warp{}, vsync{true};
     unsigned frames{};
     unsigned fps{60};
+    bool listAdapters{};
+    std::optional<std::uint64_t> adapter;
     std::string output;
 };
 Options parse(int argc, char** argv) {
@@ -57,6 +59,13 @@ Options parse(int argc, char** argv) {
     for (int i=1; i<argc; ++i) {
         const std::string_view arg=argv[i];
         if (arg=="--self-test") o.selfTest=true;
+        else if (arg=="--list-adapters") o.listAdapters=true;
+        else if (arg=="--adapter" && i+1<argc && !o.adapter) {
+            const std::string_view value=argv[++i];std::uint64_t id{};
+            const auto result=std::from_chars(value.data(),value.data()+value.size(),id);
+            check(result.ec==std::errc{} && result.ptr==value.data()+value.size(),"--adapter requires a decimal adapter identity");
+            o.adapter=id;
+        }
         else if (arg=="--no-vsync") o.vsync=false;
         else if (arg=="--mode" && i+1<argc && !modeSet) {
             const std::string_view mode=argv[++i]; modeSet=true;
@@ -73,9 +82,10 @@ Options parse(int argc, char** argv) {
             check(result.ec==std::errc{} && result.ptr==value.data()+value.size() && o.fps>0 && o.fps<=240,
                   "--fps requires an integer in 1..240");
         } else if (arg=="--output" && i+1<argc && o.output.empty()) o.output=argv[++i];
-        else throw std::runtime_error("Usage: gfx_presentation [--mode gpu|validation|warp] [--no-vsync] [--fps 1..240] [--frames N] [--self-test] [--output new.jsonl]");
+        else throw std::runtime_error("Usage: gfx_presentation --list-adapters | [--mode gpu|validation|warp] [--adapter ID] [--no-vsync] [--fps 1..240] [--frames N] [--self-test] [--output new.jsonl]");
     }
     check(!o.selfTest || !o.frames, "--self-test and --frames cannot be combined");
+    check(!o.listAdapters || argc==2,"--list-adapters must be used alone");
     return o;
 }
 
@@ -168,12 +178,15 @@ struct Application {
     std::uint64_t pixels{},validationErrors{};
     std::int64_t removalReason{};
     Application(Window& w, Options o, std::ostream& output) : window(w),options(std::move(o)),log(output) {
-        device=take(gfx::createDevice({gfx::Backend::D3D12,options.validation,options.warp,options.selfTest}));
+        gfx::DeviceDesc desc{gfx::Backend::D3D12,options.validation,options.warp,options.selfTest};
+        if (options.adapter) desc.adapter=gfx::AdapterId{gfx::Backend::D3D12,*options.adapter};
+        device=take(gfx::createDevice(desc));
         vertex=take(gfx::compileHlsl(shader,"VS",gfx::ShaderStage::Vertex));
         fragment=take(gfx::compileHlsl(shader,"PS",gfx::ShaderStage::Fragment));
         check(!options.selfTest || device->caps().deviceLossInjection,"Native RemoveDevice unavailable: lifecycle test cannot pass");
         log << "{\"event\":\"device\",\"adapter\":" << std::quoted(device->caps().adapterName)
-            << ",\"warp\":" << options.warp << ",\"gbv\":" << options.validation << ",\"vsync\":" << options.vsync << "}\n";
+            << ",\"warp\":" << options.warp << ",\"gbv\":" << options.validation << ",\"vsync\":" << options.vsync
+            << ",\"adapter_id\":" << device->caps().adapterId.value << "}\n";
     }
     ~Application() {
         if (device) { auto ignored=device->queue().waitIdle(); (void)ignored; }
@@ -246,7 +259,9 @@ struct Application {
             log << "{\"event\":\"observed_loss\",\"native_reason\":" << removalReason << "}\n";
             releaseGraphics();
             device=take(device->recover());
+            if (options.adapter) check(device->caps().adapterId.value==*options.adapter,"Recovery changed explicit adapter identity");
             ++recoveries;
+            log << "{\"event\":\"recovered\",\"adapter_id\":" << device->caps().adapterId.value << "}\n";
             // CPU shaders survive. All GPU objects are rebuilt on the next active frame.
             return false;
         }
@@ -323,7 +338,8 @@ struct Application {
             << ",\"resizes\":" << resizes << ",\"minimize_restore_cycles\":9,\"paused_checks\":" << pausedChecks
             << ",\"recovery_cycles\":" << recoveries << ",\"validation_errors\":";
         if (options.validation) log << validationErrors; else log << "null";
-        log << ",\"size_events\":" << window.sizeEvents << ",\"dpi_events\":" << window.dpiEvents
+        log << ",\"adapter_id\":" << device->caps().adapterId.value
+            << ",\"size_events\":" << window.sizeEvents << ",\"dpi_events\":" << window.dpiEvents
             << ",\"per_monitor_v2\":true,\"interactive_acceptance\":false,\"unexpected_loss_acceptance\":false}\n";
     }
 };
@@ -331,6 +347,15 @@ struct Application {
 
 int main(int argc, char** argv) try {
     const auto options=parse(argc,argv);
+    if (options.listAdapters) {
+        const auto adapters=take(gfx::enumerateAdapters());
+        for (const auto& a:adapters)
+            std::cout << std::boolalpha << "{\"event\":\"adapter\",\"adapter_id\":" << a.id.value << ",\"name\":" << std::quoted(a.name)
+                      << ",\"software\":" << a.softwareAdapter << ",\"vendor_id\":" << a.vendorId << ",\"device_id\":" << a.deviceId
+                      << ",\"dedicated_video_bytes\":" << a.dedicatedVideoMemory << ",\"shared_system_bytes\":" << a.sharedSystemMemory << "}\n";
+        std::cout << "{\"event\":\"adapter_list\",\"count\":" << adapters.size() << ",\"sdk_fingerprint\":" << std::quoted(gfx::buildFingerprint()) << "}\n";
+        return std::cout.good()?0:1;
+    }
     std::ofstream file;
     if (!options.output.empty()) {
         // C++23 exclusive creation protects earlier observations, including failed runs.

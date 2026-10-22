@@ -12,6 +12,13 @@ cmake --build out/presentation --config Release --parallel 1
 ```
 
 Default: hardware, VSync on, 60fps application cap, validation and native loss injection off.
+`--list-adapters` alone prints fresh candidate IDs/metadata without creating a window.
+Pass a listed decimal ID with `--adapter ID` for exact selection. Use `--mode gpu`
+or `--mode validation` for hardware and `--mode warp` for WARP; the software kind
+must match. Recovery retains an explicit ID. Missing IDs fail without fallback.
+IDs are backend-scoped OS LUIDs, refreshed after reboot/topology changes; they are
+not persistent hardware serials or list indices. Enumeration does not create devices
+and device creation still checks required feature support.
 Use `--mode validation` for full GPU validation, `--mode warp` for WARP,
 `--no-vsync` for Present interval zero, or `--frames 60` for a bounded normal-loop
 smoke. Interval zero does not request tearing or prove its presence/absence.
@@ -38,7 +45,8 @@ system/driver configuration. The manifest requests PerMonitorV2 awareness.
 ```powershell
 ctest --test-dir out/presentation -C Release --output-on-failure
 python tools/run_presentation_validation.py --output benchmarks/reports/validation/my-new-presentation-run
-python tools/audit_licenses.py --profile sdk-presentation --package out/GraphicsSDK-0.0.1-dev-windows-x64-memory-stress.zip --output out/my-new-presentation-inventory
+python tools/run_adapter_validation.py --output benchmarks/reports/validation/my-new-explicit-adapter-run
+python tools/audit_licenses.py --profile sdk-adapters --package out/GraphicsSDK-0.0.1-dev-windows-x64-adapters.zip --output out/my-new-adapter-inventory
 ```
 
 Six serial fresh-process CTests cover hardware, hardware GBV, WARP × VSync on/off.
@@ -72,3 +80,5 @@ TDR/hot-unplug and the original GBV memory plateau remain separate open gates.
 See the [measured report](../../docs/PHASE2_PRESENTATION_REPORT.md).
 The [small-window and pacing report](../../docs/PHASE2_PRESENTATION_PACING_REPORT.md)
 records the reproduced failure and current verification.
+The [explicit-adapter report](../../docs/PHASE2_ADAPTER_REPORT.md) adds actual selection
+and same-ID recovery on both hardware GPUs and WARP, including installed consumers.

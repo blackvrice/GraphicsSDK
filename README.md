@@ -71,6 +71,9 @@ unexpected driver-loss acceptance remain separate ([report](docs/PHASE2_PRESENTA
 The [small-window/pacing follow-up](docs/PHASE2_PRESENTATION_PACING_REPORT.md) fixes
 zero-sized scissors at one-pixel heights and adds a configurable application frame cap
 with a private high-resolution timer and responsive window-message waits.
+The [adapter API](docs/PHASE2_ADAPTER_REPORT.md) adds fresh candidate metadata,
+backend-scoped identities and exact GPU selection/recovery. The window example can
+list/select adapters; missing explicit targets fail without switching GPUs.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

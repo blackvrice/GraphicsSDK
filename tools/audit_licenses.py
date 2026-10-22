@@ -245,7 +245,8 @@ def collect(root, profile, package=None):
         from forge_license_profile import configure
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
     stress = profile == "sdk-stress"
-    presentation = profile == "sdk-presentation"
+    adapters = profile == "sdk-adapters"
+    presentation = profile in ("sdk-presentation", "sdk-adapters")
     if stress:
         trace_dirs = {"core": TRACE_DIRS["core"], "memory_stress": "out/core/gfx_memory_stress.dir/Release", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.dir/Release",
                       "native_lifetime": "out/memory-validation-probe/gbv_lifetime_probe.dir/Release", "sdk_lifetime": "out/memory-validation-probe/sdk_lifetime_probe.dir/Release", "runtime_probe": "out/memory-validation-probe/gbv_runtime_probe.dir/Release"}
@@ -261,7 +262,12 @@ def collect(root, profile, package=None):
                          "installed_core": "out/install/lib/GraphicsSDKCore.lib", "presentation_policy": "out/presentation/Release/gfx_presentation_policy_tests.exe"}
         projects = {"core": PROJECTS["core"], "presentation": "out/presentation/gfx_presentation.vcxproj",
                     "presentation_policy": "out/presentation/gfx_presentation_policy_tests.vcxproj"}
-    benchmark = profile not in ("sdk", "sdk-stress", "sdk-presentation")
+    if adapters:
+        for name,folder,target in (("adapter_tests","out/core","gfx_adapter_tests"),("adapter_consumer","out/consumer","adapter_consumer")):
+            trace_dirs[name]=f"{folder}/{target}.dir/Release"
+            artifacts_map[name]=f"{folder}/Release/{target}.exe"
+            projects[name]=f"{folder}/{target}.vcxproj"
+    benchmark = profile not in ("sdk", "sdk-stress", "sdk-presentation", "sdk-adapters")
     extended_sdk = stress or presentation
     target_names = list(trace_dirs) if benchmark or extended_sdk else ["core"]
     evidence = []
@@ -315,7 +321,7 @@ def collect(root, profile, package=None):
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
             elif presentation and path.is_relative_to(root / "out/install/include/graphics"):
                 files[relative.casefold()] = installed_presentation_header(root, path)
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (presentation and relative.casefold() in ("examples/presentation/windowed.cpp", "examples/presentation/presentationpolicy.hpp", "examples/presentation/policytests.cpp")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (adapters and relative.casefold() in ("tests/adaptertests.cpp", "tests/consumer/adapter.cpp")) or (presentation and relative.casefold() in ("examples/presentation/windowed.cpp", "examples/presentation/presentationpolicy.hpp", "examples/presentation/policytests.cpp")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -364,7 +370,8 @@ def collect(root, profile, package=None):
     if stress:
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("memory_stress", "memory_validation_probe", "native_lifetime", "sdk_lifetime", "runtime_probe"))
     if presentation:
-        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, ("presentation", "presentation_policy"))
+        names=("presentation", "presentation_policy", "adapter_tests", "adapter_consumer") if adapters else ("presentation", "presentation_policy")
+        inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, names)
         inventory["presentation_build_inputs"] = [record_file(root, root / "examples/presentation" / name) for name in ("CMakeLists.txt", "app.manifest")]
         inventory["exclusions"].extend(["Interactive visual acceptance", "Actual cross-monitor DPI change", "Unexpected driver TDR/hot-unplug"])
     if extra:
@@ -398,7 +405,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "sdk-presentation", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "sdk-presentation", "sdk-adapters", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

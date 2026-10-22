@@ -29,3 +29,9 @@ driver cache/descriptor heap/PSO/residency는 별도 OS observer 범위다. 진�
 다중 queue, compute, render graph는 공개 capability로 완료를 주장하지 않는다.
 API는 0.0.1 초기 개발 단계로 아직 ABI/API 안정성 계약이 없다. 외부 소비자 설치 검증은
 지원하지만 v0.1 전체 크로스플랫폼 출시와는 구분한다.
+
+어댑터 열거는 장치를 만들지 않는 backend dispatch이며 독립 factory의 CPU 메타데이터 snapshot을
+반환한다. backend-scoped opaque ID를 DeviceDesc에 지정하면 D3D12는 EnumAdapterByLuid로
+정확히 선택하고 native Device의 실제 LUID를 다시 확인한다. 같은 descriptor를 복구에 보존해
+재시도 동안 선택이 바뀌지 않는다. 기본 descriptor는 기존 OS 선호 정책을 유지한다.
+Topology 변화에 따른 영속 ID·자동 GPU 대체 정책은 제공하지 않는다.

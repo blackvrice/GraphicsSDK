@@ -264,3 +264,14 @@ acceptance를 부여하지 않는다.
 Windows Kernel32 전제조건이며 DLL/package를 배포하지 않고 전역 timer 설정도 바꾸지 않는다.
 초기 coarse-timer inventory와 기존 33/1 inventory는 보존하며, 최종 소스·실행은 새 inventory에
 대응한다. SDK/common/stress·SDK ZIP 감사와 6개 기존 SDK ZIP 해시가 유지된다.
+
+공개 adapter API에는 새 [SDK 19/1](../licenses/generated/windows-sdk-adapters-release/inventory.json),
+[공통 benchmark 977/22](../licenses/generated/windows-benchmarks-adapters-release/inventory.json),
+[선택/설치/창 검증 37/1](../licenses/generated/windows-sdk-adapters-validation-release/inventory.json),
+[진단 도구 25/1](../licenses/generated/windows-sdk-adapters-stress-release/inventory.json) inventory를 생성했다.
+`sdk-adapters`는 기존 창 profile에 `tests/AdapterTests.cpp`, `tests/consumer/adapter.cpp`만
+명시적으로 추가한다. 네 실행 파일의 actual linker closure와 설치 header/library 일치를 검사한다.
+SDK가 변경되어 library·benchmark·consumer·진단 도구를 재빌드하고 새 adapters SDK ZIP을 감사했다.
+DXGI/D3D12는 기존 Windows 전제조건이며 외부 dependency나 runtime 배포는 추가하지 않았다.
+6개 과거 SDK ZIP·과거 inventory·원본 근거는 보존한다. 컴파일러 retry와 acceptance 범위는
+[어댑터 보고서](PHASE2_ADAPTER_REPORT.md)를 따른다.

@@ -27,6 +27,44 @@ DXBC 경로이며 [SHADER_PIPELINE](SHADER_PIPELINE.md)의 한계를 따른다.
 caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을
 보장하지 않는다. Result 실패를 확인하는 전체 예제는 `examples/Triangle.cpp`에 있다.
 
+## 어댑터 조회와 명시적 선택
+
+`enumerateAdapters(Backend::D3D12)`는 매 호출마다 새 DXGI 후보 목록을 반환한다.
+하드웨어는 OS high-performance preference 순서이며 WARP가 가용하면 마지막에 포함한다.
+`AdapterInfo`는 backend-scoped `AdapterId`, UTF-8 이름, software 여부, vendor/device ID,
+dedicated video/shared system memory 용량을 제공한다. 용량은 현재 사용량·budget·peak가 아니다.
+열거는 native Device를 생성하거나 feature-level probe·validation 설정 변경을 하지 않는다.
+`createDevice`가 실제 D3D12 feature level 11.0 지원과 생성 성공을 검사한다. 미컴파일 backend의
+열거는 Unsupported다.
+
+```cpp
+auto adapters = gfx::enumerateAdapters();
+if (adapters && !adapters->empty()) {
+    const auto& selected = adapters->front(); // Application chooses a candidate.
+    gfx::DeviceDesc desc;
+    desc.adapter = selected.id;
+    desc.softwareAdapter = selected.softwareAdapter;
+    auto device = gfx::createDevice(desc);
+    if (device) { /* device.value()->caps().adapterId == selected.id */ }
+}
+```
+
+`DeviceDesc::adapter`가 있으면 정확한 ID를 선택하며 다른 GPU로 자동 대체하지 않는다.
+ID의 backend가 descriptor와 다르거나 softwareAdapter 값이 선택 대상과 다르면 InvalidArgument다.
+해당 ID를 찾지 못하면 Unsupported이며 native 원인도 보존한다. 값 0도 명시적 ID다.
+옵션이 없으면 기존 하드웨어 선호/WARP 정책을 유지한다. `caps().adapterId`는 실제 native
+Device의 GetAdapterLuid 결과에서 만든 식별자이며 선택된 DXGI 어댑터와 일치하는지 검사한다.
+
+D3D12 ID는 LUID의 비트 표현이다. 열거 index 또는 재부팅을 넘어 영속적인 하드웨어 serial이
+아니다. topology 변경·재부팅 뒤 목록을 새로 조회한다. 명시적 ID가 있는 recover는 같은 ID만
+재시도하며, 없어졌다고 다른 GPU를 선택하지 않는다. ID가 없는 recover는 기존 선택 정책을
+다시 적용한다. 외부 native owner가 제거된 singleton을 보유하는 동안에는 복구가 DeviceLost로
+실패할 수 있고 owner 해제 뒤 같은 ID로 재시도한다.
+
+공개 구조체가 확장되었으므로 정적 SDK 소비자를 새 헤더·라이브러리로 함께 재빌드한다.
+초기 0.0.1 API/ABI 동결은 아직 없다. 실제 장치 분리/TDR 승인은 별도이며
+[선택·복구 검증 보고서](PHASE2_ADAPTER_REPORT.md)를 따른다.
+
 ## Vertex/index 입력
 
 `GraphicsPipelineDesc::vertexLayout`에 buffer slot/stride/rate와 semantic/index/format/slot/offset을

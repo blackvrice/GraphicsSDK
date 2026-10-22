@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <bit>
 #include <cstring>
 #include <deque>
 #include <limits>
@@ -24,6 +25,25 @@ auto failed(HRESULT code, std::string operation) {
     auto kind = code == E_OUTOFMEMORY ? ErrorCode::OutOfMemory :
         code == DXGI_ERROR_DEVICE_REMOVED || code == DXGI_ERROR_DEVICE_RESET || code == DXGI_ERROR_DEVICE_HUNG || code == DXGI_ERROR_DRIVER_INTERNAL_ERROR ? ErrorCode::DeviceLost : ErrorCode::BackendFailure;
     return std::unexpected(Error{kind, std::move(operation), code});
+}
+AdapterId adapterId(LUID luid) {
+    return {Backend::D3D12,(static_cast<std::uint64_t>(static_cast<std::uint32_t>(luid.HighPart))<<32)|luid.LowPart};
+}
+LUID adapterLuid(AdapterId id) {
+    return {static_cast<DWORD>(id.value),std::bit_cast<LONG>(static_cast<DWORD>(id.value>>32))};
+}
+Result<AdapterInfo> adapterInfo(IDXGIAdapter1& adapter) {
+    DXGI_ADAPTER_DESC1 info{};
+    const auto hr=adapter.GetDesc1(&info);
+    if (FAILED(hr)) return failed(hr,"Read adapter description failed");
+    const auto count=WideCharToMultiByte(CP_UTF8,0,info.Description,-1,nullptr,0,nullptr,nullptr);
+    if (count<=0) return failed(E_FAIL,"Adapter name conversion failed");
+    std::string name(static_cast<std::size_t>(count),'\0');
+    if (WideCharToMultiByte(CP_UTF8,0,info.Description,-1,name.data(),count,nullptr,nullptr)!=count)
+        return failed(E_FAIL,"Adapter name conversion failed");
+    name.pop_back();
+    return AdapterInfo{adapterId(info.AdapterLuid),std::move(name),(info.Flags&DXGI_ADAPTER_FLAG_SOFTWARE)!=0,
+                       info.VendorId,info.DeviceId,info.DedicatedVideoMemory,info.SharedSystemMemory};
 }
 DXGI_FORMAT native(Format format) {
     switch(format){case Format::RGBA8UNorm:return DXGI_FORMAT_R8G8B8A8_UNORM;case Format::RGBA16Float:return DXGI_FORMAT_R16G16B16A16_FLOAT;case Format::D32Float:return DXGI_FORMAT_D32_FLOAT;}
@@ -962,6 +982,30 @@ public:
     }
 };
 }
+Result<std::vector<AdapterInfo>> enumerateD3D12Adapters() {
+    // Metadata discovery never creates/probes devices or changes debug/GBV configuration.
+    ComPtr<IDXGIFactory6> factory;
+    auto hr=CreateDXGIFactory2(0,IID_PPV_ARGS(&factory));
+    if (FAILED(hr)) return failed(hr,"Create adapter enumeration factory failed");
+    std::vector<AdapterInfo> result;
+    for (UINT index=0;;++index) {
+        ComPtr<IDXGIAdapter1> adapter;
+        hr=factory->EnumAdapterByGpuPreference(index,DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,IID_PPV_ARGS(&adapter));
+        if (hr==DXGI_ERROR_NOT_FOUND) break;
+        if (FAILED(hr)) return failed(hr,"Enumerating hardware adapter failed");
+        auto info=adapterInfo(*adapter.Get()); if (!info) return std::unexpected(info.error());
+        if (!info->softwareAdapter) result.push_back(std::move(*info));
+    }
+    ComPtr<IDXGIAdapter1> warp;
+    hr=factory->EnumWarpAdapter(IID_PPV_ARGS(&warp));
+    if (SUCCEEDED(hr)) {
+        auto info=adapterInfo(*warp.Get()); if (!info) return std::unexpected(info.error());
+        if (std::none_of(result.begin(),result.end(),[&](const auto& entry){return entry.id==info->id;}))
+            result.push_back(std::move(*info));
+    } else if (hr!=DXGI_ERROR_NOT_FOUND && hr!=DXGI_ERROR_UNSUPPORTED)
+        return failed(hr,"Enumerating WARP adapter failed");
+    return result;
+}
 Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     if (desc.validation) {
         ComPtr<ID3D12Debug> debug; HRESULT result = D3D12GetDebugInterface(IID_PPV_ARGS(&debug));
@@ -975,7 +1019,18 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     HRESULT result = CreateDXGIFactory2(desc.validation ? DXGI_CREATE_FACTORY_DEBUG : 0, IID_PPV_ARGS(&state->factory));
     if (FAILED(result)) return failed(result, "Create DXGI factory failed");
     ComPtr<IDXGIAdapter1> selected;
-    if (desc.softwareAdapter) {
+    if (desc.adapter) {
+        result=state->factory->EnumAdapterByLuid(adapterLuid(*desc.adapter),IID_PPV_ARGS(&selected));
+        if (result==DXGI_ERROR_NOT_FOUND)
+            return std::unexpected(Error{ErrorCode::Unsupported,"Requested D3D12 adapter is unavailable",result});
+        if (FAILED(result)) return failed(result,"Select requested D3D12 adapter failed");
+        auto info=adapterInfo(*selected.Get()); if (!info) return std::unexpected(info.error());
+        if (info->softwareAdapter!=desc.softwareAdapter)
+            return invalid("softwareAdapter must match the explicit adapter",ErrorCode::InvalidArgument);
+        result=D3D12CreateDevice(selected.Get(),D3D_FEATURE_LEVEL_11_0,IID_PPV_ARGS(&state->device));
+        if (FAILED(result) && result!=DXGI_ERROR_UNSUPPORTED && result!=E_INVALIDARG)
+            return failed(result,"Create requested adapter device failed");
+    } else if (desc.softwareAdapter) {
         result = state->factory->EnumWarpAdapter(IID_PPV_ARGS(&selected));
         if (FAILED(result)) return failed(result, "WARP adapter unavailable");
         result = D3D12CreateDevice(selected.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&state->device));
@@ -984,7 +1039,8 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
             result = state->factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&selected));
             if (result == DXGI_ERROR_NOT_FOUND) break;
             if (FAILED(result)) return failed(result, "Enumerating hardware adapter failed");
-            DXGI_ADAPTER_DESC1 info{}; selected->GetDesc1(&info);
+            DXGI_ADAPTER_DESC1 info{};
+            result=selected->GetDesc1(&info); if (FAILED(result)) return failed(result,"Read adapter description failed");
             if (!(info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)) {
                 result = D3D12CreateDevice(selected.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&state->device));
                 if (SUCCEEDED(result)) break;
@@ -994,12 +1050,16 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
         }
     }
     if(desc.softwareAdapter && FAILED(result) && (result==DXGI_ERROR_DEVICE_REMOVED || result==DXGI_ERROR_DEVICE_RESET || result==DXGI_ERROR_DEVICE_HUNG || result==DXGI_ERROR_DRIVER_INTERNAL_ERROR))return failed(result,"WARP device is still removed; release other native device owners before retrying recovery");
-    if (!state->device) return invalid("No D3D12 adapter supports feature level 11.0", ErrorCode::Unsupported);
-    DXGI_ADAPTER_DESC1 info{}; selected->GetDesc1(&info);
-    int count = WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, nullptr, 0, nullptr, nullptr);
-    if (count <= 0) return failed(E_FAIL, "Adapter name conversion failed");
-    std::string name(static_cast<size_t>(count), '\0'); WideCharToMultiByte(CP_UTF8, 0, info.Description, -1, name.data(), count, nullptr, nullptr); name.pop_back();
-    state->caps = {Backend::D3D12, std::move(name), (info.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0, true, false, true, true, true, true, true, true, true};
+    if (!state->device) {
+        if (desc.adapter) return std::unexpected(Error{ErrorCode::Unsupported,"Requested D3D12 adapter does not support feature level 11.0",result});
+        return invalid("No D3D12 adapter supports feature level 11.0", ErrorCode::Unsupported);
+    }
+    auto info=adapterInfo(*selected.Get()); if (!info) return std::unexpected(info.error());
+    const auto actual=adapterId(state->device->GetAdapterLuid());
+    if (actual!=info->id || (desc.adapter && actual!=*desc.adapter))
+        return invalid("Native device adapter does not match selection",ErrorCode::BackendFailure);
+    state->caps = {Backend::D3D12, std::move(info->name), info->softwareAdapter, true, false, true, true, true, true, true, true, true};
+    state->caps.adapterId=actual;
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
     if (desc.validation) {
         result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable");

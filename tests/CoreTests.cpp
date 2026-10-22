@@ -41,7 +41,11 @@ void cpu() {
 }
 void gpu(gfx::Device& device, bool validation) {
     checkpoint("Starting GPU contracts");
-    std::cout << "Adapter: " << device.caps().adapterName << " software=" << device.caps().softwareAdapter << '\n';
+    std::cout << "Adapter: " << device.caps().adapterName << " software=" << device.caps().softwareAdapter << " adapter_id=" << device.caps().adapterId.value << '\n';
+    const auto candidates=take(gfx::enumerateAdapters());
+    const auto selected=std::find_if(candidates.begin(),candidates.end(),[&](const auto& a){return a.id==device.caps().adapterId;});
+    check(selected!=candidates.end() && selected->name==device.caps().adapterName && selected->softwareAdapter==device.caps().softwareAdapter,
+          "Default selection reports an enumerated native identity");
     check(!device.caps().compute && device.caps().timestampQueries, "Capabilities reflect implementation");
     check(!device.createBuffer({0}), "Reject empty buffers");
     check(!device.createTexture({0, 64}), "Reject empty textures");
