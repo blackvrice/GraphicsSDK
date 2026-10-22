@@ -1,0 +1,172 @@
+[
+  {
+    "name": "python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 3.155999999999949
+  },
+  {
+    "name": "baseline",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/memory_environment.py",
+      "record",
+      "--adapter",
+      "107499",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\baseline"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 9.719000000000051
+  },
+  {
+    "name": "same-environment",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/memory_environment.py",
+      "record",
+      "--adapter",
+      "107499",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\same-environment"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 9.405999999999949
+  },
+  {
+    "name": "comparison",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/memory_environment.py",
+      "compare",
+      "--before",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\baseline\\case.json",
+      "--after",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\same-environment\\case.json",
+      "--change",
+      "none",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\comparison.json"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.125
+  },
+  {
+    "name": "missing-driver-change",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/memory_environment.py",
+      "compare",
+      "--before",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\baseline\\case.json",
+      "--after",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\same-environment\\case.json",
+      "--change",
+      "selected-driver",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\missing-driver-change.json"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.125
+  },
+  {
+    "name": "comparison-overwrite",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/memory_environment.py",
+      "compare",
+      "--before",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\baseline\\case.json",
+      "--after",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\same-environment\\case.json",
+      "--change",
+      "none",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\comparison.json"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.0929999999998472
+  },
+  {
+    "name": "record-overwrite",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/memory_environment.py",
+      "record",
+      "--adapter",
+      "107499",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\baseline"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.10999999999967258
+  },
+  {
+    "name": "missing-adapter",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/memory_environment.py",
+      "record",
+      "--adapter",
+      "18446744073709551615",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase2-memory-environment\\final\\missing-adapter"
+    ],
+    "returncode": 1,
+    "expected_exit": 1,
+    "seconds": 0.15599999999994907
+  },
+  {
+    "name": "audit-recheck",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_licenses.py",
+      "--profile",
+      "sdk-crash",
+      "--output",
+      "licenses/generated/windows-sdk-thread-snapshot-crash-release",
+      "--check"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.40599999999994907
+  },
+  {
+    "name": "git-prestage-fsck",
+    "command": [
+      "git",
+      "-c",
+      "gc.auto=0",
+      "fsck",
+      "--full",
+      "--strict"
+    ],
+    "returncode": 0,
+    "expected_exit": 0,
+    "seconds": 0.6880000000001019
+  }
+]

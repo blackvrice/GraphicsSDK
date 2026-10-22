@@ -421,3 +421,13 @@ SDK-crash compiler/linker inventory still passes `--check`; SDK/library/policy a
 eleven SDK packages remain unchanged. This is offline analysis development, with
 no new native regression/soak or long-memory/Intel-crash acceptance claim. See the
 [range analysis report](PHASE2_VIRTUAL_RANGES_REPORT.md).
+
+2026-10-23 environment-controlled normal runs: all 196 Python tests pass without
+skips, including 14 new driver/control/identity/workload-binding contracts. Two
+serial short Intel full-GBV runs verify 472 frames, 1,416 full images and 123,731,968
+buffer bytes. Before/after controls and same-environment comparison match; unchanged
+driver, overwrite and missing-adapter rejection controls pass. The initial preflight
+failure is preserved separately. No real driver change, new long soak, native
+rebuild/regression or memory/AV acceptance is claimed. The existing SDK-crash
+inventory recheck and eleven SDK package hashes remain intact. See the
+[environment report](PHASE2_MEMORY_ENVIRONMENT_REPORT.md).

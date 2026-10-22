@@ -98,6 +98,9 @@ the historical AV; its cause and the original memory acceptance remain open.
 The [virtual-range analyzer](docs/PHASE2_VIRTUAL_RANGES_REPORT.md) reconstructs observed
 commit/free lifetimes from those frozen traces, with recommit deduplication and
 timestamp peak bounds. The tagged command-buffer ranges coexist and are later retired.
+The [normal-run environment wrapper](docs/PHASE2_MEMORY_ENVIRONMENT_REPORT.md) records
+before/after driver/runtime/workload identities and rejects confounded driver
+comparisons. Its short same-environment controls do not close the memory or AV gates.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),
