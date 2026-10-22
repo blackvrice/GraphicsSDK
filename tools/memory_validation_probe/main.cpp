@@ -19,7 +19,7 @@ void nativeTextureControl(std::ostream& out,std::string_view mode,unsigned secon
     if(mode=="native-gbv-no-tracking"){ComPtr<ID3D12Debug2> debug2;hr(debug.As(&debug2));debug2->SetGPUBasedValidationFlags(D3D12_GPU_BASED_VALIDATION_FLAGS_DISABLE_STATE_TRACKING);}
     ComPtr<IDXGIFactory4> factory;hr(CreateDXGIFactory1(IID_PPV_ARGS(&factory)));ComPtr<IDXGIAdapter1> adapter;DXGI_ADAPTER_DESC1 desc{};
     for(UINT i=0;;++i){hr(factory->EnumAdapters1(i,&adapter));hr(adapter->GetDesc1(&desc));if(!(desc.Flags&DXGI_ADAPTER_FLAG_SOFTWARE))break;adapter.Reset();}
-    gfx::DeviceCaps caps;caps.adapterName=utf8(desc.Description);Observer observer(caps);ComPtr<ID3D12Device> device;hr(D3D12CreateDevice(adapter.Get(),D3D_FEATURE_LEVEL_11_0,IID_PPV_ARGS(&device)));NativeMessages messages(*device.Get());
+    gfx::DeviceCaps caps;caps.adapterName=utf8(desc.Description);caps.adapterId={gfx::Backend::D3D12,identity(desc.AdapterLuid)};Observer observer(caps);ComPtr<ID3D12Device> device;hr(D3D12CreateDevice(adapter.Get(),D3D_FEATURE_LEVEL_11_0,IID_PPV_ARGS(&device)));NativeMessages messages(*device.Get());
     const auto start=Clock::now();unsigned iterations=0;double next=0;
     out<<"{\"isolation_case\":"<<quote(mode)<<",\"native_only\":true,\"gpu_validation\":"<<(gpu?"true":"false")<<",\"gpu_state_tracking\":"<<(mode=="native-gbv-no-tracking"?"false":"true")<<",\"adapter\":"<<quote(caps.adapterName)<<",\"luid_high\":"<<desc.AdapterLuid.HighPart<<",\"luid_low\":"<<desc.AdapterLuid.LowPart<<"}\n";
     auto sample=[&](std::string_view phase){out<<"{\"phase\":"<<quote(phase)<<",\"elapsed\":"<<std::chrono::duration<double>(Clock::now()-start).count()<<",\"iterations\":"<<iterations;observer.write(out);out<<"}\n";out.flush();};sample("baseline");

@@ -345,3 +345,17 @@ Python tests and eight real CLI selection refusals are added. Two preserved seri
 CL.exe access violations pass on unchanged-source retries; their cause is unresolved.
 New SDK package/inventories bind the current fingerprint. Long GBV memory, physical
 hot-unplug/TDR, manual display and DPI remain open. See [adapter report](PHASE2_ADAPTER_REPORT.md).
+
+2026-10-22 exact-adapter memory campaigns: core 25/25 and Python 139/139 pass.
+Fifteen new Python tests cover ID mixing, signed LUID reconstruction, explicit zero,
+GBV/observer mismatches, guard/exit consistency, source mutation, timeout cleanup and
+native crash receipts. Fresh NVIDIA/Intel/WARP short resource-churn checks pass full
+references. Guarded GBV runs abort with explicit zero-ownership receipts; a default
+512MiB three-mode diagnostic records native exits 0/2/0 and runner exit 1. Eleven
+native CLI/output rejections and a real missing-ID runner rejection pass. Native
+CPU observer and SDK hardware/WARP destruction smoke tests pass after rebuilding
+the shared helper. An earlier Intel 512MiB run crashes at 112.875 seconds with
+0xc0000005 and no final footer; it remains rejected with cause unresolved. This is
+tooling validation, not the long memory acceptance gate. SDK source/library/ZIPs,
+common and presentation evidence remain unchanged and are hash-checked, not newly
+executed acceptance. See [campaign report](PHASE2_MEMORY_CAMPAIGN_REPORT.md).

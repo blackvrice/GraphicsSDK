@@ -6,12 +6,15 @@
 #include <dxgi1_4.h>
 #include <wrl/client.h>
 #include <array>
+#include <bit>
+#include <charconv>
 #include <chrono>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
+#include <set>
 #include <thread>
 
 namespace {
@@ -24,6 +27,9 @@ template<class T>T take(gfx::Result<T> r){if(!r)throw std::runtime_error(r.error
 void take(gfx::Result<void> r){if(!r)throw std::runtime_error(r.error().message);}
 void check(bool value,const char* message){if(!value)throw std::runtime_error(message);}
 void hr(HRESULT value){check(SUCCEEDED(value),"OS telemetry query failed");}
+std::uint64_t identity(LUID luid){return (std::uint64_t(static_cast<std::uint32_t>(luid.HighPart))<<32)|luid.LowPart;}
+std::uint64_t decimal(std::string_view text){std::uint64_t value{};auto [end,error]=std::from_chars(text.data(),text.data()+text.size(),value);check(error==std::errc{}&&end==text.data()+text.size(),"Expected unsigned decimal integer");return value;}
+PROCESS_MEMORY_COUNTERS_EX processMemory(){PROCESS_MEMORY_COUNTERS_EX p{};p.cb=sizeof(p);check(GetProcessMemoryInfo(GetCurrentProcess(),reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&p),sizeof(p))!=0,"Private commit query");return p;}
 std::string utf8(const wchar_t* value){int n=WideCharToMultiByte(CP_UTF8,0,value,-1,nullptr,0,nullptr,nullptr);check(n>0,"Adapter name conversion");std::string out(n,'\0');WideCharToMultiByte(CP_UTF8,0,value,-1,out.data(),n,nullptr,nullptr);out.pop_back();return out;}
 std::string quote(std::string_view s){std::string out="\"";for(unsigned char c:s){if(c=='\"'||c=='\\')out+='\\';check(c>=32,"Unexpected JSON control character");out+=char(c);}return out+'\"';}
 struct Observer {
@@ -31,17 +37,13 @@ struct Observer {
     DXGI_ADAPTER_DESC1 desc{};
     explicit Observer(const gfx::DeviceCaps& caps){
         ComPtr<IDXGIFactory4> factory;hr(CreateDXGIFactory1(IID_PPV_ARGS(&factory)));
-        if(caps.softwareAdapter){hr(factory->EnumWarpAdapter(IID_PPV_ARGS(&adapter)));hr(adapter->GetDesc1(&desc));}
-        else {
-            unsigned matches=0;
-            for(UINT i=0;;++i){ComPtr<IDXGIAdapter1> candidate;const auto result=factory->EnumAdapters1(i,&candidate);if(result==DXGI_ERROR_NOT_FOUND)break;hr(result);DXGI_ADAPTER_DESC1 d{};hr(candidate->GetDesc1(&d));
-                if(utf8(d.Description)==caps.adapterName){++matches;desc=d;hr(candidate.As(&adapter));}}
-            check(matches==1,"Telemetry requires a unique matching hardware adapter name");
-        }
-        check(utf8(desc.Description)==caps.adapterName,"Telemetry adapter identity mismatch");
+        check(caps.adapterId.backend==gfx::Backend::D3D12,"Telemetry requires D3D12 identity");
+        const LUID luid{static_cast<DWORD>(caps.adapterId.value),std::bit_cast<LONG>(static_cast<std::uint32_t>(caps.adapterId.value>>32))};
+        hr(factory->EnumAdapterByLuid(luid,IID_PPV_ARGS(&adapter)));hr(adapter->GetDesc1(&desc));
+        check(identity(desc.AdapterLuid)==caps.adapterId.value&&utf8(desc.Description)==caps.adapterName&&bool(desc.Flags&DXGI_ADAPTER_FLAG_SOFTWARE)==caps.softwareAdapter,"Telemetry adapter identity mismatch");
     }
     void write(std::ostream& out){
-        PROCESS_MEMORY_COUNTERS_EX p{};p.cb=sizeof(p);check(GetProcessMemoryInfo(GetCurrentProcess(),reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&p),sizeof(p))!=0,"Private commit query");
+        const auto p=processMemory();
         DWORD handles{};check(GetProcessHandleCount(GetCurrentProcess(),&handles)!=0,"Handle count query");
         DXGI_QUERY_VIDEO_MEMORY_INFO local{},nonlocal{};
         const auto a=adapter->QueryVideoMemoryInfo(0,DXGI_MEMORY_SEGMENT_GROUP_LOCAL,&local),b=adapter->QueryVideoMemoryInfo(0,DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL,&nonlocal);
@@ -102,13 +104,15 @@ void statisticsContracts(gfx::Device& d){
 }
 }
 int main(int argc,char** argv)try{
-    std::string mode="gpu",output;unsigned seconds=0,warmup=30,interval=5;bool replace=false;
-    for(int i=1;i<argc;++i){std::string_view arg=argv[i];check(i+1<argc,"Every option requires a value");const std::string value=argv[++i];if(arg=="--mode")mode=value;else if(arg=="--output")output=value;else if(arg=="--seconds")seconds=std::stoul(value);else if(arg=="--warmup")warmup=std::stoul(value);else if(arg=="--interval")interval=std::stoul(value);else if(arg=="--replace"&&value=="1")replace=true;else throw std::runtime_error("Unknown option");}
+    std::string mode="gpu",output;std::uint64_t seconds=0,warmup=30,interval=5,maxGrowthMiB=512;bool replace=false;std::optional<gfx::AdapterId> selected;std::set<std::string_view> seen;
+    for(int i=1;i<argc;++i){std::string_view arg=argv[i];check(seen.insert(arg).second,"Duplicate stress option");check(i+1<argc,"Every option requires a value");const std::string_view value=argv[++i];if(arg=="--mode")mode=value;else if(arg=="--output")output=value;else if(arg=="--seconds")seconds=decimal(value);else if(arg=="--warmup")warmup=decimal(value);else if(arg=="--interval")interval=decimal(value);else if(arg=="--adapter")selected=gfx::AdapterId{gfx::Backend::D3D12,decimal(value)};else if(arg=="--max-private-growth-mib")maxGrowthMiB=decimal(value);else if(arg=="--replace"&&value=="1")replace=true;else throw std::runtime_error("Unknown option");}
     check((mode=="gpu"||mode=="validation"||mode=="warp")&&!output.empty()&&seconds>0&&seconds<=86400&&warmup<=3600&&interval>0&&interval<=60,"Invalid stress configuration");
-    std::ifstream exists(output);check(replace||!exists.good(),"Refusing to overwrite stress evidence");exists.close();std::ofstream out(output);check(out.good(),"Open stress evidence");out.exceptions(std::ios::badbit|std::ios::failbit);out<<std::setprecision(12);
-    auto d=take(gfx::createDevice({gfx::Backend::D3D12,mode=="validation",mode=="warp"}));statisticsContracts(*d);Observer observer(d->caps());const auto start=Clock::now();
+    check(maxGrowthMiB>=1&&maxGrowthMiB<=4096,"Private growth guard must be 1..4096 MiB");
+    auto d=take(gfx::createDevice({gfx::Backend::D3D12,mode=="validation",mode=="warp",false,selected}));Observer observer(d->caps());statisticsContracts(*d);
+    std::ifstream exists(output);check(replace||!exists.good(),"Refusing to overwrite stress evidence");exists.close();std::ofstream out(output);check(out.good(),"Open stress evidence");out.exceptions(std::ios::badbit|std::ios::failbit);out<<std::setprecision(12);const auto start=Clock::now();
     auto elapsed=[&]{return std::chrono::duration<double>(Clock::now()-start).count();};
-    out<<"{\"type\":\"header\",\"schema\":1,\"mode\":"<<quote(mode)<<",\"adapter\":"<<quote(d->caps().adapterName)<<",\"luid_high\":"<<observer.desc.AdapterLuid.HighPart<<",\"luid_low\":"<<observer.desc.AdapterLuid.LowPart<<",\"sdk_sha256\":"<<quote(gfx::buildFingerprint())<<",\"seconds\":"<<seconds<<",\"warmup\":"<<warmup<<",\"interval\":"<<interval<<",\"ring\":"<<ring<<",\"side\":"<<side<<",\"copy_bytes\":"<<copyBytes<<"}\n";
+    const auto baselinePrivate=processMemory().PrivateUsage,guardBytes=maxGrowthMiB*MiB;
+    out<<"{\"type\":\"header\",\"schema\":2,\"mode\":"<<quote(mode)<<",\"adapter\":"<<quote(d->caps().adapterName)<<",\"adapter_id\":"<<d->caps().adapterId.value<<",\"observer_adapter_id\":"<<identity(observer.desc.AdapterLuid)<<",\"requested_adapter_id\":"<<(selected?std::to_string(selected->value):"null")<<",\"software\":"<<(d->caps().softwareAdapter?"true":"false")<<",\"gpu_validation\":"<<(mode=="validation"?"true":"false")<<",\"gpu_state_tracking\":"<<(mode=="validation"?"true":"false")<<",\"private_growth_limit_bytes\":"<<guardBytes<<",\"guard_baseline_private_bytes\":"<<baselinePrivate<<",\"luid_high\":"<<observer.desc.AdapterLuid.HighPart<<",\"luid_low\":"<<observer.desc.AdapterLuid.LowPart<<",\"sdk_sha256\":"<<quote(gfx::buildFingerprint())<<",\"seconds\":"<<seconds<<",\"warmup\":"<<warmup<<",\"interval\":"<<interval<<",\"ring\":"<<ring<<",\"side\":"<<side<<",\"copy_bytes\":"<<copyBytes<<"}\n";
     std::uint64_t frames=0,rounds=0;
     auto sample=[&](std::string_view phase){out<<"{\"type\":\"sample\",\"phase\":"<<quote(phase)<<",\"elapsed\":"<<elapsed()<<",\"frames\":"<<frames<<",\"rounds\":"<<rounds;writeStats(out,take(d->resourceStatistics()));observer.write(out);out<<"}\n";out.flush();};
     sample("baseline");
@@ -116,6 +120,7 @@ int main(int argc,char** argv)try{
     {auto held=take(d->createBuffer({64*MiB}));{auto upload=take(d->createBuffer({64*MiB,gfx::Memory::Upload}));auto c=take(d->createCommandList());take(c->begin());take(c->transition(held,S::CopyDestination));take(c->copyBuffer(upload,held,64*MiB));take(c->end());take(d->queue().wait(take(d->queue().submit(*c))));}take(d->queue().waitIdle());sample("gpu_held");}take(d->queue().waitIdle());sample("gpu_released");
     bool wrongThread=false;std::thread thread([&]{auto r=d->resourceStatistics();wrongThread=!r&&r.error().code==gfx::ErrorCode::InvalidState;});thread.join();check(wrongThread,"Statistics must obey device thread affinity");
     const auto pd=pipelineDesc();auto workStart=Clock::now();double next=0;bool measured=false;Clock::time_point measureStart{};
+    bool aborted=false;
     while(true){
         if(!measured && std::chrono::duration<double>(Clock::now()-workStart).count()>=warmup){measured=true;measureStart=Clock::now();next=0;sample("measurement_start");}
         auto p=take(d->createGraphicsPipeline(pd));std::vector<Frame> batch;
@@ -127,9 +132,13 @@ int main(int argc,char** argv)try{
         batch.clear();p.reset();take(d->queue().waitIdle());
         auto stats=take(d->resourceStatistics());check(stats.trackedObjects==0&&stats.uniqueResources==0&&stats.resourceAllocationBytes==0&&stats.pendingSubmissions==0&&stats.pendingObjectReferences==0,"Drained SDK ownership did not return to zero");
         if(report){sample("drained");next+=interval;std::cout<<mode<<" seconds="<<t<<" frames="<<frames<<" reclaimed=0\n"<<std::flush;}
+        // Observe after every verified, drained round, including warmup. This is a
+        // process-private growth guard, not a hard allocation ceiling or a peak meter.
+        const auto privateNow=processMemory().PrivateUsage;
+        if(privateNow>baselinePrivate&&privateNow-baselinePrivate>guardBytes){aborted=true;sample("guard_aborted");break;}
         if(measured&&std::chrono::duration<double>(Clock::now()-measureStart).count()>=seconds)break;
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
     sample("final");const auto errors=mode=="validation"?take(d->validationErrorCount()):0;check(errors==0,"Unexpected D3D12 debug/GBV errors");
-    out<<"{\"type\":\"footer\",\"elapsed\":"<<elapsed()<<",\"measured_seconds\":"<<std::chrono::duration<double>(Clock::now()-measureStart).count()<<",\"frames\":"<<frames<<",\"full_images\":"<<frames*3<<",\"verified_buffer_bytes\":"<<frames*copyBytes<<",\"validation_errors\":"<<errors<<",\"statistics_contracts\":true,\"status\":\"passed\"}\n";out.flush();std::cout<<"PASS: "<<frames<<" frames, "<<frames*3<<" full images, reclaimed ownership zero\n";return 0;
+    out<<"{\"type\":\"footer\",\"adapter_id\":"<<d->caps().adapterId.value<<",\"elapsed\":"<<elapsed()<<",\"measured_seconds\":"<<(measured?std::chrono::duration<double>(Clock::now()-measureStart).count():0)<<",\"frames\":"<<frames<<",\"full_images\":"<<frames*3<<",\"verified_buffer_bytes\":"<<frames*copyBytes<<",\"validation_errors\":"<<errors<<",\"statistics_contracts\":true,\"status\":"<<quote(aborted?"aborted":"passed")<<",\"stop_reason\":"<<quote(aborted?"private_growth_limit":"completed")<<"}\n";out.flush();std::cout<<(aborted?"ABORT: private growth guard; ":"PASS: ")<<frames<<" frames, "<<frames*3<<" full images, reclaimed ownership zero\n";return aborted?2:0;
 }catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}

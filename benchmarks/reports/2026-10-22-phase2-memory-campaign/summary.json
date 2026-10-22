@@ -1,0 +1,249 @@
+{
+  "SDK_source_fingerprint": "85190ccf45a1c6c57473c25c8bef5c69e5387a5631a742d5561aef8b0e659970",
+  "production_SDK_changed": false,
+  "phase2_complete": false,
+  "memory_stress_accepted": false,
+  "core_ctest": 25,
+  "python_tests": 139,
+  "added_python_tests": 15,
+  "diagnostics": [
+    {
+      "mode": "gpu",
+      "adapter_id": 96576,
+      "frames": 392,
+      "full_images": 1176,
+      "verified_buffer_bytes": 102760448,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "passed",
+      "accepted": false
+    },
+    {
+      "mode": "gpu",
+      "adapter_id": 106703,
+      "frames": 624,
+      "full_images": 1872,
+      "verified_buffer_bytes": 163577856,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "passed",
+      "accepted": false
+    },
+    {
+      "mode": "warp",
+      "adapter_id": 106596,
+      "frames": 912,
+      "full_images": 2736,
+      "verified_buffer_bytes": 239075328,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "passed",
+      "accepted": false
+    }
+  ],
+  "guards": [
+    {
+      "mode": "validation",
+      "adapter_id": 96576,
+      "frames": 608,
+      "full_images": 1824,
+      "verified_buffer_bytes": 159383552,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "aborted",
+      "accepted": false,
+      "private_growth_limit_bytes": 536870912,
+      "elapsed": 10.0534123,
+      "growth_observed_bytes": 542740480
+    },
+    {
+      "mode": "validation",
+      "adapter_id": 106703,
+      "frames": 8,
+      "full_images": 24,
+      "verified_buffer_bytes": 2097152,
+      "functional_references_passed": true,
+      "validation_errors": 0,
+      "status": "aborted",
+      "accepted": false,
+      "private_growth_limit_bytes": 67108864,
+      "elapsed": 0.2016262,
+      "growth_observed_bytes": 148066304
+    }
+  ],
+  "continuation": {
+    "native_exit_codes": [
+      0,
+      2,
+      0
+    ],
+    "runner_exit_code": 1,
+    "default_guard_bytes": 536870912,
+    "diagnostic_seconds": 10,
+    "campaign": {
+      "path": "benchmarks/reports/validation/2026-10-22-phase2-memory-campaign-final/all-continue-512/campaign.json",
+      "sha256": "00591eaa6ec5317931c5b6b7799c095fe0c3b22e12609c48dbd041b2e759abd3",
+      "bytes": 3135
+    }
+  },
+  "initial_Intel_failure": {
+    "native_exit_code": 3221225477,
+    "exception_hex": "0xc0000005",
+    "wall_seconds": 112.875,
+    "complete_footer": false,
+    "cause_resolved": false,
+    "faulting_module": "unknown",
+    "campaign": {
+      "path": "benchmarks/reports/validation/2026-10-22-phase2-memory-campaign/gbv-guard-1/campaign.json",
+      "sha256": "e9c983fef87b007c1fb933a0086189e19afd6ea11f24ff3d1b7c8d0c0de7a96c",
+      "bytes": 1934
+    },
+    "event": {
+      "path": "benchmarks/reports/validation/2026-10-22-phase2-memory-campaign/intel-fault-events.json",
+      "sha256": "9d7a1234109d035eb87993c1461c37e711577ddef6622f9e6b3d11b876eda04b",
+      "bytes": 737
+    }
+  },
+  "native_cli_rejection_controls": 11,
+  "runner_missing_ID_rejected": true,
+  "native_CPU_observer_smoke_passed": true,
+  "SDK_lifetime_smoke_modes": [
+    "hardware",
+    "warp"
+  ],
+  "stress_inventory": {
+    "path": "licenses/generated/windows-sdk-memory-campaign-release/inventory.json",
+    "sha256": "cd2ea9dd5b9fcf38274918b207c47e74617b8d4316f4244899157a63821f535d",
+    "bytes": 39325
+  },
+  "compiler_read_inputs": 25,
+  "components": 1,
+  "linker_closures": 5,
+  "original_policy_unchanged": true,
+  "original_failed_memory_gate_preserved": true,
+  "previous_evidence_preserved": true,
+  "SDK_package": {
+    "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-adapters.zip",
+    "sha256": "7819ba36fd795f75b64878b391596015404dcc756f207c203bbb63ef2613cb9a",
+    "bytes": 501092,
+    "status": "inventory_verified",
+    "competitor_payload": false,
+    "files": [
+      {
+        "path": "include/graphics/Backend.hpp",
+        "sha256": "bbcd4b9b74732a18c70652788ec161e39c67c7ecb5e5afb81f9d409ad73cbdb4",
+        "bytes": 533
+      },
+      {
+        "path": "include/graphics/Bindings.hpp",
+        "sha256": "134d02d86bcff4528c9c8588f73e7d05635c02a6c3e3b884f845193ccfc13730",
+        "bytes": 1303
+      },
+      {
+        "path": "include/graphics/CommandList.hpp",
+        "sha256": "a74e52e25f32eb6ed01c3dff42a14005a635e8445673711a47fd8bea1592711a",
+        "bytes": 2658
+      },
+      {
+        "path": "include/graphics/CommandQueue.hpp",
+        "sha256": "90d15a8f8493f671e376018f71ad069173362bdc1a89cbdade6a751e1f26c12d",
+        "bytes": 457
+      },
+      {
+        "path": "include/graphics/Device.hpp",
+        "sha256": "ad11406b7c6236ddb7d6f9abf0f84697e3d2ff57b8f2c14883d6906dba2370ca",
+        "bytes": 1681
+      },
+      {
+        "path": "include/graphics/Graphics.hpp",
+        "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27",
+        "bytes": 58
+      },
+      {
+        "path": "include/graphics/Pipeline.hpp",
+        "sha256": "375aceaca096c027786e9eba35386c6c097c3f933db059dd3508e12e60263631",
+        "bytes": 1150
+      },
+      {
+        "path": "include/graphics/RenderPass.hpp",
+        "sha256": "ec3d89ef60c7cc1bf546149843677961e682bcbcc6cf3e7af375e0ce2da0c5e4",
+        "bytes": 1025
+      },
+      {
+        "path": "include/graphics/Resources.hpp",
+        "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde",
+        "bytes": 719
+      },
+      {
+        "path": "include/graphics/Shader.hpp",
+        "sha256": "e4f7f4be17503cddc498af36cc8ec9f2f96083b2e953a65f6398690067ee6ce6",
+        "bytes": 752
+      },
+      {
+        "path": "include/graphics/Surface.hpp",
+        "sha256": "d3dc852b56fcd477dc1eddb9ec4a794b12a280de871bb6a47ed2abfb42c089ab",
+        "bytes": 328
+      },
+      {
+        "path": "include/graphics/SwapChain.hpp",
+        "sha256": "9f2c889a5b91b819e894c991c569c73d11aab50d5bc3e7c701a5bcbda66d20a2",
+        "bytes": 429
+      },
+      {
+        "path": "include/graphics/Types.hpp",
+        "sha256": "80e345097a10d09ac8986659f39dbe0f31f1348a660967cb89d35349e4f421a2",
+        "bytes": 2661
+      },
+      {
+        "path": "lib/GraphicsSDKCore.lib",
+        "sha256": "7306aba2b740740035d42766310bba2e99d337f960b271763f0e9d6dcef4df50",
+        "bytes": 3024938
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfig.cmake",
+        "sha256": "b7a8b47444f27643ecc1253e2135ccb45ba2347b294a04070d1b4dcdd779b4eb",
+        "bytes": 1012
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKConfigVersion.cmake",
+        "sha256": "7888d65181f9bce3b8dac512377e62517e2543b7d09a56fc5f51e7f0eafc6d35",
+        "bytes": 3332
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets-release.cmake",
+        "sha256": "7f6b1fe649ce86a62fcc833c3c0d9e0e04fb76f6e37b21dcb138226b18d5827d",
+        "bytes": 893
+      },
+      {
+        "path": "lib/cmake/GraphicsSDK/GraphicsSDKTargets.cmake",
+        "sha256": "b98fe153bf676214c98a3d2274eb1c1699520cb25abf800acac9c8ccfcd553be",
+        "bytes": 4401
+      },
+      {
+        "path": "share/GraphicsSDK/BUILD.md",
+        "sha256": "e9329a796c0ea5f963ccae58e3b84decab5e583341ffac778d58f366cd2ffd83",
+        "bytes": 22044
+      },
+      {
+        "path": "share/GraphicsSDK/LICENSE",
+        "sha256": "925ea65f6a1cecdd5b92d82d244a23531aacfb1ce07a87a4ae2050361175c18b",
+        "bytes": 1081
+      },
+      {
+        "path": "share/GraphicsSDK/README.md",
+        "sha256": "7a527cf75c0b55f6d007009a6a96f218b1d4b81567ac37767fc91b8a3b2e5008",
+        "bytes": 5788
+      }
+    ]
+  },
+  "new_SDK_package": false,
+  "SDK_packages_preserved": 7,
+  "new_performance_claim": false,
+  "continuous_peak_claim": false,
+  "remaining": [
+    "original_long_GBV_memory_gate",
+    "Intel_native_access_violation_root_cause",
+    "manual_display_DPI_unexpected_TDR_hot_unplug",
+    "Vulkan_Linux_Metal_macOS"
+  ]
+}

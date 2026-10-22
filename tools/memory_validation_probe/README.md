@@ -4,6 +4,44 @@ These tools diagnose the open Phase 2 GBV reclamation item. They do not change
 SDK validation, act as an allocator workaround or accept the original long stress gate.
 Use fresh output paths and run GPU tests serially.
 
+## Exact-adapter resource-churn campaign
+
+`tools/MemoryStress.cpp` now binds its DXGI observer to the public device's opaque
+adapter ID using `EnumAdapterByLuid`; adapter names are descriptive metadata.
+Schema 2 records the requested, SDK, observer and final device IDs. A missing ID or
+software/hardware mismatch fails without falling back. Refresh IDs after reboot or
+topology changes using the installed presentation example's `--list-adapters`.
+
+```powershell
+out/presentation/Release/gfx_presentation.exe --list-adapters
+python tools/run_memory_stress.py --mode gpu --adapter <fresh-hardware-id> --diagnostic-seconds 3 --output out/memory-id-smoke-new
+python tools/run_memory_stress.py --mode validation --adapter <fresh-hardware-id> --output out/memory-gbv-new
+python tools/run_memory_stress.py --output out/memory-three-modes-new
+```
+
+An explicit adapter requires one mode; WARP uses its own ID with `--mode warp`.
+Without `--diagnostic-seconds`, policy durations remain hardware 900 seconds,
+full GBV 300 seconds and WARP 300 seconds, each after 30 seconds of warmup.
+Diagnostic runs check references/identity and always record `accepted=false`.
+One mode cannot accept the overall three-mode campaign.
+
+The native tool checks process private-commit growth after each fully verified,
+drained eight-frame round, including warmup. Default growth limit is 512 MiB;
+`--max-private-growth-mib` accepts 1..4096. The baseline is after device/statistics
+contracts, before positive controls, shader setup and warmup. This includes runtime
+and driver retention and is not a pure SDK leak metric, a hard allocation ceiling,
+a GPU budget or a continuous peak measurement. A round may overshoot the limit.
+An observed breach writes `guard_aborted`, a final zero-ownership checkpoint and an
+`aborted/private_growth_limit` footer, then exits 2. Native errors still fail.
+
+The runner preserves process exit codes, logs, frozen source copies and
+`acceptance.json` on native rejection, guard abort, timeout or plateau failure.
+It runs remaining modes after a per-mode failure; input mutation or timeout stops
+the campaign. A guard abort or incomplete run can never pass the unchanged long
+memory policy. A failed runner exits 1; diagnostic completion exits 0 while memory
+acceptance stays false. Historical schema 1 observations remain analyzable but do
+not establish a newly requested exact ID.
+
 `gbv_lifetime_probe` is a native reproduction: no GraphicsSDK header or library.
 The dedicated CMake project needs `Lifetime.cpp`, `Runtime.cpp` and `native/CMakeLists.txt`,
 preserving that relative layout; it can be built outside this repository:

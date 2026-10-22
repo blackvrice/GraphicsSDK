@@ -35,11 +35,37 @@ def read_records(path):
     return [json.loads(line, object_pairs_hook=unique_object) for line in data.decode("utf-8").splitlines()]
 
 
+def validate_identity(header, footer, expected_adapter=None):
+    """Schema 1 stays historical; schema 2 binds request, SDK and DXGI observer."""
+    require(type(header.get("schema")) is int and header["schema"] in (1, 2), "Unknown evidence schema")
+    require(type(header.get("luid_high")) is int and -(2**31) <= header["luid_high"] < 2**31
+            and type(header.get("luid_low")) is int and 0 <= header["luid_low"] < 2**32, "Invalid LUID")
+    identity = ((header["luid_high"] & 0xffffffff) << 32) | header["luid_low"]
+    if header["schema"] == 1:
+        require(expected_adapter is None, "Historical evidence cannot verify an explicit request")
+        return identity
+    for record, key in ((header, "adapter_id"), (header, "observer_adapter_id"), (footer, "adapter_id")):
+        require(type(record.get(key)) is int and record[key] == identity, "SDK/observer/footer adapter identity mismatch")
+    requested = header.get("requested_adapter_id")
+    require("requested_adapter_id" in header and (requested is None or type(requested) is int and requested == identity), "Requested adapter identity mismatch")
+    require(expected_adapter is None or type(expected_adapter) is int and requested == expected_adapter, "Explicit adapter request missing or changed")
+    mode = header.get("mode")
+    for key, value in (("software", mode == "warp"), ("gpu_validation", mode == "validation"), ("gpu_state_tracking", mode == "validation")):
+        require(type(header.get(key)) is bool and header[key] == value, "Adapter kind/validation contract mismatch")
+    require(type(header.get("private_growth_limit_bytes")) is int and 2**20 <= header["private_growth_limit_bytes"] <= 4096*2**20
+            and type(header.get("guard_baseline_private_bytes")) is int and header["guard_baseline_private_bytes"] > 0, "Missing private growth guard")
+    return identity
+
+
 def analyze(records, expected_fingerprint, policy=None):
     policy = json.loads(POLICY.read_text()) if policy is None else policy
     require(len(records) >= 10, "Missing evidence records")
     h, f = records[0], records[-1]
-    require(h.get("type") == "header" and h.get("schema") == 1 and f.get("type") == "footer", "Header/footer missing")
+    require(h.get("type") == "header" and f.get("type") == "footer", "Header/footer missing")
+    identity = validate_identity(h, f)
+    require(f.get("status") != "aborted" and not any(r.get("phase") == "guard_aborted" for r in records), "Memory growth guard aborted; incomplete soak")
+    if h["schema"] == 2:
+        require(f.get("stop_reason") == "completed", "Incomplete native stop reason")
     require(re.fullmatch(r"[a-f0-9]{64}", expected_fingerprint) is not None and h.get("sdk_sha256") == expected_fingerprint, "SDK source fingerprint mismatch")
     mode = h.get("mode")
     require(mode in policy["minimum_seconds"], "Unknown mode")
@@ -110,7 +136,14 @@ def analyze(records, expected_fingerprint, policy=None):
         spread = max(values) - min(values)
         require(drift <= limits["median_drift"] and slope <= limits["slope_per_minute"] and spread <= limits["range"], "Memory plateau gate failed: " + name)
         metrics[name] = {"supported": True, "median_drift": drift, "slope_per_minute": slope, "range": spread, "tail_checkpoint_maximum": max(values)}
-    return {"mode": mode, "accepted": True, "measured_seconds": f["measured_seconds"], "frames": f["frames"], "full_images": f["full_images"], "verified_buffer_bytes": f["verified_buffer_bytes"], "drained_samples": len(drained), "tail_samples": len(tail), "owned_after_drain": 0, "metrics": metrics}
+    return {"mode": mode, "adapter_id": identity, "accepted": True, "measured_seconds": f["measured_seconds"], "frames": f["frames"], "full_images": f["full_images"], "verified_buffer_bytes": f["verified_buffer_bytes"], "drained_samples": len(drained), "tail_samples": len(tail), "owned_after_drain": 0, "metrics": metrics}
+
+
+def validate_campaign(results):
+    require(sorted(r["mode"] for r in results) == ["gpu", "validation", "warp"], "Exactly one campaign per mode required")
+    by_mode = {r["mode"]: r for r in results}
+    require(by_mode["gpu"]["adapter_id"] == by_mode["validation"]["adapter_id"]
+            and by_mode["gpu"]["adapter_id"] != by_mode["warp"]["adapter_id"], "Mixed campaign adapter identities")
 
 
 def main():
@@ -120,7 +153,7 @@ def main():
     p.add_argument("--output", required=True, type=pathlib.Path)
     args = p.parse_args()
     results = [analyze(read_records(path), args.fingerprint) for path in args.inputs]
-    require(sorted(r["mode"] for r in results) == ["gpu", "validation", "warp"], "Exactly one campaign per mode required")
+    validate_campaign(results)
     result = {"accepted": True, "policy_sha256": hashlib.sha256(POLICY.read_bytes()).hexdigest(), "SDK_source_fingerprint": args.fingerprint, "continuous_peak_claim": False, "campaigns": results}
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print("PASS: bounded memory campaign acceptance, all three modes")

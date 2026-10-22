@@ -1,0 +1,406 @@
+[
+  {
+    "name": "core-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/core",
+      "--config",
+      "Release",
+      "--parallel",
+      "1",
+      "--target",
+      "gfx_memory_stress"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "diagnostic-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/memory-validation-probe",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "core-ctest",
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/core",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "python-tests",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "enumeration",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\presentation\\Release\\gfx_presentation.exe",
+      "--list-adapters"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "diagnostic-0",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "gpu",
+      "--adapter",
+      "96576",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\diagnostic-0"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "gbv-guard-0",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "validation",
+      "--adapter",
+      "96576",
+      "--max-private-growth-mib",
+      "512",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\gbv-guard-0"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "diagnostic-1",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "gpu",
+      "--adapter",
+      "106703",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\diagnostic-1"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "gbv-guard-1",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "validation",
+      "--adapter",
+      "106703",
+      "--max-private-growth-mib",
+      "64",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\gbv-guard-1"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "diagnostic-2",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--mode",
+      "warp",
+      "--adapter",
+      "106596",
+      "--diagnostic-seconds",
+      "3",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\diagnostic-2"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "negative-missing",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\missing.jsonl",
+      "--adapter",
+      "18446744073709551615"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-wrong-kind",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\wrong-kind.jsonl",
+      "--mode",
+      "warp",
+      "--adapter",
+      "96576"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-malformed",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\malformed.jsonl",
+      "--adapter",
+      "1x"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-overflow",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\overflow.jsonl",
+      "--adapter",
+      "18446744073709551616"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-duplicate-zero",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\duplicate-zero.jsonl",
+      "--adapter",
+      "0",
+      "--adapter",
+      "1"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-negative",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\negative.jsonl",
+      "--seconds",
+      "-1"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-trailing",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\trailing.jsonl",
+      "--seconds",
+      "2x"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-wrapping",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\wrapping.jsonl",
+      "--seconds",
+      "4294967298"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-guard-zero",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\guard-zero.jsonl",
+      "--max-private-growth-mib",
+      "0"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-guard-overflow",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\guard-overflow.jsonl",
+      "--max-private-growth-mib",
+      "18446744073709551616"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "negative-existing",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--seconds",
+      "2",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\preexisting.jsonl"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "native-cpu-observer",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\memory_validation_probe.exe",
+      "native-cpu-texture",
+      "1",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\native-cpu-observer.jsonl"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "sdk-lifetime-hardware",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\sdk_lifetime_probe.exe",
+      "hardware",
+      "2",
+      "1",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\sdk-lifetime-hardware.jsonl"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "sdk-lifetime-warp",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\memory-validation-probe\\Release\\sdk_lifetime_probe.exe",
+      "warp",
+      "2",
+      "1",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\sdk-lifetime-warp.jsonl"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "all-continue-after-abort",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--diagnostic-seconds",
+      "3",
+      "--max-private-growth-mib",
+      "64",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\all-continue"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "all-continue-128",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--diagnostic-seconds",
+      "3",
+      "--max-private-growth-mib",
+      "128",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\all-continue-128"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "all-continue-512",
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_memory_stress.py",
+      "--diagnostic-seconds",
+      "10",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\all-continue-512"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "name": "runner-missing-adapter",
+    "command": [
+      "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe",
+      "--mode",
+      "gpu",
+      "--seconds",
+      "2",
+      "--warmup",
+      "1",
+      "--interval",
+      "1",
+      "--max-private-growth-mib",
+      "512",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-memory-campaign-final\\runner-missing\\gpu.jsonl",
+      "--adapter",
+      "18446744073709551615"
+    ],
+    "native_returncode": 1,
+    "runner_returncode": 1,
+    "accepted": false
+  }
+]

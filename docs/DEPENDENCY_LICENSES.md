@@ -275,3 +275,10 @@ SDK가 변경되어 library·benchmark·consumer·진단 도구를 재빌드하�
 DXGI/D3D12는 기존 Windows 전제조건이며 외부 dependency나 runtime 배포는 추가하지 않았다.
 6개 과거 SDK ZIP·과거 inventory·원본 근거는 보존한다. 컴파일러 retry와 acceptance 범위는
 [어댑터 보고서](PHASE2_ADAPTER_REPORT.md)를 따른다.
+
+정확한 어댑터 메모리 campaign 보강은 새
+[진단 도구 25/1 inventory](../licenses/generated/windows-sdk-memory-campaign-release/inventory.json)와
+인접 notices에 보존한다. 기존 명시적 C++ 입력 범위 안에서만 수정했고 다섯 도구의 linker
+closure를 다시 검사했다. SDK 19/1, 공통 benchmark 977/22, 어댑터 37/1과 기존 SDK ZIP 감사는
+`--check`로 그대로 일치한다. SDK library/public source·runtime/외부 dependency 배포는 바꾸지
+않고 새 SDK ZIP도 생성하지 않는다. 원래의 메모리 gate와 Intel 액세스 위반 원인은 미해결이다.
