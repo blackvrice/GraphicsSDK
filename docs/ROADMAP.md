@@ -44,6 +44,7 @@ acceptance or later SDK feature milestones.
 - [x] C++23/Result, independent static library and capability queries.
 - [x] Device/Buffer/Texture/Pipeline/CommandList/Queue/Fence/render pass/swapchain.
 - [x] Explicit transitions with stale-recording validation and retained native lifetimes.
+  Transition/copy validation now finishes before retaining new resources or version snapshots; repeated rejection, wrapper reclamation and accepted shadow-state/lifetime controls are verified ([report](PHASE2_COPY_ATOMICITY_REPORT.md)). This does not accept the separate long memory gate.
 - [x] HLSL SM5.1 bootstrap, basic reflection, one sampled binding, timestamp/debug marker.
 - [x] Real triangle/readback, WARP, GPU-based validation and installed consumer checks.
 - [x] Same suite adapter and measured narrow draw-recording optimization.

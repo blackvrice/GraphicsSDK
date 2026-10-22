@@ -87,6 +87,8 @@ registrations across retries while preserving resource ownership and loss handli
 The [swapchain guard fix](docs/PHASE2_SWAP_GUARD_REPORT.md) rejects noncurrent or
 destroyed-chain backbuffers during recording/submission and invalidates recordings
 across presentation, including after a full buffer-ring rotation.
+The [copy rejection fix](docs/PHASE2_COPY_ATOMICITY_REPORT.md) prevents rejected
+copies/transitions from retaining new resources or poisoning later submissions.
 
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),

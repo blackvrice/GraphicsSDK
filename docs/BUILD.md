@@ -19,9 +19,9 @@ SDK 자체에는 다운로드가 없다. D3D12를 끈 빌드는 GPU backend를 �
 Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux/macOS 실기기 빌드는
 현재 미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 
-현재 core CTest는 32개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
+현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).
-최신 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-swap-guards.zip`이다.
+최신 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-copy-atomicity.zip`이다.
 기존 ZIP과 측정 원본을 덮어쓰지 않았다. [복구 구현·검증 보고서](PHASE2_RECOVERY_REPORT.md)를 따른다.
 `gfx_recovery_tests --gpu/--validation/--warp`는 각 독립 process에서 opt-in native RemoveDevice를
 실행한다. 지원하지 않는 adapter/interface는 SKIP이며 완료 증거로 취급하지 않는다.

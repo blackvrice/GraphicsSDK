@@ -44,6 +44,10 @@ scope를 무효화하며, 이 scope는 public wrapper를 강하게 보유하지 
 해당 tracker version을 증가시켜 한 바퀴 회전 뒤에도 오래된 기록을 거부한다. 일반 texture/
 buffer에는 native index 조회를 추가하지 않으며 SDK의 단일 생성 thread 계약을 유지한다.
 
+복사와 buffer transition은 validation을 통과한 뒤에만 `use()`로 native 참조와 version을
+기록한다. 상태 검증에는 읽기 전용 `current()`를 사용해 앞서 수락한 shadow state를 반영한다.
+거부된 인자에 대한 보유/snapshot은 추가하지 않으며 기존 수락 기록은 그대로 유지한다.
+
 어댑터 열거는 장치를 만들지 않는 backend dispatch이며 독립 factory의 CPU 메타데이터 snapshot을
 반환한다. backend-scoped opaque ID를 DeviceDesc에 지정하면 D3D12는 EnumAdapterByLuid로
 정확히 선택하고 native Device의 실제 LUID를 다시 확인한다. 같은 descriptor를 복구에 보존해

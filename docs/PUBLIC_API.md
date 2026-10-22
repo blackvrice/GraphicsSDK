@@ -37,6 +37,15 @@ CommandList는 transition, copy, color/depth render pass, pipeline, resource/ver
 scissor, draw/indexed draw/instancing, debug marker, 2개 timestamp 슬롯을 지원한다.
 GPU timestamp read는 resolve 후 submit fence 완료 시에만 가능하다.
 
+transition/copy의 validation 거부는 명령 목록의 기존 상태를 유지하며 새 자원 참조나
+observed-version snapshot을 추가하지 않는다. `copyBuffer`, `copyBufferToTexture`,
+`copyTextureToBuffer`는 메모리/범위·양쪽의 논리 상태를 확인한 뒤에만 자원을 기록한다.
+논리 상태는 앞서 같은 명령 목록에서 수락한 transition을 포함한다. Upload/Readback heap의
+지원하지 않는 transition도 참조를 보유하기 전에 거부한다. 기존에 정상 사용한 자원과 그
+version 검사는 유지하므로, 정상 기록 뒤의 upload 변경은 여전히 submit을 실패시킨다.
+실패한 요청의 인자에만 등장한 자원은 caller 참조 해제 뒤 회수할 수 있다.
+[복사 거부 원자성 보고서](PHASE2_COPY_ATOMICITY_REPORT.md)를 따른다.
+
 ShaderBinary는 stage와 바이트 배열이다. compileHlsl/reflectShader는 Windows bootstrap
 DXBC 경로이며 [SHADER_PIPELINE](SHADER_PIPELINE.md)의 한계를 따른다.
 caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을

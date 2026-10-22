@@ -8,6 +8,8 @@ public:
     virtual ~CommandList() = default;
     [[nodiscard]] virtual Result<void> begin() = 0;
     [[nodiscard]] virtual Result<void> end() = 0;
+    // Validation rejection of transitions/copies preserves recorded state and
+    // captures no new resource references or observed versions.
     [[nodiscard]] virtual Result<void> transition(const BufferPtr&, ResourceState) = 0;
     [[nodiscard]] virtual Result<void> transition(const TexturePtr&, ResourceState) = 0;
     [[nodiscard]] virtual Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) = 0;

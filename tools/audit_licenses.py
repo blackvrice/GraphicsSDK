@@ -246,11 +246,12 @@ def collect(root, profile, package=None):
         extra = configure(root, policy, trace_dirs, artifacts_map, projects, sdk_dirs, generated)
     stress = profile in ("sdk-stress", "sdk-crash")
     crash = profile == "sdk-crash"
-    swap = profile == "sdk-swaps"
-    fence = profile in ("sdk-waits", "sdk-swaps")
-    budget = profile in ("sdk-budget", "sdk-waits", "sdk-swaps")
-    adapters = profile in ("sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps")
-    presentation = profile in ("sdk-presentation", "sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps")
+    copies = profile == "sdk-copy"
+    swap = profile in ("sdk-swaps", "sdk-copy")
+    fence = profile in ("sdk-waits", "sdk-swaps", "sdk-copy")
+    budget = profile in ("sdk-budget", "sdk-waits", "sdk-swaps", "sdk-copy")
+    adapters = profile in ("sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps", "sdk-copy")
+    presentation = profile in ("sdk-presentation", "sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps", "sdk-copy")
     if stress:
         trace_dirs = {"core": TRACE_DIRS["core"], "memory_stress": "out/core/gfx_memory_stress.dir/Release", "memory_validation_probe": "out/memory-validation-probe/memory_validation_probe.dir/Release",
                       "native_lifetime": "out/memory-validation-probe/gbv_lifetime_probe.dir/Release", "sdk_lifetime": "out/memory-validation-probe/sdk_lifetime_probe.dir/Release", "runtime_probe": "out/memory-validation-probe/gbv_runtime_probe.dir/Release"}
@@ -284,13 +285,17 @@ def collect(root, profile, package=None):
         trace_dirs["swap_tests"]="out/core/gfx_swap_tests.dir/Release"
         artifacts_map["swap_tests"]="out/core/Release/gfx_swap_tests.exe"
         projects["swap_tests"]="out/core/gfx_swap_tests.vcxproj"
+    if copies:
+        trace_dirs["copy_tests"]="out/core/gfx_copy_tests.dir/Release"
+        artifacts_map["copy_tests"]="out/core/Release/gfx_copy_tests.exe"
+        projects["copy_tests"]="out/core/gfx_copy_tests.vcxproj"
     if crash:
         for target in ("gfx_crash_capture", "gfx_crash_fixture", "gfx_memory_stress_symbols"):
             trace_dirs[target]=f"out/crash-capture/{target}.dir/Release"
             artifacts_map[target]=f"out/crash-capture/Release/{target}.exe"
             artifacts_map[target+"_symbols"]=f"out/crash-capture/Release/{target}.pdb"
             projects[target]=f"out/crash-capture/{target}.vcxproj"
-    benchmark = profile not in ("sdk", "sdk-stress", "sdk-crash", "sdk-presentation", "sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps")
+    benchmark = profile not in ("sdk", "sdk-stress", "sdk-crash", "sdk-presentation", "sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps", "sdk-copy")
     extended_sdk = stress or presentation
     target_names = list(trace_dirs) if benchmark or extended_sdk else ["core"]
     evidence = []
@@ -344,7 +349,7 @@ def collect(root, profile, package=None):
                     "source_url": pins[sdk].get("source_url", f"https://github.com/{pins[sdk]['repository']}/blob/{pins[sdk]['commit']}/") + name}
             elif presentation and path.is_relative_to(root / "out/install/include/graphics"):
                 files[relative.casefold()] = installed_presentation_header(root, path)
-            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (swap and relative.casefold()=="tests/swapchaintests.cpp") or (fence and relative.casefold()=="tests/fencewaittests.cpp") or (adapters and relative.casefold() in ("tests/adaptertests.cpp", "tests/consumer/adapter.cpp")) or (budget and relative.casefold() in ("tests/memorybudgettests.cpp", "tests/consumer/budget.cpp")) or (presentation and relative.casefold() in ("examples/presentation/windowed.cpp", "examples/presentation/presentationpolicy.hpp", "examples/presentation/policytests.cpp")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (crash and relative.casefold() in ("tools/crash_capture/capture.cpp", "tools/crash_capture/fixture.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
+            elif relative.casefold().startswith(("include/graphics/", "src/", "benchmarks/")) or (copies and relative.casefold()=="tests/copyatomicitytests.cpp") or (swap and relative.casefold()=="tests/swapchaintests.cpp") or (fence and relative.casefold()=="tests/fencewaittests.cpp") or (adapters and relative.casefold() in ("tests/adaptertests.cpp", "tests/consumer/adapter.cpp")) or (budget and relative.casefold() in ("tests/memorybudgettests.cpp", "tests/consumer/budget.cpp")) or (presentation and relative.casefold() in ("examples/presentation/windowed.cpp", "examples/presentation/presentationpolicy.hpp", "examples/presentation/policytests.cpp")) or (stress and relative.casefold() in ("tools/memorystress.cpp", "tools/memory_validation_probe/main.cpp", "tools/memory_validation_probe/reusableframe.hpp", "tools/memory_validation_probe/lifetime.cpp", "tools/memory_validation_probe/sdklifetime.cpp", "tools/memory_validation_probe/runtime.cpp")) or (crash and relative.casefold() in ("tools/crash_capture/capture.cpp", "tools/crash_capture/fixture.cpp")) or (profile=="benchmarks-gpu-memory" and relative.casefold() in ("tools/gpu_trace/export.cpp", "tools/gpu_trace/control.cpp")):
                 files[relative.casefold()] = {**record_file(root, path), "component": "graphicssdk"}
             elif benchmark and relative.casefold() in generated:
                 generated_inputs.append(record_file(root, path))
@@ -406,6 +411,8 @@ def collect(root, profile, package=None):
             names += ("fence_tests",)
         if swap:
             names += ("swap_tests",)
+        if copies:
+            names += ("copy_tests",)
         inventory["linker_read_evidence"] = actual_link_evidence(root, trace_dirs, artifacts_map, names)
         inventory["presentation_build_inputs"] = [record_file(root, root / "examples/presentation" / name) for name in ("CMakeLists.txt", "app.manifest")]
         inventory["exclusions"].extend(["Interactive visual acceptance", "Actual cross-monitor DPI change", "Unexpected driver TDR/hot-unplug"])
@@ -440,7 +447,7 @@ def write_or_check(output, files, check):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "sdk-crash", "sdk-presentation", "sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
+    parser.add_argument("--profile", choices=["sdk", "sdk-stress", "sdk-crash", "sdk-presentation", "sdk-adapters", "sdk-budget", "sdk-waits", "sdk-swaps", "sdk-copy", "benchmarks", "benchmarks-diligent", "benchmarks-bgfx", "benchmarks-forge", "benchmarks-phase1", "benchmarks-gpu-memory"], required=True)
     parser.add_argument("--package", type=pathlib.Path)
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--check", action="store_true")

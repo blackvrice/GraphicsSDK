@@ -1,0 +1,360 @@
+[
+  {
+    "name": "core-build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/core",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "core-build-1.log"
+  },
+  {
+    "name": "core-ctest",
+    "attempt": 1,
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/core",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "log": "core-ctest-1.log"
+  },
+  {
+    "name": "no-backend-configure",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/copy-atomicity-no-backend",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "returncode": 0,
+    "log": "no-backend-configure-1.log"
+  },
+  {
+    "name": "no-backend-build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/copy-atomicity-no-backend",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "no-backend-build-1.log"
+  },
+  {
+    "name": "no-backend-ctest",
+    "attempt": 1,
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/copy-atomicity-no-backend",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "log": "no-backend-ctest-1.log"
+  },
+  {
+    "name": "benchmark-build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/bench",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "benchmark-build-1.log"
+  },
+  {
+    "name": "benchmark-ctest",
+    "attempt": 1,
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/bench",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "log": "benchmark-ctest-1.log"
+  },
+  {
+    "name": "install",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--install",
+      "out/core",
+      "--config",
+      "Release",
+      "--prefix",
+      "out/install"
+    ],
+    "returncode": 0,
+    "log": "install-1.log"
+  },
+  {
+    "name": "consumer-configure",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "-S",
+      "tests/consumer",
+      "-B",
+      "out/consumer",
+      "-A",
+      "x64",
+      "-DCMAKE_PREFIX_PATH=D:\\source\\GraphicsSDK\\out\\install"
+    ],
+    "returncode": 0,
+    "log": "consumer-configure-1.log"
+  },
+  {
+    "name": "consumer-build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/consumer",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "consumer-build-1.log"
+  },
+  {
+    "name": "consumer-main",
+    "attempt": 1,
+    "command": [
+      "out/consumer/Release/consumer.exe"
+    ],
+    "returncode": 0,
+    "log": "consumer-main-1.log"
+  },
+  {
+    "name": "consumer-recovery",
+    "attempt": 1,
+    "command": [
+      "out/consumer/Release/recovery_consumer.exe"
+    ],
+    "returncode": 0,
+    "log": "consumer-recovery-1.log"
+  },
+  {
+    "name": "consumer-recovery-warp",
+    "attempt": 1,
+    "command": [
+      "out/consumer/Release/recovery_consumer.exe",
+      "--warp"
+    ],
+    "returncode": 0,
+    "log": "consumer-recovery-warp-1.log"
+  },
+  {
+    "name": "consumer-adapter",
+    "attempt": 1,
+    "command": [
+      "out/consumer/Release/adapter_consumer.exe"
+    ],
+    "returncode": 0,
+    "log": "consumer-adapter-1.log"
+  },
+  {
+    "name": "consumer-adapter-validation",
+    "attempt": 1,
+    "command": [
+      "out/consumer/Release/adapter_consumer.exe",
+      "--validation"
+    ],
+    "returncode": 0,
+    "log": "consumer-adapter-validation-1.log"
+  },
+  {
+    "name": "consumer-budget",
+    "attempt": 1,
+    "command": [
+      "out/consumer/Release/budget_consumer.exe"
+    ],
+    "returncode": 0,
+    "log": "consumer-budget-1.log"
+  },
+  {
+    "name": "consumer-budget-validation",
+    "attempt": 1,
+    "command": [
+      "out/consumer/Release/budget_consumer.exe",
+      "--validation"
+    ],
+    "returncode": 0,
+    "log": "consumer-budget-validation-1.log"
+  },
+  {
+    "name": "presentation-configure",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "-S",
+      "examples/presentation",
+      "-B",
+      "out/presentation",
+      "-A",
+      "x64",
+      "-DCMAKE_PREFIX_PATH=D:\\source\\GraphicsSDK\\out\\install"
+    ],
+    "returncode": 0,
+    "log": "presentation-configure-1.log"
+  },
+  {
+    "name": "presentation-build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/presentation",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "presentation-build-1.log"
+  },
+  {
+    "name": "presentation-ctest",
+    "attempt": 1,
+    "command": [
+      "ctest",
+      "--test-dir",
+      "out/presentation",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "log": "presentation-ctest-1.log"
+  },
+  {
+    "name": "presentation-campaign",
+    "attempt": 1,
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_presentation_validation.py",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-copy-atomicity\\presentation-campaign"
+    ],
+    "returncode": 0,
+    "log": "presentation-campaign-1.log"
+  },
+  {
+    "name": "adapter-campaign",
+    "attempt": 1,
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_adapter_validation.py",
+      "--output",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-22-phase2-copy-atomicity\\adapter-campaign"
+    ],
+    "returncode": 0,
+    "log": "adapter-campaign-1.log"
+  },
+  {
+    "name": "diagnostic-build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/memory-validation-probe",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "diagnostic-build-1.log"
+  },
+  {
+    "name": "crash-symbol-build",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/crash-capture",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "crash-symbol-build-1.log"
+  },
+  {
+    "name": "repro-relink",
+    "attempt": 1,
+    "command": [
+      "cmake",
+      "--build",
+      "out/copy-rejection-repro/build",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "log": "repro-relink-1.log"
+  },
+  {
+    "name": "installed-copy-repro",
+    "attempt": 1,
+    "command": [
+      "out/copy-rejection-repro/build/Release/repro.exe"
+    ],
+    "returncode": 0,
+    "log": "installed-copy-repro-1.log"
+  },
+  {
+    "name": "python-tests",
+    "attempt": 1,
+    "command": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0,
+    "log": "python-tests-1.log"
+  }
+]

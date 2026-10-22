@@ -5,6 +5,11 @@
 `ctest --test-dir out/core -C Release --output-on-failure`:
 
 * core_contracts: backend advertising, Unsupported errors, invalid shader inputs.
+* copy_atomicity_gpu / copy_atomicity_validation: all exact hardware/WARP candidates,
+  eight state/memory rejection cases repeated 64 times, unchanged accepted state/versions,
+  dropped-wrapper resource statistics, independent source writes/transitions and empty submits.
+  Accepted 4KiB buffer copies and complete padded RGBA8/RGBA16F texture payloads verify that
+  shadow-state handling, retained native lifetimes and accepted-use stale rejection stay intact.
 * swapchain_guards_gpu / swapchain_guards_validation: exact adapter selection on all hardware/WARP,
   2/3/4-buffer rings, current/expired-chain input rejection, stale submit before and after a full
   ring rotation, unchanged fence timeline on rejection, atomic attachment/copy rejection,

@@ -371,11 +371,9 @@ struct DXCommands final : CommandList {
     }
     Result<void> change(Use& usage, ResourceState next) {
         if (usage.memory == Memory::Upload) {
-            if (next != ResourceState::CopySource && !vertexState(next) && !indexState(next) && next!=ResourceState::ConstantBuffer) return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
             usage.state = next; return {};
         }
         if (usage.memory == Memory::Readback) {
-            if (next != ResourceState::CopyDestination) return invalid("Readback memory stays in COPY_DEST", ErrorCode::InvalidArgument);
             usage.state = next; return {};
         }
         if (usage.state != next && native(usage.state) != native(next)) {
@@ -407,6 +405,11 @@ struct DXCommands final : CommandList {
         auto status = ready(true); if (!status) return status;
         if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination && !vertexState(next) && !indexState(next) && next!=ResourceState::ConstantBuffer) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
         auto object = owned<DXBuffer>(ptr); if (!object) return std::unexpected(object.error());
+        // Validate before use() captures ownership and the observed version.
+        if ((*object)->desc.memory == Memory::Upload && next != ResourceState::CopySource && !vertexState(next) && !indexState(next) && next != ResourceState::ConstantBuffer)
+            return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
+        if ((*object)->desc.memory == Memory::Readback && next != ResourceState::CopyDestination)
+            return invalid("Readback memory stays in COPY_DEST", ErrorCode::InvalidArgument);
         return change(use((*object)->tracker, (*object)->resource, (*object)->desc.memory), next);
     }
     Result<void> transition(const TexturePtr& ptr, ResourceState next) override {
@@ -425,8 +428,10 @@ struct DXCommands final : CommandList {
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
         if (src == dst || !bytes || bytes > (*source)->desc.size || bytes > (*destination)->desc.size || (*source)->desc.memory == Memory::Readback || (*destination)->desc.memory == Memory::Upload)
             return invalid("Invalid buffer copy", ErrorCode::InvalidArgument);
-        auto& a = use((*source)->tracker, (*source)->resource, (*source)->desc.memory); if (a.state != ResourceState::CopySource) return invalid("Source is not CopySource");
-        auto& b = use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory); if (b.state != ResourceState::CopyDestination) return invalid("Destination is not CopyDestination");
+        if (current(**source) != ResourceState::CopySource) return invalid("Source is not CopySource");
+        if (current(**destination) != ResourceState::CopyDestination) return invalid("Destination is not CopyDestination");
+        use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
+        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory);
         list->CopyBufferRegion((*destination)->resource.Get(), 0, (*source)->resource.Get(), 0, bytes); return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& src, const TexturePtr& dst) override {
@@ -434,8 +439,10 @@ struct DXCommands final : CommandList {
         auto source = owned<DXBuffer>(src); auto destination = owned<DXTexture>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
         if ((*source)->desc.memory == Memory::Readback || (*source)->desc.size < (*destination)->layout.size) return invalid("Upload buffer is too small or not copyable", ErrorCode::InvalidArgument);
-        if (use((*source)->tracker, (*source)->resource, (*source)->desc.memory).state != ResourceState::CopySource ||
-            use((*destination)->tracker, (*destination)->resource).state != ResourceState::CopyDestination) return invalid("Texture upload requires CopySource/CopyDestination");
+        if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
+            return invalid("Texture upload requires CopySource/CopyDestination");
+        use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
+        use((*destination)->tracker, (*destination)->resource);
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; a.PlacedFootprint = (*destination)->placed;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
@@ -446,8 +453,10 @@ struct DXCommands final : CommandList {
         auto source = owned<DXTexture>(src); auto destination = owned<DXBuffer>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
         if ((*destination)->desc.memory == Memory::Upload || (*destination)->desc.size < (*source)->layout.size) return invalid("Readback buffer is too small or not copyable", ErrorCode::InvalidArgument);
-        if (use((*source)->tracker, (*source)->resource).state != ResourceState::CopySource ||
-            use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory).state != ResourceState::CopyDestination) return invalid("Texture download requires CopySource/CopyDestination");
+        if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
+            return invalid("Texture download requires CopySource/CopyDestination");
+        use((*source)->tracker, (*source)->resource);
+        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory);
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; b.PlacedFootprint = (*source)->placed;
