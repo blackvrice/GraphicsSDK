@@ -6,6 +6,9 @@ Float/UNorm vertex inputs, matching float varyings와 float4 color outputs를 �
 별도 sampled image/immutable sampler/float4 Uniform Block binding을 지원한다.
 Vulkan location은 attributes 배열 순서로, resource set 0의 binding은 layout entry 순서로,
 sampler binding은 32+sampler index로 정한다. Uniform Block은 연속 float4 member만 받는다.
+Vulkan depth-only layout은 fragment bytes를 생략할 수 있으며 VS Position의 Z로 D32 깊이를
+공급한다. Color layout은 fragment module과 모든 color output을 요구한다. Fragment depth export는
+지원하지 않는다. Depth 비교/쓰기/read-only pass는 [깊이 보고서](PHASE3_VULKAN_DEPTH_REPORT.md)를 따른다.
 SDK의 framing/interface 검사는
 전체 semantic validator가 아니다. 자체 fixture는 고정 로컬 SPIRV-Tools로 검증하며
 이 외부 도구는 SDK에 링크·배포하지 않는다. [범위와 계약](VULKAN.md)을 따른다.

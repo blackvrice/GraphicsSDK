@@ -3,17 +3,17 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The default integrated Windows configuration registers 43 CTests (including CPU
-SPIR-V inspection and buffer/texture/color-pass/draw/vertex/binding suites), Vulkan-only has 15,
+The default integrated Windows configuration registers 44 CTests (including CPU
+SPIR-V inspection and buffer/texture/color-pass/draw/vertex/binding/depth suites), Vulkan-only has 16,
 and no-backend has 9. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
 The required synchronization-validation profile adds `vulkan_transfer_validation`,
 `vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`,
-`vulkan_vertex_validation`, `vulkan_binding_validation`
+`vulkan_vertex_validation`, `vulkan_binding_validation`, `vulkan_depth_validation`
 and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`),
-yielding 50 integrated / 22 Vulkan-only registered tests. A pinned,
+yielding 52 integrated / 24 Vulkan-only registered tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -69,6 +69,14 @@ to 47 selected integrated (50 registered, same three memory exclusions) + 22 Vul
 VS constants, float4 block minimum sizes, point/linear clamp/repeat CPU references,
 immutable set replacement, postprocess and rejection/version/lifetime controls are
 covered. All six installed GPU consumers require core/synchronization validation.
+
+The [depth profile](PHASE3_VULKAN_DEPTH_REPORT.md) extends the matrix to 49 selected
+integrated (52 registered, same three memory exclusions) + 24 Vulkan-only + 9 no-backend
+CTests. Each depth execution checks 883 assertions, 206 passes, 258 draws and 278 full
+images (126 D32), 334,855,104 texel bytes and 262 padded images across both adapters.
+It verifies all compare functions/write masks, test-disabled pipelines, mixed MRT,
+depth-only fragment omission, read-only Load, upload/device round trips, native lifetime
+and late-rejection atomicity. All seven installed GPU suites repeat required validation.
 
 ## Automated checks
 

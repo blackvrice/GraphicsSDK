@@ -36,7 +36,7 @@ def collect(root):
     for option in ('GFX_ENABLE_D3D12:BOOL=ON', 'GFX_ENABLE_VULKAN:BOOL=ON', 'CMAKE_GENERATOR:INTERNAL=Visual Studio 17 2022'):
         if option not in cache.splitlines():
             raise audit.AuditError(f'Wrong build configuration: {option}')
-    if PROFILE in ('windows-sdk-vulkan-validation-release', 'windows-sdk-vulkan-textures-release', 'windows-sdk-vulkan-color-pass-release', 'windows-sdk-vulkan-draw-release', 'windows-sdk-vulkan-vertex-release', 'windows-sdk-vulkan-bindings-release') and 'GFX_VULKAN_VALIDATION_TESTS:BOOL=ON' not in cache.splitlines():
+    if PROFILE in ('windows-sdk-vulkan-validation-release', 'windows-sdk-vulkan-textures-release', 'windows-sdk-vulkan-color-pass-release', 'windows-sdk-vulkan-draw-release', 'windows-sdk-vulkan-vertex-release', 'windows-sdk-vulkan-bindings-release', 'windows-sdk-vulkan-depth-release') and 'GFX_VULKAN_VALIDATION_TESTS:BOOL=ON' not in cache.splitlines():
         raise audit.AuditError('Required Vulkan validation tests were not configured')
     configured_headers = next((s.split('=', 1)[1] for s in cache.splitlines() if s.startswith('GFX_VULKAN_HEADERS:PATH=')), '')
     if pathlib.Path(configured_headers).resolve() != headers.resolve():
@@ -165,13 +165,13 @@ def package_record(root, package, required):
 
 def configure_variant(variant):
     global BUILD, CONSUMER, INSTALL, POLICY, PROFILE, EXPECTED_LOGS, EXCLUSIONS
-    if variant in ('validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings'):
+    if variant in ('validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings', 'depth'):
         BUILD = pathlib.Path('out/vulkan-' + variant)
         CONSUMER = pathlib.Path('out/vulkan-' + variant + '-consumer')
         INSTALL = pathlib.Path('out/vulkan-' + variant + '-install')
         POLICY = pathlib.Path('licenses/vulkan-' + variant + '-policy.json')
         PROFILE = 'windows-sdk-vulkan-' + variant + '-release'
-        EXPECTED_LOGS = {'validation': (16, 15), 'textures': (18, 17), 'color-pass': (20, 19), 'draw': (23, 22), 'vertex': (26, 25), 'bindings': (29, 28)}[variant]
+        EXPECTED_LOGS = {'validation': (16, 15), 'textures': (18, 17), 'color-pass': (20, 19), 'draw': (23, 22), 'vertex': (26, 25), 'bindings': (29, 28), 'depth': (31, 30)}[variant]
         EXCLUSIONS = ['Linux native builds/runtime', 'Vulkan GPU-assisted validation', 'Vulkan rendering and competitor measurements',
             'External local-only VVL/SPIRV runtime build, separately recorded and not bundled',
             'Historical binaries/packages/benchmarks, preserved independently']
@@ -180,11 +180,13 @@ def configure_variant(variant):
         if variant == 'draw':
             EXCLUSIONS[2] = 'Vulkan depth/bindings/vertex input/indexed drawing/presentation and competitor measurements'
             EXCLUSIONS[3] = 'External local-only VVL/SPIRV fixture tools, separately recorded and not bundled'
-        if variant in ('vertex', 'bindings'):
+        if variant in ('vertex', 'bindings', 'depth'):
             EXCLUSIONS[2] = 'Vulkan depth/bindings/timestamps/presentation and competitor measurements'
             EXCLUSIONS[3] = 'External local-only reused VVL/SPIRV fixture tools, separately recorded and not bundled'
-        if variant == 'bindings':
+        if variant in ('bindings', 'depth'):
             EXCLUSIONS[2] = 'Vulkan depth/timestamps/presentation and competitor measurements'
+        if variant == 'depth':
+            EXCLUSIONS[2] = 'Vulkan depth sampling/stencil/timestamps/presentation and competitor measurements'
     elif variant == 'transfer':
         BUILD = pathlib.Path('out/vulkan-transfer')
         CONSUMER = pathlib.Path('out/vulkan-consumer')
@@ -199,7 +201,7 @@ def configure_variant(variant):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--variant', choices=('transfer', 'validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings'), default='transfer')
+    parser.add_argument('--variant', choices=('transfer', 'validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings', 'depth'), default='transfer')
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--package', type=pathlib.Path, required=True)
     mode = parser.add_mutually_exclusive_group(required=True)

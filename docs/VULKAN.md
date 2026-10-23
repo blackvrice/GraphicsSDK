@@ -1,11 +1,11 @@
-# Vulkan transfers, drawing and resource bindings
+# Vulkan transfers, drawing, resource bindings and depth
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
 RGBA8/RGBA16F 2D textures, color Clear/Load/Store passes, command recording/submission,
-queue fences, graphics pipelines/vertex/index drawing, resource bindings and resource statistics. The D3D12
+queue fences, graphics pipelines/vertex/index drawing, resource bindings, D32 depth and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
-backend when enabled; depth/timestamps/presentation remain unimplemented.
+backend when enabled; timestamps/presentation remain unimplemented.
 
 ## Build
 
@@ -66,7 +66,7 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   files can override layer API settings; controlled acceptance clears those inputs.
   A zero count without a validation device is not validation-layer acceptance.
 
-Depth textures, compute pipelines, timestamps,
+Compute pipelines, timestamps,
 debug markers and swapchains return `Unsupported`; their capability flags are
 false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 These APIs, Linux execution and matching Vulkan competitor measurements remain
@@ -78,7 +78,7 @@ ordered follow-up work. See the [implementation report](PHASE3_VULKAN_TRANSFER_R
 Descriptions use the common 1..16384 extent contract and also check the selected
 adapter's optimal-tiling image format/extent support. Each image has a dedicated
 device-local allocation, one mip, one layer and one sample. Color render-target usage
-is also accepted; depth remains `Unsupported`. Color images support sampling as described below.
+is also accepted. D32 depth images follow the separate depth contract below. Color images support sampling as described below.
 
 `footprint()` reports `rowBytes = width * texelBytes`, a 256-byte-aligned `rowPitch`,
 and `size = rowPitch * height`, including final-row padding. Copy the full image at
@@ -159,7 +159,7 @@ is not linked into or distributed with the SDK. `compileHlsl` remains DXBC only;
 `reflectShader` explicitly returns Unsupported for SPIRV. General DXC and SPIR-V
 reflection remain Phase 5 work.
 
-Pipelines use triangle lists, no culling/depth/MSAA, and 1..8 floating
+Pipelines use triangle lists, no culling/MSAA, optional D32 depth and 0..8 floating
 color outputs bounded by the adapter limit. Layout/format count must match the active
 pass. Both RGBA8/RGBA16F support and optional blending features are queried first.
 Alpha blending matches D3D12: RGB = src.rgb*src.a + dst.rgb*(1-src.a), alpha = src.a.
@@ -271,6 +271,52 @@ See [binding evidence](PHASE3_VULKAN_BINDINGS_REPORT.md). Native contracts follo
 [descriptor layouts](https://docs.vulkan.org/refpages/latest/refpages/source/VkDescriptorSetLayoutBinding.html),
 [descriptor binding](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdBindDescriptorSets.html)
 and [adapter limits](https://docs.vulkan.org/refpages/latest/refpages/source/VkPhysicalDeviceLimits.html).
+
+## D32 depth attachments and transfers
+
+`TextureDesc{width,height,Format::D32Float,false,true}` creates a single-mip/layer/sample
+depth image with a depth view and transfer usage. `depthAttachment` reports whether
+the actual adapter supports this D32 attachment/transfer usage combination. Creation
+checks native extent/sample/usage support. `footprint` uses four bytes per float32
+texel, a 256-byte-aligned row pitch and full final-row padding. Full-image Upload or
+Device buffer uploads and Readback or Device downloads use the depth aspect. Buffer
+payloads are copied as supplied; callers provide valid depth data for rendering.
+
+DepthWrite maps to DEPTH_STENCIL_ATTACHMENT_OPTIMAL and depth read/write access;
+DepthRead maps to DEPTH_STENCIL_READ_ONLY_OPTIMAL and depth read access. Transitions
+occur outside render passes. Color images reject depth states; depth images reject
+RenderTarget and depth sampling via ShaderRead is Unsupported.
+
+Passes support optional D32 depth alongside 0..8 mixed color attachments. A depth-only
+pass is valid. Attachment extents must match and at least one attachment is required.
+Depth Clear accepts a finite 0..1 value; Load requires an uploaded or cleared depth
+image. Read-only depth requires Load and DepthRead; writable depth requires DepthWrite.
+All attachments Store. Validation completes before any clear or resource/version
+capture, including a late depth failure after otherwise valid colors.
+
+`RenderTargetLayout.depth` must be D32Float. DepthState supports all eight CompareOp
+values and test/write masks. Write requires test enabled and depth state requires a
+depth layout. A depth-only pipeline can omit fragment bytes; a color layout requires
+a fragment shader. Provided fragment modules must match the output layout as usual.
+Pipeline/pass depth presence and color formats/counts must agree. Selecting a writing
+pipeline in a read-only pass is allowed, but draw/drawIndexed returns InvalidState.
+Depth bounds, stencil, depth sampling, MSAA and fragment depth export are unsupported.
+
+External dependencies cover early/late fragment tests and depth attachment accesses
+as well as color/transfer work. Pass/framebuffer/view/pipeline/recording lifetimes and
+resource versions follow the existing retained-native model, including wrapper release
+before completion and device retirement. No native cache or performance claim is made.
+
+`gfx_vulkan_depth_tests [--validation]` and installed `vulkan_depth_consumer` compare
+all D32/color pixels and sentinel padding for eight compare functions, write masks,
+depth-disabled pipelines, 2/8 mixed MRT, order independence, Load/read-only passes,
+depth-only fragment omission, full D32 transfer and 1080p/4K output. Rejection,
+version/thread/ownership and retirement controls are separate from valid GPU work.
+Current roots: `out/vulkan-depth`, `out/vulkan-depth-install`, `out/vulkan-depth-consumer`.
+See [depth evidence](PHASE3_VULKAN_DEPTH_REPORT.md). Native contracts follow
+[depth state](https://docs.vulkan.org/refpages/latest/refpages/source/VkPipelineDepthStencilStateCreateInfo.html),
+[attachment load/store](https://docs.vulkan.org/refpages/latest/refpages/source/VkAttachmentDescription.html)
+and [buffer/image copies](https://docs.vulkan.org/refpages/latest/refpages/source/VkBufferImageCopy.html).
 
 The synchronization and lifetime rules follow the primary
 [copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBuffer.html),

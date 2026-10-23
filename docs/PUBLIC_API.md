@@ -258,7 +258,11 @@ draw는 pipeline의 color count/순서별 format, depth 유무/format, read-only
 depth texture는 Common/CopySource/CopyDestination/DepthWrite/DepthRead 상태를 사용하고,
 color texture·buffer에는 DepthWrite/DepthRead를 허용하지 않는다. D32의 ShaderRead/Present/
 RenderTarget도 거부한다. 모든 attachment는 기존 submit version 검사와 fence retention에 참여한다.
-caps.depthAttachment/multipleRenderTargets는 D3D12에서 true다. 새 virtual 함수와 descriptor로
+caps.depthAttachment/multipleRenderTargets는 D3D12에서 true다. Vulkan은 실제 D32 attachment/transfer
+조합과 native color attachment 한도를 조회해 표시하며 같은 깊이 비교·쓰기를 지원한다.
+Vulkan depth-only pipeline도 fragment bytes를 생략할 수 있고 clip Position의 Z를 깊이로 사용한다.
+깊이 ShaderRead/stencil/fragment depth export는 지원하지 않는다. 이번 추가는 공개 API 형태/ABI를
+바꾸지 않는다. 기존의 새 virtual 함수와 descriptor를 적용하는
 개발 버전 consumer는 다시 빌드해야 한다. Stencil, MSAA/resolve, discard/store 선택, subpass는 미지원이다.
 
 ## 장치 손실과 복구

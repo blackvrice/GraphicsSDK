@@ -108,8 +108,10 @@ acceptance or later SDK feature milestones.
   UInt16/UInt32 indexed input, instance streams and float varyings are implemented
   ([report](PHASE3_VULKAN_VERTEX_REPORT.md)). Separate Texture2D/constant arrays,
   immutable sampler layouts and immutable binding snapshots are implemented
-  ([report](PHASE3_VULKAN_BINDINGS_REPORT.md)). Depth, timestamps, presentation
-  and the rest of this gate remain open.
+  ([report](PHASE3_VULKAN_BINDINGS_REPORT.md)). D32 transfers, depth-only/read-only
+  attachments, all compare/write masks and mixed MRT+depth are implemented
+  ([report](PHASE3_VULKAN_DEPTH_REPORT.md)). Timestamps, presentation and the rest
+  of this gate remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.
 

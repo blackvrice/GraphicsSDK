@@ -1,0 +1,53 @@
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %out0 %out1 %out2 %out3 %out4 %out5 %out6 %out7
+OpExecutionMode %main OriginUpperLeft
+OpDecorate %block Block
+OpMemberDecorate %block 0 Offset 0
+OpMemberDecorate %block 1 Offset 16
+OpDecorate %params DescriptorSet 0
+OpDecorate %params Binding 0
+OpDecorate %out0 Location 0
+OpDecorate %out1 Location 1
+OpDecorate %out2 Location 2
+OpDecorate %out3 Location 3
+OpDecorate %out4 Location 4
+OpDecorate %out5 Location 5
+OpDecorate %out6 Location 6
+OpDecorate %out7 Location 7
+%void = OpTypeVoid
+%fn = OpTypeFunction %void
+%float = OpTypeFloat 32
+%v4 = OpTypeVector %float 4
+%uint = OpTypeInt 32 0
+%u0 = OpConstant %uint 0
+%one = OpConstant %float 1
+%ones = OpConstantComposite %v4 %one %one %one %one
+%block = OpTypeStruct %v4 %v4
+%ub = OpTypePointer Uniform %block
+%uv4 = OpTypePointer Uniform %v4
+%params = OpVariable %ub Uniform
+%output = OpTypePointer Output %v4
+%out0 = OpVariable %output Output
+%out1 = OpVariable %output Output
+%out2 = OpVariable %output Output
+%out3 = OpVariable %output Output
+%out4 = OpVariable %output Output
+%out5 = OpVariable %output Output
+%out6 = OpVariable %output Output
+%out7 = OpVariable %output Output
+%main = OpFunction %void None %fn
+%label = OpLabel
+%ptr = OpAccessChain %uv4 %params %u0
+%color = OpLoad %v4 %ptr
+%inverse = OpFSub %v4 %ones %color
+OpStore %out0 %color
+OpStore %out1 %inverse
+OpStore %out2 %color
+OpStore %out3 %inverse
+OpStore %out4 %color
+OpStore %out5 %inverse
+OpStore %out6 %color
+OpStore %out7 %inverse
+OpReturn
+OpFunctionEnd

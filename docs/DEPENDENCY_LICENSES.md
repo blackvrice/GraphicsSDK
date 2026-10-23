@@ -1,5 +1,12 @@
 # 배포 의존성 라이선스 감사
 
+D32 깊이 패스는 `audit_vulkan.py --variant depth`와 `licenses/vulkan-depth-policy.json`으로
+별도 감사한다. [inventory](../licenses/generated/windows-sdk-vulkan-depth-release/inventory.json)는
+77개 compiler input/2개 component, 31개 compiler log/30개 linker log와 정확한 SDK payload를
+검사한다. 자체 GPU 테스트·지원/fixture header 세 파일만 허용 범위에 추가했다.
+기존 고정 로컬 shader tool/runtime을 재사용하고 외부 dependency 배포를 추가하지 않는다.
+기존 SDK ZIP 19개와 과거 inventory를 보존한다.
+
 리소스 바인딩은 `audit_vulkan.py --variant bindings`와
 `licenses/vulkan-bindings-policy.json`으로 별도 감사한다.
 [inventory](../licenses/generated/windows-sdk-vulkan-bindings-release/inventory.json)는

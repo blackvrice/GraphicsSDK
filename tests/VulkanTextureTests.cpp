@@ -108,7 +108,7 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation)
     reject(d.createTexture({16385, 1}), gfx::ErrorCode::InvalidArgument, "Bounded texture extent");
     reject(d.createTexture({1, 1, static_cast<gfx::Format>(99)}), gfx::ErrorCode::InvalidArgument, "Unknown texture format");
     reject(d.createTexture({1, 1, gfx::Format::D32Float}), gfx::ErrorCode::InvalidArgument, "Depth format needs depth usage");
-    reject(d.createTexture({1, 1, gfx::Format::D32Float, false, true}), gfx::ErrorCode::Unsupported, "Depth transfers not implemented");
+    reject(d.createTexture({1, 1, gfx::Format::D32Float, true, true}), gfx::ErrorCode::InvalidArgument, "Depth cannot have color-target usage");
     reject(d.createTexture({1, 1, gfx::Format::RGBA8UNorm, false, true}), gfx::ErrorCode::InvalidArgument, "Color cannot have depth usage");
     auto other = take(gfx::createDevice(description(adapter, validation)));
     auto image = take(d.createTexture({3, 7})); const auto f = image->footprint();
