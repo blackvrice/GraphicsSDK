@@ -104,7 +104,7 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation)
     reject(cmd->copyBuffer(up, read, 0), gfx::ErrorCode::InvalidArgument, "Empty copy");
     reject(cmd->copyBuffer(up, read, 258), gfx::ErrorCode::InvalidArgument, "Copy bounds");
     reject(cmd->copyBuffer(up, up, 1), gfx::ErrorCode::InvalidArgument, "Copy alias");
-    reject(cmd->draw(3), gfx::ErrorCode::Unsupported, "Unsupported draw preserves copy recording");
+    reject(cmd->draw(3), gfx::ErrorCode::InvalidState, "Draw outside pass preserves copy recording");
     take(cmd->transition(gpu, gfx::ResourceState::CopyDestination)); take(cmd->copyBuffer(up, gpu, 257));
     take(cmd->transition(gpu, gfx::ResourceState::CopySource)); take(cmd->copyBuffer(gpu, read, 257)); take(cmd->end());
     reject(other->queue().submit(*cmd), gfx::ErrorCode::WrongDevice, "Wrong queue");

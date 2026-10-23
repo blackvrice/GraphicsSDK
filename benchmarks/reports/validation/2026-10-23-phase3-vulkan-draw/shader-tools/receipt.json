@@ -1,0 +1,150 @@
+{
+  "component": {
+    "name": "SPIRV-Tools",
+    "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+    "commit": "0cfe9e7219148716dfd30b37f4d21753f098707a",
+    "ref": "0cfe9e7219148716dfd30b37f4d21753f098707a"
+  },
+  "scope": "Local-only fixture assembler/validator; not SDK linked/distributed dependency audit",
+  "prerequisite_library": {
+    "path": "out/vulkan-validation-runtime/prerequisites/lib/SPIRV-Tools.lib",
+    "bytes": 32961418,
+    "sha256": "370c333bfb5d2a1d895e3d07ffb450af2603ba051023e0917f8eb376ce5dc00f"
+  },
+  "tool": {
+    "path": "out/vulkan-draw-shader-tools/Release/spirv_fixture_tool.exe",
+    "bytes": 1500672,
+    "sha256": "29e427d31562da30f5bd40bcfbe288a5755836849bd628be0a682d535bab9ee1"
+  },
+  "fixtures": [
+    {
+      "name": "triangle",
+      "assembly": {
+        "path": "tests/fixtures/spirv/triangle.spvasm",
+        "bytes": 1397,
+        "sha256": "c00faefefd677b723efde648d77dabba620aada28067bdc5aca0f8f41f9068ad"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/triangle.spv",
+        "bytes": 740,
+        "sha256": "145b8ca65fe003a50dc3807c08a3974553e66d672f320be5da0af678c31d9fe9"
+      }
+    },
+    {
+      "name": "fullscreen",
+      "assembly": {
+        "path": "tests/fixtures/spirv/fullscreen.spvasm",
+        "bytes": 1382,
+        "sha256": "27ab8191fb5734885eea0ae0a96830ae0e16e4c72fa5e91cb75033ee03b374b5"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/fullscreen.spv",
+        "bytes": 740,
+        "sha256": "c16ac7f41b09d49acd13762f6d7b98a5600e8c46926307b4963e9ac047e98793"
+      }
+    },
+    {
+      "name": "instanced",
+      "assembly": {
+        "path": "tests/fixtures/spirv/instanced.spvasm",
+        "bytes": 1705,
+        "sha256": "7ddb6a7471ac21b380000db010466847e606d8153c68f1f5f8ec54fbace6faee"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/instanced.spv",
+        "bytes": 892,
+        "sha256": "7dab31912ef3e868f0e7da66bb51b50a8e085f8e7fb2f59d5ea626db54ac6513"
+      }
+    },
+    {
+      "name": "unsupported_point",
+      "assembly": {
+        "path": "tests/fixtures/spirv/unsupported_point.spvasm",
+        "bytes": 1539,
+        "sha256": "b5b117b64b9d7bbb7b42e2b521db11af6857319a7d651fc1a2067f57a9fd390c"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/unsupported_point.spv",
+        "bytes": 804,
+        "sha256": "92938828f8acd79e794c3cc9531048f8eba9f49d2ab3589d3a74136a07e6feec"
+      }
+    },
+    {
+      "name": "red",
+      "assembly": {
+        "path": "tests/fixtures/spirv/red.spvasm",
+        "bytes": 587,
+        "sha256": "6932bef401f705e3b89a08713d438043e18da5f1efc43cdb5c96e697d372e84e"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/red.spv",
+        "bytes": 312,
+        "sha256": "46c556cfe7c4897c6e6c9b15fecb5267e546683ba008ec32112ceafb8ffda88b"
+      }
+    },
+    {
+      "name": "green",
+      "assembly": {
+        "path": "tests/fixtures/spirv/green.spvasm",
+        "bytes": 587,
+        "sha256": "8ca2c7ee7133761ee6939dc8af8b5e20acf24dd9a1a1376aeab65a74ec3a6d41"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/green.spv",
+        "bytes": 312,
+        "sha256": "347f44dfbd01859e1f4dfc10056b60549ac49865e8f1abd3d0389def6129f98c"
+      }
+    },
+    {
+      "name": "half_red",
+      "assembly": {
+        "path": "tests/fixtures/spirv/half_red.spvasm",
+        "bytes": 589,
+        "sha256": "520cb957de616dd63547e7ad7b8363737c19f31d315e868803b77d4d9b13a15e"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/half_red.spv",
+        "bytes": 312,
+        "sha256": "33ad86e0f0e5dd28804a613ac7236ac542d4e004298d51b959a309965f77b71f"
+      }
+    },
+    {
+      "name": "mrt2",
+      "assembly": {
+        "path": "tests/fixtures/spirv/mrt2.spvasm",
+        "bytes": 845,
+        "sha256": "7b7b518d337513b6886d344274d588ad3d84c4f28e8ce753e98d48c5ffe63a82"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/mrt2.spv",
+        "bytes": 452,
+        "sha256": "c59ff8d97026ab555bbcbc4db05a2ab17709b6f8e8931b68045545a632e444bd"
+      }
+    },
+    {
+      "name": "mrt8",
+      "assembly": {
+        "path": "tests/fixtures/spirv/mrt8.spvasm",
+        "bytes": 2393,
+        "sha256": "2a938036feb46580d724a197cd09c492c76ca6060e5bb08bf4beed267057553a"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-shader-tools/mrt8.spv",
+        "bytes": 1292,
+        "sha256": "f7910417571d274c4558f16a6cc2cdfbd25713a4c7cf611786edf3634f16b6f2"
+      }
+    }
+  ],
+  "header": {
+    "path": "tests/fixtures/SpirvFixtures.hpp",
+    "bytes": 20695,
+    "sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7"
+  },
+  "license_files": [
+    {
+      "path": ".deps/vvl-validation/SPIRV-Tools/LICENSE",
+      "bytes": 11560,
+      "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
+    }
+  ]
+}

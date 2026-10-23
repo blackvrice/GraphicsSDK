@@ -1,0 +1,49 @@
+#include "Spirv.hpp"
+#include "fixtures/SpirvFixtures.hpp"
+#include <iostream>
+#include <stdexcept>
+
+namespace {
+unsigned assertions{};
+void check(bool value) { ++assertions; if (!value) throw std::runtime_error("SPIR-V interface contract"); }
+gfx::ShaderBinary shader(std::span<const std::uint32_t> words, gfx::ShaderStage stage) {
+    auto bytes = std::as_bytes(words); return {stage, {bytes.begin(), bytes.end()}, gfx::ShaderFormat::SPIRV};
+}
+void reject(gfx::ShaderBinary binary, gfx::ErrorCode code, gfx::ShaderStage stage = gfx::ShaderStage::Vertex, unsigned colors = 0) {
+    const auto r = gfx::vulkan::inspectSpirv(binary, stage, colors); check(!r && r.error().code == code);
+}
+}
+int main() try {
+    using namespace gfx; using namespace fixtures;
+    for (auto words : {std::span<const std::uint32_t>(triangle), std::span<const std::uint32_t>(fullscreen), std::span<const std::uint32_t>(instanced)}) {
+        const auto source = shader(words, ShaderStage::Vertex);
+        const auto r = vulkan::inspectSpirv(source, ShaderStage::Vertex, 0); check(r && std::equal(r->begin(), r->end(), words.begin(), words.end()));
+        for (std::size_t at = 5; at < words.size(); at += words[at] >> 16) {
+            if ((words[at] >> 16) > 1) reject(shader(words.first(at + 1), ShaderStage::Vertex), ErrorCode::InvalidArgument);
+        }
+    }
+    for (auto words : {std::span<const std::uint32_t>(red), std::span<const std::uint32_t>(green), std::span<const std::uint32_t>(half_red)})
+        check(bool(vulkan::inspectSpirv(shader(words, ShaderStage::Fragment), ShaderStage::Fragment, 1)));
+    check(bool(vulkan::inspectSpirv(shader(mrt2, ShaderStage::Fragment), ShaderStage::Fragment, 2)));
+    check(bool(vulkan::inspectSpirv(shader(mrt8, ShaderStage::Fragment), ShaderStage::Fragment, 8)));
+    reject(shader(unsupported_point, ShaderStage::Vertex), ErrorCode::Unsupported);
+    auto good = shader(triangle, ShaderStage::Vertex);
+    auto bad = good; bad.format = ShaderFormat::DXBC; reject(bad, ErrorCode::Unsupported);
+    bad = good; bad.stage = ShaderStage::Fragment; reject(bad, ErrorCode::InvalidArgument);
+    for (unsigned size = 0; size < 20; ++size) { bad = good; bad.bytes.resize(size); reject(bad, ErrorCode::InvalidArgument); }
+    bad = good; bad.bytes.pop_back(); reject(bad, ErrorCode::InvalidArgument);
+    for (auto [word, value] : {std::pair{0u, 0u}, {3u, 0u}, {3u, 1048577u}, {4u, 1u}, {5u, 0u}, {5u, 0xffff0011u}}) {
+        bad = good; std::memcpy(bad.bytes.data() + word * 4, &value, 4); reject(bad, ErrorCode::InvalidArgument);
+    }
+    bad = good; const std::uint32_t version = 0x00010400; std::memcpy(bad.bytes.data() + 4, &version, 4); reject(bad, ErrorCode::Unsupported);
+    reject(shader(red, ShaderStage::Vertex), ErrorCode::InvalidArgument);
+    reject(shader(red, ShaderStage::Fragment), ErrorCode::InvalidArgument, ShaderStage::Fragment, 2);
+    reject(shader(mrt2, ShaderStage::Fragment), ErrorCode::InvalidArgument, ShaderStage::Fragment, 1);
+    std::vector<std::uint32_t> changed(red.begin(), red.end());
+    for (std::size_t at = 5; at < changed.size(); at += changed[at] >> 16) if ((changed[at] & 65535) == 16) { changed[at + 1] = changed[3] - 1; break; }
+    reject(shader(changed, ShaderStage::Fragment), ErrorCode::InvalidArgument, ShaderStage::Fragment, 1);
+    changed.assign(red.begin(), red.end());
+    for (std::size_t at = 5; at < changed.size(); at += changed[at] >> 16) if ((changed[at] & 65535) == 71) { changed[at + 3] = 1; break; }
+    reject(shader(changed, ShaderStage::Fragment), ErrorCode::InvalidArgument, ShaderStage::Fragment, 1);
+    std::cout << "PASS SPIRV_interface_assertions=" << assertions << " full_semantic_validator=false GPU_calls=0\n"; return 0;
+} catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << '\n'; return 1; }

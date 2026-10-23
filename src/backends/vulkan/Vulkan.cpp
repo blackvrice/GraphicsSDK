@@ -2,6 +2,7 @@
 #define VK_NO_PROTOTYPES
 #include <vulkan/vulkan_core.h>
 #include "VulkanValidation.hpp"
+#include "Spirv.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cstring>
@@ -39,7 +40,7 @@ struct Loader {
 };
 #define INSTANCE_FUNCTIONS(X) \
     X(DestroyInstance) X(EnumeratePhysicalDevices) X(GetPhysicalDeviceProperties2) \
-    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(CreateDevice) X(GetDeviceProcAddr)
+    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(GetPhysicalDeviceFormatProperties) X(CreateDevice) X(GetDeviceProcAddr)
 struct Instance {
     std::shared_ptr<Loader> loader;
     VkInstance handle{};
@@ -169,6 +170,8 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CreateBuffer) X(DestroyBuffer) X(GetBufferMemoryRequirements) X(AllocateMemory) X(FreeMemory) X(BindBufferMemory) \
     X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) \
     X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
+    X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(DestroyPipeline) \
+    X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
     X(CreateCommandPool) X(DestroyCommandPool) X(AllocateCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
     X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences)
@@ -216,6 +219,20 @@ struct NativePass {
         if (pass) native->DestroyRenderPass(native->handle, pass, nullptr);
     }
 };
+struct NativePipeline {
+    std::shared_ptr<NativeDevice> native;
+    VkPipeline pipeline{};
+    VkPipelineLayout layout{};
+    VkRenderPass pass{};
+    std::vector<Format> colors;
+    void release() {
+        if (pipeline) native->DestroyPipeline(native->handle, pipeline, nullptr);
+        if (layout) native->DestroyPipelineLayout(native->handle, layout, nullptr);
+        if (pass) native->DestroyRenderPass(native->handle, pass, nullptr);
+        pipeline = {}; layout = {}; pass = {};
+    }
+    ~NativePipeline() { release(); }
+};
 struct Recording {
     std::shared_ptr<NativeDevice> native;
     VkCommandPool pool{};
@@ -224,9 +241,13 @@ struct Recording {
     std::uint64_t submitted{};
     std::vector<Use> uses;
     std::vector<std::unique_ptr<NativePass>> passes;
+    std::vector<std::shared_ptr<NativePipeline>> pipelines;
+    std::shared_ptr<NativePipeline> selectedPipeline;
+    std::vector<Format> passColors;
+    std::uint32_t width{}, height{};
     void release() {
         if (pool) native->DestroyCommandPool(native->handle, pool, nullptr);
-        pool = {}; command = {}; passes.clear(); uses.clear(); open = ended = inPass = false;
+        pool = {}; command = {}; selectedPipeline.reset(); pipelines.clear(); passColors.clear(); passes.clear(); uses.clear(); open = ended = inPass = false;
     }
     ~Recording() { release(); }
 };
@@ -245,6 +266,7 @@ struct State {
     std::list<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
     std::vector<std::weak_ptr<Recording>> recordings;
+    std::vector<std::weak_ptr<NativePipeline>> pipelines;
     std::vector<std::weak_ptr<int>> objects;
     Result<void> check() const {
         if (std::this_thread::get_id() != thread) return fail(ErrorCode::InvalidState, "Vulkan operations require the creating thread");
@@ -275,8 +297,9 @@ struct State {
         for (auto& p : pending) native->DestroyFence(native->handle, p.fence, nullptr);
         pending.clear();
         for (auto& weak : recordings) if (auto value = weak.lock()) value->release();
+        for (auto& weak : pipelines) if (auto value = weak.lock()) value->release();
         for (auto& weak : allocations) if (auto value = weak.lock()) value->release();
-        recordings.clear(); allocations.clear(); objects.clear();
+        recordings.clear(); pipelines.clear(); allocations.clear(); objects.clear();
         native->release(); retired = true;
     }
     ~State() { retire(); }
@@ -331,6 +354,11 @@ struct VulkanTexture final : Texture {
     TextureDesc description() const override { return allocation->textureDesc; }
     TextureFootprint footprint() const override { return allocation->footprint; }
 };
+struct VulkanPipeline final : Pipeline {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativePipeline> native;
+    std::shared_ptr<int> token;
+};
 VkImageLayout imageLayout(ResourceState state) {
     if (state == ResourceState::CopySource) return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     if (state == ResourceState::CopyDestination) return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -359,7 +387,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> unsupported() const {
         if (auto ok = ready(); !ok) return ok;
-        return fail(ErrorCode::Unsupported, "Vulkan graphics pipelines/drawing/bindings are not implemented");
+        return fail(ErrorCode::Unsupported, "Vulkan operation is outside the initial shader-drawing path");
     }
     Result<std::shared_ptr<Allocation>> buffer(const BufferPtr& buffer) const {
         auto value = std::dynamic_pointer_cast<VulkanBuffer>(buffer);
@@ -532,6 +560,7 @@ struct VulkanCommands final : CommandList {
         std::vector<VkAttachmentReference> references;
         std::vector<VkImageView> views;
         std::vector<VkClearValue> clears;
+        std::vector<Format> formats;
         for (const auto& color : description.colors) {
             auto a = texture(color.texture); if (!a) return std::unexpected(a.error());
             if (shadow(*a) != ResourceState::RenderTarget) return fail(ErrorCode::InvalidState, "Attachment requires RenderTarget state");
@@ -539,6 +568,7 @@ struct VulkanCommands final : CommandList {
             if (color.load == LoadOp::Load && !(use ? use->contentsInitialized : (*a)->contentsInitialized))
                 return fail(ErrorCode::InvalidState, "Load requires initialized attachment contents");
             colors.push_back(*a); views.push_back((*a)->view);
+            formats.push_back((*a)->textureDesc.format);
             VkAttachmentDescription attachment{};
             attachment.format = (*a)->textureDesc.format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT;
             attachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -576,7 +606,11 @@ struct VulkanCommands final : CommandList {
         begin.renderArea.extent = {desc.width, desc.height}; begin.clearValueCount = static_cast<std::uint32_t>(clears.size()); begin.pClearValues = clears.data();
         for (const auto& a : colors) retain(a).contentsInitialized = true;
         record->passes.push_back(std::move(pass));
+        record->passColors = std::move(formats); record->width = desc.width; record->height = desc.height; record->selectedPipeline.reset();
         owner->native->CmdBeginRenderPass(record->command, &begin, VK_SUBPASS_CONTENTS_INLINE);
+        const VkViewport viewport{0, float(desc.height), float(desc.width), -float(desc.height), 0, 1};
+        const VkRect2D scissor{{0, 0}, {desc.width, desc.height}};
+        owner->native->CmdSetViewport(record->command, 0, 1, &viewport); owner->native->CmdSetScissor(record->command, 0, 1, &scissor);
         record->inPass = true; return {};
     }
     Result<void> endRenderPass() override {
@@ -584,13 +618,36 @@ struct VulkanCommands final : CommandList {
         if (!record->inPass) return fail(ErrorCode::InvalidState, "No active render pass");
         owner->native->CmdEndRenderPass(record->command); record->inPass = false; return {};
     }
-    Result<void> setPipeline(const PipelinePtr&) override { return unsupported(); }
+    Result<void> setPipeline(const PipelinePtr& pipeline) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->inPass) return fail(ErrorCode::InvalidState, "Pipeline binding requires an active render pass");
+        auto value = std::dynamic_pointer_cast<VulkanPipeline>(pipeline);
+        if (!value) return fail(pipeline ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Vulkan graphics pipeline");
+        if (value->owner != owner) return fail(ErrorCode::WrongDevice, "Pipeline belongs to another generation");
+        if (value->native->colors != record->passColors) return fail(ErrorCode::InvalidArgument, "Pipeline outputs do not match active pass");
+        if (std::find(record->pipelines.begin(), record->pipelines.end(), value->native) == record->pipelines.end()) record->pipelines.push_back(value->native);
+        record->selectedPipeline = value->native;
+        owner->native->CmdBindPipeline(record->command, VK_PIPELINE_BIND_POINT_GRAPHICS, value->native->pipeline); return {};
+    }
     Result<void> bindTexture(const TexturePtr&) override { return unsupported(); }
     Result<void> bindResources(const ResourceBindings&) override { return unsupported(); }
     Result<void> bindVertexBuffer(std::uint32_t, const BufferPtr&, std::uint32_t, std::uint64_t, std::uint64_t) override { return unsupported(); }
     Result<void> bindIndexBuffer(const BufferPtr&, IndexFormat, std::uint64_t, std::uint64_t) override { return unsupported(); }
-    Result<void> setScissor(std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t) override { return unsupported(); }
-    Result<void> draw(std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t) override { return unsupported(); }
+    Result<void> setScissor(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->inPass) return fail(ErrorCode::InvalidState, "Scissor requires an active render pass");
+        if (!width || !height || x > record->width || width > record->width - x || y > record->height || height > record->height - y)
+            return fail(ErrorCode::InvalidArgument, "Scissor extent outside active attachment");
+        const VkRect2D scissor{{static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)}, {width, height}};
+        owner->native->CmdSetScissor(record->command, 0, 1, &scissor); return {};
+    }
+    Result<void> draw(std::uint32_t vertices, std::uint32_t instances, std::uint32_t firstVertex, std::uint32_t firstInstance) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->inPass || !record->selectedPipeline) return fail(ErrorCode::InvalidState, "Draw requires active pass and compatible pipeline");
+        if (!vertices || !instances || vertices > UINT32_MAX - firstVertex || instances > UINT32_MAX - firstInstance)
+            return fail(ErrorCode::InvalidArgument, "Invalid draw count/index range");
+        owner->native->CmdDraw(record->command, vertices, instances, firstVertex, firstInstance); return {};
+    }
     Result<void> drawIndexed(std::uint32_t, std::uint32_t, std::uint32_t, std::int32_t, std::uint32_t) override { return unsupported(); }
     Result<void> writeTimestamp(std::uint32_t) override { return unsupported(); }
     Result<void> resolveTimestamps() override { return unsupported(); }
@@ -667,10 +724,11 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
         std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
         result.trackedObjects = owner->objects.size();
         for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
         result.pendingSubmissions = owner->pending.size();
-        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size();
+        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size() + p.recording->pipelines.size();
         return result;
     }
     Result<MemoryBudget> queryMemoryBudget(MemorySegment) override {
@@ -758,9 +816,79 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->allocations.push_back(a); owner->objects.push_back(value->token); return TexturePtr(value);
     }
-    Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) override {
+    Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        return fail(ErrorCode::Unsupported, "Vulkan graphics pipelines unsupported");
+        const auto targets = desc.renderTargets.value_or(RenderTargetLayout{{desc.colorFormat}, {}});
+        if (desc.vertex.format != ShaderFormat::SPIRV || desc.fragment.format != ShaderFormat::SPIRV)
+            return fail(ErrorCode::Unsupported, "Vulkan requires explicit SPIRV shader format");
+        if (auto ok = validateRenderTargets(targets, desc.depthState); !ok) return std::unexpected(ok.error());
+        if (targets.depth || targets.colors.size() > owner->maxColorAttachments || desc.depthState.testEnabled || desc.depthState.writeEnabled ||
+            desc.sampledTexture || !desc.vertexLayout.buffers.empty() || !desc.vertexLayout.attributes.empty() || !desc.bindingLayout.entries.empty() || !desc.bindingLayout.samplers.empty())
+            return fail(ErrorCode::Unsupported, "Initial Vulkan pipeline has no depth, bindings or vertex inputs");
+        auto vertex = vulkan::inspectSpirv(desc.vertex, ShaderStage::Vertex, 0); if (!vertex) return std::unexpected(vertex.error());
+        auto fragment = vulkan::inspectSpirv(desc.fragment, ShaderStage::Fragment, static_cast<std::uint32_t>(targets.colors.size())); if (!fragment) return std::unexpected(fragment.error());
+        for (auto format : targets.colors) {
+            VkFormatProperties properties{};
+            owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical,
+                format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT, &properties);
+            const VkFormatFeatureFlags required = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | (desc.alphaBlend ? VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT : 0);
+            if ((properties.optimalTilingFeatures & required) != required) return fail(ErrorCode::Unsupported, "Adapter format lacks attachment/blending support");
+        }
+        auto p = std::make_shared<NativePipeline>(); p->native = owner->native; p->colors = targets.colors;
+        struct Modules {
+            std::shared_ptr<NativeDevice> native; VkShaderModule vertex{}, fragment{};
+            ~Modules() { if (vertex) native->DestroyShaderModule(native->handle, vertex, nullptr); if (fragment) native->DestroyShaderModule(native->handle, fragment, nullptr); }
+        } modules{owner->native};
+        auto module = [&](const std::vector<std::uint32_t>& code, VkShaderModule& result) {
+            VkShaderModuleCreateInfo info{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO}; info.codeSize = code.size() * 4; info.pCode = code.data();
+            return owner->accept(owner->native->CreateShaderModule(owner->native->handle, &info, nullptr, &result), "vkCreateShaderModule");
+        };
+        if (auto ok = module(*vertex, modules.vertex); !ok) return std::unexpected(ok.error());
+        if (auto ok = module(*fragment, modules.fragment); !ok) return std::unexpected(ok.error());
+        VkPipelineLayoutCreateInfo layout{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+        if (auto ok = owner->accept(owner->native->CreatePipelineLayout(owner->native->handle, &layout, nullptr, &p->layout), "vkCreatePipelineLayout"); !ok) return std::unexpected(ok.error());
+        std::vector<VkAttachmentDescription> attachments;
+        std::vector<VkAttachmentReference> references;
+        for (auto format : targets.colors) {
+            VkAttachmentDescription a{}; a.format = format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT;
+            a.samples = VK_SAMPLE_COUNT_1_BIT; a.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; a.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            a.initialLayout = a.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            references.push_back({static_cast<std::uint32_t>(attachments.size()), a.initialLayout}); attachments.push_back(a);
+        }
+        VkSubpassDescription subpass{}; subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = static_cast<std::uint32_t>(references.size()); subpass.pColorAttachments = references.data();
+        VkRenderPassCreateInfo pass{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}; pass.attachmentCount = static_cast<std::uint32_t>(attachments.size()); pass.pAttachments = attachments.data(); pass.subpassCount = 1; pass.pSubpasses = &subpass;
+        // Match the dependency signature used by recorded color passes as well as formats/samples.
+        VkSubpassDependency dependencies[2] = {
+            {VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0},
+            {0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT, 0}};
+        pass.dependencyCount = 2; pass.pDependencies = dependencies;
+        if (auto ok = owner->accept(owner->native->CreateRenderPass(owner->native->handle, &pass, nullptr, &p->pass), "vkCreateRenderPass pipeline"); !ok) return std::unexpected(ok.error());
+        VkPipelineShaderStageCreateInfo stages[2]{};
+        for (auto& s : stages) { s.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO; s.pName = "main"; }
+        stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT; stages[0].module = modules.vertex; stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; stages[1].module = modules.fragment;
+        VkPipelineVertexInputStateCreateInfo input{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
+        VkPipelineInputAssemblyStateCreateInfo assembly{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO}; assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        VkPipelineViewportStateCreateInfo viewport{VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO}; viewport.viewportCount = viewport.scissorCount = 1;
+        VkPipelineRasterizationStateCreateInfo raster{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO}; raster.polygonMode = VK_POLYGON_MODE_FILL; raster.cullMode = VK_CULL_MODE_NONE; raster.frontFace = VK_FRONT_FACE_CLOCKWISE; raster.lineWidth = 1;
+        VkPipelineMultisampleStateCreateInfo samples{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO}; samples.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+        std::vector<VkPipelineColorBlendAttachmentState> blending(targets.colors.size());
+        for (auto& b : blending) {
+            b.blendEnable = desc.alphaBlend; b.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; b.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; b.colorBlendOp = VK_BLEND_OP_ADD;
+            b.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; b.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; b.alphaBlendOp = VK_BLEND_OP_ADD; b.colorWriteMask = 15;
+        }
+        VkPipelineColorBlendStateCreateInfo blend{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO}; blend.attachmentCount = static_cast<std::uint32_t>(blending.size()); blend.pAttachments = blending.data();
+        const VkDynamicState dynamicStates[]{VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        VkPipelineDynamicStateCreateInfo dynamic{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO}; dynamic.dynamicStateCount = 2; dynamic.pDynamicStates = dynamicStates;
+        VkGraphicsPipelineCreateInfo info{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; info.stageCount = 2; info.pStages = stages; info.pVertexInputState = &input; info.pInputAssemblyState = &assembly;
+        info.pViewportState = &viewport; info.pRasterizationState = &raster; info.pMultisampleState = &samples; info.pColorBlendState = &blend; info.pDynamicState = &dynamic;
+        info.layout = p->layout; info.renderPass = p->pass;
+        if (auto ok = owner->accept(owner->native->CreateGraphicsPipelines(owner->native->handle, {}, 1, &info, nullptr, &p->pipeline), "vkCreateGraphicsPipelines"); !ok) return std::unexpected(ok.error());
+        auto value = std::make_shared<VulkanPipeline>(); value->owner = owner; value->native = p; value->token = std::make_shared<int>();
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); }); std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
+        owner->pipelines.push_back(p); owner->objects.push_back(value->token); return PipelinePtr(value);
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());

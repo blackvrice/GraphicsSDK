@@ -1,0 +1,77 @@
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %out0 %out1 %out2 %out3 %out4 %out5 %out6 %out7
+OpExecutionMode %main OriginUpperLeft
+OpDecorate %out0 Location 0
+OpDecorate %out1 Location 1
+OpDecorate %out2 Location 2
+OpDecorate %out3 Location 3
+OpDecorate %out4 Location 4
+OpDecorate %out5 Location 5
+OpDecorate %out6 Location 6
+OpDecorate %out7 Location 7
+%void = OpTypeVoid
+%fn = OpTypeFunction %void
+%float = OpTypeFloat 32
+%vec = OpTypeVector %float 4
+%ptr = OpTypePointer Output %vec
+%out0 = OpVariable %ptr Output
+%c0_0 = OpConstant %float 0
+%c0_1 = OpConstant %float 0
+%c0_2 = OpConstant %float 0
+%c0_3 = OpConstant %float 1
+%value0 = OpConstantComposite %vec %c0_0 %c0_1 %c0_2 %c0_3
+%out1 = OpVariable %ptr Output
+%c1_0 = OpConstant %float 1
+%c1_1 = OpConstant %float 0
+%c1_2 = OpConstant %float 0
+%c1_3 = OpConstant %float 1
+%value1 = OpConstantComposite %vec %c1_0 %c1_1 %c1_2 %c1_3
+%out2 = OpVariable %ptr Output
+%c2_0 = OpConstant %float 0
+%c2_1 = OpConstant %float 1
+%c2_2 = OpConstant %float 0
+%c2_3 = OpConstant %float 1
+%value2 = OpConstantComposite %vec %c2_0 %c2_1 %c2_2 %c2_3
+%out3 = OpVariable %ptr Output
+%c3_0 = OpConstant %float 1
+%c3_1 = OpConstant %float 1
+%c3_2 = OpConstant %float 0
+%c3_3 = OpConstant %float 1
+%value3 = OpConstantComposite %vec %c3_0 %c3_1 %c3_2 %c3_3
+%out4 = OpVariable %ptr Output
+%c4_0 = OpConstant %float 0
+%c4_1 = OpConstant %float 0
+%c4_2 = OpConstant %float 1
+%c4_3 = OpConstant %float 1
+%value4 = OpConstantComposite %vec %c4_0 %c4_1 %c4_2 %c4_3
+%out5 = OpVariable %ptr Output
+%c5_0 = OpConstant %float 1
+%c5_1 = OpConstant %float 0
+%c5_2 = OpConstant %float 1
+%c5_3 = OpConstant %float 1
+%value5 = OpConstantComposite %vec %c5_0 %c5_1 %c5_2 %c5_3
+%out6 = OpVariable %ptr Output
+%c6_0 = OpConstant %float 0
+%c6_1 = OpConstant %float 1
+%c6_2 = OpConstant %float 1
+%c6_3 = OpConstant %float 1
+%value6 = OpConstantComposite %vec %c6_0 %c6_1 %c6_2 %c6_3
+%out7 = OpVariable %ptr Output
+%c7_0 = OpConstant %float 1
+%c7_1 = OpConstant %float 1
+%c7_2 = OpConstant %float 1
+%c7_3 = OpConstant %float 1
+%value7 = OpConstantComposite %vec %c7_0 %c7_1 %c7_2 %c7_3
+%main = OpFunction %void None %fn
+%label = OpLabel
+OpStore %out0 %value0
+OpStore %out1 %value1
+OpStore %out2 %value2
+OpStore %out3 %value3
+OpStore %out4 %value4
+OpStore %out5 %value5
+OpStore %out6 %value6
+OpStore %out7 %value7
+OpReturn
+OpFunctionEnd

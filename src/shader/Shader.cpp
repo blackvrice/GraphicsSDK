@@ -27,6 +27,7 @@ Result<ShaderBinary> compileHlsl(std::string_view source, std::string_view entry
 }
 Result<std::vector<ShaderBinding>> reflectShader(const ShaderBinary& shader) {
     if (shader.bytes.empty() || (shader.stage!=ShaderStage::Vertex && shader.stage!=ShaderStage::Fragment)) return std::unexpected(Error{ErrorCode::InvalidArgument, "Invalid shader binary/stage"});
+    if (shader.format != ShaderFormat::DXBC) return std::unexpected(Error{ErrorCode::Unsupported, "Public reflection currently supports DXBC only"});
 #ifdef GFX_HAS_D3D12
     Microsoft::WRL::ComPtr<ID3D12ShaderReflection> reflection;
     HRESULT result = D3DReflect(shader.bytes.data(), shader.bytes.size(), IID_PPV_ARGS(&reflection));

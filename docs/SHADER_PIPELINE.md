@@ -1,5 +1,13 @@
 # Shader pipeline
 
+Vulkan은 별도의 `ShaderFormat::SPIRV` 입력으로 외부 검증된 SPIR-V 1.3/Vulkan 1.1
+`main` shader를 받는다. 초기 path는 standalone Position·VertexIndex/InstanceIndex와
+float4 color outputs, 무바인딩 triangle draw만 지원한다. SDK의 framing/interface 검사는
+전체 semantic validator가 아니다. 자체 fixture는 고정 로컬 SPIRV-Tools로 검증하며
+이 외부 도구는 SDK에 링크·배포하지 않는다. [범위와 계약](VULKAN.md)을 따른다.
+기본 `ShaderFormat`은 DXBC이며 compileHlsl 결과도 DXBC다. Public reflectShader의
+SPIRV 요청은 Unsupported다. ShaderBinary의 trailing format 필드 추가로 소비자를 재빌드해야 한다.
+
 현재 동작하는 bootstrap 경로는 Windows `D3DCompile` → SM5.1 DXBC → D3D12다.
 entry point와 stage를 명시하고 최적화 level 3 및 warnings-as-errors를 사용한다.
 잘못된 소스는 compiler 진단과 HRESULT를 Result에 담는다. include 파일 해석은 현재

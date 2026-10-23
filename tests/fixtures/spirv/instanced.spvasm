@@ -1,0 +1,53 @@
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Vertex %main "main" %position %vertex %instance
+OpDecorate %position BuiltIn Position
+OpDecorate %vertex BuiltIn VertexIndex
+OpDecorate %instance BuiltIn InstanceIndex
+%void = OpTypeVoid
+%fn = OpTypeFunction %void
+%float = OpTypeFloat 32
+%vec = OpTypeVector %float 4
+%int = OpTypeInt 32 1
+%uint = OpTypeInt 32 0
+%in = OpTypePointer Input %int
+%output = OpTypePointer Output %vec
+%position = OpVariable %output Output
+%vertex = OpVariable %in Input
+%instance = OpVariable %in Input
+%u3 = OpConstant %uint 3
+%u2 = OpConstant %uint 2
+%zero = OpConstant %float 0
+%half = OpConstant %float 0.5
+%one = OpConstant %float 1
+%x0 = OpConstant %float -0.75
+%y0 = OpConstant %float -0.75
+%p0 = OpConstantComposite %vec %x0 %y0 %half %one
+%x1 = OpConstant %float -0.75
+%y1 = OpConstant %float 0.75
+%p1 = OpConstantComposite %vec %x1 %y1 %half %one
+%x2 = OpConstant %float 0
+%y2 = OpConstant %float -0.75
+%p2 = OpConstantComposite %vec %x2 %y2 %half %one
+%array = OpTypeArray %vec %u3
+%table = OpConstantComposite %array %p0 %p1 %p2
+%localArray = OpTypePointer Function %array
+%localVec = OpTypePointer Function %vec
+%main = OpFunction %void None %fn
+%label = OpLabel
+%local = OpVariable %localArray Function
+OpStore %local %table
+%id = OpLoad %int %vertex
+%idU = OpBitcast %uint %id
+%index = OpUMod %uint %idU %u3
+%element = OpAccessChain %localVec %local %index
+%p = OpLoad %vec %element
+%i = OpLoad %int %instance
+%iu = OpBitcast %uint %i
+%parity = OpUMod %uint %iu %u2
+%offset = OpConvertUToF %float %parity
+%delta = OpCompositeConstruct %vec %offset %zero %zero %zero
+%shifted = OpFAdd %vec %p %delta
+OpStore %position %shifted
+OpReturn
+OpFunctionEnd

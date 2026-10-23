@@ -1,0 +1,142 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tools/spirv_fixtures",
+      "-B",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "triangle",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\triangle.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\triangle.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "fullscreen",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\fullscreen.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\fullscreen.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "instanced",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\instanced.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\instanced.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "unsupported_point",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\unsupported_point.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\unsupported_point.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "red",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\red.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\red.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "green",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\green.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\green.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "half_red",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\half_red.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\half_red.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "mrt2",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\mrt2.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\mrt2.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "mrt8",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\spirv\\mrt8.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\mrt8.spv"
+    ],
+    "expected": 0,
+    "returncode": 0
+  },
+  {
+    "name": "malformed-assembly",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\invalid.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\invalid.spv"
+    ],
+    "expected": 1,
+    "returncode": 1
+  },
+  {
+    "name": "invalid-semantics",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\Release\\spirv_fixture_tool.exe",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\invalid.spvasm",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-draw-shader-tools\\invalid.spv"
+    ],
+    "expected": 1,
+    "returncode": 1
+  }
+]

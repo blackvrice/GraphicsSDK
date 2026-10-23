@@ -45,13 +45,20 @@ Vulkan core/synchronization layer 실행은 새 [고정 로컬 레이어 검증]
 설치 소비자에 `vulkan_texture_consumer [--validation]`을 추가한다.
 새 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-textures.zip`이다.
 
-현재 [색상 렌더 패스](PHASE3_VULKAN_COLOR_PASS_REPORT.md)는 `out/vulkan-color-pass`,
+이전 [색상 렌더 패스](PHASE3_VULKAN_COLOR_PASS_REPORT.md)는 `out/vulkan-color-pass`,
 `out/vulkan-color-pass-install`, `out/vulkan-color-pass-consumer`에서 별도로 빌드한다.
 Required validation은 통합 41개/Vulkan-only 13개를 등록한다. 최초 통합 실행의 기존
 D3D12 메모리 validation 충돌을 보존했으며, 사용자 보류 범위의 메모리 검사 3개를
 최종 실행에서 명시적으로 제외한다(통합 선택 38개). 설치 소비자는
 `vulkan_render_consumer [--validation]`을 추가한다. 새 SDK는
 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-color-pass.zip`이다.
+
+현재 [SPIR-V draw](PHASE3_VULKAN_DRAW_REPORT.md)는 `out/vulkan-draw`,
+`out/vulkan-draw-install`, `out/vulkan-draw-consumer`를 사용한다. Required validation
+등록은 통합 44개/Vulkan-only 16개이며 통합에서는 보류 메모리 3개를 제외한 41개를
+선택 실행한다. 두 backend OFF는 CPU 7개다. 설치 소비자는 `vulkan_draw_consumer
+[--validation]`을 추가한다. ShaderBinary format 필드 추가에 따라 모든 소비자를 재빌드한다.
+새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-draw.zip`이다.
 
 ```powershell
 cmake -S tests/vulkan_consumer -B out/vulkan-consumer -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-install

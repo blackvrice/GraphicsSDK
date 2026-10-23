@@ -3,14 +3,16 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The default integrated Windows configuration registers 37 CTests (34 existing plus
-buffer/texture/color-pass suites), Vulkan-only has 9, and no-backend has 6. These are separate Windows configurations,
+The default integrated Windows configuration registers 39 CTests (including CPU
+SPIR-V inspection and buffer/texture/color-pass/draw suites), Vulkan-only has 11,
+and no-backend has 7. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
 The required synchronization-validation profile adds `vulkan_transfer_validation`,
-`vulkan_texture_validation`, `vulkan_color_pass_validation` and `vulkan_validation_controls`
-(`GFX_VULKAN_VALIDATION_TESTS=ON`), yielding 41 integrated / 13 Vulkan-only registered tests. A pinned,
+`vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`
+and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`),
+yielding 44 integrated / 16 Vulkan-only registered tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -35,6 +37,15 @@ existing deferral, final integrated execution explicitly excludes all three
 `^memory_reclamation_` tests: 38 selected integrated + 13 Vulkan-only + 6 no-backend.
 This exclusion does not change registration/policy, accept memory reclamation or
 resolve the historical Intel crash. No retry-until-pass memory run is used.
+
+The [draw profile](PHASE3_VULKAN_DRAW_REPORT.md) retains that explicit exclusion:
+41 selected integrated + 16 Vulkan-only + 7 no-backend CTests. CPU interface inspection
+has 181 assertions and is not a full SPIR-V semantic validator. The fixture tool uses
+the existing pinned local SPIRV-Tools to assemble/validate nine own modules, with
+malformed-source/semantic rejection controls. GPU suites compare all pixels/padding
+for triangle coverage/orientation, firstVertex/firstInstance and instancing, scissor/
+pipeline switches, Load+blend, RGBA8/RGBA16F, and mixed-format 2/8 outputs. The installed
+draw consumer repeats this public suite; no memory acceptance is inferred.
 
 ## Automated checks
 

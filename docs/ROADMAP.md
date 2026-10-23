@@ -102,8 +102,10 @@ acceptance or later SDK feature milestones.
   Color-texture upload/readback is now implemented for RGBA8/RGBA16F, including padded
   staging, image layout/version/lifetime controls ([report](PHASE3_VULKAN_TEXTURE_REPORT.md)).
   Color Clear/Load/Store passes and mixed-format attachments are implemented
-  ([report](PHASE3_VULKAN_COLOR_PASS_REPORT.md)). Shader drawing, depth attachments,
-  graphics pipelines and the rest of this gate remain open.
+  ([report](PHASE3_VULKAN_COLOR_PASS_REPORT.md)). Initial externally validated SPIR-V
+  pipelines/no-binding triangle drawing, scissor/blend/instancing and 2/8 outputs are
+  implemented ([report](PHASE3_VULKAN_DRAW_REPORT.md)). Depth, bindings, vertex input,
+  timestamps, presentation and the rest of this gate remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.
 

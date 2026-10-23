@@ -157,7 +157,7 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& a, bool validation) {
     reject(c->copyBuffer(up, read, t->footprint().size), gfx::ErrorCode::InvalidState, "No buffer copy inside pass");
     reject(c->copyBufferToTexture(up, t), gfx::ErrorCode::InvalidState, "No image upload inside pass");
     reject(c->copyTextureToBuffer(t, read), gfx::ErrorCode::InvalidState, "No image readback inside pass");
-    reject(c->draw(3), gfx::ErrorCode::Unsupported, "Draw awaits graphics pipelines");
+    reject(c->draw(3), gfx::ErrorCode::InvalidState, "Draw requires a bound graphics pipeline");
     bool wrongThread{}; std::thread worker([&] { auto r = c->endRenderPass(); wrongThread = !r && r.error().code == gfx::ErrorCode::InvalidState; }); worker.join();
     check(wrongThread, "Pass operations require creating thread");
     take(c->endRenderPass()); reject(c->endRenderPass(), gfx::ErrorCode::InvalidState, "Double end pass");

@@ -1,5 +1,12 @@
 # 배포 의존성 라이선스 감사
 
+SPIR-V draw SDK는 `audit_vulkan.py --variant draw`와 `licenses/vulkan-draw-policy.json`으로
+독립 감사한다. [inventory](../licenses/generated/windows-sdk-vulkan-draw-release/inventory.json)는
+실제 SDK/CPU·GPU 테스트/설치 소비자 입력과 SDK payload를 확인한다. 자체 shader assembly와
+생성 word 배열은 GraphicsSDK 소스다. 로컬 전용 fixture assembler/validator만 기존 고정
+SPIRV-Tools 라이브러리를 사용한다. 해당 DLL/LIB/EXE/vendor header·source는 SDK/source ZIP에
+넣지 않으며, 로컬 도구 receipt의 SHA·라이선스 해시는 SDK 배포 감사와 구분한다.
+
 색상 렌더 패스는 `audit_vulkan.py --variant color-pass`와
 `licenses/vulkan-color-pass-policy.json`으로 별도 감사한다. Native render pass,
 framebuffer/image view는 기존 고정 Vulkan-Headers 선언만 사용하고 새 외부 코드를

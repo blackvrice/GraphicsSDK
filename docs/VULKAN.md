@@ -1,11 +1,11 @@
-# Vulkan transfers and color render passes
+# Vulkan transfers, color passes and initial SPIR-V drawing
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
 RGBA8/RGBA16F 2D textures, color Clear/Load/Store passes, command recording/submission,
-queue fences and resource statistics. The D3D12
+queue fences, no-binding graphics pipelines/drawing and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
-backend when enabled; shader drawing remains unimplemented.
+backend when enabled; depth/bindings/vertex inputs/presentation remain unimplemented.
 
 ## Build
 
@@ -65,7 +65,7 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   files can override layer API settings; controlled acceptance clears those inputs.
   A zero count without a validation device is not validation-layer acceptance.
 
-Depth textures, graphics/compute pipelines, shader drawing, binding layouts, timestamps,
+Depth textures, compute pipelines, binding layouts, timestamps,
 debug markers and swapchains return `Unsupported`; their capability flags are
 false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 These APIs, Linux execution and matching Vulkan competitor measurements remain
@@ -137,6 +137,47 @@ compare full clear/load images, uploaded-content Load, untouched row padding,
 native lifetimes. The current isolated roots are `out/vulkan-color-pass`,
 `out/vulkan-color-pass-install` and `out/vulkan-color-pass-consumer`.
 See [color-pass evidence](PHASE3_VULKAN_COLOR_PASS_REPORT.md).
+
+## Initial graphics pipelines and drawing
+
+Use `ShaderBinary{stage, bytes, ShaderFormat::SPIRV}` for both stages. The default
+format remains DXBC for source compatibility with existing HLSL compilation; rebuild
+all consumers because the ShaderBinary layout has changed. Vulkan requires externally
+validated **SPIR-V 1.3 for Vulkan 1.1**, one `main` entry, Shader capability, Logical
+GLSL450 memory model, standalone float4 vertex Position and matching float4 fragment
+outputs at locations 0..N-1. Fragment mode is OriginUpperLeft. VertexIndex/InstanceIndex
+inputs are allowed. Extensions, imported instruction sets, member-decorated interfaces,
+user varyings, descriptors, push constants and other builtins are outside this initial path.
+
+The SDK performs bounded header/instruction framing and interface inspection, **not
+full semantic validation**. Supply trusted compiler output already checked by a
+SPIR-V validator for the Vulkan environment. The repository fixture tool assembles
+and validates its own shaders using a pinned local SPIRV-Tools library; that library
+is not linked into or distributed with the SDK. `compileHlsl` remains DXBC only;
+`reflectShader` explicitly returns Unsupported for SPIRV. General DXC and SPIR-V
+reflection remain Phase 5 work.
+
+Pipelines use triangle lists, no vertex input, no culling/depth/MSAA, and 1..8 floating
+color outputs bounded by the adapter limit. Layout/format count must match the active
+pass. Both RGBA8/RGBA16F support and optional blending features are queried first.
+Alpha blending matches D3D12: RGB = src.rgb*src.a + dst.rgb*(1-src.a), alpha = src.a.
+No pipeline/driver cache control or performance improvement is claimed.
+
+`setPipeline` requires an active pass and retains native pipelines, not wrappers.
+Each new pass resets the binding and starts with full viewport/scissor. A negative
+Vulkan viewport height maps clip-space +Y to the top, matching the existing D3D12
+orientation. `setScissor` accepts a nonempty in-bounds rectangle. `draw` requires a
+bound compatible pipeline, positive vertex/instance counts and nonoverflowing
+firstVertex/firstInstance ranges. Rejection preserves prior binding/scissor. Vertex
+and indexed buffer binding remain Unsupported. Pipeline/module/layout/render-pass
+lifetimes are independent of caller wrappers and retire with the native device.
+
+`gfx_vulkan_draw_tests [--validation]` / installed `vulkan_draw_consumer` verify full
+images for oversized/ordinary triangles, base vertex/instance IDs, instancing,
+scissor/pipeline switches, Load+blend and mixed-format 2/8 outputs on real adapters.
+`spirv_interface_contracts` exercises inspection without a GPU. Isolated current roots:
+`out/vulkan-draw`, `out/vulkan-draw-install`, `out/vulkan-draw-consumer`.
+See [draw evidence](PHASE3_VULKAN_DRAW_REPORT.md).
 
 The synchronization and lifetime rules follow the primary
 [copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBuffer.html),
