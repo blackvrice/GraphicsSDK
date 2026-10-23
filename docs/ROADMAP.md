@@ -110,8 +110,9 @@ acceptance or later SDK feature milestones.
   immutable sampler layouts and immutable binding snapshots are implemented
   ([report](PHASE3_VULKAN_BINDINGS_REPORT.md)). D32 transfers, depth-only/read-only
   attachments, all compare/write masks and mixed MRT+depth are implemented
-  ([report](PHASE3_VULKAN_DEPTH_REPORT.md)). Timestamps, presentation and the rest
-  of this gate remain open.
+  ([report](PHASE3_VULKAN_DEPTH_REPORT.md)). Two-slot GPU timestamps, fence/availability
+  checks, valid-bit wrap conversion and result/pool lifetimes are implemented
+  ([report](PHASE3_VULKAN_TIMESTAMP_REPORT.md)). Presentation and the rest of this gate remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.
 

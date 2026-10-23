@@ -1,11 +1,11 @@
-# Vulkan transfers, drawing, resource bindings and depth
+# Vulkan transfers, drawing, resource bindings, depth and timestamps
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
 RGBA8/RGBA16F 2D textures, color Clear/Load/Store passes, command recording/submission,
-queue fences, graphics pipelines/vertex/index drawing, resource bindings, D32 depth and resource statistics. The D3D12
+queue fences, graphics pipelines/vertex/index drawing, resource bindings, D32 depth, GPU timestamps and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
-backend when enabled; timestamps/presentation remain unimplemented.
+backend when enabled; presentation remains unimplemented.
 
 ## Build
 
@@ -66,7 +66,7 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   files can override layer API settings; controlled acceptance clears those inputs.
   A zero count without a validation device is not validation-layer acceptance.
 
-Compute pipelines, timestamps,
+Compute pipelines,
 debug markers and swapchains return `Unsupported`; their capability flags are
 false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 These APIs, Linux execution and matching Vulkan competitor measurements remain
@@ -317,6 +317,55 @@ See [depth evidence](PHASE3_VULKAN_DEPTH_REPORT.md). Native contracts follow
 [depth state](https://docs.vulkan.org/refpages/latest/refpages/source/VkPipelineDepthStencilStateCreateInfo.html),
 [attachment load/store](https://docs.vulkan.org/refpages/latest/refpages/source/VkAttachmentDescription.html)
 and [buffer/image copies](https://docs.vulkan.org/refpages/latest/refpages/source/VkBufferImageCopy.html).
+
+## GPU timestamps
+
+`timestampQueries` is true when the selected graphics queue reports 36..64 valid
+timestamp bits and a finite positive `timestampPeriod`. Unsupported metadata returns
+Unsupported from timestamp operations. No CPU timing is substituted for a GPU result.
+Each supported `begin()` creates a two-slot timestamp query pool and records its reset
+outside any render pass. A new recording discards the old result and retains its own
+pool through submission/completion; device retirement destroys pools before the device.
+
+Write slot 0 once for the start (TOP_OF_PIPE), and slot 1 once for the end
+(BOTTOM_OF_PIPE). Writes may be inside/outside passes. Invalid indices, duplicate
+writes and writes after resolve return InvalidArgument without changing the pair.
+Call `resolveTimestamps()` once after both writes, outside a pass. This authorizes a
+host query read; Vulkan does not need an intermediate readback buffer or query-copy
+command. A reversed 1-then-0 pair may be recorded/resolved but result retrieval returns
+InvalidState, independently of counter equality/wrap.
+
+`elapsedGpuMilliseconds()` polls completion on the creating thread. It requires
+resolve, successful submission and the matching completed fence. It reads two 64-bit
+results with availability and without WAIT/PARTIAL flags. Unavailable/unsubmitted/
+unresolved results return InvalidState; the function does not wait or manufacture zero.
+An immediate post-submit read can succeed if the GPU has already completed. Repeated
+successful reads return the cached result. Empty intervals may legitimately be zero.
+
+Conversion masks valid bits and uses a modular tick difference multiplied by
+timestampPeriod/1,000,000. A steady-clock interval from just before native submission
+bounds the first read: if it reaches one complete counter cycle, retrieval conservatively
+returns InvalidState because multiple wraps cannot be distinguished. This host bound
+does not supply the reported duration. Read promptly; previously cached valid results
+remain readable later. No calibrated timestamps, CPU/GPU clock correlation or device-wide
+absolute time is exposed. The native scope of the recorded timestamp commands defines
+the interval; it is not CPU frame time or a performance baseline.
+
+Query pools add one retained item to pendingObjectReferences and are not Buffer/Image
+allocations in uniqueResources/resourceAllocationBytes. The correctness implementation
+creates a pool per supported recording; query-pool reuse/optimization remains future work.
+
+`vulkan_timestamp_math` checks conversion, units, masking, wrap and ambiguous-order/cycle
+controls on CPU. `gfx_vulkan_timestamp_tests [--validation]` and installed
+`vulkan_timestamp_consumer` verify public readiness/reuse, positive timed copies,
+independent recordings, dropped wrappers, mixed MRT+D32 images and retirement on both
+actual adapters. Current roots: `out/vulkan-timestamps`, `out/vulkan-timestamps-install`,
+`out/vulkan-timestamps-consumer`. Existing shader fixtures/tools are hash-checked and
+reused; no new shader compilation/validation campaign is claimed.
+See [timestamp evidence](PHASE3_VULKAN_TIMESTAMP_REPORT.md). Native contracts follow
+[timestamp writes](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdWriteTimestamp.html),
+[query results](https://docs.vulkan.org/refpages/latest/refpages/source/vkGetQueryPoolResults.html)
+and [valid bits](https://docs.vulkan.org/refpages/latest/refpages/source/VkQueueFamilyProperties.html).
 
 The synchronization and lifetime rules follow the primary
 [copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBuffer.html),

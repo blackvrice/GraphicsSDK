@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="27"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="95"
+	timestamp="2026-10-23T18:42:30"
+	>
+	<testcase name="core_contracts" classname="core_contracts" time="0.0278045" status="run">
+		<properties/>
+		<system-out>PASS: 4 assertions
+</system-out>
+	</testcase>
+	<testcase name="adapter_contracts" classname="adapter_contracts" time="0.337776" status="run">
+		<properties/>
+		<system-out>PASS: 4 assertions, 0 full images
+</system-out>
+	</testcase>
+	<testcase name="memory_budget_contracts" classname="memory_budget_contracts" time="0.345071" status="run">
+		<properties/>
+		<system-out>PASS: 3 memory budget assertions
+</system-out>
+	</testcase>
+	<testcase name="vertex_layout_contracts" classname="vertex_layout_contracts" time="0.0181151" status="run">
+		<properties/>
+		<system-out>PASS: 21 assertions
+</system-out>
+	</testcase>
+	<testcase name="binding_layout_contracts" classname="binding_layout_contracts" time="0.334936" status="run">
+		<properties/>
+		<system-out>PASS: 19 assertions
+</system-out>
+	</testcase>
+	<testcase name="render_pass_contracts" classname="render_pass_contracts" time="0.0209828" status="run">
+		<properties/>
+		<system-out>PASS: 25 assertions, 0 full images
+</system-out>
+	</testcase>
+	<testcase name="spirv_interface_contracts" classname="spirv_interface_contracts" time="0.0239663" status="run">
+		<properties/>
+		<system-out>PASS SPIRV_interface_assertions=181 full_semantic_validator=false GPU_calls=0
+</system-out>
+	</testcase>
+	<testcase name="spirv_vertex_contracts" classname="spirv_vertex_contracts" time="0.409474" status="run">
+		<properties/>
+		<system-out>PASS SPIRV_vertex_assertions=61 full_semantic_validator=false GPU_calls=0
+</system-out>
+	</testcase>
+	<testcase name="spirv_binding_contracts" classname="spirv_binding_contracts" time="0.0237256" status="run">
+		<properties/>
+		<system-out>PASS SPIRV_binding_assertions=43 full_semantic_validator=false GPU_calls=0
+</system-out>
+	</testcase>
+	<testcase name="vulkan_timestamp_math" classname="vulkan_timestamp_math" time="0.0338374" status="run">
+		<properties/>
+		<system-out>PASS timestamp_math_assertions=3775 GPU_calls=0
+</system-out>
+	</testcase>
+	<testcase name="vulkan_transfer" classname="vulkan_transfer" time="1.51247" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645 vendor=4318 software=0
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072 vendor=32902 software=0
+PASS assertions=717 transfers=48 verified_bytes=57042546 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_texture_transfer" classname="vulkan_texture_transfer" time="6.95529" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS assertions=835 roundtrips=74 verified_texel_bytes=499371832 padded_roundtrips=40 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_color_pass" classname="vulkan_color_pass" time="10.6112" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS assertions=593 passes=128 images=138 verified_texel_bytes=747063512 padded_images=114 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_draw" classname="vulkan_draw" time="3.48335" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS draw_assertions=637 draws=62 images=66 verified_texel_bytes=249491416 padded_images=58 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_vertex_input" classname="vulkan_vertex_input" time="3.42045" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS vertex_assertions=771 draws=150 indexed_draws=78 images=146 verified_texel_bytes=250813720 padded_images=138 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_resource_bindings" classname="vulkan_resource_bindings" time="7.09397" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS binding_assertions=573 draws=156 snapshots=258 images=80 verified_texel_bytes=249889536 padded_images=72 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_depth" classname="vulkan_depth" time="4.66536" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS depth_assertions=883 passes=206 draws=258 images=278 depth_images=126 verified_texel_bytes=334855104 padded_images=262 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_timestamps" classname="vulkan_timestamps" time="5.62891" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=0
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS timestamp_assertions=311 measured_pairs=52 dropped_query_recordings=6 draws=6 images=18 depth_images=6 verified_texel_bytes=331852960 verified_buffer_bytes=75644964 padded_images=6 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_transfer_validation" classname="vulkan_transfer_validation" time="1.45634" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645 vendor=4318 software=0
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072 vendor=32902 software=0
+PASS assertions=717 transfers=48 verified_bytes=57042546 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_texture_validation" classname="vulkan_texture_validation" time="7.45103" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS assertions=835 roundtrips=74 verified_texel_bytes=499371832 padded_roundtrips=40 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_color_pass_validation" classname="vulkan_color_pass_validation" time="11.524" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS assertions=593 passes=128 images=138 verified_texel_bytes=747063512 padded_images=114 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_draw_validation" classname="vulkan_draw_validation" time="5.09219" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS draw_assertions=637 draws=62 images=66 verified_texel_bytes=249491416 padded_images=58 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_vertex_validation" classname="vulkan_vertex_validation" time="4.87822" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS vertex_assertions=771 draws=150 indexed_draws=78 images=146 verified_texel_bytes=250813720 padded_images=138 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_binding_validation" classname="vulkan_binding_validation" time="8.13608" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS binding_assertions=573 draws=156 snapshots=258 images=80 verified_texel_bytes=249889536 padded_images=72 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_depth_validation" classname="vulkan_depth_validation" time="5.04664" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS depth_assertions=883 passes=206 draws=258 images=278 depth_images=126 verified_texel_bytes=334855104 padded_images=262 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_timestamp_validation" classname="vulkan_timestamp_validation" time="5.74234" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 validation=1
+adapter=NVIDIA GeForce GTX 1660 SUPER id=2603889378335162645
+adapter=Intel(R) UHD Graphics 770 id=16219899940238751072
+PASS timestamp_assertions=311 measured_pairs=52 dropped_query_recordings=6 draws=6 images=18 depth_images=6 verified_texel_bytes=331852960 verified_buffer_bytes=75644964 padded_images=6 adapters=2
+</system-out>
+	</testcase>
+	<testcase name="vulkan_validation_controls" classname="vulkan_validation_controls" time="0.861039" status="run">
+		<properties/>
+		<system-out>source=74e36fd622c0d928b8c351e737794c06f3e2fd7100a699e646d32a9dc6324014 isolated_expected_errors=true
+loaded_layer=D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll
+adapter=NVIDIA GeForce GTX 1660 SUPER
+loaded_layer=D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll
+loaded_layer=D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll
+loaded_layer=D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll
+adapter=Intel(R) UHD Graphics 770
+loaded_layer=D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll
+loaded_layer=D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll
+PASS...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+</testsuite>

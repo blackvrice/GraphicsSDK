@@ -1,5 +1,13 @@
 # 배포 의존성 라이선스 감사
 
+GPU 타임스탬프는 `audit_vulkan.py --variant timestamps`와
+`licenses/vulkan-timestamps-policy.json`으로 별도 감사한다.
+[inventory](../licenses/generated/windows-sdk-vulkan-timestamps-release/inventory.json)는
+80개 compiler input/2개 component, 34개 compiler log/33개 linker log와 정확한 SDK payload를
+검사한다. 자체 private 변환 helper·CPU/GPU 테스트 세 파일만 허용 범위에 추가했다.
+기존 depth shader fixture·고정 local tool/runtime은 SHA로 확인해 재사용하며 이번에 새 shader를
+조립/검증했다고 주장하지 않는다. 외부 dependency 배포를 추가하지 않고 기존 SDK ZIP 20개를 보존한다.
+
 D32 깊이 패스는 `audit_vulkan.py --variant depth`와 `licenses/vulkan-depth-policy.json`으로
 별도 감사한다. [inventory](../licenses/generated/windows-sdk-vulkan-depth-release/inventory.json)는
 77개 compiler input/2개 component, 31개 compiler log/30개 linker log와 정확한 SDK payload를

@@ -3,17 +3,17 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The default integrated Windows configuration registers 44 CTests (including CPU
-SPIR-V inspection and buffer/texture/color-pass/draw/vertex/binding/depth suites), Vulkan-only has 16,
-and no-backend has 9. These are separate Windows configurations,
+The default integrated Windows configuration registers 46 CTests (including CPU
+SPIR-V/timestamp inspection and buffer/texture/color-pass/draw/vertex/binding/depth/timestamp suites), Vulkan-only has 18,
+and no-backend has 10. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
 The required synchronization-validation profile adds `vulkan_transfer_validation`,
 `vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`,
-`vulkan_vertex_validation`, `vulkan_binding_validation`, `vulkan_depth_validation`
+`vulkan_vertex_validation`, `vulkan_binding_validation`, `vulkan_depth_validation`, `vulkan_timestamp_validation`
 and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`),
-yielding 52 integrated / 24 Vulkan-only registered tests. A pinned,
+yielding 55 integrated / 27 Vulkan-only registered tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -77,6 +77,18 @@ images (126 D32), 334,855,104 texel bytes and 262 padded images across both adap
 It verifies all compare functions/write masks, test-disabled pipelines, mixed MRT,
 depth-only fragment omission, read-only Load, upload/device round trips, native lifetime
 and late-rejection atomicity. All seven installed GPU suites repeat required validation.
+
+The [timestamp profile](PHASE3_VULKAN_TIMESTAMP_REPORT.md) passes 52 selected integrated
+(55 registered, same three exclusions) + 27 Vulkan-only + 10 no-backend CTests.
+CPU conversion has 3,775 assertions including modular wrap and ambiguous cycle/order
+controls. Each GPU timestamp execution checks 311 assertions, 52 measured pairs,
+6 dropped query recordings, 18 full images (6 D32), 331,852,960 texel bytes and
+75,644,964 buffer bytes across both adapters. Positive copy/draw timing, readiness,
+reuse, independent pools, thread and retirement contracts are checked alongside exact
+content/padding. Immediate readiness is race tolerant; real hardware wrap and a long
+counter-cycle delay are synthetic CPU controls, not reproduced GPU events. All eight
+installed GPU suites require core/synchronization validation. No performance baseline
+or CPU/GPU clock correlation is inferred.
 
 ## Automated checks
 

@@ -3,9 +3,11 @@
 #include <vulkan/vulkan_core.h>
 #include "VulkanValidation.hpp"
 #include "Spirv.hpp"
+#include "Timestamp.hpp"
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <cstring>
 #include <limits>
 #include <list>
@@ -121,6 +123,7 @@ struct Candidate {
     VkPhysicalDevice physical{};
     VkPhysicalDeviceMemoryProperties memory{};
     std::uint32_t family{};
+    std::uint32_t timestampBits{};
     std::uint32_t maxColorAttachments{};
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
     VkPhysicalDeviceLimits limits{};
@@ -147,6 +150,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
         auto queue = std::find_if(queues.begin(), queues.end(), [](auto& q) { return q.queueCount && (q.queueFlags & VK_QUEUE_GRAPHICS_BIT); });
         if (queue == queues.end()) continue;
         Candidate c; c.physical = device; c.family = static_cast<std::uint32_t>(queue - queues.begin());
+        c.timestampBits = queue->timestampValidBits;
         c.maxColorAttachments = properties.properties.limits.maxColorAttachments;
         c.maxFramebufferWidth = properties.properties.limits.maxFramebufferWidth;
         c.maxFramebufferHeight = properties.properties.limits.maxFramebufferHeight;
@@ -177,6 +181,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(DestroyPipeline) \
     X(CreateSampler) X(DestroySampler) X(CreateDescriptorSetLayout) X(DestroyDescriptorSetLayout) \
     X(CreateDescriptorPool) X(DestroyDescriptorPool) X(AllocateDescriptorSets) X(UpdateDescriptorSets) X(CmdBindDescriptorSets) \
+    X(CreateQueryPool) X(DestroyQueryPool) X(CmdResetQueryPool) X(CmdWriteTimestamp) X(GetQueryPoolResults) \
     X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
     X(CreateCommandPool) X(DestroyCommandPool) X(AllocateCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
@@ -279,8 +284,15 @@ struct Recording {
     std::vector<std::unique_ptr<NativeBindings>> snapshots;
     NativeBindings* selectedBindings{};
     unsigned descriptors{};
+    VkQueryPool queries{};
+    std::array<bool, 2> timestampWritten{};
+    bool timestampsResolved{}, timestampStartFirst{};
+    std::chrono::steady_clock::time_point submittedAt;
+    std::optional<double> timestampResult;
     void release() {
         if (pool) native->DestroyCommandPool(native->handle, pool, nullptr);
+        if (queries) native->DestroyQueryPool(native->handle, queries, nullptr);
+        queries = {}; timestampWritten = {}; timestampsResolved = timestampStartFirst = false; timestampResult.reset();
         pool = {}; command = {}; selectedBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); uses.clear(); open = ended = inPass = false;
     }
     ~Recording() { release(); }
@@ -292,6 +304,7 @@ struct State {
     VkPhysicalDevice physical{};
     VkPhysicalDeviceMemoryProperties memory{};
     std::uint32_t family{};
+    std::uint32_t timestampBits{};
     std::uint32_t maxColorAttachments{};
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
     VkPhysicalDeviceLimits limits{};
@@ -494,6 +507,11 @@ struct VulkanCommands final : CommandList {
         if (auto ok = owner->accept(owner->native->AllocateCommandBuffers(owner->native->handle, &allocate, &next->command), "vkAllocateCommandBuffers"); !ok) return ok;
         VkCommandBufferBeginInfo start{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}; start.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         if (auto ok = owner->accept(owner->native->BeginCommandBuffer(next->command, &start), "vkBeginCommandBuffer"); !ok) return ok;
+        if (vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) {
+            VkQueryPoolCreateInfo queries{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO}; queries.queryType = VK_QUERY_TYPE_TIMESTAMP; queries.queryCount = 2;
+            if (auto ok = owner->accept(owner->native->CreateQueryPool(owner->native->handle, &queries, nullptr, &next->queries), "vkCreateQueryPool"); !ok) return ok;
+            owner->native->CmdResetQueryPool(next->command, next->queries, 0, 2);
+        }
         next->open = true;
         std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
         owner->recordings.push_back(next); record = std::move(next); return {};
@@ -863,11 +881,35 @@ struct VulkanCommands final : CommandList {
         if (auto ok = bindingsReady(); !ok) return ok;
         owner->native->CmdDrawIndexed(record->command, count, instances, firstIndex, baseVertex, firstInstance); return {};
     }
-    Result<void> writeTimestamp(std::uint32_t) override { return unsupported(); }
-    Result<void> resolveTimestamps() override { return unsupported(); }
+    Result<void> writeTimestamp(std::uint32_t index) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->queries) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (index > 1 || record->timestampWritten[index] || record->timestampsResolved) return fail(ErrorCode::InvalidArgument, "Timestamp slot invalid or already written");
+        if (!record->timestampWritten[0] && !record->timestampWritten[1]) record->timestampStartFirst = index == 0;
+        owner->native->CmdWriteTimestamp(record->command, index ? VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, record->queries, index);
+        record->timestampWritten[index] = true; return {};
+    }
+    Result<void> resolveTimestamps() override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (!record->queries) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (!record->timestampWritten[0] || !record->timestampWritten[1] || record->timestampsResolved) return fail(ErrorCode::InvalidState, "Two timestamps must be written once before resolving");
+        // Vulkan copies query results directly to host memory after the submission fence.
+        record->timestampsResolved = true; return {};
+    }
     Result<double> elapsedGpuMilliseconds() override {
-        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        return fail(ErrorCode::Unsupported, "Vulkan timestamps unsupported");
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (!vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (!record || !record->submitted || record->submitted > owner->completed || !record->timestampsResolved) return fail(ErrorCode::InvalidState, "GPU timestamps are not ready");
+        if (record->timestampResult) return *record->timestampResult;
+        struct Query { std::uint64_t ticks{}, available{}; }; std::array<Query, 2> results;
+        const auto r = owner->native->GetQueryPoolResults(owner->native->handle, record->queries, 0, 2, sizeof(results), results.data(), sizeof(Query), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT);
+        if (r == VK_NOT_READY) return fail(ErrorCode::InvalidState, "GPU query results unavailable");
+        if (auto ok = owner->accept(r, "vkGetQueryPoolResults"); !ok) return std::unexpected(ok.error());
+        if (!results[0].available || !results[1].available) return fail(ErrorCode::InvalidState, "GPU query availability missing");
+        const auto host = std::chrono::duration<double, std::nano>(std::chrono::steady_clock::now() - record->submittedAt).count();
+        auto elapsed = vulkan::timestampMilliseconds(results[0].ticks, results[1].ticks, owner->timestampBits, owner->limits.timestampPeriod, host, record->timestampStartFirst);
+        if (!elapsed) return std::unexpected(elapsed.error());
+        record->timestampResult = *elapsed; return *elapsed;
     }
     Result<void> debugMarker(std::string_view) override { return unsupported(); }
 };
@@ -889,12 +931,14 @@ struct VulkanQueue final : CommandQueue {
         auto r = owner->native->CreateFence(owner->native->handle, &fence, nullptr, &pending.fence);
         if (r != VK_SUCCESS) { owner->pending.pop_back(); return nativeError(r, "vkCreateFence"); }
         VkSubmitInfo info{VK_STRUCTURE_TYPE_SUBMIT_INFO}; info.commandBufferCount = 1; info.pCommandBuffers = &record->command;
+        const auto submittedAt = std::chrono::steady_clock::now();
         r = owner->native->QueueSubmit(owner->native->queue, 1, &info, pending.fence);
         if (r != VK_SUCCESS) {
             owner->native->DestroyFence(owner->native->handle, pending.fence, nullptr); owner->pending.pop_back();
             if (auto ok = owner->accept(r, "vkQueueSubmit"); !ok) return std::unexpected(ok.error());
         }
         record->submitted = ++owner->last;
+        record->submittedAt = submittedAt;
         for (auto& use : record->uses) {
             use.allocation->state = use.shadow; use.allocation->imageInitialized = use.imageInitialized;
             use.allocation->contentsInitialized = use.contentsInitialized;
@@ -942,7 +986,7 @@ struct VulkanDevice final : Device {
         result.trackedObjects = owner->objects.size();
         for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
         result.pendingSubmissions = owner->pending.size();
-        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size() + p.recording->pipelines.size();
+        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size() + p.recording->pipelines.size() + (p.recording->queries ? 1 : 0);
         return result;
     }
     Result<MemoryBudget> queryMemoryBudget(MemorySegment) override {
@@ -1230,6 +1274,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     native->GetDeviceQueue(native->handle, selected->family, 0, &native->queue);
     auto owner = std::make_shared<State>(); owner->native = native; owner->physical = selected->physical;
     owner->memory = selected->memory; owner->family = selected->family;
+    owner->timestampBits = selected->timestampBits;
     owner->maxColorAttachments = selected->maxColorAttachments;
     owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
     owner->limits = selected->limits; owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
@@ -1238,6 +1283,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.softwareAdapter = selected->info.softwareAdapter; device->capabilities.adapterId = selected->info.id;
     device->capabilities.multipleRenderTargets = selected->maxColorAttachments >= 2;
     device->capabilities.vertexInput = device->capabilities.indexedDrawing = true;
+    device->capabilities.timestampQueries = vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod);
     device->capabilities.resourceBinding = device->capabilities.bindingLayouts = true;
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,

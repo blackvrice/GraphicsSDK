@@ -37,6 +37,13 @@ CommandList는 transition, copy, color/depth render pass, pipeline, resource/ver
 scissor, draw/indexed draw/instancing, debug marker, 2개 timestamp 슬롯을 지원한다.
 GPU timestamp read는 resolve 후 submit fence 완료 시에만 가능하다.
 
+Vulkan도 두 slot을 지원한다. Slot 0은 TOP_OF_PIPE, 1은 BOTTOM_OF_PIPE이며 각 한 번 기록하고
+pass 밖에서 resolve한다. 완료된 fence와 두 query availability를 확인한 후 native GPU 값을
+valid-bit modular 차이와 timestampPeriod로 변환한다. Begin은 이전 결과를 비우고 성공한
+read는 캐시한다. 역순 slot과 한 counter cycle 이상 지난 첫 read는 InvalidState다.
+CPU 시간은 wrap 모호성의 보수적 상한 확인에만 사용하고 GPU 결과를 대신하지 않는다.
+지원 여부·수명·범위는 [Vulkan 타임스탬프 계약](VULKAN.md)을 따른다.
+
 transition/copy의 validation 거부는 명령 목록의 기존 상태를 유지하며 새 자원 참조나
 observed-version snapshot을 추가하지 않는다. `copyBuffer`, `copyBufferToTexture`,
 `copyTextureToBuffer`는 메모리/범위·양쪽의 논리 상태를 확인한 뒤에만 자원을 기록한다.
@@ -327,7 +334,9 @@ InvalidState, 손실되거나 퇴역한 세대는 저장된 원인의 DeviceLost
 - `pendingSubmissions`, `pendingObjectReferences`: 완료 정리 후 남은 제출 batch와 그 COM 참조 수.
   참조 수는 고유 객체 수가 아니며 resource 외 allocator/list/heap/query/PSO 등을 포함한다.
   Vulkan은 recording/resource use/pass/pipeline 보유 항목 수이며 descriptor set/pool은
-  recording 내부에 포함된다. 두 backend의 수치를 native 객체 수로 직접 비교하지 않는다.
+  recording 내부에 포함된다. Timestamp query pool은 별도 보유 항목 하나로 센다.
+  Vulkan query pool은 Buffer/Image allocation bytes에 포함하지 않는다.
+  두 backend의 수치를 native 객체 수로 직접 비교하지 않는다.
 
 자원 wrapper를 지워도 녹화되거나 제출된 command가 native resource를 보유할 수 있다.
 관련 command와 자원 wrapper를 모두 해제하고 `queue().waitIdle()`을 마친 뒤 조회하면,
