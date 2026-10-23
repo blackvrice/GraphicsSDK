@@ -119,6 +119,8 @@ struct Candidate {
     VkPhysicalDevice physical{};
     VkPhysicalDeviceMemoryProperties memory{};
     std::uint32_t family{};
+    std::uint32_t maxColorAttachments{};
+    std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
 };
 Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& instance) {
     std::uint32_t count{};
@@ -141,6 +143,9 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
         auto queue = std::find_if(queues.begin(), queues.end(), [](auto& q) { return q.queueCount && (q.queueFlags & VK_QUEUE_GRAPHICS_BIT); });
         if (queue == queues.end()) continue;
         Candidate c; c.physical = device; c.family = static_cast<std::uint32_t>(queue - queues.begin());
+        c.maxColorAttachments = properties.properties.limits.maxColorAttachments;
+        c.maxFramebufferWidth = properties.properties.limits.maxFramebufferWidth;
+        c.maxFramebufferHeight = properties.properties.limits.maxFramebufferHeight;
         c.info.id = {Backend::Vulkan, 14695981039346656037ull};
         bool nonzero{};
         for (auto byte : id.deviceUUID) { nonzero |= byte != 0; c.info.id.value = (c.info.id.value ^ byte) * 1099511628211ull; }
@@ -163,6 +168,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(DestroyDevice) X(GetDeviceQueue) X(DeviceWaitIdle) X(QueueWaitIdle) X(QueueSubmit) \
     X(CreateBuffer) X(DestroyBuffer) X(GetBufferMemoryRequirements) X(AllocateMemory) X(FreeMemory) X(BindBufferMemory) \
     X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) \
+    X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
     X(CreateCommandPool) X(DestroyCommandPool) X(AllocateCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
     X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences)
@@ -180,6 +186,7 @@ struct Allocation {
     std::shared_ptr<NativeDevice> native;
     VkBuffer buffer{};
     VkImage image{};
+    VkImageView view{};
     VkDeviceMemory memory{};
     VkDeviceSize bytes{};
     bool coherent{};
@@ -187,27 +194,39 @@ struct Allocation {
     TextureDesc textureDesc;
     TextureFootprint footprint;
     bool imageInitialized{};
+    bool contentsInitialized{};
     ResourceState state{ResourceState::Common};
     std::uint64_t version{}, lastUse{};
     void release() {
         if (buffer) native->DestroyBuffer(native->handle, buffer, nullptr);
+        if (view) native->DestroyImageView(native->handle, view, nullptr);
         if (image) native->DestroyImage(native->handle, image, nullptr);
         if (memory) native->FreeMemory(native->handle, memory, nullptr);
-        buffer = {}; image = {}; memory = {};
+        buffer = {}; view = {}; image = {}; memory = {};
     }
     ~Allocation() { release(); }
 };
-struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized; };
+struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized, contentsInitialized; };
+struct NativePass {
+    std::shared_ptr<NativeDevice> native;
+    VkRenderPass pass{};
+    VkFramebuffer framebuffer{};
+    ~NativePass() {
+        if (framebuffer) native->DestroyFramebuffer(native->handle, framebuffer, nullptr);
+        if (pass) native->DestroyRenderPass(native->handle, pass, nullptr);
+    }
+};
 struct Recording {
     std::shared_ptr<NativeDevice> native;
     VkCommandPool pool{};
     VkCommandBuffer command{};
-    bool open{}, ended{};
+    bool open{}, ended{}, inPass{};
     std::uint64_t submitted{};
     std::vector<Use> uses;
+    std::vector<std::unique_ptr<NativePass>> passes;
     void release() {
         if (pool) native->DestroyCommandPool(native->handle, pool, nullptr);
-        pool = {}; command = {}; uses.clear(); open = ended = false;
+        pool = {}; command = {}; passes.clear(); uses.clear(); open = ended = inPass = false;
     }
     ~Recording() { release(); }
 };
@@ -218,6 +237,8 @@ struct State {
     VkPhysicalDevice physical{};
     VkPhysicalDeviceMemoryProperties memory{};
     std::uint32_t family{};
+    std::uint32_t maxColorAttachments{};
+    std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
     std::thread::id thread{std::this_thread::get_id()};
     std::uint64_t id{generations.fetch_add(1)}, last{}, completed{};
     bool retired{}, lost{};
@@ -313,11 +334,13 @@ struct VulkanTexture final : Texture {
 VkImageLayout imageLayout(ResourceState state) {
     if (state == ResourceState::CopySource) return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     if (state == ResourceState::CopyDestination) return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    if (state == ResourceState::RenderTarget) return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     return VK_IMAGE_LAYOUT_GENERAL;
 }
 VkAccessFlags access(ResourceState state) {
     if (state == ResourceState::CopySource) return VK_ACCESS_TRANSFER_READ_BIT;
     if (state == ResourceState::CopyDestination) return VK_ACCESS_TRANSFER_WRITE_BIT;
+    if (state == ResourceState::RenderTarget) return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     return VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 }
 struct VulkanCommands final : CommandList {
@@ -329,9 +352,14 @@ struct VulkanCommands final : CommandList {
         if (!record || !record->open) return fail(ErrorCode::InvalidState, "Command list is not recording");
         return {};
     }
+    Result<void> outsidePass() const {
+        if (auto ok = ready(); !ok) return ok;
+        if (record->inPass) return fail(ErrorCode::InvalidState, "Operation requires no active render pass");
+        return {};
+    }
     Result<void> unsupported() const {
         if (auto ok = ready(); !ok) return ok;
-        return fail(ErrorCode::Unsupported, "Vulkan backend currently supports buffer and color texture transfers only");
+        return fail(ErrorCode::Unsupported, "Vulkan graphics pipelines/drawing/bindings are not implemented");
     }
     Result<std::shared_ptr<Allocation>> buffer(const BufferPtr& buffer) const {
         auto value = std::dynamic_pointer_cast<VulkanBuffer>(buffer);
@@ -352,7 +380,7 @@ struct VulkanCommands final : CommandList {
     ResourceState shadow(const std::shared_ptr<Allocation>& a) { auto use = find(a); return use ? use->shadow : a->state; }
     Use& retain(const std::shared_ptr<Allocation>& a) {
         if (auto use = find(a)) return *use;
-        return record->uses.emplace_back(Use{a, a->version, a->state, a->imageInitialized});
+        return record->uses.emplace_back(Use{a, a->version, a->state, a->imageInitialized, a->contentsInitialized});
     }
     Result<void> begin() override {
         if (auto ok = owner->poll(); !ok) return ok;
@@ -370,13 +398,13 @@ struct VulkanCommands final : CommandList {
         owner->recordings.push_back(next); record = std::move(next); return {};
     }
     Result<void> end() override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         const auto r = owner->native->EndCommandBuffer(record->command);
         record->open = false; record->ended = r == VK_SUCCESS;
         return owner->accept(r, "vkEndCommandBuffer");
     }
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         const auto a = buffer(value); if (!a) return std::unexpected(a.error());
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
             return fail(ErrorCode::Unsupported, "Vulkan transfer state unsupported");
@@ -395,7 +423,7 @@ struct VulkanCommands final : CommandList {
         use.shadow = target; return {};
     }
     Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         auto src = buffer(source); if (!src) return std::unexpected(src.error());
         auto dst = buffer(destination); if (!dst) return std::unexpected(dst.error());
         if (!bytes || bytes > (*src)->desc.size || bytes > (*dst)->desc.size || *src == *dst)
@@ -418,10 +446,12 @@ struct VulkanCommands final : CommandList {
         return {};
     }
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         auto a = texture(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget)
             return fail(ErrorCode::Unsupported, "Vulkan texture transfer state unsupported");
+        if (target == ResourceState::RenderTarget && !(*a)->textureDesc.renderTarget)
+            return fail(ErrorCode::InvalidArgument, "Texture was not created as a render target");
         record->uses.reserve(record->uses.size() + 1);
         auto& use = retain(*a);
         VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
@@ -462,7 +492,10 @@ struct VulkanCommands final : CommandList {
         region.bufferRowLength = image->footprint.rowPitch / texelBytes;
         region.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
         region.imageExtent = {image->textureDesc.width, image->textureDesc.height, 1};
-        if (upload) owner->native->CmdCopyBufferToImage(record->command, buffer->buffer, image->image, i.newLayout, 1, &region);
+        if (upload) {
+            owner->native->CmdCopyBufferToImage(record->command, buffer->buffer, image->image, i.newLayout, 1, &region);
+            find(image)->contentsInitialized = true;
+        }
         else {
             owner->native->CmdCopyImageToBuffer(record->command, image->image, i.newLayout, buffer->buffer, 1, &region);
             if (buffer->desc.memory == Memory::Readback) {
@@ -474,20 +507,83 @@ struct VulkanCommands final : CommandList {
         return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& source, const TexturePtr& destination) override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         auto src = buffer(source); if (!src) return std::unexpected(src.error());
         auto dst = texture(destination); if (!dst) return std::unexpected(dst.error());
         return copyTexture(*dst, *src, true);
     }
     Result<void> copyTextureToBuffer(const TexturePtr& source, const BufferPtr& destination) override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         auto src = texture(source); if (!src) return std::unexpected(src.error());
         auto dst = buffer(destination); if (!dst) return std::unexpected(dst.error());
         return copyTexture(*src, *dst, false);
     }
-    Result<void> beginRenderPass(const TexturePtr&, Color) override { return unsupported(); }
-    Result<void> beginRenderPass(const RenderPassDesc&) override { return unsupported(); }
-    Result<void> endRenderPass() override { return unsupported(); }
+    Result<void> beginRenderPass(const TexturePtr& target, Color clear) override {
+        return beginRenderPass(RenderPassDesc{{{target, LoadOp::Clear, clear}}, {}});
+    }
+    Result<void> beginRenderPass(const RenderPassDesc& description) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (auto ok = validateRenderPass(description); !ok) return ok;
+        if (description.depth.texture) return fail(ErrorCode::Unsupported, "Vulkan depth attachments unsupported");
+        if (description.colors.size() > owner->maxColorAttachments)
+            return fail(ErrorCode::Unsupported, "Color attachment count exceeds adapter limit");
+        std::vector<std::shared_ptr<Allocation>> colors;
+        std::vector<VkAttachmentDescription> attachments;
+        std::vector<VkAttachmentReference> references;
+        std::vector<VkImageView> views;
+        std::vector<VkClearValue> clears;
+        for (const auto& color : description.colors) {
+            auto a = texture(color.texture); if (!a) return std::unexpected(a.error());
+            if (shadow(*a) != ResourceState::RenderTarget) return fail(ErrorCode::InvalidState, "Attachment requires RenderTarget state");
+            const auto use = find(*a);
+            if (color.load == LoadOp::Load && !(use ? use->contentsInitialized : (*a)->contentsInitialized))
+                return fail(ErrorCode::InvalidState, "Load requires initialized attachment contents");
+            colors.push_back(*a); views.push_back((*a)->view);
+            VkAttachmentDescription attachment{};
+            attachment.format = (*a)->textureDesc.format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT;
+            attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            attachment.loadOp = color.load == LoadOp::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachment.initialLayout = attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            references.push_back({static_cast<std::uint32_t>(attachments.size()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
+            attachments.push_back(attachment);
+            VkClearValue clear{}; clear.color = {{color.clear.r, color.clear.g, color.clear.b, color.clear.a}}; clears.push_back(clear);
+        }
+        // Complete validation and reserve every retention slot before changing recording state.
+        record->uses.reserve(record->uses.size() + colors.size()); record->passes.reserve(record->passes.size() + 1);
+        auto pass = std::make_unique<NativePass>(); pass->native = owner->native;
+        VkSubpassDescription subpass{}; subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = static_cast<std::uint32_t>(references.size()); subpass.pColorAttachments = references.data();
+        // ALL_COMMANDS is ALL_GRAPHICS in subpass dependencies: include TRANSFER explicitly.
+        VkSubpassDependency dependencies[2]{};
+        dependencies[0] = {VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT,
+            VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0};
+        dependencies[1] = {0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT, 0};
+        VkRenderPassCreateInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+        info.attachmentCount = static_cast<std::uint32_t>(attachments.size()); info.pAttachments = attachments.data();
+        info.subpassCount = 1; info.pSubpasses = &subpass; info.dependencyCount = 2; info.pDependencies = dependencies;
+        if (auto ok = owner->accept(owner->native->CreateRenderPass(owner->native->handle, &info, nullptr, &pass->pass), "vkCreateRenderPass"); !ok) return ok;
+        const auto desc = colors.front()->textureDesc;
+        VkFramebufferCreateInfo framebuffer{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+        framebuffer.renderPass = pass->pass; framebuffer.attachmentCount = static_cast<std::uint32_t>(views.size()); framebuffer.pAttachments = views.data();
+        framebuffer.width = desc.width; framebuffer.height = desc.height; framebuffer.layers = 1;
+        if (auto ok = owner->accept(owner->native->CreateFramebuffer(owner->native->handle, &framebuffer, nullptr, &pass->framebuffer), "vkCreateFramebuffer"); !ok) return ok;
+        VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}; begin.renderPass = pass->pass; begin.framebuffer = pass->framebuffer;
+        begin.renderArea.extent = {desc.width, desc.height}; begin.clearValueCount = static_cast<std::uint32_t>(clears.size()); begin.pClearValues = clears.data();
+        for (const auto& a : colors) retain(a).contentsInitialized = true;
+        record->passes.push_back(std::move(pass));
+        owner->native->CmdBeginRenderPass(record->command, &begin, VK_SUBPASS_CONTENTS_INLINE);
+        record->inPass = true; return {};
+    }
+    Result<void> endRenderPass() override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->inPass) return fail(ErrorCode::InvalidState, "No active render pass");
+        owner->native->CmdEndRenderPass(record->command); record->inPass = false; return {};
+    }
     Result<void> setPipeline(const PipelinePtr&) override { return unsupported(); }
     Result<void> bindTexture(const TexturePtr&) override { return unsupported(); }
     Result<void> bindResources(const ResourceBindings&) override { return unsupported(); }
@@ -530,6 +626,7 @@ struct VulkanQueue final : CommandQueue {
         record->submitted = ++owner->last;
         for (auto& use : record->uses) {
             use.allocation->state = use.shadow; use.allocation->imageInitialized = use.imageInitialized;
+            use.allocation->contentsInitialized = use.contentsInitialized;
             use.allocation->lastUse = owner->last; ++use.allocation->version;
         }
         return Fence{owner->last, owner->id};
@@ -573,7 +670,7 @@ struct VulkanDevice final : Device {
         result.trackedObjects = owner->objects.size();
         for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
         result.pendingSubmissions = owner->pending.size();
-        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size();
+        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size();
         return result;
     }
     Result<MemoryBudget> queryMemoryBudget(MemorySegment) override {
@@ -619,10 +716,12 @@ struct VulkanDevice final : Device {
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
-        if (desc.renderTarget || desc.depthStencil)
-            return fail(ErrorCode::Unsupported, "Vulkan attachment textures unsupported");
+        if (desc.depthStencil) return fail(ErrorCode::Unsupported, "Vulkan depth textures unsupported");
+        if (desc.renderTarget && (desc.width > owner->maxFramebufferWidth || desc.height > owner->maxFramebufferHeight))
+            return fail(ErrorCode::Unsupported, "Color attachment exceeds adapter framebuffer extent limits");
         const auto format = desc.format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT;
-        constexpr auto usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        const VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+            (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0);
         VkImageFormatProperties properties{};
         const auto r = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, format,
             VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties);
@@ -648,6 +747,12 @@ struct VulkanDevice final : Device {
         VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize = req.size; allocate.memoryTypeIndex = *type;
         if (auto ok = owner->accept(owner->native->AllocateMemory(owner->native->handle, &allocate, nullptr, &a->memory), "vkAllocateMemory image"); !ok) return std::unexpected(ok.error());
         if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, a->memory, 0), "vkBindImageMemory"); !ok) return std::unexpected(ok.error());
+        if (desc.renderTarget) {
+            VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+            view.image = a->image; view.viewType = VK_IMAGE_VIEW_TYPE_2D; view.format = format;
+            view.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            if (auto ok = owner->accept(owner->native->CreateImageView(owner->native->handle, &view, nullptr, &a->view), "vkCreateImageView"); !ok) return std::unexpected(ok.error());
+        }
         auto value = std::make_shared<VulkanTexture>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
@@ -704,9 +809,12 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     native->GetDeviceQueue(native->handle, selected->family, 0, &native->queue);
     auto owner = std::make_shared<State>(); owner->native = native; owner->physical = selected->physical;
     owner->memory = selected->memory; owner->family = selected->family;
+    owner->maxColorAttachments = selected->maxColorAttachments;
+    owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
     auto device = std::make_unique<VulkanDevice>(); device->owner = owner; device->commands.owner = owner;
     device->capabilities.backend = Backend::Vulkan; device->capabilities.adapterName = selected->info.name;
     device->capabilities.softwareAdapter = selected->info.softwareAdapter; device->capabilities.adapterId = selected->info.id;
+    device->capabilities.multipleRenderTargets = selected->maxColorAttachments >= 2;
     return std::unique_ptr<Device>(std::move(device));
 }
 } // namespace gfx

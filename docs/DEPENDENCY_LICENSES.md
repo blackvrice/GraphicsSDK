@@ -1,5 +1,12 @@
 # 배포 의존성 라이선스 감사
 
+색상 렌더 패스는 `audit_vulkan.py --variant color-pass`와
+`licenses/vulkan-color-pass-policy.json`으로 별도 감사한다. Native render pass,
+framebuffer/image view는 기존 고정 Vulkan-Headers 선언만 사용하고 새 외부 코드를
+추가하지 않는다. [inventory](../licenses/generated/windows-sdk-vulkan-color-pass-release/inventory.json)는
+통합 SDK/테스트와 설치된 buffer·texture·color-pass 소비자의 compiler/linker 입력 및
+정확한 SDK payload를 확인한다. 이전 모든 inventory와 로컬 패키지를 보존한다.
+
 색상 텍스처 확장은 `audit_vulkan.py --variant textures`와
 `licenses/vulkan-textures-policy.json`으로 별도 감사한다. 기존 두 Vulkan
 inventory와 로컬 SDK ZIP을 보존하며 외부 런타임은 추가하지 않는다.

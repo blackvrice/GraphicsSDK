@@ -1,10 +1,11 @@
-# Vulkan buffer and color-texture transfer backend
+# Vulkan transfers and color render passes
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
-RGBA8/RGBA16F 2D transfer textures, command recording/submission, queue fences and resource statistics. The D3D12
+RGBA8/RGBA16F 2D textures, color Clear/Load/Store passes, command recording/submission,
+queue fences and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
-backend when enabled; it does not promise rendering support.
+backend when enabled; shader drawing remains unimplemented.
 
 ## Build
 
@@ -64,7 +65,7 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   files can override layer API settings; controlled acceptance clears those inputs.
   A zero count without a validation device is not validation-layer acceptance.
 
-Attachment textures, graphics/compute pipelines, rendering, binding layouts, timestamps,
+Depth textures, graphics/compute pipelines, shader drawing, binding layouts, timestamps,
 debug markers and swapchains return `Unsupported`; their capability flags are
 false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 These APIs, Linux execution and matching Vulkan competitor measurements remain
@@ -75,8 +76,8 @@ ordered follow-up work. See the [implementation report](PHASE3_VULKAN_TRANSFER_R
 `createTexture` accepts non-attachment `RGBA8UNorm` and `RGBA16Float` 2D images.
 Descriptions use the common 1..16384 extent contract and also check the selected
 adapter's optimal-tiling image format/extent support. Each image has a dedicated
-device-local allocation, one mip, one layer and one sample. Depth and render-target
-usage remain `Unsupported`; the images do not advertise sampling/rendering support.
+device-local allocation, one mip, one layer and one sample. Color render-target usage
+is also accepted; depth remains `Unsupported`. Sampling is not implemented.
 
 `footprint()` reports `rowBytes = width * texelBytes`, a 256-byte-aligned `rowPitch`,
 and `size = rowPitch * height`, including final-row padding. Copy the full image at
@@ -105,6 +106,37 @@ See [texture evidence](PHASE3_VULKAN_TEXTURE_REPORT.md).
 The image paths follow Khronos [buffer/image addressing](https://docs.vulkan.org/refpages/latest/refpages/source/VkBufferImageCopy.html),
 [image format queries](https://docs.vulkan.org/refpages/latest/refpages/source/vkGetPhysicalDeviceImageFormatProperties.html)
 and [image barriers](https://docs.vulkan.org/refpages/latest/refpages/source/VkImageMemoryBarrier.html).
+
+## Color attachment passes
+
+Create `TextureDesc.renderTarget=true`, transition explicitly to `RenderTarget`, then
+use either `beginRenderPass(texture, clear)` or `beginRenderPass(RenderPassDesc)`.
+The latter accepts 1..min(8, adapter maxColorAttachments) color attachments with
+matching dimensions, distinct resources and mixed RGBA8/RGBA16F formats. Each uses
+Clear or Load and always Store, over the full image. `multipleRenderTargets` reflects
+whether the selected adapter supports at least two color attachments. This flag
+does not advertise shaders, draw calls or depth support.
+
+Native image layout and initialized contents are independent. A new image has no
+initialized contents even after a transition to RenderTarget. Clear or a full accepted
+upload initializes them; Load requires initialization in the current recording or
+an earlier successful submission. Rejected multi-attachment passes neither clear
+earlier attachments nor capture new versions/references. Clear values must be finite;
+Load ignores clear values. Attachment load/store uses explicit external dependencies,
+including transfer stages; adjacent passes with the same layout remain synchronized.
+
+Nested passes, ending/submitting a recording with a pass open, and buffer/image
+transitions/copies inside a pass return `InvalidState` and preserve the open pass.
+`endRenderPass` requires an open pass. Framebuffers/render passes are retained by
+their recording, destroyed before attachment views, and included in pending reference
+statistics. No render-pass cache or allocation optimization is claimed.
+
+`gfx_vulkan_render_tests [--validation]` and installed `vulkan_render_consumer`
+compare full clear/load images, uploaded-content Load, untouched row padding,
+1..8 mixed-format attachments, rejected-pass atomicity and submitted/unsubmitted
+native lifetimes. The current isolated roots are `out/vulkan-color-pass`,
+`out/vulkan-color-pass-install` and `out/vulkan-color-pass-consumer`.
+See [color-pass evidence](PHASE3_VULKAN_COLOR_PASS_REPORT.md).
 
 The synchronization and lifetime rules follow the primary
 [copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBuffer.html),

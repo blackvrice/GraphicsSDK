@@ -1,0 +1,94 @@
+Test project D:/source/GraphicsSDK/out/vulkan-color-pass
+      Start  1: core_contracts
+ 1/41 Test  #1: core_contracts ...................   Passed    0.04 sec
+      Start  2: adapter_contracts
+ 2/41 Test  #2: adapter_contracts ................   Passed    0.03 sec
+      Start  3: memory_budget_contracts
+ 3/41 Test  #3: memory_budget_contracts ..........   Passed    0.04 sec
+      Start  4: vertex_layout_contracts
+ 4/41 Test  #4: vertex_layout_contracts ..........   Passed    0.04 sec
+      Start  5: binding_layout_contracts
+ 5/41 Test  #5: binding_layout_contracts .........   Passed    0.04 sec
+      Start  6: render_pass_contracts
+ 6/41 Test  #6: render_pass_contracts ............   Passed    0.04 sec
+      Start  7: vulkan_transfer
+ 7/41 Test  #7: vulkan_transfer ..................   Passed    1.70 sec
+      Start  8: vulkan_texture_transfer
+ 8/41 Test  #8: vulkan_texture_transfer ..........   Passed    7.51 sec
+      Start  9: vulkan_color_pass
+ 9/41 Test  #9: vulkan_color_pass ................   Passed   10.09 sec
+      Start 10: vulkan_transfer_validation
+10/41 Test #10: vulkan_transfer_validation .......   Passed    1.85 sec
+      Start 11: vulkan_texture_validation
+11/41 Test #11: vulkan_texture_validation ........   Passed    5.95 sec
+      Start 12: vulkan_color_pass_validation
+12/41 Test #12: vulkan_color_pass_validation .....   Passed    8.62 sec
+      Start 13: vulkan_validation_controls
+13/41 Test #13: vulkan_validation_controls .......   Passed    1.17 sec
+      Start 14: copy_atomicity_gpu
+14/41 Test #14: copy_atomicity_gpu ...............   Passed    0.68 sec
+      Start 15: copy_atomicity_validation
+15/41 Test #15: copy_atomicity_validation ........   Passed    1.37 sec
+      Start 16: swapchain_guards_gpu
+16/41 Test #16: swapchain_guards_gpu .............   Passed    2.82 sec
+      Start 17: swapchain_guards_validation
+17/41 Test #17: swapchain_guards_validation ......   Passed    4.35 sec
+      Start 18: fence_wait_gpu
+18/41 Test #18: fence_wait_gpu ...................   Passed    4.24 sec
+      Start 19: fence_wait_validation
+19/41 Test #19: fence_wait_validation ............   Passed    4.65 sec
+      Start 20: memory_budget_gpu
+20/41 Test #20: memory_budget_gpu ................   Passed    1.14 sec
+      Start 21: adapter_selection_gpu
+21/41 Test #21: adapter_selection_gpu ............   Passed    0.95 sec
+      Start 22: memory_budget_validation
+22/41 Test #22: memory_budget_validation .........   Passed    1.46 sec
+      Start 23: adapter_selection_validation
+23/41 Test #23: adapter_selection_validation .....   Passed    2.12 sec
+      Start 24: d3d12_hardware
+24/41 Test #24: d3d12_hardware ...................   Passed    0.57 sec
+      Start 25: d3d12_validation
+25/41 Test #25: d3d12_validation .................   Passed    1.22 sec
+      Start 26: d3d12_warp
+26/41 Test #26: d3d12_warp .......................   Passed    0.13 sec
+      Start 27: memory_reclamation_gpu
+27/41 Test #27: memory_reclamation_gpu ...........   Passed    3.74 sec
+      Start 28: vertex_input_gpu
+28/41 Test #28: vertex_input_gpu .................   Passed    0.66 sec
+      Start 29: resource_bindings_gpu
+29/41 Test #29: resource_bindings_gpu ............   Passed    0.70 sec
+      Start 30: render_pass_gpu
+30/41 Test #30: render_pass_gpu ..................   Passed    0.88 sec
+      Start 31: device_recovery_gpu
+31/41 Test #31: device_recovery_gpu ..............   Passed    3.00 sec
+      Start 32: memory_reclamation_validation
+32/41 Test #32: memory_reclamation_validation ....***Exception: SegFault  4.62 sec
+PASS: statistics unique resources, aliases, recorded/native ownership, fence reclamation and weak registry
+validation seconds=0.049255 frames=56 reclaimed=0
+
+      Start 33: vertex_input_validation
+33/41 Test #33: vertex_input_validation ..........   Passed    1.12 sec
+      Start 34: resource_bindings_validation
+34/41 Test #34: resource_bindings_validation .....   Passed    2.27 sec
+      Start 35: render_pass_validation
+35/41 Test #35: render_pass_validation ...........   Passed    2.11 sec
+      Start 36: device_recovery_validation
+36/41 Test #36: device_recovery_validation .......   Passed    5.23 sec
+      Start 37: memory_reclamation_warp
+37/41 Test #37: memory_reclamation_warp ..........   Passed    3.22 sec
+      Start 38: vertex_input_warp
+38/41 Test #38: vertex_input_warp ................   Passed    0.19 sec
+      Start 39: resource_bindings_warp
+39/41 Test #39: resource_bindings_warp ...........   Passed    0.19 sec
+      Start 40: render_pass_warp
+40/41 Test #40: render_pass_warp .................   Passed    0.23 sec
+      Start 41: device_recovery_warp
+41/41 Test #41: device_recovery_warp .............   Passed    0.41 sec
+
+98% tests passed, 1 tests failed out of 41
+
+Total Test time (real) =  91.46 sec
+
+The following tests FAILED:
+	 32 - memory_reclamation_validation (SEGFAULT)
+Errors while running CTest

@@ -3,14 +3,14 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The default integrated Windows configuration has 36 CTests (34 existing plus buffer
-and texture transfer), Vulkan-only has 8, and no-backend has 6. These are separate Windows configurations,
+The default integrated Windows configuration registers 37 CTests (34 existing plus
+buffer/texture/color-pass suites), Vulkan-only has 9, and no-backend has 6. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
 The required synchronization-validation profile adds `vulkan_transfer_validation`,
-`vulkan_texture_validation` and `vulkan_validation_controls`
-(`GFX_VULKAN_VALIDATION_TESTS=ON`), yielding 39 integrated / 11 Vulkan-only tests. A pinned,
+`vulkan_texture_validation`, `vulkan_color_pass_validation` and `vulkan_validation_controls`
+(`GFX_VULKAN_VALIDATION_TESTS=ON`), yielding 41 integrated / 13 Vulkan-only registered tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -25,6 +25,16 @@ sentinel padding, repeated same-layout copies and Device-buffer staging. Native 
 versions, changing-payload reuse, rejection ownership and retired descriptions are
 checked independently of unsupported rendering. The installed texture consumer
 repeats the same public suite. Validation and driver-only runs remain distinct.
+
+The [color-pass profile](PHASE3_VULKAN_COLOR_PASS_REPORT.md) verifies full-image
+Clear/Load/Store, 1..8 mixed-format attachments, uploaded initialization, recording
+guards and framebuffer/view lifetimes. The first integrated run passed all Vulkan
+suites but failed the existing D3D12 `memory_reclamation_validation` process with a
+SegFault (40/41 passed). Its logs/binary hashes are preserved. Under the user's
+existing deferral, final integrated execution explicitly excludes all three
+`^memory_reclamation_` tests: 38 selected integrated + 13 Vulkan-only + 6 no-backend.
+This exclusion does not change registration/policy, accept memory reclamation or
+resolve the historical Intel crash. No retry-until-pass memory run is used.
 
 ## Automated checks
 
