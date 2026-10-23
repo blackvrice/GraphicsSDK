@@ -140,3 +140,9 @@ The user approved a new elevated, private GPU ETW capture after the earlier WPR 
 No system policy/group changes or unrelated WPR session control were used. The LLGL/SDL3 public
 semantic-workload CPU comparison and event-based process memory evidence retain their explicit scope.
 Checkpoint maxima remain lower bounds; the new acceptance uses change events and reconstructed lifetimes.
+
+The first [same-Vulkan B-upload comparison](PHASE3_VULKAN_UPLOAD_REPORT.md) now runs
+GraphicsSDK and pinned SDL3 on NVIDIA/Intel with changing full-image references,
+separate validation/performance processes and per-device environment matching.
+It establishes only the documented upload baseline. Broader Vulkan competitors,
+draw/allocation/PSO comparisons, Linux native work and profiling remain open.

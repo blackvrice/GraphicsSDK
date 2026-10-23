@@ -1,0 +1,99 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_upload",
+      "-B",
+      "out/vulkan-upload-final",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "seconds": 3.2810000000026776
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-upload-final",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 6.671999999998661
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-upload-final",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload\\ctest.xml"
+    ],
+    "returncode": 0,
+    "seconds": 1.0469999999986612
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 4.9060000000026776
+  },
+  {
+    "name": "SDK-reuse-audit",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan.py",
+      "--variant",
+      "presentation",
+      "--output",
+      "licenses/generated/windows-sdk-vulkan-presentation-release",
+      "--package",
+      "out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-presentation.zip",
+      "--check"
+    ],
+    "returncode": 0,
+    "seconds": 2.6089999999967404
+  },
+  {
+    "name": "matrix",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_vulkan_upload.py",
+      "--exe",
+      "out/vulkan-upload-final/Release/vulkan_upload.exe",
+      "--output",
+      "benchmarks/results/2026-10-23-vulkan-upload",
+      "--repetitions",
+      "3",
+      "--warmup",
+      "5",
+      "--samples",
+      "30"
+    ],
+    "returncode": 0,
+    "seconds": 353.875
+  }
+]

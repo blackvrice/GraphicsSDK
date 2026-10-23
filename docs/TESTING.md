@@ -544,3 +544,12 @@ adapter and does not pass by skipping every adapter. All eight previous offscree
 suites still exercise both adapters. A programmatically shown window and backbuffer
 readback do not accept human interaction or compositor/monitor pixels. Linux WSI,
 physical recovery and competitor performance remain unverified.
+
+The [Vulkan upload harness](PHASE3_VULKAN_UPLOAD_REPORT.md) adds two standalone probe
+CTests and 31 Python result/statistics contracts (239 total Python tests). It checks
+16 required-validation correctness GPU processes and 36 unvalidated measurement
+processes on NVIDIA/Intel: 1,324 complete images / 47,012,813,120 texel bytes, including
+warmup verification. Required-layer absence, wrong expected GPU and invalid CLI inputs
+fail explicitly. Old SDK CTests and binaries are reused as frozen evidence, not reported
+as newly run. Python campaign tests use mocked processes; no native memory stress or
+Intel crash investigation is started by this profile.

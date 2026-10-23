@@ -385,3 +385,19 @@ Required validation은 통합 57개/Vulkan-only 29개를 등록하고 통합은 
 `vulkan_presentation_consumer [--validation]`이며 native Vulkan 헤더/import lib가 필요 없다.
 Win32 SDK prerequisite User32와 maintenance1 완료 펜스 지원 driver가 필요하다.
 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-presentation.zip`이다.
+
+Vulkan B-upload 비교는 SDK와 SDL을 다시 빌드하지 않고 별도 프로젝트를 빌드한다.
+
+```powershell
+cmake -S benchmarks/vulkan_upload -B out/vulkan-upload-final -G "Visual Studio 17 2022" -A x64
+cmake --build out/vulkan-upload-final --config Release --parallel 1
+ctest --test-dir out/vulkan-upload-final -C Release --output-on-failure
+python tools/run_vulkan_upload.py --exe out/vulkan-upload-final/Release/vulkan_upload.exe --output benchmarks/results/your-new-vulkan-upload-run
+```
+
+기본 dependency는 `out/vulkan-presentation-install`과 reviewed `out/sdl`이다. 기존 실행 폴더를
+덮어쓰지 않으며 runner 결과 폴더는 새 경로여야 한다. Linux build/runtime 수용은 별도다.
+[프로파일과 제한](PHASE3_VULKAN_UPLOAD_REPORT.md)을 따른다.
+
+이 초기 runner는 high/low 선호가 서로 다른 두 hardware GPU를 선택하는 환경을 요구한다.
+동일 장치로 해석되는 경우 합치거나 두 장치 비교를 합성하지 않고 실패한다.

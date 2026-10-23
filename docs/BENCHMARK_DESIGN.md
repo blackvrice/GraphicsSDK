@@ -146,3 +146,24 @@ WriteBuffer 내부 제출은 제외한다. CPU frame에는 staging·추가 copie
 LLGL 이외 advanced adapter는 미구현이고 matching advanced cross-SDK 비교는 미완료다.
 연속 GPU memory acceptance도 미확보이며 gate가 phase1_complete=false를 유지한다.
 그 외 SDK의 기존 A–D 측정 범위는 별도로 남긴다. [구체적 dataset·원본·제한](PHASE1_COMPLETION_REPORT.md)을 따른다.
+
+## Separate Vulkan B-upload profile
+
+`benchmarks/vulkan_upload` and `run_vulkan_upload.py` use the installed Vulkan SDK and
+the pinned SDL static build, without rebuilding either dependency. The profile requires
+Vulkan on both sides, one CPU thread/frame in flight, one persistent sampled texture
+and upload buffer, full overwrite and submit-fence completion. CPU memcpy and internal
+recording/staging/allocation policies are included; setup, payload generation and full
+readback/comparison after every iteration are outside the timer. That readback cadence
+still affects cache/thermal state; this is not a streaming-throughput or low-level API
+comparison. Changing finite RGBA16F data and odd-pitch correctness controls prevent
+stale/repeated-content acceptance.
+
+The initial bounded profile is 3 independent processes x 30 samples, with 5 warmups
+each, shuffled at fixed seed. It differs from the earlier D3D12 120-sample default and
+is never pooled with that API. Required-layer correctness timings are excluded from
+performance, and performance requires no loaded validation DLL. The raw results retain
+P50/P95/P99, MAD, min/max, process medians and every outlier. SDL reported names must
+uniquely map to native Vulkan/DXGI identities; this is name attribution, not access to
+SDL's native VkPhysicalDevice. Results with mismatched environment/driver/device/source
+or incomplete readback are rejected. [Evidence and limits](PHASE3_VULKAN_UPLOAD_REPORT.md).

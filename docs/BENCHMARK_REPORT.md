@@ -120,3 +120,8 @@ GB/s는 decimal payload bytes / P50 latency의 파생 유효 처리량이며 PCI
 - [2026-10-20-allocation-quiet JSON](../benchmarks/results/2026-10-20-allocation-quiet/summary.json), [CSV](../benchmarks/results/2026-10-20-allocation-quiet/summary.csv).
 - [OPT-001 전후 비교](../benchmarks/reports/2026-10-20-opt-001/comparison.md). 비용 변화율 = 100*(after_p50/before_p50-1).
 - [실제 측정 build의 SDK source snapshots](../benchmarks/reports/sources/README.md). Archive 이름의 SHA는 원자료 build fingerprint와 일치한다.
+
+The [Vulkan upload baseline](PHASE3_VULKAN_UPLOAD_REPORT.md) is a separate API/category
+comparison on the unchanged installed SDK and pinned SDL3. Its six device/workload
+rows, raw samples and correctness evidence are not combined with these D3D12 results.
+No overall SDK ranking or profiling diagnosis is inferred.

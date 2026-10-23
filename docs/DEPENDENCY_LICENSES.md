@@ -435,3 +435,11 @@ Core의 실제 compiler-read closure와 helper의 15개 자체 compiler input을
 로컬 해시를 기록하고 원본 MIT notices를 보존한다. 생성·해시 검증은 이번 고정 검증 스크립트에
 보존하며, 기존 sdk-crash `--check`도 통과한다. 네이티브 helper는 로컬 진단용이며 Git/source ZIP에는
 자체 소스·감사·검증 근거만 넣는다. 기존 SDK ZIP 11개와 과거 inventory는 수정하지 않는다.
+
+Vulkan B-upload 비교는 `tools/audit_vulkan_upload.py`와
+[새 inventory](../licenses/generated/windows-benchmarks-vulkan-upload-release/inventory.json)로
+감사한다. 새 실행 파일의 compiler/linker read log 1개씩과 실제 SDK/SDL static library
+해시를 확인한다. 이전 SDK inventory 및 SDL static 전체 compiler closure를 SHA로 재사용한
+보수적 646개 입력/21개 component이며 두 library를 재빌드했다고 주장하지 않는다.
+미사용 SDL 구성요소도 closure에 포함한다. SDK API/library·기존 license 선택은 바꾸지 않고
+새 benchmark binary/vendor source/runtime은 배포하지 않는다. 이전 SDK ZIP 22개를 보존한다.
