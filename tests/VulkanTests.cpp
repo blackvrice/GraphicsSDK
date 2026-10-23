@@ -59,7 +59,7 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation)
         !caps.bindingLayouts && !caps.depthAttachment && !caps.multipleRenderTargets && !caps.deviceRecovery && !caps.deviceLossInjection, "Partial capabilities are honest");
     reject(d.createBuffer({0}), gfx::ErrorCode::InvalidArgument, "Empty buffer");
     reject(d.createBuffer({64, static_cast<gfx::Memory>(99)}), gfx::ErrorCode::InvalidArgument, "Unknown memory kind");
-    reject(d.createTexture({1, 1}), gfx::ErrorCode::Unsupported, "Textures not implemented");
+    reject(d.createTexture({1, 1, gfx::Format::RGBA8UNorm, true}), gfx::ErrorCode::Unsupported, "Attachment textures not implemented");
     reject(d.createGraphicsPipeline({}), gfx::ErrorCode::Unsupported, "Pipeline not implemented");
     reject(d.queryMemoryBudget(gfx::MemorySegment::Local), gfx::ErrorCode::Unsupported, "No synthesized OS budget");
     reject(d.recover(), gfx::ErrorCode::Unsupported, "Recovery not implemented");

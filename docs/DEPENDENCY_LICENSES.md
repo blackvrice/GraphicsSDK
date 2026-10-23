@@ -1,5 +1,12 @@
 # 배포 의존성 라이선스 감사
 
+색상 텍스처 확장은 `audit_vulkan.py --variant textures`와
+`licenses/vulkan-textures-policy.json`으로 별도 감사한다. 기존 두 Vulkan
+inventory와 로컬 SDK ZIP을 보존하며 외부 런타임은 추가하지 않는다.
+새 [inventory](../licenses/generated/windows-sdk-vulkan-textures-release/inventory.json)는
+통합 SDK/테스트와 설치된 buffer·texture 소비자의 실제 compiler/linker 입력 및
+SDK payload를 확인한다. 고정 Vulkan-Headers Apache-2.0/MIT 고지 범위는 동일하다.
+
 Vulkan synchronization-validation 구성은 `audit_vulkan.py --variant validation`과
 `licenses/vulkan-validation-policy.json`으로 별도 감사한다. 공용 SDK에 추가 외부 static
 library를 링크하지 않으며 새 private validation 설정/콜백과 native probe는 자체 MIT 입력이다.

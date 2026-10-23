@@ -3,13 +3,14 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The integrated Windows configuration has 35 CTests (34 existing plus Vulkan),
-Vulkan-only has 7, and no-backend has 6. These are separate Windows configurations,
+The default integrated Windows configuration has 36 CTests (34 existing plus buffer
+and texture transfer), Vulkan-only has 8, and no-backend has 6. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
-The required synchronization-validation profile adds `vulkan_transfer_validation`
-and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`). A pinned,
+The required synchronization-validation profile adds `vulkan_transfer_validation`,
+`vulkan_texture_validation` and `vulkan_validation_controls`
+(`GFX_VULKAN_VALIDATION_TESTS=ON`), yielding 39 integrated / 11 Vulkan-only tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -17,6 +18,13 @@ four native message callers and independent counters, and never submit the inten
 hazard commands. These expected errors are isolated from clean SDK transfers.
 Unknown/extra transfer-test options fail before any GPU work. See the
 [frozen profile and limitations](PHASE3_VULKAN_VALIDATION_REPORT.md).
+
+The [texture profile](PHASE3_VULKAN_TEXTURE_REPORT.md) extends clean SDK work with
+RGBA8/RGBA16F, 1x1/odd/pitch-boundary/1080p/4K sizes, full texel bytes, untouched
+sentinel padding, repeated same-layout copies and Device-buffer staging. Native image
+versions, changing-payload reuse, rejection ownership and retired descriptions are
+checked independently of unsupported rendering. The installed texture consumer
+repeats the same public suite. Validation and driver-only runs remain distinct.
 
 ## Automated checks
 

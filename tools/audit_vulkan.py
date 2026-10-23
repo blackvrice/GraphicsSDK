@@ -36,7 +36,7 @@ def collect(root):
     for option in ('GFX_ENABLE_D3D12:BOOL=ON', 'GFX_ENABLE_VULKAN:BOOL=ON', 'CMAKE_GENERATOR:INTERNAL=Visual Studio 17 2022'):
         if option not in cache.splitlines():
             raise audit.AuditError(f'Wrong build configuration: {option}')
-    if 'validation' in PROFILE and 'GFX_VULKAN_VALIDATION_TESTS:BOOL=ON' not in cache.splitlines():
+    if PROFILE in ('windows-sdk-vulkan-validation-release', 'windows-sdk-vulkan-textures-release') and 'GFX_VULKAN_VALIDATION_TESTS:BOOL=ON' not in cache.splitlines():
         raise audit.AuditError('Required Vulkan validation tests were not configured')
     configured_headers = next((s.split('=', 1)[1] for s in cache.splitlines() if s.startswith('GFX_VULKAN_HEADERS:PATH=')), '')
     if pathlib.Path(configured_headers).resolve() != headers.resolve():
@@ -165,13 +165,13 @@ def package_record(root, package, required):
 
 def configure_variant(variant):
     global BUILD, CONSUMER, INSTALL, POLICY, PROFILE, EXPECTED_LOGS, EXCLUSIONS
-    if variant == 'validation':
-        BUILD = pathlib.Path('out/vulkan-validation')
-        CONSUMER = pathlib.Path('out/vulkan-validation-consumer')
-        INSTALL = pathlib.Path('out/vulkan-validation-install')
-        POLICY = pathlib.Path('licenses/vulkan-validation-policy.json')
-        PROFILE = 'windows-sdk-vulkan-validation-release'
-        EXPECTED_LOGS = (16, 15)
+    if variant in ('validation', 'textures'):
+        BUILD = pathlib.Path('out/vulkan-' + variant)
+        CONSUMER = pathlib.Path('out/vulkan-' + variant + '-consumer')
+        INSTALL = pathlib.Path('out/vulkan-' + variant + '-install')
+        POLICY = pathlib.Path('licenses/vulkan-' + variant + '-policy.json')
+        PROFILE = 'windows-sdk-vulkan-' + variant + '-release'
+        EXPECTED_LOGS = (18, 17) if variant == 'textures' else (16, 15)
         EXCLUSIONS = ['Linux native builds/runtime', 'Vulkan GPU-assisted validation', 'Vulkan rendering and competitor measurements',
             'External local-only VVL/SPIRV runtime build, separately recorded and not bundled',
             'Historical binaries/packages/benchmarks, preserved independently']
@@ -189,7 +189,7 @@ def configure_variant(variant):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--variant', choices=('transfer', 'validation'), default='transfer')
+    parser.add_argument('--variant', choices=('transfer', 'validation', 'textures'), default='transfer')
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--package', type=pathlib.Path, required=True)
     mode = parser.add_mutually_exclusive_group(required=True)

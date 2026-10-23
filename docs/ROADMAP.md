@@ -99,6 +99,9 @@ acceptance or later SDK feature milestones.
   settings, native error/counter controls and NVIDIA/Intel readback/lifetime tests
   ([report](PHASE3_VULKAN_VALIDATION_REPORT.md)). GPU-assisted validation and Linux remain separate.
 - [ ] Textures/render passes/graphics pipelines, SPIR-V, bindings, timestamps and presentation.
+  Color-texture upload/readback is now implemented for RGBA8/RGBA16F, including padded
+  staging, image layout/version/lifetime controls ([report](PHASE3_VULKAN_TEXTURE_REPORT.md)).
+  Attachments, rendering and the rest of this gate remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.
 

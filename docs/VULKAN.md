@@ -1,8 +1,8 @@
-# Vulkan buffer-transfer backend
+# Vulkan buffer and color-texture transfer backend
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
-command recording/submission, queue fences and resource statistics. The D3D12
+RGBA8/RGBA16F 2D transfer textures, command recording/submission, queue fences and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
 backend when enabled; it does not promise rendering support.
 
@@ -64,11 +64,47 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   files can override layer API settings; controlled acceptance clears those inputs.
   A zero count without a validation device is not validation-layer acceptance.
 
-Textures, graphics/compute pipelines, rendering, binding layouts, timestamps,
+Attachment textures, graphics/compute pipelines, rendering, binding layouts, timestamps,
 debug markers and swapchains return `Unsupported`; their capability flags are
 false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 These APIs, Linux execution and matching Vulkan competitor measurements remain
 ordered follow-up work. See the [implementation report](PHASE3_VULKAN_TRANSFER_REPORT.md).
+
+## Color-texture transfers
+
+`createTexture` accepts non-attachment `RGBA8UNorm` and `RGBA16Float` 2D images.
+Descriptions use the common 1..16384 extent contract and also check the selected
+adapter's optimal-tiling image format/extent support. Each image has a dedicated
+device-local allocation, one mip, one layer and one sample. Depth and render-target
+usage remain `Unsupported`; the images do not advertise sampling/rendering support.
+
+`footprint()` reports `rowBytes = width * texelBytes`, a 256-byte-aligned `rowPitch`,
+and `size = rowPitch * height`, including final-row padding. Copy the full image at
+buffer offset zero with a buffer at least `size` bytes long. Native row length is in
+texels (`rowPitch / texelBytes`); padding is neither copied into the image nor written
+by readback. This footprint is a staging-buffer layout, not native image allocation size.
+Upload sources may be Upload or Device buffers; download destinations may be
+Readback or Device buffers. The opposing host memory kinds are rejected.
+
+Images begin logically in `Common` with an uninitialized native layout. The first
+accepted transition uses `UNDEFINED`; later transitions preserve the submitted layout.
+Explicit `CopyDestination` and `CopySource` are required around copies; `Common`
+maps to `GENERAL`. Same-layout repeated copies also carry memory dependencies.
+Images share buffer version/atomic-rejection/retained-allocation/retirement rules.
+No partial regions, mip chains, arrays, image-to-image API or allocator pooling are exposed.
+
+`gfx_vulkan_texture_tests [--validation]` exercises odd widths, padded rows, 1080p/4K,
+both formats, repeated copies, device-buffer staging, changing-payload reuse,
+version rejection and wrapper/device lifetimes on each enumerated adapter.
+The installed `vulkan_texture_consumer` repeats this public suite.
+The isolated build/install/consumer roots are `out/vulkan-textures`,
+`out/vulkan-textures-install` and `out/vulkan-textures-consumer`; enable
+`GFX_VULKAN_VALIDATION_TESTS=ON` for required validation tests without skips.
+See [texture evidence](PHASE3_VULKAN_TEXTURE_REPORT.md).
+
+The image paths follow Khronos [buffer/image addressing](https://docs.vulkan.org/refpages/latest/refpages/source/VkBufferImageCopy.html),
+[image format queries](https://docs.vulkan.org/refpages/latest/refpages/source/vkGetPhysicalDeviceImageFormatProperties.html)
+and [image barriers](https://docs.vulkan.org/refpages/latest/refpages/source/VkImageMemoryBarrier.html).
 
 The synchronization and lifetime rules follow the primary
 [copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBuffer.html),

@@ -39,6 +39,12 @@ Vulkan core/synchronization layer 실행은 새 [고정 로컬 레이어 검증]
 기록한다. `GFX_VULKAN_VALIDATION_TESTS=ON`은 필요한 레이어가 없으면 실패하며 skip하지 않는다.
 이 검증 구성의 별도 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-validation.zip`이다.
 
+현재 [색상 텍스처 확장](PHASE3_VULKAN_TEXTURE_REPORT.md)은 이전 빌드를 보존한 채
+`out/vulkan-textures`, `out/vulkan-textures-install`, `out/vulkan-textures-consumer`를
+사용한다. Required validation 구성은 통합 39개, Vulkan-only 11개 CTest이며
+설치 소비자에 `vulkan_texture_consumer [--validation]`을 추가한다.
+새 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-textures.zip`이다.
+
 ```powershell
 cmake -S tests/vulkan_consumer -B out/vulkan-consumer -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-install
 cmake --build out/vulkan-consumer --config Release --parallel 1

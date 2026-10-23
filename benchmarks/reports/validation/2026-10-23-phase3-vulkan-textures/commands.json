@@ -1,0 +1,329 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-textures",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=ON",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 4.296000000000049,
+    "environment_overrides": {}
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-textures",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 48.0,
+    "environment_overrides": {}
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-textures",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-textures\\ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 67.21800000000007,
+    "environment_overrides": {}
+  },
+  {
+    "name": "controls-loader-trace",
+    "argv": [
+      "out/vulkan-textures/Release/gfx_vulkan_validation_tests.exe"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.7339999999999236,
+    "environment_overrides": {
+      "VK_LOADER_DEBUG": "layer"
+    }
+  },
+  {
+    "name": "unknown-option",
+    "argv": [
+      "out/vulkan-textures/Release/gfx_vulkan_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.01599999999996271,
+    "environment_overrides": {}
+  },
+  {
+    "name": "extra-option",
+    "argv": [
+      "out/vulkan-textures/Release/gfx_vulkan_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.031000000000062755,
+    "environment_overrides": {}
+  },
+  {
+    "name": "missing-layer",
+    "argv": [
+      "out/vulkan-textures/Release/gfx_vulkan_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.26500000000010004,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-textures\\absent-layers"
+    }
+  },
+  {
+    "name": "install",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/vulkan-textures",
+      "--config",
+      "Release",
+      "--prefix",
+      "out/vulkan-textures-install"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.11000000000001364,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_consumer",
+      "-B",
+      "out/vulkan-textures-consumer",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-textures-install"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.6720000000000255,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-textures-consumer",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 5.5779999999999745,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-native",
+    "argv": [
+      "out/vulkan-textures-consumer/Release/vulkan_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 1.3589999999999236,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-texture",
+    "argv": [
+      "out/vulkan-textures-consumer/Release/vulkan_texture_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 4.655999999999949,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-textures-only",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.6099999999999,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-textures-only",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 29.515999999999963,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-textures-only",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-textures\\only-ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 13.828000000000202,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-textures-portable",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=OFF",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.8120000000001255,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-textures-portable",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 20.202999999999975,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-textures-portable",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-textures\\portable-ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.18800000000010186,
+    "environment_overrides": {}
+  },
+  {
+    "name": "texture-unknown",
+    "argv": [
+      "out/vulkan-textures/Release/gfx_vulkan_texture_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.015999999999849024,
+    "environment_overrides": {}
+  },
+  {
+    "name": "texture-extra",
+    "argv": [
+      "out/vulkan-textures/Release/gfx_vulkan_texture_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "texture-missing-layer",
+    "argv": [
+      "out/vulkan-textures/Release/gfx_vulkan_texture_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.21800000000007458,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-textures\\absent-layers"
+    }
+  }
+]
