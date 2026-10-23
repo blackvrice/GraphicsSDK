@@ -1,6 +1,7 @@
 #include <graphics/Graphics.hpp>
 #define VK_NO_PROTOTYPES
 #include <vulkan/vulkan_core.h>
+#include "VulkanValidation.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cstring>
@@ -44,7 +45,7 @@ struct Instance {
     VkInstance handle{};
     VkDebugUtilsMessengerEXT messenger{};
     PFN_vkDestroyDebugUtilsMessengerEXT destroyMessenger{};
-    std::atomic<std::uint64_t> errors{};
+    vulkan::ValidationCounter validation;
 #define DECLARE(name) PFN_vk##name name{};
     INSTANCE_FUNCTIONS(DECLARE)
 #undef DECLARE
@@ -53,12 +54,6 @@ struct Instance {
         if (handle && DestroyInstance) DestroyInstance(handle, nullptr);
     }
 };
-VKAPI_ATTR VkBool32 VKAPI_CALL validationMessage(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
-    VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT*, void* user) {
-    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-        static_cast<Instance*>(user)->errors.fetch_add(1, std::memory_order_relaxed);
-    return VK_FALSE;
-}
 Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     auto instance = std::make_shared<Instance>();
     instance->loader = std::make_shared<Loader>();
@@ -70,8 +65,7 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     std::uint32_t api{};
     if (auto r = enumerateVersion(&api); r != VK_SUCCESS) return nativeError(r, "vkEnumerateInstanceVersion");
     if (api < VK_API_VERSION_1_1) return fail(ErrorCode::Unsupported, "Vulkan 1.1 required");
-    const char* layer = "VK_LAYER_KHRONOS_validation";
-    const char* extension = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+    const char* layer = vulkan::ValidationConfiguration::layer;
     if (validation) {
         const auto layers = reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(get(nullptr, "vkEnumerateInstanceLayerProperties"));
         const auto extensions = reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(get(nullptr, "vkEnumerateInstanceExtensionProperties"));
@@ -85,24 +79,28 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
         available.resize(count);
         if (std::none_of(available.begin(), available.end(), [&](auto& p) { return std::strcmp(p.layerName, layer) == 0; }))
             return fail(ErrorCode::Unsupported, "VK_LAYER_KHRONOS_validation is not installed");
-        r = extensions(nullptr, &count, nullptr);
-        if (r != VK_SUCCESS) return nativeError(r, "Enumerate debug extensions");
-        std::vector<VkExtensionProperties> names(count);
-        r = extensions(nullptr, &count, names.data());
-        if (r != VK_SUCCESS) return nativeError(r, "Enumerate debug extensions");
-        names.resize(count);
-        if (std::none_of(names.begin(), names.end(), [&](auto& p) { return std::strcmp(p.extensionName, extension) == 0; }))
-            return fail(ErrorCode::Unsupported, "VK_EXT_debug_utils is unavailable");
+        std::vector<VkExtensionProperties> names;
+        for (auto provider : {static_cast<const char*>(nullptr), layer}) {
+            r = extensions(provider, &count, nullptr);
+            if (r != VK_SUCCESS) return nativeError(r, "Enumerate validation extensions");
+            std::vector<VkExtensionProperties> provided(count);
+            r = extensions(provider, &count, provided.data());
+            if (r != VK_SUCCESS) return nativeError(r, "Enumerate validation extensions");
+            provided.resize(count); names.insert(names.end(), provided.begin(), provided.end());
+        }
+        for (auto required : vulkan::ValidationConfiguration::extensions)
+            if (std::none_of(names.begin(), names.end(), [&](auto& p) { return std::strcmp(p.extensionName, required) == 0; }))
+                return fail(ErrorCode::Unsupported, "Vulkan validation requires debug_utils, validation_features and layer_settings");
     }
     VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};
     app.pApplicationName = "GraphicsSDK"; app.apiVersion = VK_API_VERSION_1_1;
-    VkDebugUtilsMessengerCreateInfoEXT debug{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
-    debug.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debug.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debug.pfnUserCallback = validationMessage; debug.pUserData = instance.get();
+    vulkan::ValidationConfiguration validationConfig(instance->validation);
     VkInstanceCreateInfo info{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
     info.pApplicationInfo = &app;
-    if (validation) { info.enabledLayerCount = 1; info.ppEnabledLayerNames = &layer; info.enabledExtensionCount = 1; info.ppEnabledExtensionNames = &extension; info.pNext = &debug; }
+    if (validation) {
+        info.enabledLayerCount = 1; info.ppEnabledLayerNames = &layer; info.enabledExtensionCount = 3;
+        info.ppEnabledExtensionNames = vulkan::ValidationConfiguration::extensions; info.pNext = &validationConfig.layerSettings;
+    }
     if (auto r = create(&info, nullptr, &instance->handle); r != VK_SUCCESS) return nativeError(r, "vkCreateInstance");
 #define LOAD(name) instance->name = reinterpret_cast<PFN_vk##name>(get(instance->handle, "vk" #name)); \
     if (!instance->name) return fail(ErrorCode::Unsupported, "Vulkan instance entry point missing: vk" #name);
@@ -112,7 +110,7 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
         const auto make = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(get(instance->handle, "vkCreateDebugUtilsMessengerEXT"));
         instance->destroyMessenger = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(get(instance->handle, "vkDestroyDebugUtilsMessengerEXT"));
         if (!make || !instance->destroyMessenger) return fail(ErrorCode::Unsupported, "Vulkan debug messenger unavailable");
-        if (auto r = make(instance->handle, &debug, nullptr, &instance->messenger); r != VK_SUCCESS) return nativeError(r, "Create validation messenger");
+        if (auto r = make(instance->handle, &validationConfig.messenger, nullptr, &instance->messenger); r != VK_SUCCESS) return nativeError(r, "Create validation messenger");
     }
     return instance;
 }
@@ -546,7 +544,7 @@ struct VulkanDevice final : Device {
     CommandQueue& queue() override { return commands; }
     Result<std::uint64_t> validationErrorCount() override {
         if (std::this_thread::get_id() != owner->thread) return fail(ErrorCode::InvalidState, "Validation count requires creating thread");
-        return owner->native->instance->errors.load(std::memory_order_relaxed);
+        return owner->native->instance->validation.errors.load(std::memory_order_relaxed);
     }
 };
 } // namespace

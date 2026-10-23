@@ -1,4 +1,4 @@
-"""Fail-closed audit/package of the Windows x64 Release Vulkan-transfer variant.
+"""Fail-closed audit/package of Windows x64 Release Vulkan variants.
 
 Other historical SDK/benchmark inventories remain snapshots of their own builds.
 This profile consumes actual MSBuild read logs; it does not infer symbol reachability.
@@ -16,6 +16,10 @@ BUILD = pathlib.Path('out/vulkan-transfer')
 CONSUMER = pathlib.Path('out/vulkan-consumer')
 INSTALL = pathlib.Path('out/vulkan-install')
 POLICY = pathlib.Path('licenses/vulkan-policy.json')
+PROFILE = 'windows-sdk-vulkan-transfer-release'
+EXPECTED_LOGS = (17, 16)
+EXCLUSIONS = ['Linux native builds/runtime', 'Vulkan validation-layer execution', 'Vulkan rendering and competitor measurements',
+              'Historical D3D-only binaries/packages/benchmarks, preserved independently']
 
 def system_input(path):
     name = path.as_posix().casefold()
@@ -32,6 +36,8 @@ def collect(root):
     for option in ('GFX_ENABLE_D3D12:BOOL=ON', 'GFX_ENABLE_VULKAN:BOOL=ON', 'CMAKE_GENERATOR:INTERNAL=Visual Studio 17 2022'):
         if option not in cache.splitlines():
             raise audit.AuditError(f'Wrong build configuration: {option}')
+    if 'validation' in PROFILE and 'GFX_VULKAN_VALIDATION_TESTS:BOOL=ON' not in cache.splitlines():
+        raise audit.AuditError('Required Vulkan validation tests were not configured')
     configured_headers = next((s.split('=', 1)[1] for s in cache.splitlines() if s.startswith('GFX_VULKAN_HEADERS:PATH=')), '')
     if pathlib.Path(configured_headers).resolve() != headers.resolve():
         raise audit.AuditError('Vulkan build does not use the reviewed header checkout')
@@ -70,7 +76,7 @@ def collect(root):
             if not libraries:
                 raise audit.AuditError(f'Missing linker library evidence: {log}')
             link_logs.append(dict(**audit.record_file(root, log), libraries=libraries))
-    if len(compiler_logs) != 17 or len(link_logs) != 16:
+    if (len(compiler_logs), len(link_logs)) != EXPECTED_LOGS:
         raise audit.AuditError('Missing/unreviewed build targets in compiler/linker evidence')
     files, system = {}, set()
     notices = set()
@@ -108,14 +114,14 @@ def collect(root):
     apache = root / 'licenses/provenance/vulkan-headers-Apache-2.0.txt'
     if apache.read_bytes() != (headers / 'LICENSES/Apache-2.0.txt').read_bytes():
         raise audit.AuditError('Apache notice is not the pinned upstream text')
-    notices_text = ('THIRD-PARTY AND SDK NOTICES\n\nProfile: windows-sdk-vulkan-transfer-release\n'
+    notices_text = ('THIRD-PARTY AND SDK NOTICES\n\nProfile: ' + PROFILE + '\n'
         'Conservative compiler-read closure, not symbol reachability or legal approval.\n'
         'Loader, ICD, validation layer, Windows/SDK/CRT/driver binaries are external prerequisites, not bundled.\n\n'
         'GraphicsSDK - MIT\n\n' + audit.text_file(root / 'LICENSE').strip() + '\n\n'
         'Vulkan-Headers - Apache-2.0\nPinned commit: ' + commit + '\n'
         'Unmodified compiler-read headers; no MIT alternative is selected for these Apache-only files.\n\n'
         + '\n\n'.join(sorted(notices)) + '\n\n' + audit.text_file(apache).strip() + '\n')
-    inventory = dict(schema_version=1, profile='windows-sdk-vulkan-transfer-release', platform='windows-x64',
+    inventory = dict(schema_version=1, profile=PROFILE, platform='windows-x64',
         configuration='Release', SDK_source_fingerprint=fingerprint, policy=audit.record_file(root, root / POLICY),
         scope='Actual compiler-read closure of integrated Core/tests/examples/helper and installed Vulkan consumer; not symbol reachability or legal approval.',
         components=[dict(id='graphicssdk', selected='MIT'), dict(id='vulkan-headers', selected='Apache-2.0', commit=commit)],
@@ -123,8 +129,7 @@ def collect(root):
         linker_read_evidence=link_logs, projects=projects, artifacts=artifacts,
         system_header_count=len(system), system_input_paths_sha256=audit.sha256('\n'.join(sorted(system)).encode()),
         license_text=audit.record_file(root, apache), runtime_distribution='none',
-        exclusions=['Linux native builds/runtime', 'Vulkan validation-layer execution', 'Vulkan rendering and competitor measurements',
-                    'Historical D3D-only binaries/packages/benchmarks, preserved independently'])
+        exclusions=EXCLUSIONS)
     return inventory, notices_text
 
 def payload(root, notices):
@@ -158,14 +163,40 @@ def package_record(root, package, required):
     return dict(**audit.record_file(root, package), status='inventory_verified',
         files=[dict(path=name, sha256=audit.sha256(data), bytes=len(data)) for name, data in sorted(entries)])
 
+def configure_variant(variant):
+    global BUILD, CONSUMER, INSTALL, POLICY, PROFILE, EXPECTED_LOGS, EXCLUSIONS
+    if variant == 'validation':
+        BUILD = pathlib.Path('out/vulkan-validation')
+        CONSUMER = pathlib.Path('out/vulkan-validation-consumer')
+        INSTALL = pathlib.Path('out/vulkan-validation-install')
+        POLICY = pathlib.Path('licenses/vulkan-validation-policy.json')
+        PROFILE = 'windows-sdk-vulkan-validation-release'
+        EXPECTED_LOGS = (16, 15)
+        EXCLUSIONS = ['Linux native builds/runtime', 'Vulkan GPU-assisted validation', 'Vulkan rendering and competitor measurements',
+            'External local-only VVL/SPIRV runtime build, separately recorded and not bundled',
+            'Historical binaries/packages/benchmarks, preserved independently']
+    elif variant == 'transfer':
+        BUILD = pathlib.Path('out/vulkan-transfer')
+        CONSUMER = pathlib.Path('out/vulkan-consumer')
+        INSTALL = pathlib.Path('out/vulkan-install')
+        POLICY = pathlib.Path('licenses/vulkan-policy.json')
+        PROFILE = 'windows-sdk-vulkan-transfer-release'
+        EXPECTED_LOGS = (17, 16)
+        EXCLUSIONS = ['Linux native builds/runtime', 'Vulkan validation-layer execution', 'Vulkan rendering and competitor measurements',
+            'Historical D3D-only binaries/packages/benchmarks, preserved independently']
+    else:
+        raise audit.AuditError('Unknown Vulkan audit variant')
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--variant', choices=('transfer', 'validation'), default='transfer')
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--package', type=pathlib.Path, required=True)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--create', action='store_true')
     mode.add_argument('--check', action='store_true')
     args = parser.parse_args()
+    configure_variant(args.variant)
     try:
         inventory, notices = collect(ROOT)
         required = payload(ROOT, notices)

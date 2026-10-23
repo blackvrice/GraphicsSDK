@@ -95,7 +95,9 @@ acceptance or later SDK feature milestones.
 - [x] Opt-in Vulkan 1.1 device/exact-adapter selection and buffer transfer slice:
   upload/device/readback, barriers, version/rejection contracts, retained native
   lifetimes and finite queue waits on Windows NVIDIA/Intel ([report](PHASE3_VULKAN_TRANSFER_REPORT.md)).
-- [ ] Vulkan validation-layer execution (missing on this machine); explicit missing-layer rejection is separate.
+- [x] Process-local pinned Khronos validation execution with explicit synchronization
+  settings, native error/counter controls and NVIDIA/Intel readback/lifetime tests
+  ([report](PHASE3_VULKAN_VALIDATION_REPORT.md)). GPU-assisted validation and Linux remain separate.
 - [ ] Textures/render passes/graphics pipelines, SPIR-V, bindings, timestamps and presentation.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.

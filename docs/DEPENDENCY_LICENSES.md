@@ -1,5 +1,14 @@
 # 배포 의존성 라이선스 감사
 
+Vulkan synchronization-validation 구성은 `audit_vulkan.py --variant validation`과
+`licenses/vulkan-validation-policy.json`으로 별도 감사한다. 공용 SDK에 추가 외부 static
+library를 링크하지 않으며 새 private validation 설정/콜백과 native probe는 자체 MIT 입력이다.
+레이어/Vulkan Utility/SPIRV/robin-hood는 정확한 SHA로 고정한 **로컬 검증 도구 의존성**이며
+새 SDK/source ZIP에 vendor source, DLL, PDB, LIB를 묶지 않는다. 로컬 빌드의 명령·옵션·원본
+라이선스 해시와 runtime SHA를 별도 검증 근거에 기록한다. 이 기록은 해당 외부 runtime의
+재배포 허가 또는 전체 링크 도달성 감사가 아니다. SDK payload의 Vulkan-Headers 11개 입력과
+Apache/MIT 고지는 [새 inventory](../licenses/generated/windows-sdk-vulkan-validation-release/inventory.json)에서 검증한다.
+
 2026-10-23 Vulkan 전송 variant는 기존 D3D12 inventory와 별개로
 [`audit_vulkan.py`](../tools/audit_vulkan.py)를 사용한다. 고정된 Vulkan-Headers
 `v1.3.290`/`b379292b2ab6df5771ba9870d53cf8b2c9295daf`의 실제 compiler-read

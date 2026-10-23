@@ -5,6 +5,9 @@ Independent C++23 graphics SDK, namespace `gfx`, CMake target `GraphicsSDK::Core
 [Vulkan buffer-transfer backend](docs/VULKAN.md). Vulkan rendering and Metal remain
 unimplemented. This is not a completed cross-platform SDK release.
 
+Vulkan validation now explicitly requests core/synchronization checks and has a
+[pinned local runtime and native error/counter controls](docs/PHASE3_VULKAN_VALIDATION_REPORT.md).
+
 The implementation includes buffers/textures and aligned copies, a small graphics pipeline,
 command recording/submission, resource-state validation, fence-retained lifetimes, explicit texture/
 constant-buffer binding layouts, static samplers, timestamps, headless rendering and a Win32 swapchain. It includes correctness

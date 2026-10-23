@@ -157,6 +157,8 @@ void retirement(const gfx::AdapterInfo& adapter, bool validation) {
 }
 }
 int main(int argc, char** argv) try {
+    if (argc != 1 && !(argc == 2 && std::string_view(argv[1]) == "--validation"))
+        throw std::runtime_error("Usage: gfx_vulkan_tests [--validation]");
     const bool validation = argc == 2 && std::string_view(argv[1]) == "--validation";
     check(gfx::backendCompiled(gfx::Backend::Vulkan), "Vulkan compiled");
     std::cout << "source=" << gfx::buildFingerprint() << " validation=" << validation << std::endl;

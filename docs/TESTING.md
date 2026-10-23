@@ -8,6 +8,16 @@ Vulkan-only has 7, and no-backend has 6. These are separate Windows configuratio
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
+The required synchronization-validation profile adds `vulkan_transfer_validation`
+and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`). A pinned,
+process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
+registration is used. Native controls abort invalid core calls before driver dispatch,
+contrast missing-barrier detection with synchronization enabled/disabled, exercise
+four native message callers and independent counters, and never submit the intentional
+hazard commands. These expected errors are isolated from clean SDK transfers.
+Unknown/extra transfer-test options fail before any GPU work. See the
+[frozen profile and limitations](PHASE3_VULKAN_VALIDATION_REPORT.md).
+
 ## Automated checks
 
 `ctest --test-dir out/core -C Release --output-on-failure`:

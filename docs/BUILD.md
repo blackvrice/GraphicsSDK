@@ -34,7 +34,10 @@ portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CT
 구성은 7개, 두 backend OFF 구성은 6개 CTest를 Windows에서 검증한다.
 새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-transfer.zip`이며, 공개 헤더와
 static library/CMake package, MIT/Apache-2.0 고지로 구성된다. Vulkan 헤더·loader·driver는
-묶지 않는다. Vulkan-only/portable의 Linux 실행과 validation layer 실행은 미검증이다.
+묶지 않는다. Vulkan-only/portable의 Linux 실행은 미검증이다.
+Vulkan core/synchronization layer 실행은 새 [고정 로컬 레이어 검증](PHASE3_VULKAN_VALIDATION_REPORT.md)에
+기록한다. `GFX_VULKAN_VALIDATION_TESTS=ON`은 필요한 레이어가 없으면 실패하며 skip하지 않는다.
+이 검증 구성의 별도 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-validation.zip`이다.
 
 ```powershell
 cmake -S tests/vulkan_consumer -B out/vulkan-consumer -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-install

@@ -26,7 +26,9 @@ public:
     [[nodiscard]] virtual Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) = 0;
     [[nodiscard]] virtual CommandQueue& queue() = 0;
     // Cumulative ERROR/CORRUPTION count since callback registration, independent of
-    // native text queue limits/filters/clearing. Validation devices require InfoQueue1.
+    // native text storage limits/clearing. D3D12 validation requires InfoQueue1;
+    // Vulkan requires Khronos validation/debug utils, synchronization features and layer settings.
+    // Vulkan counts delivered ERROR callbacks; external layer settings can filter/limit them.
     [[nodiscard]] virtual Result<std::uint64_t> validationErrorCount() = 0;
 };
 [[nodiscard]] Result<std::unique_ptr<Device>> createDevice(DeviceDesc desc = {});

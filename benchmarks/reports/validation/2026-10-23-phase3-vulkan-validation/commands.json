@@ -1,0 +1,282 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-validation",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=ON",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.375,
+    "environment_overrides": {}
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-validation",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 38.327999999999975,
+    "environment_overrides": {}
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-validation",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-validation\\ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 47.016000000000076,
+    "environment_overrides": {}
+  },
+  {
+    "name": "controls-loader-trace",
+    "argv": [
+      "out/vulkan-validation/Release/gfx_vulkan_validation_tests.exe"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.9850000000001273,
+    "environment_overrides": {
+      "VK_LOADER_DEBUG": "layer"
+    }
+  },
+  {
+    "name": "unknown-option",
+    "argv": [
+      "out/vulkan-validation/Release/gfx_vulkan_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.34400000000005093,
+    "environment_overrides": {}
+  },
+  {
+    "name": "extra-option",
+    "argv": [
+      "out/vulkan-validation/Release/gfx_vulkan_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.32799999999997453,
+    "environment_overrides": {}
+  },
+  {
+    "name": "missing-layer",
+    "argv": [
+      "out/vulkan-validation/Release/gfx_vulkan_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.5470000000000255,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-validation\\absent-layers"
+    }
+  },
+  {
+    "name": "install",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/vulkan-validation",
+      "--config",
+      "Release",
+      "--prefix",
+      "out/vulkan-validation-install"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.07799999999997453,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_consumer",
+      "-B",
+      "out/vulkan-validation-consumer",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-validation-install"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 1.9369999999998981,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-validation-consumer",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.5470000000000255,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-native",
+    "argv": [
+      "out/vulkan-validation-consumer/Release/vulkan_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 1.0929999999998472,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-validation-only",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.094000000000051,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-validation-only",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 20.891000000000076,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-validation-only",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-validation\\only-ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.811999999999898,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-validation-portable",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=OFF",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.1410000000000764,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-validation-portable",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 18.202999999999975,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-validation-portable",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-validation\\portable-ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.18800000000010186,
+    "environment_overrides": {}
+  }
+]

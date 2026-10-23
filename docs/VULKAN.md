@@ -57,9 +57,12 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   Observed native device loss is cached, but recovery and loss injection are not
   implemented. This is not unexpected-device-loss acceptance.
 - `DeviceDesc.validation=true` requires `VK_LAYER_KHRONOS_validation` and
-  `VK_EXT_debug_utils`. Missing support fails explicitly. The callback counts
-  ERROR messages atomically; a zero count without a validation device does not
-  constitute validation-layer acceptance.
+  `VK_EXT_debug_utils`, `VK_EXT_validation_features`, `VK_EXT_layer_settings`.
+  It requests synchronization validation (including submit-time checking), a zero
+  duplicate-message limit and an empty VUID filter. Missing support fails explicitly.
+  The callback counts delivered ERROR messages atomically. Environment/settings
+  files can override layer API settings; controlled acceptance clears those inputs.
+  A zero count without a validation device is not validation-layer acceptance.
 
 Textures, graphics/compute pipelines, rendering, binding layouts, timestamps,
 debug markers and swapchains return `Unsupported`; their capability flags are
@@ -74,3 +77,29 @@ The synchronization and lifetime rules follow the primary
 [UUID](https://docs.vulkan.org/refpages/latest/refpages/source/VkPhysicalDeviceIDProperties.html)
 and [fence wait](https://docs.vulkan.org/refpages/latest/refpages/source/vkWaitForFences.html)
 specifications.
+
+## Process-local validation
+
+```powershell
+python tools/prepare_vulkan_validation.py
+cmake -S . -B out/vulkan-validation -G "Visual Studio 17 2022" -A x64 -DGFX_ENABLE_VULKAN=ON -DGFX_VULKAN_VALIDATION_TESTS=ON -DGFX_BUILD_EXAMPLES=OFF
+cmake --build out/vulkan-validation --config Release --parallel 1
+```
+
+The preparation tool verifies `tools/vulkan-validation.lock.json` (VVL v1.3.290
+and five exact dependency commits), refuses dirty/mismatched checkouts, builds
+serially and appends `/MP1` for upstream MSVC projects. The local diagnostic build
+disables mimalloc, upstream unit tests and SPIR-V executables. The layer uses
+`/Od /Ob0` after the optimized build hit MSVC C1001;
+SDK Release optimization is unchanged and no validation-performance claim is made.
+It leaves the registry, drivers and persistent environment unchanged. Runtime hashes and full
+commands are written below `out/vulkan-validation-runtime`.
+
+Run validation children with `VK_LAYER_PATH` set to the directory containing the
+recorded layer JSON/DLL. For controlled runs clear inherited Vulkan/VVL settings,
+point `VK_LAYER_SETTINGS_PATH` at an empty local settings file, and disable implicit
+layers using the process-local loader setting. The frozen runner in the
+[validation report](PHASE3_VULKAN_VALIDATION_REPORT.md) records these exact inputs.
+`GFX_VULKAN_VALIDATION_TESTS=ON` registers required tests; absent/broken layers fail,
+and no skip or driver-only fallback is accepted. The native positive-control test
+contains intentional errors and runs separately from zero-error SDK work.
