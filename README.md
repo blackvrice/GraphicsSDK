@@ -2,7 +2,7 @@
 
 Independent C++23 graphics SDK, namespace `gfx`, CMake target `GraphicsSDK::Core`.
 **Initial development snapshot 0.0.1:** real Windows D3D12 implementation and an opt-in
-[Vulkan transfers/color/depth passes/SPIR-V drawing, resource bindings and GPU timestamps](docs/VULKAN.md). Metal and later Vulkan features remain
+[Vulkan transfers/color/depth passes/SPIR-V drawing, resource bindings, GPU timestamps and Win32 presentation](docs/VULKAN.md). Metal and later Vulkan features remain
 unimplemented. This is not a completed cross-platform SDK release.
 
 Vulkan validation now explicitly requests core/synchronization checks and has a
@@ -112,3 +112,9 @@ and separate guard/deadline abort receipts. Timed acceptance remains unchanged.
 Own SDK and adapter code is MIT. Competitor SDKs and Windows tooling retain their own
 licenses; see the [dependency and package audit](docs/DEPENDENCY_LICENSES.md),
 [retained notices](licenses/README.md), and [competitor license comparison](docs/COMPETITOR_ANALYSIS.md#기능과-라이선스).
+
+The [Vulkan Win32 presentation slice](docs/PHASE3_VULKAN_PRESENTATION_REPORT.md) uses
+explicit presentation resource-completion fences. It is verified on the NVIDIA adapter;
+the current Intel driver lacks the required maintenance1 feature and returns Unsupported.
+Existing offscreen Vulkan suites still run on both adapters. Linux WSI and interactive
+display acceptance remain open.

@@ -82,7 +82,7 @@ SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-bindings.zip`이다.
 해당 소비자를 재빌드했다. 공개 API 형태/ABI 변경은 없다.
 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-depth.zip`이다.
 
-현재 [GPU 타임스탬프](PHASE3_VULKAN_TIMESTAMP_REPORT.md)는 `out/vulkan-timestamps`,
+이전 [GPU 타임스탬프](PHASE3_VULKAN_TIMESTAMP_REPORT.md)는 `out/vulkan-timestamps`,
 `out/vulkan-timestamps-install`, `out/vulkan-timestamps-consumer`를 사용한다. Required validation은
 통합 55개/Vulkan-only 27개를 등록하고 통합은 보류 메모리 3개를 제외한 52개를 실행한다.
 두 backend OFF는 CPU 10개다. `vulkan_timestamp_consumer [--validation]`을 추가했고 SDK와
@@ -377,3 +377,11 @@ python tools/report_memory_stress.py --campaign out/<complete-campaign> --output
 대체하지 않는다. 진단 도구는 현재 `out/core/Release/GraphicsSDKCore.lib`에 연결하므로 SDK를 먼저
 빌드한다. 이전 관측을 오류 집계 수정 후 source와 섞지 않도록 원래 source ZIP과 frozen input
 사본을 보존했다. 이 자료의 보고서 재생성에는 `--observed-inputs <observed-inputs.json>`을 추가한다.
+
+현재 [Vulkan Win32 출력](PHASE3_VULKAN_PRESENTATION_REPORT.md)은
+`out/vulkan-presentation`, `-install`, `-consumer`, `-only`, `-portable`을 사용한다.
+Required validation은 통합 57개/Vulkan-only 29개를 등록하고 통합은 보류 메모리 3개를
+제외한 54개를 실행한다. 두 backend OFF는 CPU 10개다. 새 설치 소비자는
+`vulkan_presentation_consumer [--validation]`이며 native Vulkan 헤더/import lib가 필요 없다.
+Win32 SDK prerequisite User32와 maintenance1 완료 펜스 지원 driver가 필요하다.
+SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-presentation.zip`이다.

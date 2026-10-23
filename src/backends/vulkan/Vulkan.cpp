@@ -14,6 +14,7 @@
 #include <thread>
 #ifdef _WIN32
 #include <Windows.h>
+#include <vulkan/vulkan_win32.h>
 #else
 #include <dlfcn.h>
 #endif
@@ -43,13 +44,22 @@ struct Loader {
 };
 #define INSTANCE_FUNCTIONS(X) \
     X(DestroyInstance) X(EnumeratePhysicalDevices) X(GetPhysicalDeviceProperties2) \
-    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(GetPhysicalDeviceFormatProperties) X(GetPhysicalDeviceFeatures) X(CreateDevice) X(GetDeviceProcAddr)
+    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(GetPhysicalDeviceFormatProperties) X(GetPhysicalDeviceFeatures) X(GetPhysicalDeviceFeatures2) X(CreateDevice) X(GetDeviceProcAddr) X(EnumerateDeviceExtensionProperties)
 struct Instance {
     std::shared_ptr<Loader> loader;
     VkInstance handle{};
     VkDebugUtilsMessengerEXT messenger{};
     PFN_vkDestroyDebugUtilsMessengerEXT destroyMessenger{};
     vulkan::ValidationCounter validation;
+    bool presentation{};
+    PFN_vkDestroySurfaceKHR DestroySurfaceKHR{};
+    PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR{};
+    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR GetPhysicalDeviceSurfaceCapabilitiesKHR{};
+    PFN_vkGetPhysicalDeviceSurfaceFormatsKHR GetPhysicalDeviceSurfaceFormatsKHR{};
+    PFN_vkGetPhysicalDeviceSurfacePresentModesKHR GetPhysicalDeviceSurfacePresentModesKHR{};
+#ifdef _WIN32
+    PFN_vkCreateWin32SurfaceKHR CreateWin32SurfaceKHR{};
+#endif
 #define DECLARE(name) PFN_vk##name name{};
     INSTANCE_FUNCTIONS(DECLARE)
 #undef DECLARE
@@ -70,6 +80,24 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     if (auto r = enumerateVersion(&api); r != VK_SUCCESS) return nativeError(r, "vkEnumerateInstanceVersion");
     if (api < VK_API_VERSION_1_1) return fail(ErrorCode::Unsupported, "Vulkan 1.1 required");
     const char* layer = vulkan::ValidationConfiguration::layer;
+    std::vector<const char*> enabledExtensions;
+#ifdef _WIN32
+    const auto enumerateExtensions = reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(get(nullptr, "vkEnumerateInstanceExtensionProperties"));
+    if (enumerateExtensions) {
+        std::uint32_t count{};
+        auto r = enumerateExtensions(nullptr, &count, nullptr);
+        if (r != VK_SUCCESS) return nativeError(r, "Enumerate instance extensions");
+        std::vector<VkExtensionProperties> names(count);
+        r = enumerateExtensions(nullptr, &count, names.data());
+        if (r != VK_SUCCESS) return nativeError(r, "Enumerate instance extensions");
+        names.resize(count);
+        const auto has = [&](const char* name) { return std::any_of(names.begin(), names.end(), [&](auto& p) { return std::strcmp(p.extensionName, name) == 0; }); };
+        instance->presentation = has(VK_KHR_SURFACE_EXTENSION_NAME) && has(VK_KHR_WIN32_SURFACE_EXTENSION_NAME) &&
+            has(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME) && has(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME);
+        if (instance->presentation) enabledExtensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+            VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME};
+    }
+#endif
     if (validation) {
         const auto layers = reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(get(nullptr, "vkEnumerateInstanceLayerProperties"));
         const auto extensions = reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(get(nullptr, "vkEnumerateInstanceExtensionProperties"));
@@ -102,14 +130,25 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     VkInstanceCreateInfo info{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
     info.pApplicationInfo = &app;
     if (validation) {
-        info.enabledLayerCount = 1; info.ppEnabledLayerNames = &layer; info.enabledExtensionCount = 3;
-        info.ppEnabledExtensionNames = vulkan::ValidationConfiguration::extensions; info.pNext = &validationConfig.layerSettings;
+        info.enabledLayerCount = 1; info.ppEnabledLayerNames = &layer;
+        enabledExtensions.insert(enabledExtensions.end(), std::begin(vulkan::ValidationConfiguration::extensions), std::end(vulkan::ValidationConfiguration::extensions));
+        info.pNext = &validationConfig.layerSettings;
     }
+    info.enabledExtensionCount = static_cast<std::uint32_t>(enabledExtensions.size()); info.ppEnabledExtensionNames = enabledExtensions.data();
     if (auto r = create(&info, nullptr, &instance->handle); r != VK_SUCCESS) return nativeError(r, "vkCreateInstance");
 #define LOAD(name) instance->name = reinterpret_cast<PFN_vk##name>(get(instance->handle, "vk" #name)); \
     if (!instance->name) return fail(ErrorCode::Unsupported, "Vulkan instance entry point missing: vk" #name);
     INSTANCE_FUNCTIONS(LOAD)
 #undef LOAD
+    if (instance->presentation) {
+#define LOAD_WSI(name) instance->name = reinterpret_cast<PFN_vk##name>(get(instance->handle, "vk" #name)); if (!instance->name) return fail(ErrorCode::Unsupported, "Vulkan surface entry point missing: vk" #name);
+        LOAD_WSI(DestroySurfaceKHR) LOAD_WSI(GetPhysicalDeviceSurfaceSupportKHR) LOAD_WSI(GetPhysicalDeviceSurfaceCapabilitiesKHR)
+        LOAD_WSI(GetPhysicalDeviceSurfaceFormatsKHR) LOAD_WSI(GetPhysicalDeviceSurfacePresentModesKHR)
+#ifdef _WIN32
+        LOAD_WSI(CreateWin32SurfaceKHR)
+#endif
+#undef LOAD_WSI
+    }
     if (validation) {
         const auto make = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(get(instance->handle, "vkCreateDebugUtilsMessengerEXT"));
         instance->destroyMessenger = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(get(instance->handle, "vkDestroyDebugUtilsMessengerEXT"));
@@ -185,16 +224,42 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
     X(CreateCommandPool) X(DestroyCommandPool) X(AllocateCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
-    X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences)
+    X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences) X(CreateSemaphore) X(DestroySemaphore)
 struct NativeDevice {
     std::shared_ptr<Instance> instance;
     VkDevice handle{};
     VkQueue queue{};
+    bool presentation{};
+    PFN_vkCreateSwapchainKHR CreateSwapchainKHR{};
+    PFN_vkDestroySwapchainKHR DestroySwapchainKHR{};
+    PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR{};
+    PFN_vkAcquireNextImageKHR AcquireNextImageKHR{};
+    PFN_vkQueuePresentKHR QueuePresentKHR{};
 #define DECLARE(name) PFN_vk##name name{};
     DEVICE_FUNCTIONS(DECLARE)
 #undef DECLARE
     void release() { if (handle) { DestroyDevice(handle, nullptr); handle = {}; } }
     ~NativeDevice() { if (handle && DestroyDevice) release(); }
+};
+struct NativeSurface {
+    std::shared_ptr<NativeDevice> native;
+    VkSurfaceKHR handle{};
+    void* window{};
+    ~NativeSurface() { if (handle) native->instance->DestroySurfaceKHR(native->instance->handle, handle, nullptr); }
+};
+struct NativeSwapchain {
+    std::shared_ptr<NativeSurface> surface;
+    VkSwapchainKHR handle{};
+    std::vector<VkSemaphore> finished;
+    std::uint32_t current{};
+    bool alive{true}, acquired{}, invalid{};
+    void release() {
+        auto& n = *surface->native;
+        if (handle) n.DestroySwapchainKHR(n.handle, handle, nullptr);
+        for (auto s : finished) if (s) n.DestroySemaphore(n.handle, s, nullptr);
+        handle = {}; finished.clear(); alive = false; acquired = false;
+    }
+    ~NativeSwapchain() { release(); }
 };
 struct Allocation {
     std::shared_ptr<NativeDevice> native;
@@ -203,6 +268,8 @@ struct Allocation {
     VkImageView view{};
     VkDeviceMemory memory{};
     VkDeviceSize bytes{};
+    std::shared_ptr<NativeSwapchain> swapchain;
+    std::uint32_t imageIndex{};
     bool coherent{};
     BufferDesc desc;
     TextureDesc textureDesc;
@@ -214,12 +281,21 @@ struct Allocation {
     void release() {
         if (buffer) native->DestroyBuffer(native->handle, buffer, nullptr);
         if (view) native->DestroyImageView(native->handle, view, nullptr);
-        if (image) native->DestroyImage(native->handle, image, nullptr);
+        if (image && !swapchain) native->DestroyImage(native->handle, image, nullptr);
         if (memory) native->FreeMemory(native->handle, memory, nullptr);
         buffer = {}; view = {}; image = {}; memory = {};
     }
     ~Allocation() { release(); }
 };
+bool currentBackbuffer(const Allocation& a) {
+    if (!a.swapchain) return true;
+    const auto& s = *a.swapchain;
+    bool liveWindow = true;
+#ifdef _WIN32
+    liveWindow = IsWindow(static_cast<HWND>(s.surface->window)) != FALSE;
+#endif
+    return liveWindow && s.alive && !s.invalid && s.acquired && s.current == a.imageIndex;
+}
 struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized, contentsInitialized; };
 struct NativePass {
     std::shared_ptr<NativeDevice> native;
@@ -316,6 +392,7 @@ struct State {
     std::vector<std::weak_ptr<Allocation>> allocations;
     std::vector<std::weak_ptr<Recording>> recordings;
     std::vector<std::weak_ptr<NativePipeline>> pipelines;
+    std::vector<std::weak_ptr<NativeSwapchain>> swapchains;
     std::vector<std::weak_ptr<int>> objects;
     Result<void> check() const {
         if (std::this_thread::get_id() != thread) return fail(ErrorCode::InvalidState, "Vulkan operations require the creating thread");
@@ -348,6 +425,8 @@ struct State {
         for (auto& weak : recordings) if (auto value = weak.lock()) value->release();
         for (auto& weak : pipelines) if (auto value = weak.lock()) value->release();
         for (auto& weak : allocations) if (auto value = weak.lock()) value->release();
+        for (auto& weak : swapchains) if (auto value = weak.lock()) value->release();
+        swapchains.clear();
         recordings.clear(); pipelines.clear(); allocations.clear(); objects.clear();
         native->release(); retired = true;
     }
@@ -409,6 +488,7 @@ struct VulkanPipeline final : Pipeline {
     std::shared_ptr<int> token;
 };
 VkImageLayout imageLayout(ResourceState state) {
+    if (state == ResourceState::Present) return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     if (state == ResourceState::CopySource) return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     if (state == ResourceState::CopyDestination) return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     if (state == ResourceState::RenderTarget) return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -418,6 +498,7 @@ VkImageLayout imageLayout(ResourceState state) {
     return VK_IMAGE_LAYOUT_GENERAL;
 }
 VkAccessFlags access(ResourceState state) {
+    if (state == ResourceState::Present) return 0;
     if (state == ResourceState::CopySource) return VK_ACCESS_TRANSFER_READ_BIT;
     if (state == ResourceState::CopyDestination) return VK_ACCESS_TRANSFER_WRITE_BIT;
     if (state == ResourceState::RenderTarget) return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -485,6 +566,7 @@ struct VulkanCommands final : CommandList {
         auto value = std::dynamic_pointer_cast<VulkanTexture>(texture);
         if (!value) return fail(texture ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Vulkan texture");
         if (value->owner != owner) return fail(ErrorCode::WrongDevice, "Texture belongs to another device generation");
+        if (!currentBackbuffer(*value->allocation)) return fail(ErrorCode::InvalidState, "Backbuffer is not current or its swapchain/window expired");
         return value->allocation;
     }
     Use* find(const std::shared_ptr<Allocation>& a) {
@@ -567,8 +649,10 @@ struct VulkanCommands final : CommandList {
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = texture(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead)
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::Present)
             return fail(ErrorCode::Unsupported, "Vulkan texture transfer state unsupported");
+        if (target == ResourceState::Present && !(*a)->swapchain) return fail(ErrorCode::InvalidArgument, "Present requires a swapchain backbuffer");
+        if (target == ResourceState::ShaderRead && (*a)->swapchain) return fail(ErrorCode::Unsupported, "Backbuffer sampling unsupported");
         if ((target == ResourceState::DepthWrite || target == ResourceState::DepthRead) && !(*a)->textureDesc.depthStencil)
             return fail(ErrorCode::InvalidArgument, "Depth state requires depth texture");
         if (target == ResourceState::ShaderRead && (*a)->textureDesc.depthStencil) return fail(ErrorCode::Unsupported, "Depth sampling unsupported");
@@ -923,7 +1007,7 @@ struct VulkanQueue final : CommandQueue {
         if (!record || !record->ended || record->submitted) return fail(ErrorCode::InvalidState, "Command list must be ended and unsubmitted");
         if (owner->last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Fence sequence exhausted");
         for (const auto& use : record->uses)
-            if (use.version != use.allocation->version || use.allocation->version == UINT64_MAX)
+            if (use.version != use.allocation->version || use.allocation->version == UINT64_MAX || !currentBackbuffer(*use.allocation))
                 return fail(ErrorCode::InvalidState, "Stale command resource version");
         // Allocate the retention node before native submission; no throwing work follows success.
         auto& pending = owner->pending.emplace_back(Pending{{}, owner->last + 1, record});
@@ -969,6 +1053,7 @@ struct VulkanQueue final : CommandQueue {
         return owner->completed;
     }
 };
+#include "Presentation.hpp"
 struct VulkanDevice final : Device {
     std::shared_ptr<State> owner;
     DeviceCaps capabilities;
@@ -1232,9 +1317,9 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->objects.push_back(value->token); return std::unique_ptr<CommandList>(std::move(value));
     }
-    Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) override {
+    Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        return fail(ErrorCode::Unsupported, "Vulkan presentation unsupported");
+        return makeSwapchain(owner, surface, desc);
     }
     CommandQueue& queue() override { return commands; }
     Result<std::uint64_t> validationErrorCount() override {
@@ -1265,12 +1350,33 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     VkDeviceQueueCreateInfo queue{VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
     queue.queueFamilyIndex = selected->family; queue.queueCount = 1; queue.pQueuePriorities = &priority;
     VkDeviceCreateInfo info{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO}; info.queueCreateInfoCount = 1; info.pQueueCreateInfos = &queue;
+    std::uint32_t extensionCount{};
+    auto er = (*instance)->EnumerateDeviceExtensionProperties(selected->physical, nullptr, &extensionCount, nullptr);
+    if (er != VK_SUCCESS) return nativeError(er, "Enumerate device extensions");
+    std::vector<VkExtensionProperties> extensions(extensionCount);
+    er = (*instance)->EnumerateDeviceExtensionProperties(selected->physical, nullptr, &extensionCount, extensions.data());
+    if (er != VK_SUCCESS) return nativeError(er, "Enumerate device extensions");
+    extensions.resize(extensionCount);
+    const auto hasExtension = [&](const char* name) { return std::any_of(extensions.begin(), extensions.end(), [&](auto& p) { return std::strcmp(p.extensionName, name) == 0; }); };
+    VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT maintenance{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT};
+    if ((*instance)->presentation && hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME) && hasExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME)) {
+        VkPhysicalDeviceFeatures2 features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2}; features.pNext = &maintenance;
+        (*instance)->GetPhysicalDeviceFeatures2(selected->physical, &features);
+        native->presentation = maintenance.swapchainMaintenance1 == VK_TRUE;
+    }
+    const char* swapchainExtensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME};
+    if (native->presentation) { info.enabledExtensionCount = 2; info.ppEnabledExtensionNames = swapchainExtensions; info.pNext = &maintenance; }
     VkPhysicalDeviceFeatures enabled{}; enabled.fullDrawIndexUint32 = selected->features.fullDrawIndexUint32; info.pEnabledFeatures = &enabled;
     if (auto r = (*instance)->CreateDevice(selected->physical, &info, nullptr, &native->handle); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
 #define LOAD(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); \
     if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan device entry point missing: vk" #name);
     DEVICE_FUNCTIONS(LOAD)
 #undef LOAD
+    if (native->presentation) {
+#define LOAD_WSI(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan swapchain entry point missing: vk" #name);
+        LOAD_WSI(CreateSwapchainKHR) LOAD_WSI(DestroySwapchainKHR) LOAD_WSI(GetSwapchainImagesKHR) LOAD_WSI(AcquireNextImageKHR) LOAD_WSI(QueuePresentKHR)
+#undef LOAD_WSI
+    }
     native->GetDeviceQueue(native->handle, selected->family, 0, &native->queue);
     auto owner = std::make_shared<State>(); owner->native = native; owner->physical = selected->physical;
     owner->memory = selected->memory; owner->family = selected->family;
@@ -1284,6 +1390,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.multipleRenderTargets = selected->maxColorAttachments >= 2;
     device->capabilities.vertexInput = device->capabilities.indexedDrawing = true;
     device->capabilities.timestampQueries = vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod);
+    device->capabilities.swapChain = native->presentation;
     device->capabilities.resourceBinding = device->capabilities.bindingLayouts = true;
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,

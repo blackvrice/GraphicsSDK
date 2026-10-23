@@ -1,11 +1,11 @@
-# Vulkan transfers, drawing, resource bindings, depth and timestamps
+# Vulkan transfers, drawing, resource bindings, depth, timestamps and Win32 presentation
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
 RGBA8/RGBA16F 2D textures, color Clear/Load/Store passes, command recording/submission,
 queue fences, graphics pipelines/vertex/index drawing, resource bindings, D32 depth, GPU timestamps and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
-backend when enabled; presentation remains unimplemented.
+backend when enabled; Win32 presentation requires the completion-fence capabilities below.
 
 ## Build
 
@@ -67,7 +67,7 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   A zero count without a validation device is not validation-layer acceptance.
 
 Compute pipelines,
-debug markers and swapchains return `Unsupported`; their capability flags are
+debug markers return `Unsupported`; their capability flags are
 false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 These APIs, Linux execution and matching Vulkan competitor measurements remain
 ordered follow-up work. See the [implementation report](PHASE3_VULKAN_TRANSFER_REPORT.md).
@@ -400,3 +400,47 @@ layers using the process-local loader setting. The frozen runner in the
 `GFX_VULKAN_VALIDATION_TESTS=ON` registers required tests; absent/broken layers fail,
 and no skip or driver-only fallback is accepted. The native positive-control test
 contains intentional errors and runs separately from zero-error SDK work.
+
+## Win32 presentation
+
+`caps.swapChain` requires instance surface/win32_surface/get_surface_capabilities2/
+surface_maintenance1, device swapchain/swapchain_maintenance1 and its feature bit.
+The selected graphics queue must also support the actual surface. A caller-owned HWND
+must belong to the process and creating thread. There is no adapter fallback.
+
+Surface format is RGBA8 UNORM / SRGB nonlinear with color-attachment and both transfer
+usages. Requested 2..4 buffers are adjusted to the native minimum; actual image count
+and acquisition order are native. VSync uses FIFO; otherwise IMMEDIATE then MAILBOX,
+or Unsupported if neither exists. Fixed native client extent must exactly match the
+requested dimensions. Resize the HWND first and release acquired wrappers/recordings
+before `resize`. Rejected size/reference checks preserve the existing chain; after
+native recreation starts, a failure retires the old chain and requires resize retry.
+
+Acquisition has a one-second native timeout, followed by a host fence wait on success.
+Repeated acquire returns the current wrapper. First-use layout initialization permits
+present without rendering but defines no texel values. Explicit RenderTarget/copy/
+Present states apply. Offscreen Present is InvalidArgument; backbuffer ShaderRead is
+Unsupported. Present requires the submitted Present state, invalidates resource
+versions, and releases current acquisition. Both recording and submit reject noncurrent,
+destroyed-chain/window and stale backbuffers. Retained descriptions remain readable.
+
+An ordered semaphore signal submission connects prior graphics work to native present.
+Per-image semaphores and maintenance1 present fences guarantee safe resource reuse and
+teardown. `present` waits for resource completion; this does not prove monitor display
+completion. Queue/device idle alone is insufficient for presentation resource lifetime;
+there is no legacy teardown fallback. This initial host-synchronized implementation
+has no frame-overlap or throughput claim. External swapchain images have views but no
+SDK-owned memory allocation: statistics count the images and add zero fabricated bytes.
+Views/framebuffers are released before swapchains and the device during retirement.
+
+OUT_OF_DATE/SURFACE_LOST returns InvalidState with the native code; recreate as needed.
+SUBOPTIMAL succeeds. Thread/generation rules and DeviceLost handling remain unchanged.
+NVIDIA GTX 1660 SUPER supports the required feature; this Intel UHD 770 driver does not.
+Its explicit Unsupported result is tested while all earlier offscreen GPU suites still
+run on both adapters. This feature result does not explain the historical Intel AV.
+
+Current roots are `out/vulkan-presentation`, `-install`, `-consumer`, `-only`, `-portable`.
+The frozen runner excludes the three deferred `^memory_reclamation_` tests from the
+integrated run. See the [implementation and evidence report](PHASE3_VULKAN_PRESENTATION_REPORT.md).
+Linux WSI, interactive/physical display acceptance, unexpected loss recovery and
+matching competitor measurements remain separate work.

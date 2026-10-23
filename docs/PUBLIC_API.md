@@ -422,3 +422,12 @@ submit → present 흐름과 backbuffer/command 참조를 해제한 뒤 resize�
 파괴한다. 정상 present 성공은 실제 monitor scanout/사용자 육안 승인을 의미하지 않는다.
 현재 SDK는 DXGI occlusion 상태를 별도 노출하지 않는다. 예제의 전체 이미지 readback과
 controlled RemoveDevice 복구는 [별도 자동 검증 범위](PHASE2_PRESENTATION_REPORT.md)다.
+
+Vulkan Win32 SwapChain은 기존 API 형태로 제공하며 `caps.swapChain`은 maintenance1 출력 자원
+완료 펜스가 있는 경우에만 true다. 선택 queue의 실제 surface 지원은 생성 시 확인한다. 창의
+client extent를 먼저 바꾸고 backbuffer wrapper/recording을 해제한 뒤 resize한다. 잘못된
+크기·남은 참조는 기존 chain을 보존하지만 native 재생성이 실패하면 resize 재시도가 필요하다.
+RGBA8 UNORM만 사용하고 VSync FIFO 또는 비동기 IMMEDIATE/MAILBOX를 선택한다. acquire와
+present는 host 대기가 있는 초기 구현이며 present 완료 펜스는 모니터 표시 완료를 뜻하지 않는다.
+현재 Intel driver의 해당 feature 미지원은 Unsupported로 반환한다. 공개 API/ABI 모양은 같다.
+[Vulkan 상세 계약](VULKAN.md#win32-presentation)과 [검증 범위](PHASE3_VULKAN_PRESENTATION_REPORT.md)를 따른다.

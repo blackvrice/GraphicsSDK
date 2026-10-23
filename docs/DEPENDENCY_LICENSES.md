@@ -1,5 +1,13 @@
 # 배포 의존성 라이선스 감사
 
+Vulkan Win32 출력은 `audit_vulkan.py --variant presentation`과
+`licenses/vulkan-presentation-policy.json`으로 별도 감사한다.
+[inventory](../licenses/generated/windows-sdk-vulkan-presentation-release/inventory.json)는
+83개 compiler input/2개 component, 36개 compiler log/35개 linker log와 정확한 SDK payload를
+검사한다. 자체 implementation/test 두 파일과 기존 pinned Apache-2.0 Win32 header 한 개를
+추가했다. User32는 Windows SDK 시스템 prerequisite이며 vendor runtime은 배포하지 않는다.
+기존 SDK ZIP 21개와 과거 inventory를 보존한다.
+
 GPU 타임스탬프는 `audit_vulkan.py --variant timestamps`와
 `licenses/vulkan-timestamps-policy.json`으로 별도 감사한다.
 [inventory](../licenses/generated/windows-sdk-vulkan-timestamps-release/inventory.json)는

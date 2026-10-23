@@ -112,7 +112,10 @@ acceptance or later SDK feature milestones.
   attachments, all compare/write masks and mixed MRT+depth are implemented
   ([report](PHASE3_VULKAN_DEPTH_REPORT.md)). Two-slot GPU timestamps, fence/availability
   checks, valid-bit wrap conversion and result/pool lifetimes are implemented
-  ([report](PHASE3_VULKAN_TIMESTAMP_REPORT.md)). Presentation and the rest of this gate remain open.
+  ([report](PHASE3_VULKAN_TIMESTAMP_REPORT.md)). Win32 presentation with maintenance1
+  resource-completion fences is implemented on supporting devices; NVIDIA execution and
+  current Intel explicit non-support are verified ([report](PHASE3_VULKAN_PRESENTATION_REPORT.md)).
+  Linux WSI, broader driver coverage and interactive/physical acceptance remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.
 

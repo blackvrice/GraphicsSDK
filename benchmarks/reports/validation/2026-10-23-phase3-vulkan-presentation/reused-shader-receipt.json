@@ -1,0 +1,85 @@
+{
+  "component": {
+    "name": "SPIRV-Tools",
+    "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+    "commit": "0cfe9e7219148716dfd30b37f4d21753f098707a",
+    "ref": "0cfe9e7219148716dfd30b37f4d21753f098707a"
+  },
+  "scope": "Reused local-only pinned assembler/validator; not SDK linked/distributed dependency audit",
+  "prerequisite_library": {
+    "path": "out/vulkan-validation-runtime/prerequisites/lib/SPIRV-Tools.lib",
+    "bytes": 32961418,
+    "sha256": "370c333bfb5d2a1d895e3d07ffb450af2603ba051023e0917f8eb376ce5dc00f"
+  },
+  "tool": {
+    "path": "out/vulkan-draw-shader-tools/Release/spirv_fixture_tool.exe",
+    "bytes": 1500672,
+    "sha256": "29e427d31562da30f5bd40bcfbe288a5755836849bd628be0a682d535bab9ee1"
+  },
+  "fixtures": [
+    {
+      "name": "vertex",
+      "assembly": {
+        "path": "tests/fixtures/spirv_depth/vertex.spvasm",
+        "bytes": 1909,
+        "sha256": "6062778951454fd1b0c2ea9c071e77e219074ef9ff37c5b0e888f34dff3c59e0"
+      },
+      "binary": {
+        "path": "out/vulkan-depth-shaders/vertex.spv",
+        "bytes": 1028,
+        "sha256": "4f5dd6dbecdacf47b9759bc821ac74e315bad19a105d6381af989f7221598021"
+      }
+    },
+    {
+      "name": "color",
+      "assembly": {
+        "path": "tests/fixtures/spirv_depth/color.spvasm",
+        "bytes": 934,
+        "sha256": "bd21272489712ffe4b416f464d3903c251e28958ee6660ce2e356deff72e3db3"
+      },
+      "binary": {
+        "path": "out/vulkan-depth-shaders/color.spv",
+        "bytes": 500,
+        "sha256": "302cd995189607326d108c653cb2e2b81aacfc4b5a398c1fa60db5aa72644087"
+      }
+    },
+    {
+      "name": "mrt2",
+      "assembly": {
+        "path": "tests/fixtures/spirv_depth/mrt2.spvasm",
+        "bytes": 1025,
+        "sha256": "c8d9511d2076ee482c43fc8a1826b3c4ff85869d899277afa432d37a0edf04f9"
+      },
+      "binary": {
+        "path": "out/vulkan-depth-shaders/mrt2.spv",
+        "bytes": 548,
+        "sha256": "c4d3d5e3cf4649cc96526a6852ae353c5c955e7daf1bc357bd418603cd3ee2d3"
+      }
+    },
+    {
+      "name": "mrt8",
+      "assembly": {
+        "path": "tests/fixtures/spirv_depth/mrt8.spvasm",
+        "bytes": 1565,
+        "sha256": "215524749c9592d5f2424b72a58d10d0e2311152c76e083293387e67a9c832b5"
+      },
+      "binary": {
+        "path": "out/vulkan-depth-shaders/mrt8.spv",
+        "bytes": 836,
+        "sha256": "04253ce9d177b78947f85ceff0da38b149c63843725449ba6866c2d5b2940692"
+      }
+    }
+  ],
+  "header": {
+    "path": "tests/fixtures/DepthFixtures.hpp",
+    "bytes": 10323,
+    "sha256": "851ed26f5fd7a4d1e9c52417d969feadfe144f2e375ab1e8ed67052f8fa19725"
+  },
+  "license_files": [
+    {
+      "path": ".deps/vvl-validation/SPIRV-Tools/LICENSE",
+      "bytes": 11560,
+      "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
+    }
+  ]
+}

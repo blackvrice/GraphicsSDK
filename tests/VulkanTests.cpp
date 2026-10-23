@@ -55,7 +55,7 @@ void transfer(gfx::Device& d, std::uint64_t size, unsigned seed) {
 void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation) {
     const auto& caps = d.caps();
     check(caps.backend == gfx::Backend::Vulkan && caps.adapterId == adapter.id && caps.adapterName == adapter.name, "Exact Vulkan selection");
-    check(!caps.compute && caps.timestampQueries && !caps.swapChain && caps.resourceBinding && caps.vertexInput && caps.indexedDrawing &&
+    check(!caps.compute && caps.timestampQueries && caps.resourceBinding && caps.vertexInput && caps.indexedDrawing &&
         caps.bindingLayouts && caps.depthAttachment && caps.multipleRenderTargets && !caps.deviceRecovery && !caps.deviceLossInjection, "Partial capabilities are honest");
     reject(d.createBuffer({0}), gfx::ErrorCode::InvalidArgument, "Empty buffer");
     reject(d.createBuffer({64, static_cast<gfx::Memory>(99)}), gfx::ErrorCode::InvalidArgument, "Unknown memory kind");

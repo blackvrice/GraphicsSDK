@@ -3,17 +3,17 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The default integrated Windows configuration registers 46 CTests (including CPU
-SPIR-V/timestamp inspection and buffer/texture/color-pass/draw/vertex/binding/depth/timestamp suites), Vulkan-only has 18,
+The default integrated Windows configuration registers 47 CTests (including CPU
+SPIR-V/timestamp inspection and buffer/texture/color-pass/draw/vertex/binding/depth/timestamp/presentation suites), Vulkan-only has 19,
 and no-backend has 10. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
 The required synchronization-validation profile adds `vulkan_transfer_validation`,
 `vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`,
-`vulkan_vertex_validation`, `vulkan_binding_validation`, `vulkan_depth_validation`, `vulkan_timestamp_validation`
-and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`),
-yielding 55 integrated / 27 Vulkan-only registered tests. A pinned,
+`vulkan_vertex_validation`, `vulkan_binding_validation`, `vulkan_depth_validation`, `vulkan_timestamp_validation`,
+`vulkan_presentation_validation` and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`),
+yielding 57 integrated / 29 Vulkan-only registered tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -532,3 +532,15 @@ own compiler inputs; old SDK-crash inventory still passes. The timed executable,
 SDK/policy/packages and prior evidence are unchanged. No full native regression,
 new long acceptance or Intel crash fix is claimed. See the
 [fixed-work report](PHASE2_FIXED_WORK_REPORT.md).
+
+The [Win32 Vulkan presentation profile](PHASE3_VULKAN_PRESENTATION_REPORT.md) passes
+54 selected integrated (57 registered, same three deferred memory exclusions),
+29 Vulkan-only and 10 no-backend CTests, plus nine installed GPU suites and 208 Python
+contracts. Each new presentation execution checks 721 assertions, 145 presents,
+132 full images, 60 draws, 7 resizes and 35,918,112 texel bytes. NVIDIA exercises actual
+WSI with maintenance1 resource-completion fences; the current Intel driver explicitly
+returns Unsupported for that missing feature. The suite requires at least one supported
+adapter and does not pass by skipping every adapter. All eight previous offscreen GPU
+suites still exercise both adapters. A programmatically shown window and backbuffer
+readback do not accept human interaction or compositor/monitor pixels. Linux WSI,
+physical recovery and competitor performance remain unverified.
