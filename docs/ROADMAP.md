@@ -152,3 +152,9 @@ stage intervals and fresh baseline/candidate/SDL comparisons. Persistent mapping
 and cached Upload memory preference were both rejected after bounded trials;
 production SDK sources exactly match the baseline. Driver/GPU hardware profiling, broader
 workloads and Linux native validation remain open; the memory/Intel AV deferral is unchanged.
+
+The [first Vulkan draw/instancing comparison](PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md)
+now covers draw1, draw1000 and instanced1000 on NVIDIA/Intel, with identical shaders,
+changing full-image references and separate validated/performance runs. CPU interval
+partitions are not GPU timestamps. Allocation/PSO workloads, broader Vulkan
+competitors and Linux native work remain open; production SDK sources are unchanged.

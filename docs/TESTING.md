@@ -568,3 +568,17 @@ Report controls reject raw/result, command, scope, source and statistics alterat
 Candidate tests and policy source are archived separately. Production SDK sources
 are restored exactly; its prior 93 selected CTests remain historical evidence.
 These short runs do not satisfy deferred long-memory or historical Intel AV gates.
+
+The [same-Vulkan draw profile](PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md) passes three
+new standalone CTests and 295 Python tests (43 draw contracts). CPU references
+check scissor boundaries, 1705 covered/700 clear pixels and changing colors.
+Twelve required-layer workload processes precede 36 unvalidated measurement
+processes. All 1308 images / 12582960 bytes match complete CPU references; 1080
+primary wall samples retain every outlier. CPU interval sums and raw command
+attribution are checked. Seven report controls reject altered counts/scopes,
+statistics, raw output, command attribution and validation ERROR on stdout.
+The incompatible SPIR-V 1.3/default SDL 1.0 and SDK-rejected SPIR-V 1.0 attempts
+remain excluded initial evidence. New performance data use explicit Vulkan 1.1
+and the same SPIR-V 1.3 bytes. Native draw-count capture and GPU timestamps are
+not claimed. SDK's prior 93 selected CTests are historical evidence, not rerun.
+Deferred memory/Intel AV policy remains unchanged.

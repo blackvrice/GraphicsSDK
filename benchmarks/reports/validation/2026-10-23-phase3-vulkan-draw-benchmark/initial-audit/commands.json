@@ -1,0 +1,76 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_draw",
+      "-B",
+      "out/vulkan-draw-benchmark",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "seconds": 0.3289999999997235
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-draw-benchmark",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 8.311999999999898
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-draw-benchmark",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-draw-benchmark\\ctest.xml"
+    ],
+    "returncode": 0,
+    "seconds": 1.1410000000005311
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 5.592999999999847
+  },
+  {
+    "name": "benchmark-audit",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_draw.py",
+      "--output",
+      "licenses/generated/windows-benchmarks-vulkan-draw-release",
+      "--create"
+    ],
+    "returncode": 1,
+    "seconds": 0.6409999999996217
+  }
+]

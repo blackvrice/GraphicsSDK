@@ -1,0 +1,95 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_draw",
+      "-B",
+      "out/vulkan-draw-benchmark-compatible",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "seconds": 0.21900000000005093
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-draw-benchmark-compatible",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 8.45300000000043
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-draw-benchmark-compatible",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-draw-benchmark\\ctest.xml"
+    ],
+    "returncode": 0,
+    "seconds": 1.1719999999995707
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 4.969000000000051
+  },
+  {
+    "name": "benchmark-audit",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_draw.py",
+      "--output",
+      "licenses/generated/windows-benchmarks-vulkan-draw-release",
+      "--create"
+    ],
+    "returncode": 0,
+    "seconds": 1.5780000000004293
+  },
+  {
+    "name": "matrix",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_vulkan_draw.py",
+      "--exe",
+      "out/vulkan-draw-benchmark-compatible/Release/vulkan_draw.exe",
+      "--output",
+      "benchmarks/results/2026-10-23-vulkan-draw",
+      "--repetitions",
+      "3",
+      "--warmup",
+      "5",
+      "--samples",
+      "30"
+    ],
+    "returncode": 1,
+    "seconds": 2.1719999999995707
+  }
+]

@@ -418,3 +418,15 @@ so do not overwrite them. Linux execution remains unverified.
 
 이 초기 runner는 high/low 선호가 서로 다른 두 hardware GPU를 선택하는 환경을 요구한다.
 동일 장치로 해석되는 경우 합치거나 두 장치 비교를 합성하지 않고 실패한다.
+
+The [Vulkan draw profile](PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md) builds standalone
+from `benchmarks/vulkan_draw` against the frozen installed SDK and SDL static build.
+Use a fresh build root and serial Release builds, then run its three CTests.
+`tools/run_vulkan_draw.py --exe <Release/vulkan_draw.exe> --output <new-results>`
+runs required-layer correctness before unvalidated measurements.
+`tools/report_vulkan_draw.py --input <results> --output <new-report>` reconciles
+raw output/commands and computes primary and CPU stage statistics.
+The frozen license profile `tools/audit_vulkan_draw.py` checks this run's
+`out/vulkan-draw-benchmark-vulkan11` compiler/linker reads, reused libraries and notices.
+SDL's public Vulkan options request API 1.1; its default API 1.0 cannot accept the
+SDK's supported SPIR-V 1.3 fixture version. Vendor and SDK sources remain unchanged.

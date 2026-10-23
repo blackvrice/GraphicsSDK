@@ -1,0 +1,79 @@
+{
+  "component": {
+    "name": "SPIRV-Tools",
+    "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+    "commit": "0cfe9e7219148716dfd30b37f4d21753f098707a",
+    "ref": "0cfe9e7219148716dfd30b37f4d21753f098707a"
+  },
+  "target_environment": "Vulkan1.0",
+  "SPIRV_version": "1.0",
+  "tool": {
+    "path": "out/vulkan-draw-benchmark-shader-tools/Release/spirv_fixture_tool.exe",
+    "bytes": 1501184,
+    "sha256": "77cf9fbc8f8c29b4d70cba8731b6ebea6f3a96e3a0d078666f232dc1d26f4567"
+  },
+  "prerequisite_library": {
+    "path": "out/vulkan-validation-runtime/prerequisites/lib/SPIRV-Tools.lib",
+    "bytes": 32961418,
+    "sha256": "370c333bfb5d2a1d895e3d07ffb450af2603ba051023e0917f8eb376ce5dc00f"
+  },
+  "fixtures": [
+    {
+      "name": "fullscreen",
+      "assembly": {
+        "path": "tests/fixtures/spirv/fullscreen.spvasm",
+        "bytes": 1382,
+        "sha256": "27ab8191fb5734885eea0ae0a96830ae0e16e4c72fa5e91cb75033ee03b374b5"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-benchmark-shader-tools/fullscreen.spv",
+        "bytes": 740,
+        "sha256": "b81f762bc6c9b34b17f0b3a661c62a9c4b21289b2ffaac6482e8850b5b305889"
+      }
+    },
+    {
+      "name": "red",
+      "assembly": {
+        "path": "tests/fixtures/spirv/red.spvasm",
+        "bytes": 587,
+        "sha256": "6932bef401f705e3b89a08713d438043e18da5f1efc43cdb5c96e697d372e84e"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-benchmark-shader-tools/red.spv",
+        "bytes": 312,
+        "sha256": "75dca2d16e5f87bc72f5b5077b01e6b74b95563277f0da50ac3850e7522be0d8"
+      }
+    },
+    {
+      "name": "green",
+      "assembly": {
+        "path": "tests/fixtures/spirv/green.spvasm",
+        "bytes": 587,
+        "sha256": "8ca2c7ee7133761ee6939dc8af8b5e20acf24dd9a1a1376aeab65a74ec3a6d41"
+      },
+      "binary": {
+        "path": "out/vulkan-draw-benchmark-shader-tools/green.spv",
+        "bytes": 312,
+        "sha256": "0cf0c1a72e5f93f26bdcf4b34ee1c98cd6aec27ae21432a3337eae8f758a004c"
+      }
+    }
+  ],
+  "header": {
+    "path": "benchmarks/vulkan_draw/DrawShaders.hpp",
+    "bytes": 4995,
+    "sha256": "76f255cc52891504ec3f1fb88f7cf230e33f7c8f052decdf745773bf9c3f8e9a"
+  },
+  "source": {
+    "path": "tools/spirv_fixtures/main.cpp",
+    "bytes": 1798,
+    "sha256": "687c824b65a7627a3b6a30c6a4a1e53d0e796f080062e9395c9b070154100821"
+  },
+  "license_files": [
+    {
+      "path": ".deps/vvl-validation/SPIRV-Tools/LICENSE",
+      "bytes": 11560,
+      "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
+    }
+  ],
+  "external_tool_bundled": false
+}

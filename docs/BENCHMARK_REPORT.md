@@ -125,3 +125,11 @@ The [Vulkan upload baseline](PHASE3_VULKAN_UPLOAD_REPORT.md) is a separate API/c
 comparison on the unchanged installed SDK and pinned SDL3. Its six device/workload
 rows, raw samples and correctness evidence are not combined with these D3D12 results.
 No overall SDK ranking or profiling diagnosis is inferred.
+
+The [first same-Vulkan draw/instancing measurements](PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md)
+are now available for GraphicsSDK and pinned SDL on NVIDIA/Intel. All six measured
+cells have longer GraphicsSDK P50 wall time; this small scissored workload does
+not establish an overall SDK ranking. See the report for primary and CPU stage
+statistics, full-image verification, initial shader compatibility failures and
+reproduction evidence. D3D12, upload and rejected memory-candidate results are
+kept in their own contracts and are not pooled with this draw profile.

@@ -1,0 +1,17 @@
+probe-high PASS
+probe-low PASS
+Traceback (most recent call last):
+  File "D:\source\GraphicsSDK\tools\run_vulkan_draw.py", line 152, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "D:\source\GraphicsSDK\tools\run_vulkan_draw.py", line 151, in main
+    run(p.parse_args())
+  File "D:\source\GraphicsSDK\tools\run_vulkan_draw.py", line 118, in run
+    r=call(name,[sdk,scenario,pref,'1','3','1',probe['device_name']],True,overrides={'VK_LOADER_DEBUG':'layer'} if sdk=='sdl' and scenario=='draw1' else None)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\source\GraphicsSDK\tools\run_vulkan_draw.py", line 104, in call
+    require(c.returncode==expected,name+' failed; inspect raw output')
+  File "D:\source\GraphicsSDK\tools\run_vulkan_draw.py", line 29, in require
+    if not condition: raise ValueError(message)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: validation-high-graphicssdk-draw1 failed; inspect raw output

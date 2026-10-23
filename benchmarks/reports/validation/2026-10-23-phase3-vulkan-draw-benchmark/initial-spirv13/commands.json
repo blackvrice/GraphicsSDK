@@ -1,0 +1,95 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_draw",
+      "-B",
+      "out/vulkan-draw-benchmark-release",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "seconds": 2.969000000000051
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-draw-benchmark-release",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 8.641000000000531
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-draw-benchmark-release",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-draw-benchmark\\ctest.xml"
+    ],
+    "returncode": 0,
+    "seconds": 1.030999999999949
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 4.983999999999469
+  },
+  {
+    "name": "benchmark-audit",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_draw.py",
+      "--output",
+      "licenses/generated/windows-benchmarks-vulkan-draw-release",
+      "--create"
+    ],
+    "returncode": 0,
+    "seconds": 1.8910000000005311
+  },
+  {
+    "name": "matrix",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_vulkan_draw.py",
+      "--exe",
+      "out/vulkan-draw-benchmark-release/Release/vulkan_draw.exe",
+      "--output",
+      "benchmarks/results/2026-10-23-vulkan-draw",
+      "--repetitions",
+      "3",
+      "--warmup",
+      "5",
+      "--samples",
+      "30"
+    ],
+    "returncode": 1,
+    "seconds": 4.95299999999952
+  }
+]

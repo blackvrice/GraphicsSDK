@@ -455,3 +455,10 @@ The frozen runner excludes the three deferred `^memory_reclamation_` tests from 
 integrated run. See the [implementation and evidence report](PHASE3_VULKAN_PRESENTATION_REPORT.md).
 Linux WSI, interactive/physical display acceptance, unexpected loss recovery and
 matching competitor measurements remain separate work.
+
+The standalone [draw/instancing benchmark](PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md)
+uses the existing installed Vulkan SDK. SDL explicitly requests Vulkan 1.1 via
+its public options, allowing identical externally validated SPIR-V 1.3 shaders.
+Default SDL Vulkan 1.0 rejects those shader versions; this is recorded as an
+excluded compatibility attempt. SDK support remains SPIR-V 1.3; production
+sources, public API and ABI are unchanged.

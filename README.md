@@ -123,3 +123,8 @@ The [Vulkan upload memory study](docs/PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) com
 fresh baseline/candidate SDK and SDL runs with separate CPU API stage diagnostics.
 Persistent mapping and cached-memory candidates were rejected after measurement;
 production SDK sources and public API remain unchanged.
+
+The [same-Vulkan draw comparison](docs/PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md) adds
+full-image references, draw/instancing workloads and CPU recording/submission/wait
+partitions. SDL explicitly requests Vulkan 1.1 for the same validated SPIR-V 1.3
+shaders. This comparison reuses the unchanged production SDK.

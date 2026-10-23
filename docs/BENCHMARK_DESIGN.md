@@ -167,3 +167,15 @@ P50/P95/P99, MAD, min/max, process medians and every outlier. SDL reported names
 uniquely map to native Vulkan/DXGI identities; this is name attribution, not access to
 SDL's native VkPhysicalDevice. Results with mismatched environment/driver/device/source
 or incomplete readback are rejected. [Evidence and limits](PHASE3_VULKAN_UPLOAD_REPORT.md).
+
+The [Vulkan draw contract](PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md) compares draw1,
+draw1000 and instanced1000 at 65x37 RGBA8 with the same SPIR-V 1.3 shaders,
+scissor/clear/store state and Vulkan 1.1 request. CPU recording begins at command
+acquisition/begin; primary wall time ends after the submission fence completes
+and SDL releases it. Per-frame pipeline/color alternation and complete reference
+readback occur every iteration; readback is outside timing. Primary total and
+CPU record/submit/wait partitions share the same samples and are not GPU times.
+Each device/SDK/scenario has three processes with five warmups and 30 samples,
+seed 20261025; correctness uses separate required-layer processes. Repeated
+triangles overlap and ignore instance ID, so command/instance counts are logical
+work specifications, not a hardware draw-count or real-scene throughput claim.

@@ -458,3 +458,13 @@ The source-only reproduction archive excludes vendor trees and executable binari
 Candidate compiler-input source records are checked against the frozen candidate
 source archive; they do not describe current production files. Production SDK
 source fingerprint is unchanged, and no new production SDK release is claimed.
+
+The [Vulkan draw inventory](../licenses/generated/windows-benchmarks-vulkan-draw-release/inventory.json)
+records 648 conservative compiler inputs / 21 components and two new compiler
+and linker traces each (benchmark plus CPU reference). Frozen SDK/SDL static
+closures and binary hashes are reused, not rebuilt. Actual local SPIRV-Tools
+assembler experiment traces/receipts are separate diagnostic prerequisites and
+are not linked or redistributed with the final benchmark. Final shaders reuse
+the original validated own SPIR-V 1.3 fixture bytes. Initial incompatible attempts,
+source reconstruction and full prior evidence remain hash preserved.
+No new SDK binary package or vendor/runtime binary distribution is produced.

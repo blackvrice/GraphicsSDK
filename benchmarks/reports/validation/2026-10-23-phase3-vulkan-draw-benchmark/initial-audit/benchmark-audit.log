@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "D:\source\GraphicsSDK\tools\audit_vulkan_draw.py", line 95, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "D:\source\GraphicsSDK\tools\audit_vulkan_draw.py", line 93, in main
+    inventory,notices=collect();audit.write_or_check(a.output,audit.output_files(inventory,notices),a.check)
+                      ^^^^^^^^^
+  File "D:\source\GraphicsSDK\tools\audit_vulkan_draw.py", line 43, in collect
+    if len(traces)!=1 or len(links)!=1:raise audit.AuditError('Unexpected/missing benchmark build logs')
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+audit_licenses.AuditError: Unexpected/missing benchmark build logs

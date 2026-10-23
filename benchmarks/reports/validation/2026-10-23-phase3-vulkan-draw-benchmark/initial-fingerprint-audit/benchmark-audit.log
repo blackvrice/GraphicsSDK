@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "D:\source\GraphicsSDK\tools\audit_vulkan_draw.py", line 99, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "D:\source\GraphicsSDK\tools\audit_vulkan_draw.py", line 97, in main
+    inventory,notices=collect();audit.write_or_check(a.output,audit.output_files(inventory,notices),a.check)
+                      ^^^^^^^^^
+  File "D:\source\GraphicsSDK\tools\audit_vulkan_draw.py", line 85, in collect
+    if fingerprint.encode() not in exe.read_bytes() or sdk_source.encode() not in exe.read_bytes():raise audit.AuditError('Executable uses stale benchmark/SDK source identity')
+                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+audit_licenses.AuditError: Executable uses stale benchmark/SDK source identity
