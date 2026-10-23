@@ -1,0 +1,660 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-upload-memory",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=ON",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 4.579000000000178,
+    "environment_overrides": {}
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-upload-memory",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 111.875,
+    "environment_overrides": {}
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-upload-memory",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "-E",
+      "^memory_reclamation_",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 165.3119999999999,
+    "environment_overrides": {}
+  },
+  {
+    "name": "controls-loader-trace",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_validation_tests.exe"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 1.0160000000000764,
+    "environment_overrides": {
+      "VK_LOADER_DEBUG": "layer"
+    }
+  },
+  {
+    "name": "unknown-option",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "extra-option",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.43800000000010186,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "install",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/vulkan-upload-memory",
+      "--config",
+      "Release",
+      "--prefix",
+      "out/vulkan-upload-memory-install"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.15599999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_consumer",
+      "-B",
+      "out/vulkan-upload-memory-consumer",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-upload-memory-install"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 4.108999999999924,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-upload-memory-consumer",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 31.15599999999995,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-native",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.030999999999949,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-texture",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_texture_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 8.657000000000153,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-render",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_render_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 12.438000000000102,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-draw",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_draw_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 4.938000000000102,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-vertex",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_vertex_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 5.530999999999949,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-binding",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_binding_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 9.219000000000051,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-depth",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_depth_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 6.641000000000076,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-timestamp",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_timestamp_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 6.8279999999999745,
+    "environment_overrides": {}
+  },
+  {
+    "name": "consumer-presentation",
+    "argv": [
+      "out/vulkan-upload-memory-consumer/Release/vulkan_presentation_consumer.exe",
+      "--validation"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 3.405999999999949,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-upload-memory-only",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 4.375,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-upload-memory-only",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 88.42099999999982,
+    "environment_overrides": {}
+  },
+  {
+    "name": "only-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-upload-memory-only",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\only-ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 111.95299999999997,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-upload-memory-portable",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=OFF",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 4.155999999999949,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-upload-memory-portable",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 44.11000000000013,
+    "environment_overrides": {}
+  },
+  {
+    "name": "portable-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-upload-memory-portable",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\portable-ctest.xml"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.8600000000001273,
+    "environment_overrides": {}
+  },
+  {
+    "name": "texture-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_texture_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "texture-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_texture_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "texture-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_texture_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.40599999999994907,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "render-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_render_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "render-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_render_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "render-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_render_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.375,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "draw-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_draw_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "draw-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_draw_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.032000000000152795,
+    "environment_overrides": {}
+  },
+  {
+    "name": "draw-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_draw_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.42200000000002547,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "vertex-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_vertex_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "vertex-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_vertex_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "vertex-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_vertex_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.3910000000000764,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "binding-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_binding_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "binding-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_binding_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "binding-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_binding_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.375,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "depth-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_depth_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "depth-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_depth_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "depth-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_depth_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.375,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "timestamp-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_timestamp_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.032000000000152795,
+    "environment_overrides": {}
+  },
+  {
+    "name": "timestamp-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_timestamp_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "timestamp-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_timestamp_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.38999999999987267,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  },
+  {
+    "name": "presentation-unknown",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_presentation_tests.exe",
+      "--validaton"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.047000000000025466,
+    "environment_overrides": {}
+  },
+  {
+    "name": "presentation-extra",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_presentation_tests.exe",
+      "--validation",
+      "extra"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.03099999999994907,
+    "environment_overrides": {}
+  },
+  {
+    "name": "presentation-missing-layer",
+    "argv": [
+      "out/vulkan-upload-memory/Release/gfx_vulkan_presentation_tests.exe",
+      "--validation"
+    ],
+    "expected": 1,
+    "returncode": 1,
+    "seconds": 0.375,
+    "environment_overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-upload-memory\\absent-layers"
+    }
+  }
+]

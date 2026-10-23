@@ -146,3 +146,9 @@ GraphicsSDK and pinned SDL3 on NVIDIA/Intel with changing full-image references,
 separate validation/performance processes and per-device environment matching.
 It establishes only the documented upload baseline. Broader Vulkan competitors,
 draw/allocation/PSO comparisons, Linux native work and profiling remain open.
+
+The [upload host-memory study](PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) adds CPU API
+stage intervals and fresh baseline/candidate/SDL comparisons. Persistent mapping
+and cached Upload memory preference were both rejected after bounded trials;
+production SDK sources exactly match the baseline. Driver/GPU hardware profiling, broader
+workloads and Linux native validation remain open; the memory/Intel AV deferral is unchanged.

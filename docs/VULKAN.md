@@ -7,6 +7,17 @@ queue fences, graphics pipelines/vertex/index drawing, resource bindings, D32 de
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
 backend when enabled; Win32 presentation requires the completion-fence capabilities below.
 
+## Upload CPU diagnostics
+
+The [upload memory study](PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) adds a standalone
+CPU API stage profiler and fresh baseline/candidate/SDL comparisons. Persistent
+mapping alone had no clear benefit; host-cached memory preference increased median
+end-to-end cost in five of six tested cells. Both candidates were rejected.
+Production buffer memory selection, map/unmap, public API and ABI remain unchanged.
+Candidate policy tests and full source/build evidence are archived separately;
+their 96 selected CTests describe the rejected candidate, not a new product release.
+CPU API intervals are separate diagnostics, not GPU timestamps or driver profiling.
+
 ## Build
 
 Use the reviewed, unmodified [Vulkan-Headers v1.3.290](https://github.com/KhronosGroup/Vulkan-Headers/tree/v1.3.290)

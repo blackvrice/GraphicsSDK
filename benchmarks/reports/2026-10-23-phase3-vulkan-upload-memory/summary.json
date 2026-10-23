@@ -1,0 +1,537 @@
+{
+  "contract": "vulkan_upload_cpu_payload_to_texture_fence_complete_each_sample_readback_v1",
+  "api": "vulkan",
+  "category": "end_to_end",
+  "benchmark_source_fingerprint": "6b3f3835af7d87340ad777f29a4f32bf2ca05c27d08315f057afdf38f370f200",
+  "before_SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+  "after_SDK_source_fingerprint": "f0cc198c5c4aca3130c3705f6b1e6d1857652c27fd64aa48a9d872d5fd7767af",
+  "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "binaries": {
+    "before": {
+      "path": "out/vulkan-upload-final/Release/vulkan_upload.exe",
+      "sha256": "121b30d795a8e4e406d264f26e86e28ab04fe4610902c10c5e44923a677f6a1b",
+      "bytes": 2715136
+    },
+    "after": {
+      "path": "out/vulkan-upload-memory-bench/Release/vulkan_upload.exe",
+      "sha256": "945cc4d17f7a98d828352ba6a1ccd89af7e0f851b03f22147c07514ec0acda7c",
+      "bytes": 2715648
+    },
+    "profile-before": {
+      "path": "out/vulkan-upload-profile-before/Release/vulkan_upload_profile.exe",
+      "sha256": "9a9d1e9ec320e8ead33c789e261579cd7bbbaf44410038eaeb9a5428b92fe1c8",
+      "bytes": 406016
+    },
+    "profile-after": {
+      "path": "out/vulkan-upload-profile-after/Release/vulkan_upload_profile.exe",
+      "sha256": "5c71764f0d4eff6682ae623f4f7f675fa66f89e519c6e143e917a485085293d7",
+      "bytes": 406528
+    }
+  },
+  "probes": {
+    "high": {
+      "schema_version": 1,
+      "sdk": "sdl",
+      "api": "vulkan",
+      "category": "end_to_end",
+      "contract": "vulkan_upload_cpu_payload_to_texture_fence_complete_each_sample_readback_v1",
+      "probe": true,
+      "scenario": "probe",
+      "preference": "high",
+      "configuration": "Release",
+      "validation": false,
+      "source_fingerprint": "6b3f3835af7d87340ad777f29a4f32bf2ca05c27d08315f057afdf38f370f200",
+      "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+      "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+      "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+      "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+      "device_luid": "c278010000000000",
+      "native_vendor_id": 4318,
+      "native_device_id": 8644,
+      "native_driver_version": 2604679168,
+      "native_api_version": 4211045,
+      "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+      "environment": {
+        "cpu": "Intel(R) Core(TM) i7-14700K",
+        "ram_bytes": 68473667584,
+        "os": "Windows 10.0.26220",
+        "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+        "vendor_id": 4318,
+        "device_id": 8644,
+        "luid": "0:96450",
+        "driver": "32.0.16.2101",
+        "driver_query_available": true,
+        "software_renderer": false,
+        "compiler": "MSVC 194435228",
+        "pointer_bits": 64
+      },
+      "loaded_validation_layer": "",
+      "warmup": 0,
+      "sample_count": 0,
+      "width": 0,
+      "height": 0,
+      "texel_bytes": 0,
+      "verified_images": 0,
+      "verified_bytes": 0,
+      "readback_verified": false,
+      "gpu_ms": null,
+      "samples_ms": []
+    },
+    "low": {
+      "schema_version": 1,
+      "sdk": "sdl",
+      "api": "vulkan",
+      "category": "end_to_end",
+      "contract": "vulkan_upload_cpu_payload_to_texture_fence_complete_each_sample_readback_v1",
+      "probe": true,
+      "scenario": "probe",
+      "preference": "low",
+      "configuration": "Release",
+      "validation": false,
+      "source_fingerprint": "6b3f3835af7d87340ad777f29a4f32bf2ca05c27d08315f057afdf38f370f200",
+      "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+      "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+      "device_name": "Intel(R) UHD Graphics 770",
+      "device_uuid": "868080a7040000000002000000000000",
+      "driver_uuid": "33322e302e3130312e36313239000000",
+      "device_luid": "43a0010000000000",
+      "native_vendor_id": 32902,
+      "native_device_id": 42880,
+      "native_driver_version": 1660913,
+      "native_api_version": 4206887,
+      "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+      "environment": {
+        "cpu": "Intel(R) Core(TM) i7-14700K",
+        "ram_bytes": 68473667584,
+        "os": "Windows 10.0.26220",
+        "gpu": "Intel(R) UHD Graphics 770",
+        "vendor_id": 32902,
+        "device_id": 42880,
+        "luid": "0:106563",
+        "driver": "32.0.101.6129",
+        "driver_query_available": true,
+        "software_renderer": false,
+        "compiler": "MSVC 194435228",
+        "pointer_bits": 64
+      },
+      "loaded_validation_layer": "",
+      "warmup": 0,
+      "sample_count": 0,
+      "width": 0,
+      "height": 0,
+      "texel_bytes": 0,
+      "verified_images": 0,
+      "verified_bytes": 0,
+      "readback_verified": false,
+      "gpu_ms": null,
+      "samples_ms": []
+    }
+  },
+  "groups": [
+    {
+      "preference": "high",
+      "scenario": "upload1080",
+      "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "statistics": {
+        "before": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 2.8593,
+          "p95_ms": 5.101259999999999,
+          "p99_ms": 6.526857,
+          "min_ms": 1.593,
+          "max_ms": 7.1309,
+          "MAD_ms": 0.61365,
+          "process_medians_ms": [
+            2.52595,
+            2.92995,
+            3.0619
+          ],
+          "outliers_above_3MAD": 8,
+          "samples_removed": 0
+        },
+        "after": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 2.92415,
+          "p95_ms": 4.837879999999999,
+          "p99_ms": 5.695678,
+          "min_ms": 1.5789,
+          "max_ms": 5.7222,
+          "MAD_ms": 0.6979,
+          "process_medians_ms": [
+            3.2059499999999996,
+            2.6323499999999997,
+            2.63765
+          ],
+          "outliers_above_3MAD": 3,
+          "samples_removed": 0
+        },
+        "sdl": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 2.4002,
+          "p95_ms": 4.264724999999999,
+          "p99_ms": 4.522953,
+          "min_ms": 1.5026,
+          "max_ms": 4.5695,
+          "MAD_ms": 0.48414999999999986,
+          "process_medians_ms": [
+            2.5778999999999996,
+            2.4392,
+            2.2382
+          ],
+          "outliers_above_3MAD": 8,
+          "samples_removed": 0
+        }
+      },
+      "cost_change_percent": 2.268037631588138
+    },
+    {
+      "preference": "high",
+      "scenario": "upload4k",
+      "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "statistics": {
+        "before": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 14.71165,
+          "p95_ms": 23.221465,
+          "p99_ms": 29.008580000000002,
+          "min_ms": 8.3921,
+          "max_ms": 29.4785,
+          "MAD_ms": 2.581950000000001,
+          "process_medians_ms": [
+            14.9253,
+            14.2287,
+            14.866399999999999
+          ],
+          "outliers_above_3MAD": 7,
+          "samples_removed": 0
+        },
+        "after": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 15.4783,
+          "p95_ms": 22.43061,
+          "p99_ms": 29.949688999999996,
+          "min_ms": 7.3252,
+          "max_ms": 33.1892,
+          "MAD_ms": 2.9811500000000004,
+          "process_medians_ms": [
+            14.85465,
+            16.6311,
+            14.39555
+          ],
+          "outliers_above_3MAD": 2,
+          "samples_removed": 0
+        },
+        "sdl": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 10.33925,
+          "p95_ms": 15.563814999999998,
+          "p99_ms": 18.134354,
+          "min_ms": 7.1351,
+          "max_ms": 19.6486,
+          "MAD_ms": 1.6294999999999993,
+          "process_medians_ms": [
+            10.7286,
+            9.792549999999999,
+            10.4144
+          ],
+          "outliers_above_3MAD": 6,
+          "samples_removed": 0
+        }
+      },
+      "cost_change_percent": 5.2111761767035025
+    },
+    {
+      "preference": "high",
+      "scenario": "upload4k16f",
+      "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "statistics": {
+        "before": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 30.861150000000002,
+          "p95_ms": 49.580085,
+          "p99_ms": 55.68206499999999,
+          "min_ms": 21.7207,
+          "max_ms": 79.0014,
+          "MAD_ms": 3.3100499999999986,
+          "process_medians_ms": [
+            30.42955,
+            30.4797,
+            31.42015
+          ],
+          "outliers_above_3MAD": 14,
+          "samples_removed": 0
+        },
+        "after": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 31.8375,
+          "p95_ms": 47.628969999999995,
+          "p99_ms": 50.668575999999995,
+          "min_ms": 16.6478,
+          "max_ms": 61.439,
+          "MAD_ms": 4.623999999999997,
+          "process_medians_ms": [
+            35.7552,
+            32.45185,
+            31.041600000000003
+          ],
+          "outliers_above_3MAD": 7,
+          "samples_removed": 0
+        },
+        "sdl": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 25.0291,
+          "p95_ms": 37.63432,
+          "p99_ms": 42.312048000000004,
+          "min_ms": 16.7117,
+          "max_ms": 42.4427,
+          "MAD_ms": 5.0877,
+          "process_medians_ms": [
+            25.27795,
+            25.8754,
+            24.0021
+          ],
+          "outliers_above_3MAD": 4,
+          "samples_removed": 0
+        }
+      },
+      "cost_change_percent": 3.1636863823933936
+    },
+    {
+      "preference": "low",
+      "scenario": "upload1080",
+      "device_name": "Intel(R) UHD Graphics 770",
+      "statistics": {
+        "before": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 4.18515,
+          "p95_ms": 6.613655,
+          "p99_ms": 7.205491,
+          "min_ms": 2.2901,
+          "max_ms": 8.0493,
+          "MAD_ms": 0.9699,
+          "process_medians_ms": [
+            4.177350000000001,
+            4.35965,
+            4.05555
+          ],
+          "outliers_above_3MAD": 2,
+          "samples_removed": 0
+        },
+        "after": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 3.81325,
+          "p95_ms": 6.58542,
+          "p99_ms": 7.085536999999999,
+          "min_ms": 2.3096,
+          "max_ms": 8.7825,
+          "MAD_ms": 0.6957499999999999,
+          "process_medians_ms": [
+            3.7306,
+            3.7859,
+            3.85865
+          ],
+          "outliers_above_3MAD": 11,
+          "samples_removed": 0
+        },
+        "sdl": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 3.28285,
+          "p95_ms": 5.165884999999999,
+          "p99_ms": 6.083989,
+          "min_ms": 1.7881,
+          "max_ms": 6.52,
+          "MAD_ms": 0.70285,
+          "process_medians_ms": [
+            3.4735,
+            3.30025,
+            2.9853
+          ],
+          "outliers_above_3MAD": 3,
+          "samples_removed": 0
+        }
+      },
+      "cost_change_percent": -8.886180901520857
+    },
+    {
+      "preference": "low",
+      "scenario": "upload4k",
+      "device_name": "Intel(R) UHD Graphics 770",
+      "statistics": {
+        "before": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 17.155450000000002,
+          "p95_ms": 26.936824999999995,
+          "p99_ms": 29.556288,
+          "min_ms": 10.471,
+          "max_ms": 31.3459,
+          "MAD_ms": 2.8239500000000026,
+          "process_medians_ms": [
+            18.591549999999998,
+            16.688049999999997,
+            16.760849999999998
+          ],
+          "outliers_above_3MAD": 6,
+          "samples_removed": 0
+        },
+        "after": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 17.98735,
+          "p95_ms": 25.908555,
+          "p99_ms": 26.532576000000002,
+          "min_ms": 9.6979,
+          "max_ms": 27.5041,
+          "MAD_ms": 2.5645999999999995,
+          "process_medians_ms": [
+            19.37945,
+            17.63175,
+            16.468
+          ],
+          "outliers_above_3MAD": 5,
+          "samples_removed": 0
+        },
+        "sdl": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 12.51425,
+          "p95_ms": 19.49961,
+          "p99_ms": 22.992383999999998,
+          "min_ms": 8.1303,
+          "max_ms": 23.6193,
+          "MAD_ms": 1.9165999999999999,
+          "process_medians_ms": [
+            13.25615,
+            12.129999999999999,
+            12.79925
+          ],
+          "outliers_above_3MAD": 8,
+          "samples_removed": 0
+        }
+      },
+      "cost_change_percent": 4.8491878674123745
+    },
+    {
+      "preference": "low",
+      "scenario": "upload4k16f",
+      "device_name": "Intel(R) UHD Graphics 770",
+      "statistics": {
+        "before": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 32.9073,
+          "p95_ms": 44.67421,
+          "p99_ms": 49.46516,
+          "min_ms": 22.6833,
+          "max_ms": 49.7642,
+          "MAD_ms": 4.4182500000000005,
+          "process_medians_ms": [
+            33.30115,
+            33.872,
+            29.47355
+          ],
+          "outliers_above_3MAD": 2,
+          "samples_removed": 0
+        },
+        "after": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 34.3477,
+          "p95_ms": 46.508545,
+          "p99_ms": 49.234921,
+          "min_ms": 25.8898,
+          "max_ms": 53.6503,
+          "MAD_ms": 3.7405000000000044,
+          "process_medians_ms": [
+            35.73425,
+            34.3881,
+            32.0818
+          ],
+          "outliers_above_3MAD": 8,
+          "samples_removed": 0
+        },
+        "sdl": {
+          "processes": 3,
+          "samples": 90,
+          "p50_ms": 29.6388,
+          "p95_ms": 39.848949999999995,
+          "p99_ms": 47.252033,
+          "min_ms": 19.6807,
+          "max_ms": 50.127,
+          "MAD_ms": 4.07085,
+          "process_medians_ms": [
+            30.3985,
+            26.9219,
+            29.9527
+          ],
+          "outliers_above_3MAD": 2,
+          "samples_removed": 0
+        }
+      },
+      "cost_change_percent": 4.3771442810562
+    }
+  ],
+  "performance_samples": 1620,
+  "validation_timings_excluded": true,
+  "diagnostic_timings_excluded": true,
+  "samples_removed": 0,
+  "overall_SDK_ranking": false,
+  "verified_images": 1954,
+  "verified_bytes": 69656525120,
+  "profile_verified_images": 216,
+  "profile_verified_bytes": 7763558400,
+  "profile_source_fingerprint": "28f8c1edcb957077a9ca0fd19a21c5880d76e9df8bdd0ef13c8245d5c9309e77",
+  "production_SDK_changed": false,
+  "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+  "cached_candidate_adopted": false,
+  "candidate_selected_CTests": 96,
+  "candidate_integrated": 55,
+  "candidate_Vulkan_only": 30,
+  "candidate_backends_off": 11,
+  "memory_tests_excluded": 3,
+  "candidate_installed_consumer_suites": 9,
+  "candidate_CPU_memory_policy_assertions": 57,
+  "Python_tests": 252,
+  "Phase3_complete": false,
+  "Linux_native_verified": false,
+  "memory_acceptance": false,
+  "Intel_AV_cause_resolved": false,
+  "persistent_mapping_trial_adopted": false,
+  "candidate_SDK_inventory": {
+    "path": "licenses/generated/windows-sdk-vulkan-upload-memory-release/inventory.json",
+    "sha256": "71f69672e70d9fae0886f21a74b617555ec7338a2aec0939d0b7646e9d9073d5",
+    "bytes": 253241
+  },
+  "comparison_inventory": {
+    "path": "licenses/generated/windows-benchmarks-vulkan-upload-memory-release/inventory.json",
+    "sha256": "289acca95ad9e1a2ac43a5a9abb714c7fd0e0b205c17527713dfbf0150b5a808",
+    "bytes": 254679
+  },
+  "candidate_SDK_package": {
+    "path": "out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-upload-memory.zip",
+    "sha256": "d82eedb708422a4d170039e30eced5aa9e1947d99ee81a9c21ee338236415860",
+    "bytes": 1052277
+  },
+  "candidate_SDK_compiler_inputs": 85,
+  "candidate_SDK_components": 2,
+  "candidate_SDK_compiler_logs": 37,
+  "candidate_SDK_linker_logs": 36,
+  "comparison_inputs": 676,
+  "comparison_components": 21,
+  "comparison_compiler_logs": 5,
+  "comparison_linker_logs": 5,
+  "historical_packages_preserved": 22
+}

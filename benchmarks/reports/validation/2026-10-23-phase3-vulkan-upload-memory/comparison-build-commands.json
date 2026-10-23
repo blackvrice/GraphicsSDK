@@ -1,0 +1,64 @@
+[
+  {
+    "name": "vulkan-upload-memory-bench-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_upload",
+      "-B",
+      "out/vulkan-upload-memory-bench",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-upload-memory-install"
+    ],
+    "returncode": 0,
+    "seconds": 4.032000000000153
+  },
+  {
+    "name": "vulkan-upload-memory-bench-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-upload-memory-bench",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 8.280999999999949
+  },
+  {
+    "name": "vulkan-upload-profile-after-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_upload_profile",
+      "-B",
+      "out/vulkan-upload-profile-after",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-upload-memory-install"
+    ],
+    "returncode": 0,
+    "seconds": 3.811999999999898
+  },
+  {
+    "name": "vulkan-upload-profile-after-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-upload-profile-after",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 7.157000000000153
+  }
+]

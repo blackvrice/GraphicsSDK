@@ -395,6 +395,23 @@ ctest --test-dir out/vulkan-upload-final -C Release --output-on-failure
 python tools/run_vulkan_upload.py --exe out/vulkan-upload-final/Release/vulkan_upload.exe --output benchmarks/results/your-new-vulkan-upload-run
 ```
 
+The subsequent [upload-memory comparison](PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md)
+uses the preserved baseline and a separate new install. Configure both
+`benchmarks/vulkan_upload` and `benchmarks/vulkan_upload_profile` in separate fresh
+build roots with `-DGFX_INSTALLED_SDK=<absolute-new-install-path>`; build Release
+serially. `tools/compare_vulkan_upload.py` requires `--before`, `--after`,
+`--profile-before`, `--profile-after` executable paths and a new `--output` directory.
+After rejecting the candidate, replay against the frozen executables also needs
+`--candidate-receipt benchmarks/reports/validation/2026-10-23-phase3-vulkan-upload-memory/cached-candidate/receipt.json`.
+Its SDK regression build and installed-consumer commands are frozen in
+[run.py](../benchmarks/reports/validation/2026-10-23-phase3-vulkan-upload-memory/verification-scripts/run.py).
+Complete those GPU tests before the serial comparison. The rejected candidate was audited with
+`tools/audit_vulkan.py --variant upload-memory` before production sources were restored.
+Recheck frozen candidate sources/builds with `tools/audit_vulkan_upload_compare.py`;
+the former command intentionally requires the candidate source tree, not current
+production. Historical installs and packages are inputs,
+so do not overwrite them. Linux execution remains unverified.
+
 기본 dependency는 `out/vulkan-presentation-install`과 reviewed `out/sdl`이다. 기존 실행 폴더를
 덮어쓰지 않으며 runner 결과 폴더는 새 경로여야 한다. Linux build/runtime 수용은 별도다.
 [프로파일과 제한](PHASE3_VULKAN_UPLOAD_REPORT.md)을 따른다.

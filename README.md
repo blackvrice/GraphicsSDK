@@ -118,3 +118,8 @@ explicit presentation resource-completion fences. It is verified on the NVIDIA a
 the current Intel driver lacks the required maintenance1 feature and returns Unsupported.
 Existing offscreen Vulkan suites still run on both adapters. Linux WSI and interactive
 display acceptance remain open.
+
+The [Vulkan upload memory study](docs/PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) compares
+fresh baseline/candidate SDK and SDL runs with separate CPU API stage diagnostics.
+Persistent mapping and cached-memory candidates were rejected after measurement;
+production SDK sources and public API remain unchanged.

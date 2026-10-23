@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.25)
+project(probe LANGUAGES CXX)
+add_executable(probe probe.cpp)
+target_include_directories(probe PRIVATE ../../.deps/Vulkan-Headers/include)
+target_link_libraries(probe PRIVATE user32)

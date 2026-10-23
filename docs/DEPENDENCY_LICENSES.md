@@ -443,3 +443,18 @@ Vulkan B-upload 비교는 `tools/audit_vulkan_upload.py`와
 보수적 646개 입력/21개 component이며 두 library를 재빌드했다고 주장하지 않는다.
 미사용 SDL 구성요소도 closure에 포함한다. SDK API/library·기존 license 선택은 바꾸지 않고
 새 benchmark binary/vendor source/runtime은 배포하지 않는다. 이전 SDK ZIP 22개를 보존한다.
+
+The rejected upload host-memory candidate has a separate
+[SDK inventory](../licenses/generated/windows-sdk-vulkan-upload-memory-release/inventory.json):
+85 compiler inputs, two components, 37 compiler and 36 linker read logs. Its experimental (unreleased)
+package includes the reviewed Vulkan notices and no SDL/runtime binaries.
+The separate [comparison inventory](../licenses/generated/windows-benchmarks-vulkan-upload-memory-release/inventory.json)
+has 676 conservative inputs, 21 components and five compiler/linker logs each,
+including baseline/mapping-trial/cached-candidate CPU profiles, the comparison benchmark and native memory
+property probe. Frozen old SDK, rejected mapping-trial and SDL libraries remain
+distinct prerequisites. SDL static closure and historical notices are reused with
+hash checks; this is not a new vendor rebuild or a symbol-reachability claim.
+The source-only reproduction archive excludes vendor trees and executable binaries.
+Candidate compiler-input source records are checked against the frozen candidate
+source archive; they do not describe current production files. Production SDK
+source fingerprint is unchanged, and no new production SDK release is claimed.

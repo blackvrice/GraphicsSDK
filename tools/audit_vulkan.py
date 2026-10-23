@@ -36,7 +36,7 @@ def collect(root):
     for option in ('GFX_ENABLE_D3D12:BOOL=ON', 'GFX_ENABLE_VULKAN:BOOL=ON', 'CMAKE_GENERATOR:INTERNAL=Visual Studio 17 2022'):
         if option not in cache.splitlines():
             raise audit.AuditError(f'Wrong build configuration: {option}')
-    if PROFILE in ('windows-sdk-vulkan-validation-release', 'windows-sdk-vulkan-textures-release', 'windows-sdk-vulkan-color-pass-release', 'windows-sdk-vulkan-draw-release', 'windows-sdk-vulkan-vertex-release', 'windows-sdk-vulkan-bindings-release', 'windows-sdk-vulkan-depth-release', 'windows-sdk-vulkan-timestamps-release', 'windows-sdk-vulkan-presentation-release') and 'GFX_VULKAN_VALIDATION_TESTS:BOOL=ON' not in cache.splitlines():
+    if PROFILE in ('windows-sdk-vulkan-validation-release', 'windows-sdk-vulkan-textures-release', 'windows-sdk-vulkan-color-pass-release', 'windows-sdk-vulkan-draw-release', 'windows-sdk-vulkan-vertex-release', 'windows-sdk-vulkan-bindings-release', 'windows-sdk-vulkan-depth-release', 'windows-sdk-vulkan-timestamps-release', 'windows-sdk-vulkan-presentation-release', 'windows-sdk-vulkan-upload-memory-release') and 'GFX_VULKAN_VALIDATION_TESTS:BOOL=ON' not in cache.splitlines():
         raise audit.AuditError('Required Vulkan validation tests were not configured')
     configured_headers = next((s.split('=', 1)[1] for s in cache.splitlines() if s.startswith('GFX_VULKAN_HEADERS:PATH=')), '')
     if pathlib.Path(configured_headers).resolve() != headers.resolve():
@@ -165,13 +165,13 @@ def package_record(root, package, required):
 
 def configure_variant(variant):
     global BUILD, CONSUMER, INSTALL, POLICY, PROFILE, EXPECTED_LOGS, EXCLUSIONS
-    if variant in ('validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings', 'depth', 'timestamps', 'presentation'):
+    if variant in ('validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings', 'depth', 'timestamps', 'presentation', 'upload-memory'):
         BUILD = pathlib.Path('out/vulkan-' + variant)
         CONSUMER = pathlib.Path('out/vulkan-' + variant + '-consumer')
         INSTALL = pathlib.Path('out/vulkan-' + variant + '-install')
         POLICY = pathlib.Path('licenses/vulkan-' + variant + '-policy.json')
         PROFILE = 'windows-sdk-vulkan-' + variant + '-release'
-        EXPECTED_LOGS = {'validation': (16, 15), 'textures': (18, 17), 'color-pass': (20, 19), 'draw': (23, 22), 'vertex': (26, 25), 'bindings': (29, 28), 'depth': (31, 30), 'timestamps': (34, 33), 'presentation': (36, 35)}[variant]
+        EXPECTED_LOGS = {'validation': (16, 15), 'textures': (18, 17), 'color-pass': (20, 19), 'draw': (23, 22), 'vertex': (26, 25), 'bindings': (29, 28), 'depth': (31, 30), 'timestamps': (34, 33), 'presentation': (36, 35), 'upload-memory': (37, 36)}[variant]
         EXCLUSIONS = ['Linux native builds/runtime', 'Vulkan GPU-assisted validation', 'Vulkan rendering and competitor measurements',
             'External local-only VVL/SPIRV runtime build, separately recorded and not bundled',
             'Historical binaries/packages/benchmarks, preserved independently']
@@ -180,17 +180,19 @@ def configure_variant(variant):
         if variant == 'draw':
             EXCLUSIONS[2] = 'Vulkan depth/bindings/vertex input/indexed drawing/presentation and competitor measurements'
             EXCLUSIONS[3] = 'External local-only VVL/SPIRV fixture tools, separately recorded and not bundled'
-        if variant in ('vertex', 'bindings', 'depth', 'timestamps', 'presentation'):
+        if variant in ('vertex', 'bindings', 'depth', 'timestamps', 'presentation', 'upload-memory'):
             EXCLUSIONS[2] = 'Vulkan depth/bindings/timestamps/presentation and competitor measurements'
             EXCLUSIONS[3] = 'External local-only reused VVL/SPIRV fixture tools, separately recorded and not bundled'
-        if variant in ('bindings', 'depth', 'timestamps', 'presentation'):
+        if variant in ('bindings', 'depth', 'timestamps', 'presentation', 'upload-memory'):
             EXCLUSIONS[2] = 'Vulkan depth/timestamps/presentation and competitor measurements'
-        if variant in ('depth', 'timestamps', 'presentation'):
+        if variant in ('depth', 'timestamps', 'presentation', 'upload-memory'):
             EXCLUSIONS[2] = 'Vulkan depth sampling/stencil/timestamps/presentation and competitor measurements'
         if variant == 'timestamps':
             EXCLUSIONS[2] = 'Vulkan calibrated/CPU-GPU clock correlation, presentation, performance/competitor measurements'
         if variant == 'presentation':
             EXCLUSIONS[2] = 'Vulkan presentation on adapters without maintenance1 fences, Linux WSI, interactive/physical acceptance, performance/competitor measurements'
+        if variant == 'upload-memory':
+            EXCLUSIONS[2] = 'CPU API intervals and comparative upload measurements audited separately; Linux, calibrated clocks, interactive/physical and long memory acceptance remain excluded'
     elif variant == 'transfer':
         BUILD = pathlib.Path('out/vulkan-transfer')
         CONSUMER = pathlib.Path('out/vulkan-consumer')
@@ -205,7 +207,7 @@ def configure_variant(variant):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--variant', choices=('transfer', 'validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings', 'depth', 'timestamps', 'presentation'), default='transfer')
+    parser.add_argument('--variant', choices=('transfer', 'validation', 'textures', 'color-pass', 'draw', 'vertex', 'bindings', 'depth', 'timestamps', 'presentation', 'upload-memory'), default='transfer')
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--package', type=pathlib.Path, required=True)
     mode = parser.add_mutually_exclusive_group(required=True)

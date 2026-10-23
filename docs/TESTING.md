@@ -553,3 +553,18 @@ warmup verification. Required-layer absence, wrong expected GPU and invalid CLI 
 fail explicitly. Old SDK CTests and binaries are reused as frozen evidence, not reported
 as newly run. Python campaign tests use mocked processes; no native memory stress or
 Intel crash investigation is started by this profile.
+
+The rejected [upload memory candidate](PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) passed 55 integrated,
+30 Vulkan-only and 11 backends-off tests (96 selected; the three deferred memory
+tests remain excluded), plus all nine installed Vulkan consumer suites.
+`vulkan_memory_type_policy` checks 57 CPU assertions with no GPU calls, including
+compatible masks, coherent/noncoherent fallback, cached preference and stable
+Device/Readback choices. Python regression count is 252. Fresh upload correctness
+uses 16 required-layer processes, followed by 54 unvalidated interleaved measurement
+processes (1620 samples). Twelve separate CPU API interval processes are diagnostic
+only. Full readback covers every warmup and measurement iteration. Initial
+before/mapping-only trial diagnostics are retained separately and never pooled.
+Report controls reject raw/result, command, scope, source and statistics alterations.
+Candidate tests and policy source are archived separately. Production SDK sources
+are restored exactly; its prior 93 selected CTests remain historical evidence.
+These short runs do not satisfy deferred long-memory or historical Intel AV gates.
