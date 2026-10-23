@@ -3,16 +3,17 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The default integrated Windows configuration registers 41 CTests (including CPU
-SPIR-V inspection and buffer/texture/color-pass/draw/vertex suites), Vulkan-only has 13,
-and no-backend has 8. These are separate Windows configurations,
+The default integrated Windows configuration registers 43 CTests (including CPU
+SPIR-V inspection and buffer/texture/color-pass/draw/vertex/binding suites), Vulkan-only has 15,
+and no-backend has 9. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
 The required synchronization-validation profile adds `vulkan_transfer_validation`,
-`vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`, `vulkan_vertex_validation`
+`vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`,
+`vulkan_vertex_validation`, `vulkan_binding_validation`
 and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`),
-yielding 47 integrated / 19 Vulkan-only registered tests. A pinned,
+yielding 50 integrated / 22 Vulkan-only registered tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -58,6 +59,16 @@ rejected-use ownership and native lifetimes. Indexed data must address valid ver
 the SDK does not inspect index values. Installed consumers repeat all five GPU suites
 with required core/synchronization validation. These checks establish correctness,
 not a performance or long-memory acceptance result.
+
+The [resource binding profile](PHASE3_VULKAN_BINDINGS_REPORT.md) extends that matrix
+to 47 selected integrated (50 registered, same three memory exclusions) + 22 Vulkan-only
++ 9 no-backend CTests. CPU resource inspection has 43 assertions, alongside the old
+181/61 interface/input suites. Each binding GPU execution compares 80 full images,
+249,889,536 texel bytes and 72 padded images across two adapters, with 573 assertions,
+156 draws and 258 accepted snapshots. Texture/constant arrays, two static samplers,
+VS constants, float4 block minimum sizes, point/linear clamp/repeat CPU references,
+immutable set replacement, postprocess and rejection/version/lifetime controls are
+covered. All six installed GPU consumers require core/synchronization validation.
 
 ## Automated checks
 

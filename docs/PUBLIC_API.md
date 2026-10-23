@@ -176,7 +176,7 @@ Texture2D는 현재 공개 texture의 RGBA8UNorm/RGBA16Float 형식이며 단일
 Texture는 ShaderRead, 상수 버퍼는 ConstantBuffer로 transition한다. ShaderRead는 VS/PS 양쪽의
 native read 상태다. ConstantBuffer는 Device/Upload에서 허용하며 offset/size가 256-byte 정렬이고
 size는 256..65536 bytes다. buffer 범위와 shader가 요구하는 cbuffer 크기를 모두 검사한다.
-Upload의 native GENERIC_READ는 유지한다. 이 논리 상태를 vertex/index 상태와 동시에 사용하지 않는다.
+D3D12 Upload의 native GENERIC_READ는 유지한다. 이 논리 상태를 vertex/index 상태와 동시에 사용하지 않는다.
 backbuffer sampling과 Readback CBV는 거부한다. shader array index 범위 준수는 호출자 계약이다.
 
 명령 목록의 descriptor 용량은 256개다. bindResources 호출마다 전체 layout 크기만큼 소비하고,
@@ -190,11 +190,19 @@ snapshot은 descriptor와 자원 참조를 보존하며 buffer 내용의 복사�
 이 shorthand와 explicit bindingLayout을 함께 지정하면 실패한다. bindResources도 legacy pipeline에
 사용할 수 있다. 빈 layout의 resource-free draw는 별도 binding 호출 없이 사용할 수 있다.
 
-caps.bindingLayouts는 현재 D3D12에서 true다. shader stage spoof/missing/type/space/count/visibility
+caps.bindingLayouts는 D3D12와 opt-in Vulkan에서 true다. D3D12 shader stage spoof/missing/type/space/count/visibility
 불일치는 pipeline 생성 시 거부한다. UAV/storage/compute, dynamic sampler 및 sampler array,
 comparison sampler, unbounded array, cube/3D/MSAA/integer texture는 Unsupported다.
-지원 resource 종류는 reflectShader의 type, cbuffer 크기는 minimumBytes로 확인할 수 있다.
+D3D12 지원 resource 종류는 reflectShader의 type, cbuffer 크기는 minimumBytes로 확인할 수 있다.
 새 virtual 함수와 descriptor 변경이 있으므로 개발 버전 consumer는 헤더·라이브러리를 함께 재빌드한다.
+
+Vulkan의 [별도 계약](VULKAN.md)은 set 0의 binding i를 layout entry i에, sampler binding
+32+i를 static sampler i에 매핑한다. 외부 검증된 SPIR-V 1.3/Vulkan 1.1과 별도 sampled image,
+연속 float4 Uniform Block만 지원하며 block minimum과 visibility/count를 검사한다.
+Vulkan은 active pass에서 pipeline을 설정하고 각 새 pass와 setPipeline이 snapshot을 비운다.
+미초기화 texture는 거부하고 native descriptor/상수 alignment 한도도 적용한다.
+Recording당 resource descriptor 256개에 더해 snapshot 최대 256개이며 일반 SPIR-V reflection은
+제공하지 않는다. 이번 Vulkan 구현 추가는 공개 API 형태나 ABI를 바꾸지 않는다.
 
 ## Depth/MRT와 render pass
 
@@ -314,6 +322,8 @@ InvalidState, 손실되거나 퇴역한 세대는 저장된 원인의 DeviceLost
   총 VRAM 사용량을 뜻하지 않는다. OS process memory와 DXGI 사용량은 별도 관측값이다.
 - `pendingSubmissions`, `pendingObjectReferences`: 완료 정리 후 남은 제출 batch와 그 COM 참조 수.
   참조 수는 고유 객체 수가 아니며 resource 외 allocator/list/heap/query/PSO 등을 포함한다.
+  Vulkan은 recording/resource use/pass/pipeline 보유 항목 수이며 descriptor set/pool은
+  recording 내부에 포함된다. 두 backend의 수치를 native 객체 수로 직접 비교하지 않는다.
 
 자원 wrapper를 지워도 녹화되거나 제출된 command가 native resource를 보유할 수 있다.
 관련 command와 자원 wrapper를 모두 해제하고 `queue().waitIdle()`을 마친 뒤 조회하면,

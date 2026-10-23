@@ -131,7 +131,7 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation)
     for (unsigned n = 0; n < 32; ++n) {
         auto temp = take(d.createTexture({3, 7})); std::weak_ptr<gfx::Texture> weak = temp;
         reject(cmd->copyBufferToTexture(upload, temp), gfx::ErrorCode::InvalidState, "Missing layout rejected");
-        reject(cmd->transition(temp, gfx::ResourceState::ShaderRead), gfx::ErrorCode::Unsupported, "ShaderRead unimplemented");
+        reject(cmd->transition(temp, gfx::ResourceState::Present), gfx::ErrorCode::Unsupported, "Presentation unimplemented");
         reject(cmd->transition(temp, static_cast<gfx::ResourceState>(99)), gfx::ErrorCode::Unsupported, "Unknown image state rejected");
         temp.reset(); const auto after = take(d.resourceStatistics());
         check(weak.expired() && before.trackedObjects == after.trackedObjects && before.uniqueResources == after.uniqueResources &&

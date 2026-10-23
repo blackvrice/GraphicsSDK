@@ -116,7 +116,7 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& a, bool validation) {
     bad = desc; bad.fragment.stage = gfx::ShaderStage::Vertex; reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::InvalidArgument, "Shader stage mismatch");
     bad = desc; bad.vertex = binary(fixtures::unsupported_point, gfx::ShaderStage::Vertex); reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::Unsupported, "Validated but unsupported builtin rejected");
     bad = desc; bad.fragment = binary(fixtures::mrt2, gfx::ShaderStage::Fragment); reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::InvalidArgument, "Output count mismatch");
-    bad = desc; bad.sampledTexture = true; reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::Unsupported, "Bindings await next gate");
+    bad = desc; bad.sampledTexture = true; bad.bindingLayout.entries.push_back({}); reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::InvalidArgument, "Legacy and explicit layouts cannot be combined");
     bad = desc; bad.vertex.format = gfx::ShaderFormat::DXBC; reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::Unsupported, "DXBC never sent to Vulkan");
     auto p = take(d.createGraphicsPipeline(desc)); auto wrongFormat = take(d.createGraphicsPipeline(description(fixtures::fullscreen, fixtures::green, {F::RGBA16Float})));
     auto other = take(gfx::createDevice(deviceDesc(a, validation))); auto foreign = take(other->createGraphicsPipeline(desc));

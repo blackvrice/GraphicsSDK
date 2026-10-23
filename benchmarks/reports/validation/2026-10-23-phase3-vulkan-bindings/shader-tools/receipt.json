@@ -1,0 +1,98 @@
+{
+  "component": {
+    "name": "SPIRV-Tools",
+    "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+    "commit": "0cfe9e7219148716dfd30b37f4d21753f098707a",
+    "ref": "0cfe9e7219148716dfd30b37f4d21753f098707a"
+  },
+  "scope": "Reused local-only pinned assembler/validator; not SDK linked/distributed dependency audit",
+  "prerequisite_library": {
+    "path": "out/vulkan-validation-runtime/prerequisites/lib/SPIRV-Tools.lib",
+    "bytes": 32961418,
+    "sha256": "370c333bfb5d2a1d895e3d07ffb450af2603ba051023e0917f8eb376ce5dc00f"
+  },
+  "tool": {
+    "path": "out/vulkan-draw-shader-tools/Release/spirv_fixture_tool.exe",
+    "bytes": 1500672,
+    "sha256": "29e427d31562da30f5bd40bcfbe288a5755836849bd628be0a682d535bab9ee1"
+  },
+  "fixtures": [
+    {
+      "name": "uv",
+      "assembly": {
+        "path": "tests/fixtures/spirv_bindings/uv.spvasm",
+        "bytes": 1696,
+        "sha256": "7e5682cb84aee449855848f9b69a134df2245ef715f96a9b7a51aec35c31baaa"
+      },
+      "binary": {
+        "path": "out/vulkan-bindings-shaders/uv.spv",
+        "bytes": 924,
+        "sha256": "a045171e3bd6eaa393bacbd651f418e9f38f20e6f8a3d38c9c321b9ca29c9c1e"
+      }
+    },
+    {
+      "name": "transform",
+      "assembly": {
+        "path": "tests/fixtures/spirv_bindings/transform.spvasm",
+        "bytes": 2212,
+        "sha256": "3d1859dcf54237af09528e2dead0de717d97d6a3036c720f6d959cb8c205f065"
+      },
+      "binary": {
+        "path": "out/vulkan-bindings-shaders/transform.spv",
+        "bytes": 1204,
+        "sha256": "9c67063726dd7122b75ba18b20943fd634221eb2cdb2b5193207ecc5917e95b1"
+      }
+    },
+    {
+      "name": "sample",
+      "assembly": {
+        "path": "tests/fixtures/spirv_bindings/sample.spvasm",
+        "bytes": 1273,
+        "sha256": "2e8e7f1d96da5d74eff85e8b9f369d8b265b04c6ba18eaa4f104b3efd7877c2c"
+      },
+      "binary": {
+        "path": "out/vulkan-bindings-shaders/sample.spv",
+        "bytes": 656,
+        "sha256": "a31332ead52f4591f983589f98ad04ba7801597b47b3234a4354eae8acda761e"
+      }
+    },
+    {
+      "name": "arrays",
+      "assembly": {
+        "path": "tests/fixtures/spirv_bindings/arrays.spvasm",
+        "bytes": 2404,
+        "sha256": "167904028cdacde439287720c325271982266def7f906c486238b055f091be34"
+      },
+      "binary": {
+        "path": "out/vulkan-bindings-shaders/arrays.spv",
+        "bytes": 1256,
+        "sha256": "8d10933729a6ed1ee0fb72cad3140e09193f0129820038fcb08b7cc42f616532"
+      }
+    },
+    {
+      "name": "large_block",
+      "assembly": {
+        "path": "tests/fixtures/spirv_bindings/large_block.spvasm",
+        "bytes": 3022,
+        "sha256": "ea8a3de906d753794db52eff236252dad68d2722f6df03a78bff8d2401530b6e"
+      },
+      "binary": {
+        "path": "out/vulkan-bindings-shaders/large_block.spv",
+        "bytes": 1616,
+        "sha256": "0da0c5b66cd77483b4c2aee82180f257064fe4c254bdd34882de822244e64e34"
+      }
+    }
+  ],
+  "header": {
+    "path": "tests/fixtures/BindingFixtures.hpp",
+    "bytes": 19738,
+    "sha256": "ed8426a13aba14f456c5b3f7dbc096fcf170b3b106a2f62f40df890dc50ec9cd"
+  },
+  "license_files": [
+    {
+      "path": ".deps/vvl-validation/SPIRV-Tools/LICENSE",
+      "bytes": 11560,
+      "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
+    }
+  ]
+}

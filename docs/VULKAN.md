@@ -1,11 +1,11 @@
-# Vulkan transfers, color passes and SPIR-V vertex/index drawing
+# Vulkan transfers, drawing and resource bindings
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
 RGBA8/RGBA16F 2D textures, color Clear/Load/Store passes, command recording/submission,
-queue fences, graphics pipelines/vertex/index drawing and resource statistics. The D3D12
+queue fences, graphics pipelines/vertex/index drawing, resource bindings and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
-backend when enabled; depth/descriptor bindings/timestamps/presentation remain unimplemented.
+backend when enabled; depth/timestamps/presentation remain unimplemented.
 
 ## Build
 
@@ -37,7 +37,7 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
 - Adapter memory fields sum local/nonlocal heap capacities. They are not OS
   usage/budget measurements; `queryMemoryBudget` returns `Unsupported`.
 - Device buffers start in `Common`. Explicit `CopyDestination`/`CopySource`
-  transitions surround copies. Upload buffers also accept vertex/index read states;
+  transitions surround copies. Upload buffers also accept vertex/index/constant read states;
   readback stays CopyDestination. Each buffer
   has a dedicated Vulkan allocation; this initial implementation has no allocator
   pooling or performance claim.
@@ -66,7 +66,7 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
   files can override layer API settings; controlled acceptance clears those inputs.
   A zero count without a validation device is not validation-layer acceptance.
 
-Depth textures, compute pipelines, binding layouts, timestamps,
+Depth textures, compute pipelines, timestamps,
 debug markers and swapchains return `Unsupported`; their capability flags are
 false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 These APIs, Linux execution and matching Vulkan competitor measurements remain
@@ -78,7 +78,7 @@ ordered follow-up work. See the [implementation report](PHASE3_VULKAN_TRANSFER_R
 Descriptions use the common 1..16384 extent contract and also check the selected
 adapter's optimal-tiling image format/extent support. Each image has a dedicated
 device-local allocation, one mip, one layer and one sample. Color render-target usage
-is also accepted; depth remains `Unsupported`. Sampling is not implemented.
+is also accepted; depth remains `Unsupported`. Color images support sampling as described below.
 
 `footprint()` reports `rowBytes = width * texelBytes`, a 256-byte-aligned `rowPitch`,
 and `size = rowPitch * height`, including final-row padding. Copy the full image at
@@ -148,7 +148,7 @@ validated **SPIR-V 1.3 for Vulkan 1.1**, one `main` entry, Shader capability, Lo
 GLSL450 memory model, standalone float4 vertex Position and matching float4 fragment
 outputs at locations 0..N-1. Fragment mode is OriginUpperLeft. VertexIndex/InstanceIndex
 inputs are allowed. Extensions, imported instruction sets, member-decorated interfaces,
-descriptors, push constants and other builtins are outside this initial path. Standalone
+push constants and other builtins are outside this path. Descriptors are supported below. Standalone
 float32 scalar/vector vertex attributes and matching float varyings are now supported below.
 
 The SDK performs bounded header/instruction framing and interface inspection, **not
@@ -200,8 +200,7 @@ memory cannot be vertex/index input. Transitions still occur outside render pass
 and persist within a recording across passes. size=0 selects remaining bytes. Views
 must contain 1..UINT32_MAX bytes. Index format is UInt16/UInt32, with element-aligned
 offset/size. Full UInt32 index range is enabled only when the adapter supports it;
-otherwise UInt32 binding returns Unsupported. Both input capability flags are true,
-while descriptor bindings remain false.
+otherwise UInt32 binding returns Unsupported. Both input capability flags are true.
 
 At draw, each required vertex binding must have matching stride/read state and
 layout-aligned offset, including all attributes of the final element. Nonindexed
@@ -221,6 +220,57 @@ vertex/index allocations and 1080p/4K indexed images. `spirv_vertex_contracts` c
 input/varying inspection on CPU. Current isolated roots: `out/vulkan-vertex`,
 `out/vulkan-vertex-install`, `out/vulkan-vertex-consumer`.
 See [vertex/index evidence](PHASE3_VULKAN_VERTEX_REPORT.md).
+
+## Resource binding layouts
+
+`resourceBinding` and `bindingLayouts` are true. Vulkan maps layout entry `i` to
+`DescriptorSet 0, Binding i` and static sampler `i` to binding `32+i`. Register slot/space
+retain the D3D12 shader mapping; they do not select Vulkan sets. Array element counts
+must exactly match fixed shader descriptor arrays. Visibility must include every
+declaring shader stage. Common layout checks and native per-stage/set descriptor and
+fragment attachment limits apply before native pipeline creation.
+
+Supported descriptors are separate float32 sampled 2D images, scalar immutable
+samplers, and Uniform Block constant buffers. Blocks contain consecutive float4
+members at offsets 0,16,32,..., up to 64KiB; minimum bytes are inspected in both stages.
+Other uniform member shapes/layouts, combined image/samplers, storage, push constants,
+runtime arrays and dynamic/nonuniform descriptor indexing are outside this slice.
+Supply externally validated Vulkan 1.1 SPIR-V 1.3 modules. Inspection remains bounded
+interface checking, not full semantic validation or public general SPIR-V reflection.
+
+Static samplers use Point/Linear and Clamp/Repeat with one mip and no anisotropy or
+comparison. All color textures carry sampled usage and views. Transition initialized
+uploaded or rendered images to `ShaderRead`; native layout is SHADER_READ_ONLY_OPTIMAL.
+Binding an uninitialized image or active render target fails. Linear sampling checks
+native filter support; conservatively every texture in a layout with a linear sampler
+must support it. Device and Upload buffers accept `ConstantBuffer`; Readback cannot
+bind. Constant views require 256-byte-aligned offset/size, size 256..65536, complete
+shader block coverage and adapter uniform alignment/range limits.
+
+`setPipeline` and each new pass reset the selected resource snapshot. `bindResources`
+requires a selected pipeline and exactly one texture or constant view for every layout
+array element. Order is arbitrary. Complete validation precedes native allocation,
+resource retention and version capture. Rejection preserves the prior set and budget.
+Every accepted set has its own immutable descriptor set/pool: replacing it never changes
+an earlier draw. A recording permits 256 resource descriptors in total and at most 256
+snapshots; exhaustion returns InvalidState. Pools/sets, immutable samplers, views and
+allocations survive caller wrapper destruction and retire in native dependency order.
+Descriptor allocation is a correctness foundation; pooling/performance optimization is
+still pending. Accepted Upload writes before submit cause stale-version rejection.
+
+`sampledTexture=true` is the existing single fragment texture/sampler shorthand using
+binding 0 and sampler binding 32 (Linear/Clamp). It cannot combine with explicit layout.
+Use `bindTexture` only with this shorthand; explicit layouts use `bindResources`.
+
+`gfx_vulkan_binding_tests [--validation]`, installed `vulkan_binding_consumer`, and
+CPU `spirv_binding_contracts` cover arrays, VS constants/FS textures and constants,
+minimum block sizes, two immutable samplers, view/version/ownership rejections and
+full CPU sampling references. Isolated roots are `out/vulkan-bindings`,
+`out/vulkan-bindings-install`, `out/vulkan-bindings-consumer`.
+See [binding evidence](PHASE3_VULKAN_BINDINGS_REPORT.md). Native contracts follow
+[descriptor layouts](https://docs.vulkan.org/refpages/latest/refpages/source/VkDescriptorSetLayoutBinding.html),
+[descriptor binding](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdBindDescriptorSets.html)
+and [adapter limits](https://docs.vulkan.org/refpages/latest/refpages/source/VkPhysicalDeviceLimits.html).
 
 The synchronization and lifetime rules follow the primary
 [copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBuffer.html),

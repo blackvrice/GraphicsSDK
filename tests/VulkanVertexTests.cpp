@@ -113,7 +113,7 @@ void instance(gfx::Device& d, F format, bool device, bool indexed) {
     verify(r, [](unsigned x, unsigned y) { auto left = reference(x, y, 65, 37); return left[0] ? left : reference(x, y, 65, 37, false, 1, {0, 1, 0, 1}); });
 }
 void contracts(gfx::Device& d, const gfx::AdapterInfo& a, bool validation) {
-    check(d.caps().vertexInput && d.caps().indexedDrawing && !d.caps().resourceBinding, "Input capabilities are explicit");
+    check(d.caps().vertexInput && d.caps().indexedDrawing && d.caps().resourceBinding, "Input capabilities are explicit");
     auto description = vertexTest::pipeline(2, true, F::RGBA8UNorm); auto bad = description;
     bad.vertexLayout.attributes[0].format = gfx::VertexFormat::Float3; reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::InvalidArgument, "Vertex layout/type mismatch");
     bad = description; bad.fragment = vertexTest::binary(vertexFixtures::mismatch3, gfx::ShaderStage::Fragment); reject(d.createGraphicsPipeline(bad), gfx::ErrorCode::InvalidArgument, "Varying type mismatch rejected before driver");

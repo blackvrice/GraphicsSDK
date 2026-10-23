@@ -1,0 +1,90 @@
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %uv %output
+OpExecutionMode %main OriginUpperLeft
+OpDecorate %uv Location 0
+OpDecorate %output Location 0
+OpDecorate %images DescriptorSet 0
+OpDecorate %images Binding 0
+OpDecorate %sampler DescriptorSet 0
+OpDecorate %sampler Binding 32
+OpDecorate %sampler2 DescriptorSet 0
+OpDecorate %sampler2 Binding 33
+OpDecorate %buffers DescriptorSet 0
+OpDecorate %buffers Binding 1
+OpDecorate %block Block
+OpMemberDecorate %block 0 Offset 0
+OpMemberDecorate %block 1 Offset 16
+OpMemberDecorate %block 2 Offset 32
+OpMemberDecorate %block 3 Offset 48
+OpMemberDecorate %block 4 Offset 64
+OpMemberDecorate %block 5 Offset 80
+OpMemberDecorate %block 6 Offset 96
+OpMemberDecorate %block 7 Offset 112
+OpMemberDecorate %block 8 Offset 128
+OpMemberDecorate %block 9 Offset 144
+OpMemberDecorate %block 10 Offset 160
+OpMemberDecorate %block 11 Offset 176
+OpMemberDecorate %block 12 Offset 192
+OpMemberDecorate %block 13 Offset 208
+OpMemberDecorate %block 14 Offset 224
+OpMemberDecorate %block 15 Offset 240
+OpMemberDecorate %block 16 Offset 256
+%void = OpTypeVoid
+%fn = OpTypeFunction %void
+%float = OpTypeFloat 32
+%uint = OpTypeInt 32 0
+%v2 = OpTypeVector %float 2
+%v4 = OpTypeVector %float 4
+%in2 = OpTypePointer Input %v2
+%out4 = OpTypePointer Output %v4
+%uv = OpVariable %in2 Input
+%output = OpVariable %out4 Output
+%image = OpTypeImage %float 2D 0 0 0 1 Unknown
+%samp = OpTypeSampler
+%sampled = OpTypeSampledImage %image
+%psamp = OpTypePointer UniformConstant %samp
+%sampler = OpVariable %psamp UniformConstant
+%pimage = OpTypePointer UniformConstant %image
+%u0 = OpConstant %uint 0
+%u1 = OpConstant %uint 1
+%u2 = OpConstant %uint 2
+%uLast = OpConstant %uint 16
+%images2 = OpTypeArray %image %u2
+%pimages = OpTypePointer UniformConstant %images2
+%images = OpVariable %pimages UniformConstant
+%sampler2 = OpVariable %psamp UniformConstant
+%block = OpTypeStruct %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4 %v4
+%blocks2 = OpTypeArray %block %u2
+%pblocks = OpTypePointer Uniform %blocks2
+%pvec = OpTypePointer Uniform %v4
+%buffers = OpVariable %pblocks Uniform
+%main = OpFunction %void None %fn
+%label = OpLabel
+%coord = OpLoad %v2 %uv
+%s = OpLoad %samp %sampler
+%i0p = OpAccessChain %pimage %images %u0
+%i = OpLoad %image %i0p
+%si = OpSampledImage %sampled %i %s
+%a = OpImageSampleImplicitLod %v4 %si %coord
+%i1p = OpAccessChain %pimage %images %u1
+%i1 = OpLoad %image %i1p
+%s1 = OpLoad %samp %sampler2
+%si1 = OpSampledImage %sampled %i1 %s1
+%b = OpImageSampleImplicitLod %v4 %si1 %coord
+%w0p = OpAccessChain %pvec %buffers %u0 %u0
+%w1p = OpAccessChain %pvec %buffers %u1 %u0
+%z0p = OpAccessChain %pvec %buffers %u0 %uLast
+%z1p = OpAccessChain %pvec %buffers %u1 %uLast
+%w0 = OpLoad %v4 %w0p
+%w1 = OpLoad %v4 %w1p
+%z0 = OpLoad %v4 %z0p
+%z1 = OpLoad %v4 %z1p
+%wa = OpFMul %v4 %a %w0
+%wb = OpFMul %v4 %b %w1
+%sum = OpFAdd %v4 %wa %wb
+%bias = OpFAdd %v4 %z0 %z1
+%value = OpFAdd %v4 %sum %bias
+OpStore %output %value
+OpReturn
+OpFunctionEnd

@@ -111,7 +111,7 @@ void uploadedLoad(gfx::Device& d, F format) {
     ++images; ++paddingImages; verifiedBytes += std::uint64_t(f.rowBytes) * f.height;
 }
 void contracts(gfx::Device& d, const gfx::AdapterInfo& a, bool validation) {
-    check(d.caps().multipleRenderTargets && !d.caps().depthAttachment && !d.caps().resourceBinding, "Color-pass capability scope");
+    check(d.caps().multipleRenderTargets && !d.caps().depthAttachment && d.caps().resourceBinding, "Color-pass capability scope");
     auto other = take(gfx::createDevice(description(a, validation)));
     auto t = take(d.createTexture({3, 7, F::RGBA8UNorm, true})), fresh = take(d.createTexture({3, 7, F::RGBA16Float, true}));
     auto foreign = take(other->createTexture({3, 7, F::RGBA8UNorm, true}));

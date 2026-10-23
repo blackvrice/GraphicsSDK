@@ -1,0 +1,42 @@
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %uv %output
+OpExecutionMode %main OriginUpperLeft
+OpDecorate %uv Location 0
+OpDecorate %output Location 0
+OpDecorate %images DescriptorSet 0
+OpDecorate %images Binding 0
+OpDecorate %sampler DescriptorSet 0
+OpDecorate %sampler Binding 32
+%void = OpTypeVoid
+%fn = OpTypeFunction %void
+%float = OpTypeFloat 32
+%uint = OpTypeInt 32 0
+%v2 = OpTypeVector %float 2
+%v4 = OpTypeVector %float 4
+%in2 = OpTypePointer Input %v2
+%out4 = OpTypePointer Output %v4
+%uv = OpVariable %in2 Input
+%output = OpVariable %out4 Output
+%image = OpTypeImage %float 2D 0 0 0 1 Unknown
+%samp = OpTypeSampler
+%sampled = OpTypeSampledImage %image
+%psamp = OpTypePointer UniformConstant %samp
+%sampler = OpVariable %psamp UniformConstant
+%pimage = OpTypePointer UniformConstant %image
+%u0 = OpConstant %uint 0
+%u1 = OpConstant %uint 1
+%u2 = OpConstant %uint 2
+%uLast = OpConstant %uint 1
+%images = OpVariable %pimage UniformConstant
+%main = OpFunction %void None %fn
+%label = OpLabel
+%coord = OpLoad %v2 %uv
+%s = OpLoad %samp %sampler
+%i = OpLoad %image %images
+%si = OpSampledImage %sampled %i %s
+%a = OpImageSampleImplicitLod %v4 %si %coord
+%value = OpCopyObject %v4 %a
+OpStore %output %value
+OpReturn
+OpFunctionEnd

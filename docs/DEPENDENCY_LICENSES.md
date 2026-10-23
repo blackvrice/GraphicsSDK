@@ -1,5 +1,13 @@
 # 배포 의존성 라이선스 감사
 
+리소스 바인딩은 `audit_vulkan.py --variant bindings`와
+`licenses/vulkan-bindings-policy.json`으로 별도 감사한다.
+[inventory](../licenses/generated/windows-sdk-vulkan-bindings-release/inventory.json)는
+74개 compiler input/2개 component, 29개 compiler log/28개 linker log와 정확한 SDK payload를
+검사한다. 새 자체 CPU/GPU 테스트·지원/fixture header 네 파일만 허용 범위에 추가했다.
+기존 고정 로컬 shader tool/runtime만 재사용하고 외부 dependency 배포는 추가하지 않는다.
+기존 SDK ZIP 18개와 과거 inventory는 보존한다.
+
 정점·인덱스 입력 SDK는 `audit_vulkan.py --variant vertex`와
 `licenses/vulkan-vertex-policy.json`으로 별도 감사한다.
 [inventory](../licenses/generated/windows-sdk-vulkan-vertex-release/inventory.json)는

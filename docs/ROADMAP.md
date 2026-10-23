@@ -106,8 +106,10 @@ acceptance or later SDK feature milestones.
   pipelines/no-binding triangle drawing, scissor/blend/instancing and 2/8 outputs are
   implemented ([report](PHASE3_VULKAN_DRAW_REPORT.md)). Float/UNorm vertex layouts,
   UInt16/UInt32 indexed input, instance streams and float varyings are implemented
-  ([report](PHASE3_VULKAN_VERTEX_REPORT.md)). Depth and descriptor bindings,
-  timestamps, presentation and the rest of this gate remain open.
+  ([report](PHASE3_VULKAN_VERTEX_REPORT.md)). Separate Texture2D/constant arrays,
+  immutable sampler layouts and immutable binding snapshots are implemented
+  ([report](PHASE3_VULKAN_BINDINGS_REPORT.md)). Depth, timestamps, presentation
+  and the rest of this gate remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.
 

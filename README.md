@@ -2,7 +2,7 @@
 
 Independent C++23 graphics SDK, namespace `gfx`, CMake target `GraphicsSDK::Core`.
 **Initial development snapshot 0.0.1:** real Windows D3D12 implementation and an opt-in
-[Vulkan transfers/color passes/SPIR-V vertex/index drawing](docs/VULKAN.md). Metal and later Vulkan features remain
+[Vulkan transfers/color passes/SPIR-V drawing and resource bindings](docs/VULKAN.md). Metal and later Vulkan features remain
 unimplemented. This is not a completed cross-platform SDK release.
 
 Vulkan validation now explicitly requests core/synchronization checks and has a
