@@ -26,7 +26,8 @@ template<class T> void reject(gfx::Result<T> value,gfx::ErrorCode code,const cha
     check(!value && value.error().code==code,text);
 }
 void cpu() {
-    reject(gfx::enumerateAdapters(gfx::Backend::Vulkan),gfx::ErrorCode::Unsupported,"Uncompiled enumeration must fail");
+    if (!gfx::backendCompiled(gfx::Backend::Vulkan))
+        reject(gfx::enumerateAdapters(gfx::Backend::Vulkan),gfx::ErrorCode::Unsupported,"Uncompiled enumeration must fail");
     reject(gfx::enumerateAdapters(gfx::Backend::Metal),gfx::ErrorCode::Unsupported,"Uncompiled Metal enumeration must fail");
     gfx::DeviceDesc d;d.adapter=gfx::AdapterId{gfx::Backend::Metal,0};
     reject(gfx::createDevice(d),gfx::ErrorCode::InvalidArgument,"Reject cross-backend identity before dispatch");

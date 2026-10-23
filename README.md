@@ -1,8 +1,9 @@
 # GraphicsSDK
 
 Independent C++23 graphics SDK, namespace `gfx`, CMake target `GraphicsSDK::Core`.
-**Initial development snapshot 0.0.1:** real Windows D3D12 implementation; Vulkan and Metal
-are not implemented yet. This is not a completed cross-platform SDK release.
+**Initial development snapshot 0.0.1:** real Windows D3D12 implementation and an opt-in
+[Vulkan buffer-transfer backend](docs/VULKAN.md). Vulkan rendering and Metal remain
+unimplemented. This is not a completed cross-platform SDK release.
 
 The implementation includes buffers/textures and aligned copies, a small graphics pipeline,
 command recording/submission, resource-state validation, fence-retained lifetimes, explicit texture/

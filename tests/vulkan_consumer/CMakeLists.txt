@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.25)
+project(GraphicsSDKVulkanConsumer LANGUAGES CXX)
+find_package(GraphicsSDK CONFIG REQUIRED)
+add_executable(vulkan_consumer ../VulkanTests.cpp)
+target_link_libraries(vulkan_consumer PRIVATE GraphicsSDK::Core)

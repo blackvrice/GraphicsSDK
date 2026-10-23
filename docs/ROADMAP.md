@@ -3,6 +3,12 @@
 This is an initial 0.0.1 implementation, not a completed v0.1 release.
 Only measured/tested scope is checked. Follow the remaining phases in order.
 
+2026-10-23 user direction: defer the unresolved long-running memory acceptance and
+historical Intel AV investigation, and proceed with Phase 3 implementation. Neither
+item is accepted or attributed conclusively to hardware. Historical policy, failed
+observations and evidence stay unchanged. Interactive/physical Phase 2 acceptance
+also remains open; it is not inferred from advancing implementation.
+
 ## Phase 0 — research
 
 - [x] Read-only Sandbox source/interface audit at a fixed SHA.
@@ -74,7 +80,8 @@ acceptance or later SDK feature milestones.
 
 ## Remaining ordered implementation gates
 
-1. Complete the outstanding Phase 1/2 contracts and measurements above.
+1. Phase 1 foundation is accepted for its documented scope. Preserve the deferred
+   Phase 2 memory/Intel issues and outstanding interactive/physical acceptance above.
 2. Phase 3: Vulkan Windows/Linux backend, same readback/lifetime tests, same Vulkan competitors.
 3. Phase 4: Metal implementation and actual Mac compile/runtime tests; keep unavailable evidence separate.
 4. Phase 5: DXC DXIL/SPIR-V, SPIRV-Cross MSL, binding reflection and compiler/PSO caches.
@@ -82,6 +89,16 @@ acceptance or later SDK feature milestones.
    each with before/after data and regression validation.
 6. Phase 7: complete cross-platform SDK distribution and supported-platform CI; Windows install
    and find_package smoke are already implemented as an early packaging check.
+
+## Phase 3 — Vulkan implementation
+
+- [x] Opt-in Vulkan 1.1 device/exact-adapter selection and buffer transfer slice:
+  upload/device/readback, barriers, version/rejection contracts, retained native
+  lifetimes and finite queue waits on Windows NVIDIA/Intel ([report](PHASE3_VULKAN_TRANSFER_REPORT.md)).
+- [ ] Vulkan validation-layer execution (missing on this machine); explicit missing-layer rejection is separate.
+- [ ] Textures/render passes/graphics pipelines, SPIR-V, bindings, timestamps and presentation.
+- [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
+- [ ] Matching Vulkan competitor workloads and comparable measurements.
 
 ## Release milestones
 

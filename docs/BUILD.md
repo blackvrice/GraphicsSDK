@@ -15,18 +15,32 @@ cmake --build out/consumer --config Release
 ./out/core/Release/gfx_indexed_quads.exe out/indexed-quads.ppm
 ```
 
-SDK 자체에는 다운로드가 없다. D3D12를 끈 빌드는 GPU backend를 제공하지 않으며
+SDK 자체에는 다운로드가 없다. D3D12와 Vulkan을 모두 끈 빌드는 GPU backend를 제공하지 않으며
 Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux/macOS 실기기 빌드는
 현재 미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 
 현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).
-최신 로컬 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-copy-atomicity.zip`이다.
+기존 D3D12 전용 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-copy-atomicity.zip`이다.
 기존 ZIP과 측정 원본을 덮어쓰지 않았다. [복구 구현·검증 보고서](PHASE2_RECOVERY_REPORT.md)를 따른다.
 `gfx_recovery_tests --gpu/--validation/--warp`는 각 독립 process에서 opt-in native RemoveDevice를
 실행한다. 지원하지 않는 adapter/interface는 SKIP이며 완료 증거로 취급하지 않는다.
 설치 후 `out/consumer/Release/recovery_consumer.exe` 및 `--warp`로 재구축·이미지 검증을 실행할 수 있다.
 이 두 검증 실행 파일은 의도적으로 자기 process의 native 장치를 제거한다.
+
+새 Vulkan 전송 구성은 [Vulkan 빌드·계약](VULKAN.md)을 따른다. 독립된
+`out/vulkan-transfer`, `out/vulkan-install`, `out/vulkan-consumer`를 사용하며,
+35개 CTest 중 하나가 실제 NVIDIA/Intel Vulkan 전송을 검사한다. D3D12 OFF/Vulkan ON
+구성은 7개, 두 backend OFF 구성은 6개 CTest를 Windows에서 검증한다.
+새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-transfer.zip`이며, 공개 헤더와
+static library/CMake package, MIT/Apache-2.0 고지로 구성된다. Vulkan 헤더·loader·driver는
+묶지 않는다. Vulkan-only/portable의 Linux 실행과 validation layer 실행은 미검증이다.
+
+```powershell
+cmake -S tests/vulkan_consumer -B out/vulkan-consumer -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-install
+cmake --build out/vulkan-consumer --config Release --parallel 1
+./out/vulkan-consumer/Release/vulkan_consumer.exe
+```
 
 실제 창 표시 예제는 설치 SDK를 소비하는 별도 프로젝트다.
 

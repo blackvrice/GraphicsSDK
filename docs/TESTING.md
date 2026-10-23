@@ -1,5 +1,13 @@
 # Testing and acceptance
 
+The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
+version, rejection, fence and device-retirement contracts on every enumerated
+Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
+The integrated Windows configuration has 35 CTests (34 existing plus Vulkan),
+Vulkan-only has 7, and no-backend has 6. These are separate Windows configurations,
+not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
+Khronos validation layer is missing; driver-only success is not layer acceptance.
+
 ## Automated checks
 
 `ctest --test-dir out/core -C Release --output-on-failure`:

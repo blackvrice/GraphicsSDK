@@ -1,0 +1,247 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-transfer",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=ON",
+      "-DGFX_BUILD_EXAMPLES=ON"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 0.2969999999986612
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-transfer",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 5.109000000000378
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-transfer",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-transfer\\ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 43.625
+  },
+  {
+    "name": "validation-unavailable",
+    "argv": [
+      "out/vulkan-transfer/Release/gfx_vulkan_tests.exe",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "elapsed_seconds": 0.6090000000003783
+  },
+  {
+    "name": "install",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/vulkan-transfer",
+      "--config",
+      "Release",
+      "--prefix",
+      "out/vulkan-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 0.06300000000010186
+  },
+  {
+    "name": "consumer-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_consumer",
+      "-B",
+      "out/vulkan-consumer",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DCMAKE_PREFIX_PATH=D:\\source\\GraphicsSDK\\out\\vulkan-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 0.14099999999962165
+  },
+  {
+    "name": "consumer-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-consumer",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 2.8430000000007567
+  },
+  {
+    "name": "consumer-native",
+    "argv": [
+      "out/vulkan-consumer/Release/vulkan_consumer.exe"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 1.0939999999991414
+  },
+  {
+    "name": "only-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-only",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 0.25
+  },
+  {
+    "name": "only-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-only",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 4.140999999999622
+  },
+  {
+    "name": "only-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-only",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-transfer\\only-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 1.2180000000007567
+  },
+  {
+    "name": "portable-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-portable",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=OFF",
+      "-DGFX_ENABLE_D3D12=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 0.25
+  },
+  {
+    "name": "portable-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-portable",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 2.1569999999992433
+  },
+  {
+    "name": "portable-ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-portable",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-23-phase3-vulkan-transfer\\portable-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "elapsed_seconds": 0.1720000000004802
+  },
+  {
+    "name": "missing-headers",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-missing-headers",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_VULKAN_HEADERS=D:\\source\\GraphicsSDK\\out\\absent-vulkan-headers"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "elapsed_seconds": 0.10900000000037835
+  }
+]

@@ -1,5 +1,20 @@
 # 배포 의존성 라이선스 감사
 
+2026-10-23 Vulkan 전송 variant는 기존 D3D12 inventory와 별개로
+[`audit_vulkan.py`](../tools/audit_vulkan.py)를 사용한다. 고정된 Vulkan-Headers
+`v1.3.290`/`b379292b2ab6df5771ba9870d53cf8b2c9295daf`의 실제 compiler-read
+11개 헤더는 Apache-2.0 전용 SPDX이며, MIT 대안을 선택하지 않는다.
+정책·헤더 해시, upstream Apache 원문과 각 파일의 저작권/SPDX 고지를 보존한다.
+SDK/테스트/예제와 설치 소비자의 실제 Release compiler/linker closure 및 설치본 일치를
+검사하고, 새 ZIP의 정확한 payload와 고지를 검증한다. Loader/ICD/driver/validation layer는
+배포하지 않는다. [새 inventory](../licenses/generated/windows-sdk-vulkan-transfer-release/inventory.json)는
+Windows x64 Release의 이 구성에만 적용하며 과거 binary/benchmark inventory를 대체하지 않는다.
+
+```powershell
+python tools/audit_vulkan.py --output licenses/generated/windows-sdk-vulkan-transfer-release --package out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-transfer.zip --create
+python tools/audit_vulkan.py --output licenses/generated/windows-sdk-vulkan-transfer-release --package out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-transfer.zip --check
+```
+
 조사일: 2026-10-20. 범위는 Windows x64 Release SDK, LLGL/SDL3 기본 벤치마크와
 추가 standalone Diligent Core 벤치마크 profile이다.
 bgfx profile은 2026-10-21에 별도로 추가 검토했다.

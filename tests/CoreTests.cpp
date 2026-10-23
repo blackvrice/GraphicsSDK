@@ -32,7 +32,8 @@ float4 VS(uint id : SV_VertexID) : SV_Position {
 float4 PS() : SV_Target0 { return float4(1,0,0,1); }
 )";
 void cpu() {
-    check(!gfx::backendCompiled(gfx::Backend::Vulkan), "Vulkan must not be advertised");
+    if (!gfx::backendCompiled(gfx::Backend::Vulkan))
+        check(!gfx::createDevice({gfx::Backend::Vulkan}), "Uncompiled Vulkan must fail");
     check(!gfx::backendCompiled(gfx::Backend::Metal), "Metal must not be advertised");
     auto unsupported = gfx::createDevice({gfx::Backend::Metal});
     check(!unsupported && unsupported.error().code == gfx::ErrorCode::Unsupported, "Unsupported backend error");
