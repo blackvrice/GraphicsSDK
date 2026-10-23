@@ -9,6 +9,7 @@ enum class VertexFormat { Float, Float2, Float3, Float4, UNorm8x4 };
 enum class VertexInputRate { Vertex, Instance };
 struct VertexBufferLayout { std::uint32_t slot{}, stride{}; VertexInputRate rate{VertexInputRate::Vertex}; };
 struct VertexAttribute { std::string semantic; std::uint32_t semanticIndex{}; VertexFormat format{VertexFormat::Float3}; std::uint32_t slot{}, offset{}; };
+// Vulkan assigns location i to attributes[i]; semantic/name/index remain the D3D12 mapping.
 struct VertexLayout { std::vector<VertexBufferLayout> buffers; std::vector<VertexAttribute> attributes; };
 // Portable structural validation; an empty layout preserves SV_VertexID-only shaders.
 [[nodiscard]] Result<void> validateVertexLayout(const VertexLayout&);

@@ -1,0 +1,33 @@
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Vertex %main "main" %position %color %inputPosition %inputColor
+OpDecorate %position BuiltIn Position
+OpDecorate %color Location 0
+OpDecorate %inputPosition Location 0
+OpDecorate %inputColor Location 1
+%void = OpTypeVoid
+%fn = OpTypeFunction %void
+%float = OpTypeFloat 32
+%v2 = OpTypeVector %float 2
+%v3 = OpTypeVector %float 3
+%v4 = OpTypeVector %float 4
+%in1 = OpTypePointer Input %float
+%in2 = OpTypePointer Input %v2
+%in3 = OpTypePointer Input %v3
+%in4 = OpTypePointer Input %v4
+%out4 = OpTypePointer Output %v4
+%inputPosition = OpVariable %in4 Input
+%inputColor = OpVariable %in4 Input
+%position = OpVariable %out4 Output
+%color = OpVariable %out4 Output
+%half = OpConstant %float 0.5
+%one = OpConstant %float 1
+%main = OpFunction %void None %fn
+%label = OpLabel
+%p = OpLoad %v4 %inputPosition
+%pos = OpCopyObject %v4 %p
+%c = OpLoad %v4 %inputColor
+OpStore %position %pos
+OpStore %color %c
+OpReturn
+OpFunctionEnd

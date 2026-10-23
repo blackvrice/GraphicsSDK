@@ -3,16 +3,16 @@
 The opt-in [Vulkan transfer suite](VULKAN.md) runs the public buffer/readback,
 version, rejection, fence and device-retirement contracts on every enumerated
 Vulkan 1.1 graphics adapter. Its installed-package consumer repeats the suite.
-The default integrated Windows configuration registers 39 CTests (including CPU
-SPIR-V inspection and buffer/texture/color-pass/draw suites), Vulkan-only has 11,
-and no-backend has 7. These are separate Windows configurations,
+The default integrated Windows configuration registers 41 CTests (including CPU
+SPIR-V inspection and buffer/texture/color-pass/draw/vertex suites), Vulkan-only has 13,
+and no-backend has 8. These are separate Windows configurations,
 not Linux validation. `gfx_vulkan_tests --validation` fails explicitly when the
 Khronos validation layer is missing; driver-only success is not layer acceptance.
 
 The required synchronization-validation profile adds `vulkan_transfer_validation`,
-`vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`
+`vulkan_texture_validation`, `vulkan_color_pass_validation`, `vulkan_draw_validation`, `vulkan_vertex_validation`
 and `vulkan_validation_controls` (`GFX_VULKAN_VALIDATION_TESTS=ON`),
-yielding 44 integrated / 16 Vulkan-only registered tests. A pinned,
+yielding 47 integrated / 19 Vulkan-only registered tests. A pinned,
 process-local runtime is built by `tools/prepare_vulkan_validation.py`; no system
 registration is used. Native controls abort invalid core calls before driver dispatch,
 contrast missing-barrier detection with synchronization enabled/disabled, exercise
@@ -46,6 +46,18 @@ malformed-source/semantic rejection controls. GPU suites compare all pixels/padd
 for triangle coverage/orientation, firstVertex/firstInstance and instancing, scissor/
 pipeline switches, Load+blend, RGBA8/RGBA16F, and mixed-format 2/8 outputs. The installed
 draw consumer repeats this public suite; no memory acceptance is inferred.
+
+The [vertex/index profile](PHASE3_VULKAN_VERTEX_REPORT.md) passes 44 selected integrated
+(47 registered, three deferred memory tests excluded) + 19 Vulkan-only + 8 no-backend
+CTests, with no skips. A new CPU suite has 61 assertions for typed inputs/varyings;
+the old 181-assertion suite remains. Each GPU vertex suite checks 771 assertions,
+150 draws (78 indexed), 146 full images and 250,813,720 texel bytes across both GPUs.
+It covers all five attribute formats, UInt16/UInt32 indices, signed baseVertex,
+vertex/instance offsets, sparse streams, tight view bounds, accepted-use versions,
+rejected-use ownership and native lifetimes. Indexed data must address valid vertices;
+the SDK does not inspect index values. Installed consumers repeat all five GPU suites
+with required core/synchronization validation. These checks establish correctness,
+not a performance or long-memory acceptance result.
 
 ## Automated checks
 

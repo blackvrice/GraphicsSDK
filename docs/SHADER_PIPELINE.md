@@ -1,8 +1,10 @@
 # Shader pipeline
 
 Vulkan은 별도의 `ShaderFormat::SPIRV` 입력으로 외부 검증된 SPIR-V 1.3/Vulkan 1.1
-`main` shader를 받는다. 초기 path는 standalone Position·VertexIndex/InstanceIndex와
-float4 color outputs, 무바인딩 triangle draw만 지원한다. SDK의 framing/interface 검사는
+`main` shader를 받는다. 초기 path는 standalone Position·VertexIndex/InstanceIndex,
+Float/UNorm vertex inputs, matching float varyings와 float4 color outputs를 지원하며
+descriptor binding은 아직 없다. Vulkan location은 attributes 배열 순서로 정한다.
+SDK의 framing/interface 검사는
 전체 semantic validator가 아니다. 자체 fixture는 고정 로컬 SPIRV-Tools로 검증하며
 이 외부 도구는 SDK에 링크·배포하지 않는다. [범위와 계약](VULKAN.md)을 따른다.
 기본 `ShaderFormat`은 DXBC이며 compileHlsl 결과도 DXBC다. Public reflectShader의

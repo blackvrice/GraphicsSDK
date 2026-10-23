@@ -4,6 +4,7 @@
 #include "VulkanValidation.hpp"
 #include "Spirv.hpp"
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cstring>
 #include <limits>
@@ -40,7 +41,7 @@ struct Loader {
 };
 #define INSTANCE_FUNCTIONS(X) \
     X(DestroyInstance) X(EnumeratePhysicalDevices) X(GetPhysicalDeviceProperties2) \
-    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(GetPhysicalDeviceFormatProperties) X(CreateDevice) X(GetDeviceProcAddr)
+    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(GetPhysicalDeviceFormatProperties) X(GetPhysicalDeviceFeatures) X(CreateDevice) X(GetDeviceProcAddr)
 struct Instance {
     std::shared_ptr<Loader> loader;
     VkInstance handle{};
@@ -122,6 +123,8 @@ struct Candidate {
     std::uint32_t family{};
     std::uint32_t maxColorAttachments{};
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
+    VkPhysicalDeviceLimits limits{};
+    VkPhysicalDeviceFeatures features{};
 };
 Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& instance) {
     std::uint32_t count{};
@@ -147,6 +150,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
         c.maxColorAttachments = properties.properties.limits.maxColorAttachments;
         c.maxFramebufferWidth = properties.properties.limits.maxFramebufferWidth;
         c.maxFramebufferHeight = properties.properties.limits.maxFramebufferHeight;
+        c.limits = properties.properties.limits; instance->GetPhysicalDeviceFeatures(device, &c.features);
         c.info.id = {Backend::Vulkan, 14695981039346656037ull};
         bool nonzero{};
         for (auto byte : id.deviceUUID) { nonzero |= byte != 0; c.info.id.value = (c.info.id.value ^ byte) * 1099511628211ull; }
@@ -171,7 +175,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) \
     X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
     X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(DestroyPipeline) \
-    X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) \
+    X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
     X(CreateCommandPool) X(DestroyCommandPool) X(AllocateCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
     X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences)
@@ -225,6 +229,8 @@ struct NativePipeline {
     VkPipelineLayout layout{};
     VkRenderPass pass{};
     std::vector<Format> colors;
+    struct Input { std::uint32_t slot{}, stride{}, extent{}, alignment{1}; VertexInputRate rate{}; };
+    std::vector<Input> inputs;
     void release() {
         if (pipeline) native->DestroyPipeline(native->handle, pipeline, nullptr);
         if (layout) native->DestroyPipelineLayout(native->handle, layout, nullptr);
@@ -233,6 +239,8 @@ struct NativePipeline {
     }
     ~NativePipeline() { release(); }
 };
+struct VertexView { std::shared_ptr<Allocation> allocation; std::uint64_t offset{}, bytes{}; std::uint32_t stride{}; };
+struct IndexView { std::shared_ptr<Allocation> allocation; std::uint64_t bytes{}; std::uint32_t element{}; };
 struct Recording {
     std::shared_ptr<NativeDevice> native;
     VkCommandPool pool{};
@@ -245,9 +253,11 @@ struct Recording {
     std::shared_ptr<NativePipeline> selectedPipeline;
     std::vector<Format> passColors;
     std::uint32_t width{}, height{};
+    std::array<VertexView, 32> vertices;
+    IndexView indices;
     void release() {
         if (pool) native->DestroyCommandPool(native->handle, pool, nullptr);
-        pool = {}; command = {}; selectedPipeline.reset(); pipelines.clear(); passColors.clear(); passes.clear(); uses.clear(); open = ended = inPass = false;
+        pool = {}; command = {}; selectedPipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); uses.clear(); open = ended = inPass = false;
     }
     ~Recording() { release(); }
 };
@@ -260,6 +270,8 @@ struct State {
     std::uint32_t family{};
     std::uint32_t maxColorAttachments{};
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
+    VkPhysicalDeviceLimits limits{};
+    bool fullDrawIndexUint32{};
     std::thread::id thread{std::this_thread::get_id()};
     std::uint64_t id{generations.fetch_add(1)}, last{}, completed{};
     bool retired{}, lost{};
@@ -369,7 +381,25 @@ VkAccessFlags access(ResourceState state) {
     if (state == ResourceState::CopySource) return VK_ACCESS_TRANSFER_READ_BIT;
     if (state == ResourceState::CopyDestination) return VK_ACCESS_TRANSFER_WRITE_BIT;
     if (state == ResourceState::RenderTarget) return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    if (state == ResourceState::VertexBuffer) return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    if (state == ResourceState::IndexBuffer) return VK_ACCESS_INDEX_READ_BIT;
+    if (state == ResourceState::VertexAndIndexBuffer) return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
     return VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+}
+bool vertexState(ResourceState s) { return s == ResourceState::VertexBuffer || s == ResourceState::VertexAndIndexBuffer; }
+bool indexState(ResourceState s) { return s == ResourceState::IndexBuffer || s == ResourceState::VertexAndIndexBuffer; }
+VkFormat vertexFormat(VertexFormat format) {
+    switch (format) {
+    case VertexFormat::Float: return VK_FORMAT_R32_SFLOAT;
+    case VertexFormat::Float2: return VK_FORMAT_R32G32_SFLOAT;
+    case VertexFormat::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
+    case VertexFormat::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+    case VertexFormat::UNorm8x4: return VK_FORMAT_R8G8B8A8_UNORM;
+    }
+    return VK_FORMAT_UNDEFINED;
+}
+std::uint32_t vertexBytes(VertexFormat format) {
+    switch (format) { case VertexFormat::Float2: return 8; case VertexFormat::Float3: return 12; case VertexFormat::Float4: return 16; default: return 4; }
 }
 struct VulkanCommands final : CommandList {
     std::shared_ptr<State> owner;
@@ -434,9 +464,9 @@ struct VulkanCommands final : CommandList {
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         const auto a = buffer(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && !vertexState(target) && !indexState(target))
             return fail(ErrorCode::Unsupported, "Vulkan transfer state unsupported");
-        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource) ||
+        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target)) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Host buffer state is fixed");
         record->uses.reserve(record->uses.size() + 1);
@@ -631,8 +661,47 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> bindTexture(const TexturePtr&) override { return unsupported(); }
     Result<void> bindResources(const ResourceBindings&) override { return unsupported(); }
-    Result<void> bindVertexBuffer(std::uint32_t, const BufferPtr&, std::uint32_t, std::uint64_t, std::uint64_t) override { return unsupported(); }
-    Result<void> bindIndexBuffer(const BufferPtr&, IndexFormat, std::uint64_t, std::uint64_t) override { return unsupported(); }
+    Result<void> bindVertexBuffer(std::uint32_t slot, const BufferPtr& ptr, std::uint32_t stride, std::uint64_t offset, std::uint64_t size) override {
+        if (auto ok = ready(); !ok) return ok;
+        auto a = buffer(ptr); if (!a) return std::unexpected(a.error());
+        if (slot >= 32 || !stride || stride > 2048 || offset > (*a)->desc.size || size > (*a)->desc.size - offset || (*a)->desc.memory == Memory::Readback)
+            return fail(ErrorCode::InvalidArgument, "Invalid vertex buffer view");
+        if (slot >= owner->limits.maxVertexInputBindings) return fail(ErrorCode::Unsupported, "Vertex slot exceeds adapter limit");
+        const auto bytes = size ? size : (*a)->desc.size - offset;
+        if (!bytes || bytes > UINT32_MAX) return fail(ErrorCode::InvalidArgument, "Vertex view must contain 1..UINT32_MAX bytes");
+        if (!vertexState(shadow(*a))) return fail(ErrorCode::InvalidState, "Vertex buffer requires vertex read state");
+        record->uses.reserve(record->uses.size() + 1); retain(*a);
+        record->vertices[slot] = {*a, offset, bytes, stride};
+        const VkDeviceSize nativeOffset = offset; owner->native->CmdBindVertexBuffers(record->command, slot, 1, &(*a)->buffer, &nativeOffset); return {};
+    }
+    Result<void> bindIndexBuffer(const BufferPtr& ptr, IndexFormat format, std::uint64_t offset, std::uint64_t size) override {
+        if (auto ok = ready(); !ok) return ok;
+        auto a = buffer(ptr); if (!a) return std::unexpected(a.error());
+        if (format != IndexFormat::UInt16 && format != IndexFormat::UInt32) return fail(ErrorCode::InvalidArgument, "Invalid index format");
+        if (format == IndexFormat::UInt32 && !owner->fullDrawIndexUint32) return fail(ErrorCode::Unsupported, "Adapter lacks full uint32 index range");
+        const auto element = format == IndexFormat::UInt16 ? 2u : 4u;
+        if (offset > (*a)->desc.size || size > (*a)->desc.size - offset || offset % element || (*a)->desc.memory == Memory::Readback)
+            return fail(ErrorCode::InvalidArgument, "Invalid index view offset/memory/range");
+        const auto bytes = size ? size : (*a)->desc.size - offset;
+        if (!bytes || bytes > UINT32_MAX || bytes % element) return fail(ErrorCode::InvalidArgument, "Invalid index view size");
+        if (!indexState(shadow(*a))) return fail(ErrorCode::InvalidState, "Index buffer requires index read state");
+        record->uses.reserve(record->uses.size() + 1); retain(*a); record->indices = {*a, bytes, element};
+        owner->native->CmdBindIndexBuffer(record->command, (*a)->buffer, offset, format == IndexFormat::UInt16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32); return {};
+    }
+    Result<void> inputReady(std::uint32_t count, std::uint32_t instances, std::uint32_t firstVertex, std::uint32_t firstInstance, bool indexed = false, std::int32_t baseVertex = 0) {
+        for (const auto& input : record->selectedPipeline->inputs) {
+            const auto& view = record->vertices[input.slot];
+            if (!view.allocation || view.stride != input.stride || !vertexState(shadow(view.allocation))) return fail(ErrorCode::InvalidState, "Missing/mismatched/stale vertex binding");
+            if (view.offset % input.alignment || view.bytes < input.extent) return fail(ErrorCode::InvalidArgument, "Vertex view alignment/extent mismatch");
+            const auto last = (view.bytes - input.extent) / input.stride;
+            if (input.rate == VertexInputRate::Instance) {
+                if (std::uint64_t(firstInstance) + instances - 1 > last) return fail(ErrorCode::InvalidArgument, "Instance input exceeds view");
+            } else if (!indexed) {
+                if (std::uint64_t(firstVertex) + count - 1 > last) return fail(ErrorCode::InvalidArgument, "Vertex input exceeds view");
+            } else if (baseVertex > 0 && std::uint32_t(baseVertex) > last) return fail(ErrorCode::InvalidArgument, "Base vertex exceeds view");
+        }
+        return {};
+    }
     Result<void> setScissor(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) override {
         if (auto ok = ready(); !ok) return ok;
         if (!record->inPass) return fail(ErrorCode::InvalidState, "Scissor requires an active render pass");
@@ -646,9 +715,19 @@ struct VulkanCommands final : CommandList {
         if (!record->inPass || !record->selectedPipeline) return fail(ErrorCode::InvalidState, "Draw requires active pass and compatible pipeline");
         if (!vertices || !instances || vertices > UINT32_MAX - firstVertex || instances > UINT32_MAX - firstInstance)
             return fail(ErrorCode::InvalidArgument, "Invalid draw count/index range");
+        if (auto ok = inputReady(vertices, instances, firstVertex, firstInstance); !ok) return ok;
         owner->native->CmdDraw(record->command, vertices, instances, firstVertex, firstInstance); return {};
     }
-    Result<void> drawIndexed(std::uint32_t, std::uint32_t, std::uint32_t, std::int32_t, std::uint32_t) override { return unsupported(); }
+    Result<void> drawIndexed(std::uint32_t count, std::uint32_t instances, std::uint32_t firstIndex, std::int32_t baseVertex, std::uint32_t firstInstance) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->inPass || !record->selectedPipeline) return fail(ErrorCode::InvalidState, "Indexed draw requires active pass and pipeline");
+        if (!count || !instances || instances > UINT32_MAX - firstInstance) return fail(ErrorCode::InvalidArgument, "Invalid indexed draw counts");
+        const auto& view = record->indices;
+        if (!view.allocation || !indexState(shadow(view.allocation))) return fail(ErrorCode::InvalidState, "Missing/stale index binding");
+        if (std::uint64_t(firstIndex) + count > view.bytes / view.element) return fail(ErrorCode::InvalidArgument, "Index range exceeds view");
+        if (auto ok = inputReady(0, instances, 0, firstInstance, true, baseVertex); !ok) return ok;
+        owner->native->CmdDrawIndexed(record->command, count, instances, firstIndex, baseVertex, firstInstance); return {};
+    }
     Result<void> writeTimestamp(std::uint32_t) override { return unsupported(); }
     Result<void> resolveTimestamps() override { return unsupported(); }
     Result<double> elapsedGpuMilliseconds() override {
@@ -750,7 +829,7 @@ struct VulkanDevice final : Device {
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->desc = desc;
         a->state = desc.memory == Memory::Upload ? ResourceState::CopySource : desc.memory == Memory::Readback ? ResourceState::CopyDestination : ResourceState::Common;
         VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; info.size = desc.size;
-        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         if (auto ok = owner->accept(owner->native->CreateBuffer(owner->native->handle, &info, nullptr, &a->buffer), "vkCreateBuffer"); !ok) return std::unexpected(ok.error());
         VkMemoryRequirements req{}; owner->native->GetBufferMemoryRequirements(owner->native->handle, a->buffer, &req);
         const VkMemoryPropertyFlags required = desc.memory == Memory::Device ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
@@ -823,10 +902,14 @@ struct VulkanDevice final : Device {
             return fail(ErrorCode::Unsupported, "Vulkan requires explicit SPIRV shader format");
         if (auto ok = validateRenderTargets(targets, desc.depthState); !ok) return std::unexpected(ok.error());
         if (targets.depth || targets.colors.size() > owner->maxColorAttachments || desc.depthState.testEnabled || desc.depthState.writeEnabled ||
-            desc.sampledTexture || !desc.vertexLayout.buffers.empty() || !desc.vertexLayout.attributes.empty() || !desc.bindingLayout.entries.empty() || !desc.bindingLayout.samplers.empty())
-            return fail(ErrorCode::Unsupported, "Initial Vulkan pipeline has no depth, bindings or vertex inputs");
-        auto vertex = vulkan::inspectSpirv(desc.vertex, ShaderStage::Vertex, 0); if (!vertex) return std::unexpected(vertex.error());
-        auto fragment = vulkan::inspectSpirv(desc.fragment, ShaderStage::Fragment, static_cast<std::uint32_t>(targets.colors.size())); if (!fragment) return std::unexpected(fragment.error());
+            desc.sampledTexture || !desc.bindingLayout.entries.empty() || !desc.bindingLayout.samplers.empty())
+            return fail(ErrorCode::Unsupported, "Vulkan depth/bindings unsupported");
+        if (auto ok = validateVertexLayout(desc.vertexLayout); !ok) return std::unexpected(ok.error());
+        if (desc.vertexLayout.attributes.size() > owner->limits.maxVertexInputAttributes) return fail(ErrorCode::Unsupported, "Vertex attributes exceed adapter limit");
+        std::map<unsigned, unsigned> vertexVaryings, fragmentVaryings;
+        auto vertex = vulkan::inspectSpirv(desc.vertex, ShaderStage::Vertex, 0, desc.vertexLayout, &vertexVaryings); if (!vertex) return std::unexpected(vertex.error());
+        auto fragment = vulkan::inspectSpirv(desc.fragment, ShaderStage::Fragment, static_cast<std::uint32_t>(targets.colors.size()), {}, &fragmentVaryings); if (!fragment) return std::unexpected(fragment.error());
+        if (vertexVaryings != fragmentVaryings) return fail(ErrorCode::InvalidArgument, "Vertex/fragment float varying interfaces differ");
         for (auto format : targets.colors) {
             VkFormatProperties properties{};
             owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical,
@@ -835,6 +918,25 @@ struct VulkanDevice final : Device {
             if ((properties.optimalTilingFeatures & required) != required) return fail(ErrorCode::Unsupported, "Adapter format lacks attachment/blending support");
         }
         auto p = std::make_shared<NativePipeline>(); p->native = owner->native; p->colors = targets.colors;
+        std::vector<VkVertexInputBindingDescription> bindings;
+        std::vector<VkVertexInputAttributeDescription> attributes;
+        for (const auto& binding : desc.vertexLayout.buffers) {
+            if (binding.slot >= owner->limits.maxVertexInputBindings || binding.stride > owner->limits.maxVertexInputBindingStride) return fail(ErrorCode::Unsupported, "Vertex binding exceeds adapter limit");
+            bindings.push_back({binding.slot, binding.stride, binding.rate == VertexInputRate::Instance ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX});
+            NativePipeline::Input input{binding.slot, binding.stride, 0, 1, binding.rate};
+            for (const auto& attribute : desc.vertexLayout.attributes) if (attribute.slot == binding.slot) {
+                input.extent = std::max(input.extent, attribute.offset + vertexBytes(attribute.format));
+                input.alignment = std::max(input.alignment, attribute.format == VertexFormat::UNorm8x4 ? 1u : 4u);
+            }
+            p->inputs.push_back(input);
+        }
+        for (unsigned i = 0; i < desc.vertexLayout.attributes.size(); ++i) {
+            const auto& a = desc.vertexLayout.attributes[i];
+            if (a.offset > owner->limits.maxVertexInputAttributeOffset) return fail(ErrorCode::Unsupported, "Vertex attribute offset exceeds adapter limit");
+            VkFormatProperties properties{}; owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, vertexFormat(a.format), &properties);
+            if (!(properties.bufferFeatures & VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT)) return fail(ErrorCode::Unsupported, "Vertex format unsupported by adapter");
+            attributes.push_back({i, a.slot, vertexFormat(a.format), a.offset});
+        }
         struct Modules {
             std::shared_ptr<NativeDevice> native; VkShaderModule vertex{}, fragment{};
             ~Modules() { if (vertex) native->DestroyShaderModule(native->handle, vertex, nullptr); if (fragment) native->DestroyShaderModule(native->handle, fragment, nullptr); }
@@ -870,6 +972,8 @@ struct VulkanDevice final : Device {
         for (auto& s : stages) { s.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO; s.pName = "main"; }
         stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT; stages[0].module = modules.vertex; stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; stages[1].module = modules.fragment;
         VkPipelineVertexInputStateCreateInfo input{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
+        input.vertexBindingDescriptionCount = static_cast<std::uint32_t>(bindings.size()); input.pVertexBindingDescriptions = bindings.data();
+        input.vertexAttributeDescriptionCount = static_cast<std::uint32_t>(attributes.size()); input.pVertexAttributeDescriptions = attributes.data();
         VkPipelineInputAssemblyStateCreateInfo assembly{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO}; assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkPipelineViewportStateCreateInfo viewport{VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO}; viewport.viewportCount = viewport.scissorCount = 1;
         VkPipelineRasterizationStateCreateInfo raster{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO}; raster.polygonMode = VK_POLYGON_MODE_FILL; raster.cullMode = VK_CULL_MODE_NONE; raster.frontFace = VK_FRONT_FACE_CLOCKWISE; raster.lineWidth = 1;
@@ -929,6 +1033,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     VkDeviceQueueCreateInfo queue{VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
     queue.queueFamilyIndex = selected->family; queue.queueCount = 1; queue.pQueuePriorities = &priority;
     VkDeviceCreateInfo info{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO}; info.queueCreateInfoCount = 1; info.pQueueCreateInfos = &queue;
+    VkPhysicalDeviceFeatures enabled{}; enabled.fullDrawIndexUint32 = selected->features.fullDrawIndexUint32; info.pEnabledFeatures = &enabled;
     if (auto r = (*instance)->CreateDevice(selected->physical, &info, nullptr, &native->handle); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
 #define LOAD(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); \
     if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan device entry point missing: vk" #name);
@@ -939,10 +1044,12 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     owner->memory = selected->memory; owner->family = selected->family;
     owner->maxColorAttachments = selected->maxColorAttachments;
     owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
+    owner->limits = selected->limits; owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
     auto device = std::make_unique<VulkanDevice>(); device->owner = owner; device->commands.owner = owner;
     device->capabilities.backend = Backend::Vulkan; device->capabilities.adapterName = selected->info.name;
     device->capabilities.softwareAdapter = selected->info.softwareAdapter; device->capabilities.adapterId = selected->info.id;
     device->capabilities.multipleRenderTargets = selected->maxColorAttachments >= 2;
+    device->capabilities.vertexInput = device->capabilities.indexedDrawing = true;
     return std::unique_ptr<Device>(std::move(device));
 }
 } // namespace gfx

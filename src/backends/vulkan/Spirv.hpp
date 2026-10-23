@@ -1,5 +1,5 @@
 #pragma once
-#include <graphics/Shader.hpp>
+#include <graphics/Pipeline.hpp>
 #include <algorithm>
 #include <cstring>
 #include <map>
@@ -8,7 +8,8 @@
 namespace gfx::vulkan {
 // Bounded framing and interface inspection for externally validated modules.
 // This deliberately does not implement a SPIR-V semantic validator.
-inline Result<std::vector<std::uint32_t>> inspectSpirv(const ShaderBinary& shader, ShaderStage stage, std::uint32_t colors) {
+inline Result<std::vector<std::uint32_t>> inspectSpirv(const ShaderBinary& shader, ShaderStage stage, std::uint32_t colors,
+    const VertexLayout& vertexLayout = {}, std::map<unsigned, unsigned>* varyings = nullptr) {
     auto bad = [](const char* message) { return std::unexpected(Error{ErrorCode::InvalidArgument, message}); };
     auto unsupported = [](const char* message) { return std::unexpected(Error{ErrorCode::Unsupported, message}); };
     if (shader.format != ShaderFormat::SPIRV) return unsupported("Vulkan requires explicit SPIRV shader format");
@@ -24,6 +25,7 @@ inline Result<std::vector<std::uint32_t>> inspectSpirv(const ShaderBinary& shade
     std::map<unsigned, Variable> variables;
     std::map<unsigned, unsigned> locations, builtins;
     std::set<unsigned> interfaceIds, outputs;
+    std::map<unsigned, unsigned> vertexInputs, stageVaryings;
     unsigned entries{}, memoryModels{}, capabilities{}, origins{}, entryId{}, executionId{};
     auto id = [&](unsigned value) { return value && value < words[3]; };
     for (std::size_t at = 5; at < words.size();) {
@@ -73,11 +75,13 @@ inline Result<std::vector<std::uint32_t>> inspectSpirv(const ShaderBinary& shade
     if (entries != 1 || memoryModels != 1 || capabilities != 1 || origins != (stage == ShaderStage::Fragment ? 1u : 0u))
         return bad("SPIR-V requires one Shader capability, memory model and main entry");
     if (origins && executionId != entryId) return bad("Execution mode does not name main entry");
-    auto vec4 = [&](unsigned type) {
+    auto components = [&](unsigned type) -> unsigned {
         const auto t = types.find(type);
-        if (t == types.end() || t->second.op != 23 || t->second.b != 4) return false;
+        if (t == types.end()) return 0;
+        if (t->second.op == 22) return t->second.a == 32 ? 1u : 0u;
+        if (t->second.op != 23 || t->second.b < 2 || t->second.b > 4) return 0;
         const auto scalar = types.find(t->second.a);
-        return scalar != types.end() && scalar->second.op == 22 && scalar->second.a == 32;
+        return scalar != types.end() && scalar->second.op == 22 && scalar->second.a == 32 ? t->second.b : 0;
     };
     bool position{};
     for (const auto& [variable, v] : variables) {
@@ -88,22 +92,43 @@ inline Result<std::vector<std::uint32_t>> inspectSpirv(const ShaderBinary& shade
         if (builtins.contains(variable) && locations.contains(variable)) return bad("BuiltIn cannot also have Location");
         if (builtins.contains(variable)) {
             const auto builtin = builtins.at(variable);
-            if (stage == ShaderStage::Vertex && v.storage == 3 && builtin == 0 && vec4(pointer->second.b)) {
+            if (stage == ShaderStage::Vertex && v.storage == 3 && builtin == 0 && components(pointer->second.b) == 4) {
                 if (position) return bad("Duplicate Position output"); position = true;
             } else if (stage == ShaderStage::Vertex && v.storage == 1 && (builtin == 42 || builtin == 43)) {
                 const auto t = types.find(pointer->second.b);
                 if (t == types.end() || t->second.op != 21 || t->second.a != 32) return bad("Vertex/instance index must be int32");
             } else return unsupported("Unsupported builtin interface");
-        } else if (stage == ShaderStage::Fragment && v.storage == 3 && locations.contains(variable) && vec4(pointer->second.b)) {
-            if (!outputs.insert(locations.at(variable)).second) return bad("Duplicate fragment output location");
-        } else return unsupported("Only vertex builtins and float4 fragment outputs supported");
+        } else if (locations.contains(variable) && components(pointer->second.b)) {
+            const auto location = locations.at(variable), count = components(pointer->second.b);
+            if (stage == ShaderStage::Fragment && v.storage == 3) {
+                if (count != 4 || !outputs.insert(location).second) return bad("Fragment output requires unique float4 location");
+            } else if (stage == ShaderStage::Vertex && v.storage == 1) {
+                if (!vertexInputs.emplace(location, count).second) return bad("Duplicate vertex input location");
+            } else if (!stageVaryings.emplace(location, count).second) return bad("Duplicate stage varying location");
+        } else return unsupported("Only standalone float32 scalar/vector interfaces supported");
     }
     for (auto variable : interfaceIds) if (!variables.contains(variable)) return bad("Entry interface ID is not a variable");
     if (stage == ShaderStage::Vertex && !position) return bad("Vertex requires standalone float4 Position");
+    if (stage == ShaderStage::Vertex) {
+        if (vertexInputs.size() != vertexLayout.attributes.size()) return bad("Vertex input count does not match layout");
+        for (unsigned i = 0; i < vertexLayout.attributes.size(); ++i) {
+            unsigned expected{};
+            switch (vertexLayout.attributes[i].format) {
+            case VertexFormat::Float: expected = 1; break;
+            case VertexFormat::Float2: expected = 2; break;
+            case VertexFormat::Float3: expected = 3; break;
+            case VertexFormat::Float4: case VertexFormat::UNorm8x4: expected = 4; break;
+            default: return bad("Invalid vertex input format");
+            }
+            if (!vertexInputs.contains(i) || vertexInputs.at(i) != expected) return bad("Vertex location/type does not match attribute order");
+        }
+    }
     if (stage == ShaderStage::Fragment) {
         if (outputs.size() != colors) return bad("Fragment outputs do not match render targets");
         for (unsigned i = 0; i < colors; ++i) if (!outputs.contains(i)) return bad("Missing fragment output location");
     }
+    if (varyings) *varyings = std::move(stageVaryings);
+    else if (!stageVaryings.empty()) return unsupported("Varying interface requires cross-stage inspection");
     return words;
 }
 }

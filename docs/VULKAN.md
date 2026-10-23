@@ -1,11 +1,11 @@
-# Vulkan transfers, color passes and initial SPIR-V drawing
+# Vulkan transfers, color passes and SPIR-V vertex/index drawing
 
 The opt-in Phase 3 implementation provides Vulkan 1.1 adapter enumeration, exact
 selection, device creation, upload/device/readback buffers, explicit copy states,
 RGBA8/RGBA16F 2D textures, color Clear/Load/Store passes, command recording/submission,
-queue fences, no-binding graphics pipelines/drawing and resource statistics. The D3D12
+queue fences, graphics pipelines/vertex/index drawing and resource statistics. The D3D12
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
-backend when enabled; depth/bindings/vertex inputs/presentation remain unimplemented.
+backend when enabled; depth/descriptor bindings/timestamps/presentation remain unimplemented.
 
 ## Build
 
@@ -37,7 +37,8 @@ prerequisites and are never bundled. Linux native compilation/runtime is still p
 - Adapter memory fields sum local/nonlocal heap capacities. They are not OS
   usage/budget measurements; `queryMemoryBudget` returns `Unsupported`.
 - Device buffers start in `Common`. Explicit `CopyDestination`/`CopySource`
-  transitions surround copies. Upload/readback states remain fixed. Each buffer
+  transitions surround copies. Upload buffers also accept vertex/index read states;
+  readback stays CopyDestination. Each buffer
   has a dedicated Vulkan allocation; this initial implementation has no allocator
   pooling or performance claim.
 - Copy ranges start at zero and accept any positive byte count within both
@@ -147,7 +148,8 @@ validated **SPIR-V 1.3 for Vulkan 1.1**, one `main` entry, Shader capability, Lo
 GLSL450 memory model, standalone float4 vertex Position and matching float4 fragment
 outputs at locations 0..N-1. Fragment mode is OriginUpperLeft. VertexIndex/InstanceIndex
 inputs are allowed. Extensions, imported instruction sets, member-decorated interfaces,
-user varyings, descriptors, push constants and other builtins are outside this initial path.
+descriptors, push constants and other builtins are outside this initial path. Standalone
+float32 scalar/vector vertex attributes and matching float varyings are now supported below.
 
 The SDK performs bounded header/instruction framing and interface inspection, **not
 full semantic validation**. Supply trusted compiler output already checked by a
@@ -157,7 +159,7 @@ is not linked into or distributed with the SDK. `compileHlsl` remains DXBC only;
 `reflectShader` explicitly returns Unsupported for SPIRV. General DXC and SPIR-V
 reflection remain Phase 5 work.
 
-Pipelines use triangle lists, no vertex input, no culling/depth/MSAA, and 1..8 floating
+Pipelines use triangle lists, no culling/depth/MSAA, and 1..8 floating
 color outputs bounded by the adapter limit. Layout/format count must match the active
 pass. Both RGBA8/RGBA16F support and optional blending features are queried first.
 Alpha blending matches D3D12: RGB = src.rgb*src.a + dst.rgb*(1-src.a), alpha = src.a.
@@ -168,8 +170,7 @@ Each new pass resets the binding and starts with full viewport/scissor. A negati
 Vulkan viewport height maps clip-space +Y to the top, matching the existing D3D12
 orientation. `setScissor` accepts a nonempty in-bounds rectangle. `draw` requires a
 bound compatible pipeline, positive vertex/instance counts and nonoverflowing
-firstVertex/firstInstance ranges. Rejection preserves prior binding/scissor. Vertex
-and indexed buffer binding remain Unsupported. Pipeline/module/layout/render-pass
+firstVertex/firstInstance ranges. Rejection preserves prior binding/scissor. Pipeline/module/layout/render-pass
 lifetimes are independent of caller wrappers and retire with the native device.
 
 `gfx_vulkan_draw_tests [--validation]` / installed `vulkan_draw_consumer` verify full
@@ -178,6 +179,48 @@ scissor/pipeline switches, Load+blend and mixed-format 2/8 outputs on real adapt
 `spirv_interface_contracts` exercises inspection without a GPU. Isolated current roots:
 `out/vulkan-draw`, `out/vulkan-draw-install`, `out/vulkan-draw-consumer`.
 See [draw evidence](PHASE3_VULKAN_DRAW_REPORT.md).
+
+## Vertex and index input
+
+`VertexLayout.attributes[i]` maps to SPIR-V location `i`. Attribute semantic/name/index
+continue to serve D3D12 mapping and portable structure checks; Vulkan does not derive
+locations from their names. Float/Float2/Float3/Float4 map to float32 scalar/vectors;
+UNorm8x4 maps to a normalized four-component float input. Layout and shader input
+count/types must match exactly. Standalone default-interpolated float scalar/vector
+vertex outputs and fragment inputs must have the same location/component maps.
+Interpolation decorations, arrays/struct interfaces and integer attributes are unsupported.
+
+Binding slots, stride, attribute offsets and format features are checked against
+the selected adapter limits after common layout validation. Buffers carry vertex/index
+usage alongside transfer usage. Device and Upload memory accept VertexBuffer,
+IndexBuffer and VertexAndIndexBuffer states; Upload also accepts CopySource. Readback
+memory cannot be vertex/index input. Transitions still occur outside render passes.
+
+`bindVertexBuffer`/`bindIndexBuffer` require recording, may occur inside/outside passes,
+and persist within a recording across passes. size=0 selects remaining bytes. Views
+must contain 1..UINT32_MAX bytes. Index format is UInt16/UInt32, with element-aligned
+offset/size. Full UInt32 index range is enabled only when the adapter supports it;
+otherwise UInt32 binding returns Unsupported. Both input capability flags are true,
+while descriptor bindings remain false.
+
+At draw, each required vertex binding must have matching stride/read state and
+layout-aligned offset, including all attributes of the final element. Nonindexed
+firstVertex/count and per-instance firstInstance/count are bounded by their views.
+Indexed firstIndex/count is bounded by the index view, and positive baseVertex is
+checked against the vertex view. The caller must ensure every actual index value +
+baseVertex addresses valid vertex data within the view; the SDK does not map/scan
+device index contents. Negative baseVertex is permitted under that existing API contract.
+Primitive restart and UInt8 indices are not enabled. Rejected binds/draws preserve prior
+bindings and capture no new resources/versions. Accepted bindings retain native allocations,
+and CPU writes/other submissions invalidate their observed versions.
+
+`gfx_vulkan_vertex_tests [--validation]` and installed `vulkan_vertex_consumer` check
+all five formats, color interpolation, sparse slots/per-instance streams, both memory
+kinds, UInt16/UInt32, +/- baseVertex, firstVertex/firstIndex/firstInstance, combined
+vertex/index allocations and 1080p/4K indexed images. `spirv_vertex_contracts` checks
+input/varying inspection on CPU. Current isolated roots: `out/vulkan-vertex`,
+`out/vulkan-vertex-install`, `out/vulkan-vertex-consumer`.
+See [vertex/index evidence](PHASE3_VULKAN_VERTEX_REPORT.md).
 
 The synchronization and lifetime rules follow the primary
 [copy](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyBuffer.html),

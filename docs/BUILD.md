@@ -53,12 +53,20 @@ D3D12 메모리 validation 충돌을 보존했으며, 사용자 보류 범위의
 `vulkan_render_consumer [--validation]`을 추가한다. 새 SDK는
 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-color-pass.zip`이다.
 
-현재 [SPIR-V draw](PHASE3_VULKAN_DRAW_REPORT.md)는 `out/vulkan-draw`,
+이전 [SPIR-V draw](PHASE3_VULKAN_DRAW_REPORT.md)는 `out/vulkan-draw`,
 `out/vulkan-draw-install`, `out/vulkan-draw-consumer`를 사용한다. Required validation
 등록은 통합 44개/Vulkan-only 16개이며 통합에서는 보류 메모리 3개를 제외한 41개를
 선택 실행한다. 두 backend OFF는 CPU 7개다. 설치 소비자는 `vulkan_draw_consumer
 [--validation]`을 추가한다. ShaderBinary format 필드 추가에 따라 모든 소비자를 재빌드한다.
 새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-draw.zip`이다.
+
+현재 [정점·인덱스 입력](PHASE3_VULKAN_VERTEX_REPORT.md)은 `out/vulkan-vertex`,
+`out/vulkan-vertex-install`, `out/vulkan-vertex-consumer`를 사용한다. Required validation
+등록은 통합 47개/Vulkan-only 19개이며 통합은 보류 메모리 3개를 제외한 44개를 실행한다.
+두 backend OFF는 CPU 8개다. 설치 소비자에 `vulkan_vertex_consumer [--validation]`을
+추가하며 실제 SDK library와 모든 소비자를 재빌드했다. 공개 API 형태/ABI 변경은 없다.
+새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-vertex.zip`이다.
+재현 명령과 child 전용 layer 환경은 해당 보고서의 frozen verification script를 따른다.
 
 ```powershell
 cmake -S tests/vulkan_consumer -B out/vulkan-consumer -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=D:/source/GraphicsSDK/out/vulkan-install

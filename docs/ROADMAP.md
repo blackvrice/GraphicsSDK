@@ -104,7 +104,9 @@ acceptance or later SDK feature milestones.
   Color Clear/Load/Store passes and mixed-format attachments are implemented
   ([report](PHASE3_VULKAN_COLOR_PASS_REPORT.md)). Initial externally validated SPIR-V
   pipelines/no-binding triangle drawing, scissor/blend/instancing and 2/8 outputs are
-  implemented ([report](PHASE3_VULKAN_DRAW_REPORT.md)). Depth, bindings, vertex input,
+  implemented ([report](PHASE3_VULKAN_DRAW_REPORT.md)). Float/UNorm vertex layouts,
+  UInt16/UInt32 indexed input, instance streams and float varyings are implemented
+  ([report](PHASE3_VULKAN_VERTEX_REPORT.md)). Depth and descriptor bindings,
   timestamps, presentation and the rest of this gate remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.

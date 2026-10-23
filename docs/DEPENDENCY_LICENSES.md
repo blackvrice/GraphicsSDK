@@ -1,5 +1,13 @@
 # 배포 의존성 라이선스 감사
 
+정점·인덱스 입력 SDK는 `audit_vulkan.py --variant vertex`와
+`licenses/vulkan-vertex-policy.json`으로 별도 감사한다.
+[inventory](../licenses/generated/windows-sdk-vulkan-vertex-release/inventory.json)는
+70개 compiler input/2개 component, 26개 compiler log/25개 linker log와 정확한 설치 SDK
+payload를 확인한다. 새 자체 테스트·fixture header 네 파일만 허용 범위에 추가했다.
+기존 고정 assembler/validator와 VVL runtime은 로컬 도구로 재사용하고 hash를 확인한다.
+외부 vendor source/binary는 SDK/source ZIP에 넣지 않으며 기존 17개 SDK ZIP을 보존한다.
+
 SPIR-V draw SDK는 `audit_vulkan.py --variant draw`와 `licenses/vulkan-draw-policy.json`으로
 독립 감사한다. [inventory](../licenses/generated/windows-sdk-vulkan-draw-release/inventory.json)는
 실제 SDK/CPU·GPU 테스트/설치 소비자 입력과 SDK payload를 확인한다. 자체 shader assembly와
