@@ -158,3 +158,9 @@ now covers draw1, draw1000 and instanced1000 on NVIDIA/Intel, with identical sha
 changing full-image references and separate validated/performance runs. CPU interval
 partitions are not GPU timestamps. Allocation/PSO workloads, broader Vulkan
 competitors and Linux native work remain open; production SDK sources are unchanged.
+
+The [initial Vulkan PSO comparison](PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md) now covers
+batches of one/eight pipelines on NVIDIA/Intel, including shader object creation
+and GPU use checks. Creation and public release are separate CPU API intervals;
+cache hits, actual memory reclamation and whole-SDK ranking are not inferred.
+Allocation workloads, internal profiling, broader competitors and Linux remain open.

@@ -179,3 +179,13 @@ Each device/SDK/scenario has three processes with five warmups and 30 samples,
 seed 20261025; correctness uses separate required-layer processes. Repeated
 triangles overlap and ignore instance ID, so command/instance counts are logical
 work specifications, not a hardware draw-count or real-scene throughput claim.
+
+The [Vulkan repeated PSO contract](PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md) separates
+batch shader/pipeline creation from public pipeline handle release. Batches
+contain one/eight pipelines and all are used in independently checked image
+regions. GPU work, fence/idle completion, recording disposal and full readback
+are outside both CPU intervals. Two intervals separated by GPU use are not
+reported as a frame wall time. Repeated identical states retain SDK/driver
+cache policy; neither cold creation nor cache hits are inferred. Each cell
+has three processes, five warmups and 30 measured iterations, seed 20261026.
+Public release latency does not normalize deferred native destruction policies.

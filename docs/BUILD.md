@@ -430,3 +430,14 @@ The frozen license profile `tools/audit_vulkan_draw.py` checks this run's
 `out/vulkan-draw-benchmark-vulkan11` compiler/linker reads, reused libraries and notices.
 SDL's public Vulkan options request API 1.1; its default API 1.0 cannot accept the
 SDK's supported SPIR-V 1.3 fixture version. Vendor and SDK sources remain unchanged.
+
+The [Vulkan PSO profile](PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md) builds separately from
+`benchmarks/vulkan_pso` against the same frozen SDK/SDL installs. Use a fresh
+build root, Release and `--parallel 1`, then run its three CTests.
+`tools/run_vulkan_pso.py --exe <Release/vulkan_pso.exe> --output <new-results>`
+runs required-layer correctness before measurements.
+`tools/report_vulkan_pso.py --input <results> --output <new-report>` checks raw
+commands/results and emits distinct creation/public-release statistics.
+`tools/audit_vulkan_pso.py` audits the frozen `out/vulkan-pso-benchmark` root.
+Shader assembly is not rerun; the same validated SPIR-V 1.3 and Vulkan 1.1
+request are used for both SDKs. New result/report directories must not exist.

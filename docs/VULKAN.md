@@ -462,3 +462,10 @@ its public options, allowing identical externally validated SPIR-V 1.3 shaders.
 Default SDL Vulkan 1.0 rejects those shader versions; this is recorded as an
 excluded compatibility attempt. SDK support remains SPIR-V 1.3; production
 sources, public API and ABI are unchanged.
+
+The standalone [pipeline creation/public-release profile](PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md)
+uses the unchanged installed SDK and SDL. Identical SPIR-V 1.3 pipelines are
+created in batches of one/eight, used for striped full-image checks, then released
+after untimed fence/idle completion. CPU creation and public release intervals
+are separate; native destruction, actual memory reclamation and cache hit/miss
+classification are outside its claims.

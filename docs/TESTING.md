@@ -582,3 +582,15 @@ remain excluded initial evidence. New performance data use explicit Vulkan 1.1
 and the same SPIR-V 1.3 bytes. Native draw-count capture and GPU timestamps are
 not claimed. SDK's prior 93 selected CTests are historical evidence, not rerun.
 Deferred memory/Intel AV policy remains unchanged.
+
+The [Vulkan PSO comparison](PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md) passes three
+standalone CTests and 339 Python tests (44 new contracts). The CPU reference
+checks one/eight stripe boundaries, coverage and per-iteration color changes
+with 38 assertions. Eight required-layer workload processes precede 24 serial
+unvalidated measurement processes. All 872 images / 8388640 tight bytes match;
+3924 pipelines are logically created, used in distinct image regions and publicly
+released. There are 720 measured iterations with 1440 distinct CPU intervals.
+Eight report controls reject scope/cache/reclamation/count/statistic/raw/command
+changes. The public release measurement does not prove native destruction time
+or GPU memory reclamation. Previous SDK CTests and 23 packages remain preserved;
+no long memory run or historical Intel AV investigation is resumed.

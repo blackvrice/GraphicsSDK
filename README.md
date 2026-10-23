@@ -128,3 +128,8 @@ The [same-Vulkan draw comparison](docs/PHASE3_VULKAN_DRAW_BENCHMARK_REPORT.md) a
 full-image references, draw/instancing workloads and CPU recording/submission/wait
 partitions. SDL explicitly requests Vulkan 1.1 for the same validated SPIR-V 1.3
 shaders. This comparison reuses the unchanged production SDK.
+
+The [Vulkan pipeline comparison](docs/PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md) measures
+repeated shader/pipeline creation and public handle release as separate CPU API
+intervals, with each pipeline used in full-image-verified drawing. Release latency
+is not actual GPU memory reclamation; production SDK sources remain unchanged.

@@ -133,3 +133,10 @@ not establish an overall SDK ranking. See the report for primary and CPU stage
 statistics, full-image verification, initial shader compatibility failures and
 reproduction evidence. D3D12, upload and rejected memory-candidate results are
 kept in their own contracts and are not pooled with this draw profile.
+
+The [first same-Vulkan pipeline creation/public-release results](PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md)
+are available for GraphicsSDK and pinned SDL on NVIDIA/Intel. GraphicsSDK's
+creation P50 is longer in the four measured cells. Public release timings
+include different immediate/deferred ownership policies and do not establish
+actual GPU memory reclamation performance. No driver/cache or whole-SDK ranking
+is inferred. These CPU API intervals are not pooled with draw/upload wall times.

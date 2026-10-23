@@ -1,0 +1,95 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_pso",
+      "-B",
+      "out/vulkan-pso-benchmark",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "seconds": 3.625
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-pso-benchmark",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 7.217999999999847
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-pso-benchmark",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-24-phase3-vulkan-pso\\ctest.xml"
+    ],
+    "returncode": 0,
+    "seconds": 0.8289999999997235
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 3.905999999999949
+  },
+  {
+    "name": "benchmark-audit",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_pso.py",
+      "--output",
+      "licenses/generated/windows-benchmarks-vulkan-pso-release",
+      "--create"
+    ],
+    "returncode": 0,
+    "seconds": 1.375
+  },
+  {
+    "name": "matrix",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_vulkan_pso.py",
+      "--exe",
+      "out/vulkan-pso-benchmark/Release/vulkan_pso.exe",
+      "--output",
+      "benchmarks/results/2026-10-24-vulkan-pso",
+      "--repetitions",
+      "3",
+      "--warmup",
+      "5",
+      "--samples",
+      "30"
+    ],
+    "returncode": 0,
+    "seconds": 20.936999999999898
+  }
+]

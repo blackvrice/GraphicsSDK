@@ -468,3 +468,11 @@ are not linked or redistributed with the final benchmark. Final shaders reuse
 the original validated own SPIR-V 1.3 fixture bytes. Initial incompatible attempts,
 source reconstruction and full prior evidence remain hash preserved.
 No new SDK binary package or vendor/runtime binary distribution is produced.
+
+The [Vulkan PSO inventory](../licenses/generated/windows-benchmarks-vulkan-pso-release/inventory.json)
+records 648 conservative compiler inputs / 21 components and two new compiler
+and linker traces each (benchmark plus CPU reference). The frozen SDK/SDL
+static closures, libraries and original shader validation receipt are reused
+with SHA checks. No new vendor sources, shader assembler run, SDK binary
+package or runtime redistribution is introduced. Complete preceding evidence,
+source archives and all 23 historical SDK packages are retained.
