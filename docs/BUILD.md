@@ -499,3 +499,9 @@ memory exclusion from initial CTest selection. The recorded
 builds the current product rather than a pool candidate. Historical experiment tools
 pin the old SDK source identity: reproduce them from the older commit/source ZIP or
 preserved original source, not by relaxing their guards against the new product.
+
+The [loader failure consumer](VULKAN_LOADER_FAULT_REPORT.md) links the existing
+before/after product installations without rebuilding or changing product sources.
+Its final recorded build script is `2026-10-24-vulkan-loader-fault/verification-scripts/build-v4.py`
+under benchmark validation reports; serial MSVC Release builds use fresh roots.
+Pilot/failed build roots are retained separately from final evidence.

@@ -521,3 +521,9 @@ Changed historical product inputs resolve only to a verified original source sna
 unchanged artifacts are still hash-checked directly. Exact-signature test stub generation
 also records the pinned Vulkan registry input. No new dependency/vendor modification
 or binary redistribution is introduced; this is not legal approval or symbol reachability.
+
+The [loader-failure inventory](../licenses/generated/windows-vulkan-loader-fault-release/inventory.json)
+extends the preserved conservative product inventory to 915 inputs/21 components,
+adding six compiler and six linker read logs for new before/after consumers. The
+same pinned Vulkan-Headers aggregator/Win32 declarations were explicitly reviewed.
+No new third-party dependency or binary redistribution is introduced.

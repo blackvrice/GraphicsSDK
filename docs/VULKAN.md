@@ -510,3 +510,9 @@ pipeline arrays retain their defined null/partial-success cleanup. Public ABI,
 host-memory preference and dedicated resource allocation remain unchanged; no pool
 policy is promoted. Historical product inputs are resolved through a verified
 pre-fix snapshot by the new audit, without changing old inventories/reports.
+
+The [real-loader initialization contracts](VULKAN_LOADER_FAULT_REPORT.md) test
+synthetic host/device OOM in instance, debug messenger, device and supported Win32
+surface creation. The current 29-site ownership fix needs no further product change.
+Dispatchable failures use null; non-dispatchable null/poison paths have guarded
+cleanup controls. Successful retries preserve live guard data and zero VVL errors.

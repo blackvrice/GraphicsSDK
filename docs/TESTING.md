@@ -642,3 +642,10 @@ processes. Product selected CTests are 55 (54 prior + 1 new); Python tests are 5
 The CPU PFNs load no driver. Hardware tests cover two GPUs with validation OFF/ON.
 Instance/device/debug-messenger/surface failures are statically audited/helper-tested,
 not loader-level injected. The three deferred memory tests remain excluded.
+
+Following the earlier helper/PFN stage, [real loader failure injection](VULKAN_LOADER_FAULT_REPORT.md)
+now covers instance/device/messenger on two GPUs and Win32 surface on the supported
+NVIDIA adapter. New CPU plan assertions are 216; current Python tests are 550.
+The 55-product-CTest result remains prior evidence for the unchanged SDK, not a new
+run. Deferred memory tests remain registered and unselected. Native object conservation
+and readback are bounded correctness checks, not physical-memory acceptance.

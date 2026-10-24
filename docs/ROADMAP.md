@@ -206,3 +206,10 @@ failure cleanup. Product CTests 55, Python 526, before/after actual-implementati
 PFN tests and separate hardware OOM/bind controls pass. Loader-level failure
 injection, broader errors and pool/churn/performance acceptance remain separate;
 this does not reopen the deferred long-memory/Intel AV investigation.
+
+The [loader initialization failure stage](VULKAN_LOADER_FAULT_REPORT.md) is now
+covered by a separate explicit layer/installed SDK consumer: 32 clean processes,
+96 failure/retry cycles, 8 guarded old-SDK regressions and 10 fail-closed controls.
+Intel initialization is covered; surface injection runs on the adapter advertising
+swapchain support (NVIDIA). Broader errors, mixed-size/occupancy/churn, performance
+acceptance and Linux remain open. The long-memory/Intel AV deferral is unchanged.

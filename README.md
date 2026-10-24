@@ -167,3 +167,9 @@ is now hardened at 29 creation sites. Actual-implementation PFN tests reproduce 
 invalid cleanup attempts before the fix and zero afterward; separate NVIDIA/Intel
 buffer error/readback tests also pass. This is a product correctness fix. Buffer
 pooling remains experimental, and no new timing or physical-memory claim is made.
+
+The [real-loader failure profile](docs/VULKAN_LOADER_FAULT_REPORT.md) now covers
+instance/device/messenger failures on NVIDIA/Intel and Win32 surface failures on
+the supported NVIDIA adapter. It passes 96 synthetic error/retry cycles with zero
+invalid cleanup; the old SDK reproduces 24 guarded invalid cleanup calls. Product
+sources remain unchanged; this adds correctness evidence without a timing claim.

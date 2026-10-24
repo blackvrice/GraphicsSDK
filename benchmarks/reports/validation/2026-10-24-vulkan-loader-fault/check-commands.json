@@ -1,0 +1,45 @@
+[
+  {
+    "name": "audit-create",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_loader_fault.py",
+      "--create"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "audit-check",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_loader_fault.py",
+      "--check"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "report",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/report_vulkan_loader_fault.py",
+      "benchmarks/results/2026-10-24-vulkan-loader-fault-v2",
+      "--output",
+      "benchmarks/reports/2026-10-24-vulkan-loader-fault/summary.json"
+    ],
+    "returncode": 0
+  }
+]

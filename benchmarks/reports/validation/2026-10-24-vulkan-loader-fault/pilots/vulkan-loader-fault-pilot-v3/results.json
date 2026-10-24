@@ -1,0 +1,3534 @@
+{
+  "schema_version": 1,
+  "contract": "vulkan_loader_fault_matrix_v1",
+  "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "prior_SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+  "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+  "pilot": true,
+  "product_changed": false,
+  "buffer_pool_adopted": false,
+  "physical_memory_reclamation_verified": false,
+  "probe": {
+    "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+    "adapters": [
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "Intel(R) UHD Graphics 770"
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "out/vulkan-loader-fault-before-v3/Release/VkLayer_gfx_loader_fault.dll",
+      "sha256": "38ec72cfdb3b4b19782d5880af5a57eb37d85cbb5e4fe6ab639a2f8e0977c62a",
+      "bytes": 28160
+    },
+    {
+      "path": "out/vulkan-loader-fault-before-v3/Release/VkLayer_gfx_loader_fault.json",
+      "sha256": "7e3461d161c242004ec34c336fd490c13c30c10bb61171280f6b82d7dac5ac2d",
+      "bytes": 334
+    },
+    {
+      "path": "out/vulkan-loader-fault-before-v3/Release/vulkan_loader_fault.exe",
+      "sha256": "a39c88ed781952d348be593599e4ac766d2d80f11a1e8500def99199496fe7c0",
+      "bytes": 432640
+    },
+    {
+      "path": "out/vulkan-loader-fault-before-v3/Release/vulkan_loader_plan.exe",
+      "sha256": "05a24a84669805fefd0bdf62387debfc1128b05ec6a3f043f8d84ed0928d4544",
+      "bytes": 17408
+    },
+    {
+      "path": "out/vulkan-loader-fault-after-v3/Release/VkLayer_gfx_loader_fault.dll",
+      "sha256": "1dd135b8d2004929b1ea3b8b1780c6745f7cd98d73a45a12af96ae1ec5e02caa",
+      "bytes": 28160
+    },
+    {
+      "path": "out/vulkan-loader-fault-after-v3/Release/VkLayer_gfx_loader_fault.json",
+      "sha256": "7e3461d161c242004ec34c336fd490c13c30c10bb61171280f6b82d7dac5ac2d",
+      "bytes": 334
+    },
+    {
+      "path": "out/vulkan-loader-fault-after-v3/Release/vulkan_loader_fault.exe",
+      "sha256": "56d46f378ebcd4ced5ab451aba3254ef2ec6dd30c51b954fef4ef9296263bf0d",
+      "bytes": 433152
+    },
+    {
+      "path": "out/vulkan-loader-fault-after-v3/Release/vulkan_loader_plan.exe",
+      "sha256": "2123c7322695841f6154f1fdc39d9162d1df25ebcfc61f79c494cdc581d133e0",
+      "bytes": 17408
+    }
+  ],
+  "runs": [
+    {
+      "name": "after-gpu0-v0-instance-1-p0",
+      "variant": "after",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "instance",
+        "result": -1,
+        "poison": 0,
+        "validation": false,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 83,
+        "verified_buffers": 12,
+        "frames": 0,
+        "verified_bytes": 49152,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                2,
+                0,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                3,
+                0,
+                2,
+                0
+              ],
+              "created": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                3,
+                0,
+                2,
+                0
+              ],
+              "created": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                3,
+                0,
+                2,
+                0
+              ],
+              "created": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                4,
+                0,
+                2,
+                0
+              ],
+              "created": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                5,
+                0,
+                3,
+                0
+              ],
+              "created": [
+                3,
+                0,
+                3,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "live": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                5,
+                0,
+                3,
+                0
+              ],
+              "created": [
+                3,
+                0,
+                3,
+                0
+              ],
+              "destroyed": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                5,
+                0,
+                3,
+                0
+              ],
+              "created": [
+                3,
+                0,
+                3,
+                0
+              ],
+              "destroyed": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                6,
+                0,
+                3,
+                0
+              ],
+              "created": [
+                3,
+                0,
+                3,
+                0
+              ],
+              "destroyed": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                7,
+                0,
+                4,
+                0
+              ],
+              "created": [
+                4,
+                0,
+                4,
+                0
+              ],
+              "destroyed": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "live": [
+                2,
+                0,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                7,
+                0,
+                4,
+                0
+              ],
+              "created": [
+                4,
+                0,
+                4,
+                0
+              ],
+              "destroyed": [
+                3,
+                0,
+                3,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            7,
+            0,
+            4,
+            0
+          ],
+          "created": [
+            4,
+            0,
+            4,
+            0
+          ],
+          "destroyed": [
+            4,
+            0,
+            4,
+            0
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 0,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "name": "after-gpu0-v1-device-2-p0",
+      "variant": "after",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "device",
+        "result": -2,
+        "poison": 0,
+        "validation": true,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 87,
+        "verified_buffers": 12,
+        "frames": 0,
+        "verified_bytes": 49152,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "created": [
+                2,
+                2,
+                1,
+                0
+              ],
+              "destroyed": [
+                1,
+                1,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                3,
+                3,
+                3,
+                0
+              ],
+              "created": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "destroyed": [
+                1,
+                1,
+                0,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                3,
+                3,
+                3,
+                0
+              ],
+              "created": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "destroyed": [
+                2,
+                2,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                3,
+                3,
+                3,
+                0
+              ],
+              "created": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "destroyed": [
+                2,
+                2,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                4,
+                4,
+                4,
+                0
+              ],
+              "created": [
+                4,
+                4,
+                2,
+                0
+              ],
+              "destroyed": [
+                3,
+                3,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                5,
+                5,
+                5,
+                0
+              ],
+              "created": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "destroyed": [
+                3,
+                3,
+                1,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                5,
+                5,
+                5,
+                0
+              ],
+              "created": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "destroyed": [
+                4,
+                4,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                5,
+                5,
+                5,
+                0
+              ],
+              "created": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "destroyed": [
+                4,
+                4,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                6,
+                6,
+                6,
+                0
+              ],
+              "created": [
+                6,
+                6,
+                3,
+                0
+              ],
+              "destroyed": [
+                5,
+                5,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                7,
+                7,
+                7,
+                0
+              ],
+              "created": [
+                7,
+                7,
+                4,
+                0
+              ],
+              "destroyed": [
+                5,
+                5,
+                2,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                7,
+                7,
+                7,
+                0
+              ],
+              "created": [
+                7,
+                7,
+                4,
+                0
+              ],
+              "destroyed": [
+                6,
+                6,
+                3,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            7,
+            7,
+            7,
+            0
+          ],
+          "created": [
+            7,
+            7,
+            4,
+            0
+          ],
+          "destroyed": [
+            7,
+            7,
+            4,
+            0
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 0,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "name": "after-gpu0-v1-messenger-1-p1",
+      "variant": "after",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "messenger",
+        "result": -1,
+        "poison": 1,
+        "validation": true,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 87,
+        "verified_buffers": 12,
+        "frames": 0,
+        "verified_bytes": 49152,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                2,
+                2,
+                1,
+                0
+              ],
+              "created": [
+                2,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "created": [
+                3,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "created": [
+                3,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                2,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "created": [
+                3,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                2,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                4,
+                4,
+                2,
+                0
+              ],
+              "created": [
+                4,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                3,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "created": [
+                5,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                3,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "created": [
+                5,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                4,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "created": [
+                5,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                4,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                6,
+                6,
+                3,
+                0
+              ],
+              "created": [
+                6,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                5,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                7,
+                7,
+                4,
+                0
+              ],
+              "created": [
+                7,
+                4,
+                4,
+                0
+              ],
+              "destroyed": [
+                5,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                7,
+                7,
+                4,
+                0
+              ],
+              "created": [
+                7,
+                4,
+                4,
+                0
+              ],
+              "destroyed": [
+                6,
+                3,
+                3,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            7,
+            7,
+            4,
+            0
+          ],
+          "created": [
+            7,
+            4,
+            4,
+            0
+          ],
+          "destroyed": [
+            7,
+            4,
+            4,
+            0
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 0,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "name": "before-gpu0-v1-messenger-1-p1",
+      "variant": "before",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "messenger",
+        "result": -1,
+        "poison": 1,
+        "validation": true,
+        "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 87,
+        "verified_buffers": 12,
+        "frames": 0,
+        "verified_bytes": 49152,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                2,
+                2,
+                1,
+                0
+              ],
+              "created": [
+                2,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "created": [
+                3,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                1,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "created": [
+                3,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                2,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                3,
+                3,
+                2,
+                0
+              ],
+              "created": [
+                3,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                2,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                4,
+                4,
+                2,
+                0
+              ],
+              "created": [
+                4,
+                2,
+                2,
+                0
+              ],
+              "destroyed": [
+                3,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "created": [
+                5,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                3,
+                1,
+                1,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "created": [
+                5,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                4,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                5,
+                5,
+                3,
+                0
+              ],
+              "created": [
+                5,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                4,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                6,
+                6,
+                3,
+                0
+              ],
+              "created": [
+                6,
+                3,
+                3,
+                0
+              ],
+              "destroyed": [
+                5,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                7,
+                7,
+                4,
+                0
+              ],
+              "created": [
+                7,
+                4,
+                4,
+                0
+              ],
+              "destroyed": [
+                5,
+                2,
+                2,
+                0
+              ],
+              "live": [
+                2,
+                2,
+                2,
+                0
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                7,
+                7,
+                4,
+                0
+              ],
+              "created": [
+                7,
+                4,
+                4,
+                0
+              ],
+              "destroyed": [
+                6,
+                3,
+                3,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            7,
+            7,
+            4,
+            0
+          ],
+          "created": [
+            7,
+            4,
+            4,
+            0
+          ],
+          "destroyed": [
+            7,
+            4,
+            4,
+            0
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 3,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "name": "after-gpu0-v0-surface-2-p1",
+      "variant": "after",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "surface",
+        "result": -2,
+        "poison": 1,
+        "validation": false,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 83,
+        "verified_buffers": 9,
+        "frames": 3,
+        "verified_bytes": 795708,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                0,
+                1,
+                3
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                0,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                0,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                0,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                0,
+                1,
+                5
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                0,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                0,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                3
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            1,
+            0,
+            1,
+            6
+          ],
+          "created": [
+            1,
+            0,
+            1,
+            3
+          ],
+          "destroyed": [
+            1,
+            0,
+            1,
+            3
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 0,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "name": "before-gpu0-v0-surface-2-p1",
+      "variant": "before",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "surface",
+        "result": -2,
+        "poison": 1,
+        "validation": false,
+        "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 83,
+        "verified_buffers": 9,
+        "frames": 3,
+        "verified_bytes": 795708,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                0,
+                1,
+                3
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                0,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                0,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                0,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                0,
+                1,
+                5
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                0,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                1
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                0,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                0,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                3
+              ],
+              "live": [
+                1,
+                0,
+                1,
+                0
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            1,
+            0,
+            1,
+            6
+          ],
+          "created": [
+            1,
+            0,
+            1,
+            3
+          ],
+          "destroyed": [
+            1,
+            0,
+            1,
+            3
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 3,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "name": "after-gpu0-v1-surface-1-p1",
+      "variant": "after",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "surface",
+        "result": -1,
+        "poison": 1,
+        "validation": true,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 84,
+        "verified_buffers": 9,
+        "frames": 3,
+        "verified_bytes": 795708,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                1,
+                1,
+                3
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                1,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                1,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                1,
+                1,
+                5
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                1,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                1,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                3
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            1,
+            1,
+            1,
+            6
+          ],
+          "created": [
+            1,
+            1,
+            1,
+            3
+          ],
+          "destroyed": [
+            1,
+            1,
+            1,
+            3
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 0,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    },
+    {
+      "name": "before-gpu0-v1-surface-1-p1",
+      "variant": "before",
+      "result": {
+        "schema_version": 1,
+        "contract": "vulkan_loader_fault_v1",
+        "kind": "surface",
+        "result": -1,
+        "poison": 1,
+        "validation": true,
+        "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+        "source_fingerprint": "40e34b75f0e0588e750e04e8816d154fd82f853a4f9ee9ba1350b2523fabdf8f",
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:96586",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "assertions": 84,
+        "verified_buffers": 9,
+        "frames": 3,
+        "verified_bytes": 795708,
+        "cycles": [
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 0,
+              "errors": 0,
+              "injections": 0,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 1,
+              "errors": 0,
+              "injections": 1,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                1,
+                1,
+                3
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                1,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                1,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            }
+          },
+          {
+            "before": {
+              "attempts": [
+                1,
+                1,
+                1,
+                4
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 2,
+              "errors": 0,
+              "injections": 2,
+              "pending": 0
+            },
+            "failed": {
+              "attempts": [
+                1,
+                1,
+                1,
+                5
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                2
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "retry": {
+              "attempts": [
+                1,
+                1,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                2
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            },
+            "clean": {
+              "attempts": [
+                1,
+                1,
+                1,
+                6
+              ],
+              "created": [
+                1,
+                1,
+                1,
+                3
+              ],
+              "destroyed": [
+                0,
+                0,
+                0,
+                3
+              ],
+              "live": [
+                1,
+                1,
+                1,
+                0
+              ],
+              "invalid": 3,
+              "errors": 0,
+              "injections": 3,
+              "pending": 0
+            }
+          }
+        ],
+        "final": {
+          "attempts": [
+            1,
+            1,
+            1,
+            6
+          ],
+          "created": [
+            1,
+            1,
+            1,
+            3
+          ],
+          "destroyed": [
+            1,
+            1,
+            1,
+            3
+          ],
+          "live": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "invalid": 3,
+          "errors": 0,
+          "injections": 3,
+          "pending": 0
+        }
+      }
+    }
+  ]
+}

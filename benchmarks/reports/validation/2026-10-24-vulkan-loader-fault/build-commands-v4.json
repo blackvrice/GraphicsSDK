@@ -1,0 +1,90 @@
+[
+  {
+    "name": "after-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_loader_fault",
+      "-B",
+      "out/vulkan-loader-fault-after-v4",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-creation-install"
+    ],
+    "returncode": 0,
+    "seconds": 3.7339999999999236
+  },
+  {
+    "name": "after-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-loader-fault-after-v4",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 10.235000000000014
+  },
+  {
+    "name": "after-plan",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-loader-fault-after-v4",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "seconds": 0.11000000000001364
+  },
+  {
+    "name": "before-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_loader_fault",
+      "-B",
+      "out/vulkan-loader-fault-before-v4",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-presentation-install"
+    ],
+    "returncode": 0,
+    "seconds": 3.2970000000000255
+  },
+  {
+    "name": "before-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-loader-fault-before-v4",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 10.187000000000012
+  },
+  {
+    "name": "before-plan",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-loader-fault-before-v4",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "seconds": 0.09399999999993724
+  }
+]
