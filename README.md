@@ -150,3 +150,8 @@ adds a guarded isolated SDK implementation and fresh baseline/candidate/SDL tria
 It cuts 1,000-buffer native memory calls to 63 but increases a single buffer's
 requested reservation and creation latency. It remains an experiment; product SDK
 sources and defaults are unchanged.
+
+The [adaptive Vulkan buffer reservation study](docs/PHASE3_VULKAN_ADAPTIVE_BUFFER_POOL_REPORT.md)
+adds an isolated 1-slot-first growth candidate and fresh baseline/fixed/adaptive/SDL
+comparison. It removes the fresh single-buffer 64KiB request while retaining batch
+allocation savings. Production adoption, failure injection and broader churn acceptance remain open.

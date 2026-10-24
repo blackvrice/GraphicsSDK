@@ -619,3 +619,11 @@ GPU tests cover fragmented reuse, retained recording aliases, mixed sizes, large
 fallback and retired generations. Python 444/444 (27 new), report mutation controls,
 actual native allocation/byte conservation and full readback pass. OOM/bind-failure
 injection and broad multithread use are not accepted; the candidate is not promoted.
+
+The [adaptive buffer reservation study](PHASE3_VULKAN_ADAPTIVE_BUFFER_POOL_REPORT.md)
+records 57 selected CTests and 478 Python tests. New native checks cover all bounded
+power-of-two capacities, sparse growth boundaries, partial reuse, retained large-block
+survivors, reset after empty and retained GPU data. The four-variant matrix has 16
+correctness, 48 performance and 12 separate native-trace processes. The 3 deferred
+`memory_reclamation_` cases remain excluded at initial CTest selection; no policy change
+or long memory/Intel AV completion is implied. Failure injection remains an adoption gate.

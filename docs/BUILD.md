@@ -478,3 +478,10 @@ exact reviewed product fingerprint and unique patch anchors. The report links th
 actual serial SDK/installed-consumer build, pinned VVL environment and CTest selection
 excluding ^memory_reclamation_ from the start. Reproduction needs new source/build/
 install/result roots and matching runner/audit paths. Never patch product/vendor files.
+
+For the next isolated allocator candidate, use the
+[adaptive study build script](../benchmarks/reports/validation/2026-10-24-phase3-vulkan-adaptive-buffer-pool/verification-scripts/build.py)
+and [generator](../tools/prepare_vulkan_adaptive_buffer_pool.py). The recorded profile uses
+new source/build/install/benchmark/trace roots, MSVC `--parallel 1`, child-only VVL settings,
+and the deferred memory exclusion from the start. Existing product and fixed-candidate
+builds are preserved. Reruns require new roots and matching runner/audit paths.

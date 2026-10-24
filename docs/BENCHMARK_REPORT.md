@@ -159,3 +159,9 @@ lower large-batch creation/release latency on NVIDIA/Intel, with fewer native me
 calls, while single creation regresses and requests more bytes. The fixed policy is
 not adopted as the product default. See the fresh matched baseline/candidate/SDL data;
 these are API intervals, not GPU timestamps or physical memory reclamation timings.
+
+The [adaptive small-buffer report](PHASE3_VULKAN_ADAPTIVE_BUFFER_POOL_REPORT.md)
+records the next isolated implementation and fresh baseline/fixed/adaptive/SDL results.
+One fresh 4KiB buffer requests 4KiB, and 1000 use 66 native allocations/4,124,672 bytes.
+The first-buffer reservation objective is met; production adoption and broader failure/
+occupancy acceptance remain open. No whole-SDK or physical-memory ranking is inferred.

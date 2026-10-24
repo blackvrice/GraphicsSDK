@@ -1,0 +1,297 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -221,3 +221,15 @@
+ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/GraphicsSDKConfigVersion.cmake VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion)
+ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/GraphicsSDKConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/GraphicsSDKConfigVersion.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/GraphicsSDK)
+ install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/GraphicsSDK)
++
++if(GFX_BUILD_TESTS AND GFX_ENABLE_VULKAN)
++  add_executable(gfx_pool_range tests/PoolRangeTests.cpp)
++  target_include_directories(gfx_pool_range PRIVATE src/backends/vulkan)
++  target_link_libraries(gfx_pool_range PRIVATE GraphicsSDK::Core)
++  add_test(NAME pool_range_contracts COMMAND gfx_pool_range)
++  add_executable(gfx_pool_gpu tests/PoolGpuTests.cpp)
++  target_link_libraries(gfx_pool_gpu PRIVATE GraphicsSDK::Core)
++  add_test(NAME pool_gpu COMMAND gfx_pool_gpu)
++  add_test(NAME pool_gpu_validation COMMAND gfx_pool_gpu --validation)
++  set_tests_properties(pool_gpu pool_gpu_validation PROPERTIES TIMEOUT 180 RUN_SERIAL TRUE)
++endif()
+--- a/src/backends/vulkan/Vulkan.cpp
++++ b/src/backends/vulkan/Vulkan.cpp
+@@ -4,6 +4,9 @@
+ #include "VulkanValidation.hpp"
+ #include "Spirv.hpp"
+ #include "Timestamp.hpp"
++#include "BufferPoolRange.hpp"
++#include <mutex>
++#include <set>
+ #include <algorithm>
+ #include <array>
+ #include <atomic>
+@@ -214,7 +217,7 @@
+ }
+ #define DEVICE_FUNCTIONS(X) \
+     X(DestroyDevice) X(GetDeviceQueue) X(DeviceWaitIdle) X(QueueWaitIdle) X(QueueSubmit) \
+-    X(CreateBuffer) X(DestroyBuffer) X(GetBufferMemoryRequirements) X(AllocateMemory) X(FreeMemory) X(BindBufferMemory) \
++    X(CreateBuffer) X(DestroyBuffer) X(GetBufferMemoryRequirements2) X(GetBufferMemoryRequirements) X(AllocateMemory) X(FreeMemory) X(BindBufferMemory) \
+     X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) \
+     X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
+     X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(DestroyPipeline) \
+@@ -241,6 +244,7 @@
+     void release() { if (handle) { DestroyDevice(handle, nullptr); handle = {}; } }
+     ~NativeDevice() { if (handle && DestroyDevice) release(); }
+ };
++#include "BufferPool.hpp"
+ struct NativeSurface {
+     std::shared_ptr<NativeDevice> native;
+     VkSurfaceKHR handle{};
+@@ -267,6 +271,8 @@
+     VkImage image{};
+     VkImageView view{};
+     VkDeviceMemory memory{};
++    std::shared_ptr<BufferBlock> block;
++    std::uint32_t slot{};
+     VkDeviceSize bytes{};
+     std::shared_ptr<NativeSwapchain> swapchain;
+     std::uint32_t imageIndex{};
+@@ -282,7 +288,8 @@
+         if (buffer) native->DestroyBuffer(native->handle, buffer, nullptr);
+         if (view) native->DestroyImageView(native->handle, view, nullptr);
+         if (image && !swapchain) native->DestroyImage(native->handle, image, nullptr);
+-        if (memory) native->FreeMemory(native->handle, memory, nullptr);
++        if (block) { block->give(slot); block.reset(); }
++        else if (memory) native->FreeMemory(native->handle, memory, nullptr);
+         buffer = {}; view = {}; image = {}; memory = {};
+     }
+     ~Allocation() { release(); }
+@@ -390,6 +397,7 @@
+     bool retired{}, lost{};
+     std::list<Pending> pending;
+     std::vector<std::weak_ptr<Allocation>> allocations;
++    std::vector<std::weak_ptr<BufferBlock>> bufferBlocks;
+     std::vector<std::weak_ptr<Recording>> recordings;
+     std::vector<std::weak_ptr<NativePipeline>> pipelines;
+     std::vector<std::weak_ptr<NativeSwapchain>> swapchains;
+@@ -1069,7 +1077,12 @@
+         std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
+         std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
+         result.trackedObjects = owner->objects.size();
+-        for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
++        std::set<const BufferBlock*> counted;
++        for (auto& w : owner->allocations) if (auto a = w.lock()) {
++            ++result.uniqueResources;
++            if (a->block) { if(counted.insert(a->block.get()).second)result.resourceAllocationBytes+=a->block->slots.bytes(); }
++            else result.resourceAllocationBytes+=a->bytes;
++        }
+         result.pendingSubmissions = owner->pending.size();
+         for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size() + p.recording->pipelines.size() + (p.recording->queries ? 1 : 0);
+         return result;
+@@ -1095,7 +1108,11 @@
+         VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; info.size = desc.size;
+         info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+         if (auto ok = owner->accept(owner->native->CreateBuffer(owner->native->handle, &info, nullptr, &a->buffer), "vkCreateBuffer"); !ok) return std::unexpected(ok.error());
+-        VkMemoryRequirements req{}; owner->native->GetBufferMemoryRequirements(owner->native->handle, a->buffer, &req);
++        VkMemoryDedicatedRequirements dedicated{VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS};
++        VkMemoryRequirements2 requirements{VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2};requirements.pNext=&dedicated;
++        VkBufferMemoryRequirementsInfo2 query{VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2};query.buffer=a->buffer;
++        owner->native->GetBufferMemoryRequirements2(owner->native->handle,&query,&requirements);
++        const auto req=requirements.memoryRequirements;
+         const VkMemoryPropertyFlags required = desc.memory == Memory::Device ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+         std::optional<std::uint32_t> type;
+         for (std::uint32_t i = 0; i < owner->memory.memoryTypeCount; ++i) {
+@@ -1106,9 +1123,32 @@
+         }
+         if (!type) return fail(ErrorCode::Unsupported, "No compatible Vulkan buffer memory type");
+         a->bytes = req.size; a->coherent = (owner->memory.memoryTypes[*type].propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
+-        VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize = req.size; allocate.memoryTypeIndex = *type;
+-        if (auto ok = owner->accept(owner->native->AllocateMemory(owner->native->handle, &allocate, nullptr, &a->memory), "vkAllocateMemory"); !ok) return std::unexpected(ok.error());
+-        if (auto ok = owner->accept(owner->native->BindBufferMemory(owner->native->handle, a->buffer, a->memory, 0), "vkBindBufferMemory"); !ok) return std::unexpected(ok.error());
++        VkDeviceSize bindOffset{};
++        const auto stride=desc.memory==Memory::Device?vulkan::BufferSlots::stride(req.size,req.alignment,dedicated.requiresDedicatedAllocation||dedicated.prefersDedicatedAllocation):0;
++        if(stride){
++            std::erase_if(owner->bufferBlocks,[](auto&w){return w.expired();});
++            std::uint32_t largest{};
++            for(auto&w:owner->bufferBlocks)if(auto b=w.lock();b&&b->type==*type&&b->slots.stride()==stride){
++                largest=std::max(largest,b->slots.capacity());
++                if(auto slot=b->take()){a->block=b;a->slot=*slot;break;}
++            }
++            if(!a->block){
++                auto block=std::make_shared<BufferBlock>(owner->native,*type,stride,vulkan::BufferSlots::nextCapacity(stride,largest));
++                VkMemoryAllocateInfo pool{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};pool.allocationSize=block->slots.bytes();pool.memoryTypeIndex=*type;
++                auto r=owner->native->AllocateMemory(owner->native->handle,&pool,nullptr,&block->memory);
++                if(r==VK_SUCCESS){a->slot=*block->take();a->block=block;owner->bufferBlocks.push_back(block);}
++                else {block->memory={};if(r!=VK_ERROR_OUT_OF_HOST_MEMORY&&r!=VK_ERROR_OUT_OF_DEVICE_MEMORY){if(auto ok=owner->accept(r,"vkAllocateMemory pool");!ok)return std::unexpected(ok.error());}}
++                // On a block OOM, retain the original exact-size fallback path.
++            }
++            if(a->block){a->memory=a->block->memory;bindOffset=VkDeviceSize(a->slot)*stride;}
++        }
++        if(!a->memory){
++            VkMemoryDedicatedAllocateInfo dedicatedInfo{VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO};dedicatedInfo.buffer=a->buffer;
++            VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize=req.size;allocate.memoryTypeIndex=*type;
++            if(dedicated.requiresDedicatedAllocation||dedicated.prefersDedicatedAllocation)allocate.pNext=&dedicatedInfo;
++            if(auto ok=owner->accept(owner->native->AllocateMemory(owner->native->handle,&allocate,nullptr,&a->memory),"vkAllocateMemory");!ok)return std::unexpected(ok.error());
++        }
++        if(auto ok=owner->accept(owner->native->BindBufferMemory(owner->native->handle,a->buffer,a->memory,bindOffset),"vkBindBufferMemory");!ok)return std::unexpected(ok.error());
+         auto value = std::make_shared<VulkanBuffer>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
+         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+--- a/src/backends/vulkan/BufferPool.hpp
++++ b/src/backends/vulkan/BufferPool.hpp
+@@ -0,0 +1,12 @@
++// Included after NativeDevice inside the isolated candidate Vulkan implementation.
++struct BufferBlock {
++    std::shared_ptr<NativeDevice> native;
++    VkDeviceMemory memory{};
++    std::uint32_t type{};
++    vulkan::BufferSlots slots;
++    std::mutex mutex;
++    BufferBlock(std::shared_ptr<NativeDevice> n,std::uint32_t t,std::uint32_t stride,std::uint32_t capacity):native(std::move(n)),type(t),slots(stride,capacity){}
++    std::optional<std::uint32_t> take(){std::lock_guard lock(mutex);return slots.take();}
++    void give(std::uint32_t slot){std::lock_guard lock(mutex);if(!slots.release(slot))std::abort();}
++    ~BufferBlock(){if(memory)native->FreeMemory(native->handle,memory,nullptr);}
++};
+--- a/src/backends/vulkan/BufferPoolRange.hpp
++++ b/src/backends/vulkan/BufferPoolRange.hpp
+@@ -0,0 +1,41 @@
++#pragma once
++#include <algorithm>
++#include <array>
++#include <bit>
++#include <cstdint>
++#include <optional>
++
++namespace gfx::vulkan {
++// Experimental growing size-class slab. No host mappings or image allocations share it.
++class BufferSlots {
++    std::array<std::uint64_t,16> used{};
++    std::uint32_t stride_{}, capacity_{};
++public:
++    static constexpr std::uint32_t blockBytes=65536;
++    static std::uint32_t stride(std::uint64_t size,std::uint64_t alignment,bool dedicated=false){
++        if(dedicated||!size||size>4096||!std::has_single_bit(alignment)||alignment>4096)return 0;
++        auto n=std::uint64_t(64);while(n<size||n<alignment)n*=2;return static_cast<std::uint32_t>(n);
++    }
++    static std::uint32_t nextCapacity(std::uint32_t stride,std::uint32_t largest){
++        if(!std::has_single_bit(stride)||stride<64||stride>4096)return 0;
++        const auto limit=blockBytes/stride;
++        if(largest&&(!std::has_single_bit(largest)||largest>limit))return 0;
++        return largest?std::min(largest*2,limit):1;
++    }
++    explicit BufferSlots(std::uint32_t s,std::uint32_t capacity):
++        stride_(std::has_single_bit(s)&&s>=64&&s<=4096?s:0){
++        if(stride_&&std::has_single_bit(capacity)&&capacity<=blockBytes/stride_)capacity_=capacity;
++        else stride_=0;
++    }
++    std::uint32_t stride()const{return stride_;}
++    std::uint32_t capacity()const{return capacity_;}
++    std::uint32_t bytes()const{return stride_*capacity_;}
++    std::optional<std::uint32_t> take(){
++        for(std::uint32_t i=0;i<capacity();++i)if(!(used[i/64]&(std::uint64_t(1)<<(i%64)))){used[i/64]|=std::uint64_t(1)<<(i%64);return i;}
++        return {};
++    }
++    bool release(std::uint32_t slot){
++        if(slot>=capacity())return false;auto bit=std::uint64_t(1)<<(slot%64);if(!(used[slot/64]&bit))return false;used[slot/64]&=~bit;return true;
++    }
++};
++}
+--- a/tests/PoolGpuTests.cpp
++++ b/tests/PoolGpuTests.cpp
+@@ -0,0 +1,65 @@
++#include <graphics/Graphics.hpp>
++#include <algorithm>
++#include <array>
++#include <iostream>
++#include <stdexcept>
++
++namespace {
++unsigned checks{},devices{},images{};std::uint64_t bytes{};
++void check(bool b){++checks;if(!b)throw std::runtime_error("Pool GPU contract");}
++template<class T>T take(gfx::Result<T> r){if(!r)throw std::runtime_error(r.error().message);return std::move(*r);}
++void take(gfx::Result<void> r){if(!r)throw std::runtime_error(r.error().message);}
++gfx::DeviceDesc desc(const gfx::AdapterInfo&a,bool validation){gfx::DeviceDesc d;d.backend=gfx::Backend::Vulkan;d.adapter=a.id;d.softwareAdapter=a.softwareAdapter;d.validation=validation;return d;}
++void empty(gfx::Device&d){auto s=take(d.resourceStatistics());check(!s.trackedObjects&&!s.uniqueResources&&!s.resourceAllocationBytes&&!s.pendingSubmissions&&!s.pendingObjectReferences);}
++void run(const gfx::AdapterInfo&a,bool validation){
++    auto d=take(gfx::createDevice(desc(a,validation)));++devices;
++    // Fresh sparse demand grows 1,2,4,8,16 slots without a 64KiB first buffer.
++    for(auto count:{1u,2u,3u,4u,7u,8u,15u,16u,31u,32u}){
++        std::vector<gfx::BufferPtr> sparse;
++        for(unsigned i=0;i<count;++i)sparse.push_back(take(d->createBuffer({4096})));
++        unsigned slots{},largest{};while(slots<count){largest=largest?std::min(largest*2,16u):1u;slots+=largest;}
++        auto stats=take(d->resourceStatistics());check(stats.uniqueResources==count&&stats.resourceAllocationBytes==slots*4096);
++        sparse.clear();empty(*d);
++    }
++    std::vector<gfx::BufferPtr> many;
++    for(unsigned i=0;i<1000;++i)many.push_back(take(d->createBuffer({4096})));
++    auto s=take(d->resourceStatistics());check(s.uniqueResources==1000);check(s.resourceAllocationBytes==1007*4096);
++    for(unsigned i=0;i<1000;i+=2)many[i].reset();
++    for(unsigned i=0;i<1000;i+=2)many[i]=take(d->createBuffer({4096}));
++    s=take(d->resourceStatistics());check(s.uniqueResources==1000&&s.resourceAllocationBytes>=1000*4096&&s.resourceAllocationBytes<=1007*4096);
++    // An occupied large block stays until its final lease; no migration is implied.
++    auto survivor=many.back();many.clear();s=take(d->resourceStatistics());check(s.uniqueResources==1&&s.resourceAllocationBytes==65536);
++    survivor.reset();empty(*d);
++    auto singleton=take(d->createBuffer({4096}));check(take(d->resourceStatistics()).resourceAllocationBytes==4096);singleton.reset();empty(*d);
++    auto old=take(d->createBuffer({4096})),up=take(d->createBuffer({4096,gfx::Memory::Upload})),read=take(d->createBuffer({4096,gfx::Memory::Readback}));
++    std::vector<std::byte> expected(4096,std::byte{0x79});take(up->write(0,expected));
++    auto initialize=take(d->createCommandList());take(initialize->begin());take(initialize->transition(old,gfx::ResourceState::CopyDestination));take(initialize->copyBuffer(up,old,4096));take(initialize->transition(old,gfx::ResourceState::CopySource));take(initialize->end());take(d->queue().wait(take(d->queue().submit(*initialize))));initialize.reset();
++    auto held=take(d->createCommandList());take(held->begin());take(held->copyBuffer(old,read,4096));take(held->end());std::weak_ptr<gfx::Buffer>w=old;old.reset();check(w.expired());
++    // The ended recording retains the old native buffer and its slot, before submit.
++    std::vector<gfx::BufferPtr> replacements;
++    for(unsigned i=0;i<32;++i)replacements.push_back(take(d->createBuffer({4096})));
++    take(up->write(0,std::vector<std::byte>(4096,std::byte{0x26})));
++    auto replace=take(d->createCommandList());take(replace->begin());
++    for(auto& p:replacements){take(replace->transition(p,gfx::ResourceState::CopyDestination));take(replace->copyBuffer(up,p,4096));}
++    take(replace->end());take(d->queue().wait(take(d->queue().submit(*replace))));replace.reset();
++    take(d->queue().wait(take(d->queue().submit(*held))));check(take(read->read(0,4096))==expected);bytes+=4096;
++    held.reset();replacements.clear();up.reset();read.reset();empty(*d);
++    // Mixed size/alignment classes plus the >4KiB dedicated fallback.
++    for(auto size:{1u,63u,64u,65u,257u,4095u,4096u,4097u,65537u}){
++        auto u=take(d->createBuffer({size,gfx::Memory::Upload})),g=take(d->createBuffer({size})),r=take(d->createBuffer({size,gfx::Memory::Readback}));
++        std::vector<std::byte> payload(size);for(unsigned i=0;i<size;++i)payload[i]=std::byte((i*37u+size)&255);take(u->write(0,payload));
++        auto c=take(d->createCommandList());take(c->begin());take(c->transition(g,gfx::ResourceState::CopyDestination));take(c->copyBuffer(u,g,size));take(c->transition(g,gfx::ResourceState::CopySource));take(c->copyBuffer(g,r,size));take(c->end());auto fence=take(d->queue().submit(*c));std::weak_ptr<gfx::Buffer> weak=g;g.reset();c.reset();check(weak.expired());take(d->queue().wait(fence));check(take(r->read(0,size))==payload);bytes+=size;
++    }
++    empty(*d);
++    auto late=take(d->createBuffer({64}));d.reset();check(late->description().size==64);late.reset();
++    // Independent generation must not reuse retired native blocks.
++    d=take(gfx::createDevice(desc(a,validation)));auto fresh=take(d->createBuffer({64}));fresh.reset();empty(*d);
++    if(validation)check(take(d->validationErrorCount())==0);
++    std::cout<<"PASS device="<<a.name<<" validation="<<validation<<'\n';
++}
++}
++int main(int argc,char**argv)try{
++    const bool validation=argc==2&&std::string_view(argv[1])=="--validation";if(argc!=1&&!validation)throw std::runtime_error("Invalid pool test option");
++    for(auto&a:take(gfx::enumerateAdapters(gfx::Backend::Vulkan)))if(!a.softwareAdapter)run(a,validation);check(devices>=2);
++    std::cout<<"PASS pool_gpu_assertions="<<checks<<" devices="<<devices<<" verified_bytes="<<bytes<<" images="<<images<<'\n';return 0;
++}catch(const std::exception&e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
+--- a/tests/PoolRangeTests.cpp
++++ b/tests/PoolRangeTests.cpp
+@@ -0,0 +1,30 @@
++#include "BufferPoolRange.hpp"
++#include <algorithm>
++#include <iostream>
++#include <set>
++#include <stdexcept>
++#include <vector>
++int main()try{
++    using gfx::vulkan::BufferSlots;unsigned checks{};auto check=[&](bool v){++checks;if(!v)throw std::runtime_error("Buffer slab contract");};
++    for(auto s:{0ull,4097ull,UINT64_MAX})check(BufferSlots::stride(s,64)==0);
++    for(auto a:{0ull,3ull,8192ull,UINT64_MAX})check(BufferSlots::stride(64,a)==0);
++    check(BufferSlots::stride(64,64,true)==0);check(BufferSlots::stride(65,64)==128);check(BufferSlots::stride(1,256)==256);
++    for(auto invalid:{0u,3u,32u,8192u}){BufferSlots s(invalid,1);check(s.capacity()==0&&!s.take()&&!s.release(0));check(!BufferSlots::nextCapacity(invalid,0));}
++    for(unsigned stride=64;stride<=4096;stride*=2){
++        for(auto bad:{0u,3u,65536u}){BufferSlots invalid(stride,bad);check(!invalid.capacity()&&!invalid.bytes()&&!invalid.take()&&!invalid.release(0));}
++        check(BufferSlots::nextCapacity(stride,0)==1);
++        check(!BufferSlots::nextCapacity(stride,3));check(!BufferSlots::nextCapacity(stride,65536));
++        for(unsigned capacity=1;capacity<=BufferSlots::blockBytes/stride;capacity*=2){
++        BufferSlots slots(stride,capacity);std::set<unsigned> offsets;std::vector<unsigned> ids;
++        check(slots.capacity()==capacity&&slots.bytes()==stride*capacity&&slots.bytes()<=65536);
++        check(BufferSlots::nextCapacity(stride,capacity)==std::min(capacity*2,65536/stride));
++        for(unsigned i=0;i<slots.capacity();++i){auto p=slots.take();check(p.has_value());ids.push_back(*p);offsets.insert(*p*stride);}
++        check(offsets.size()==slots.capacity());check(!slots.take());check(!slots.release(slots.capacity()));
++        for(unsigned i=0;i<ids.size();i+=2)check(slots.release(ids[i]));
++        for(unsigned i=0;i<ids.size();i+=2){auto p=slots.take();check(p&&*p==ids[i]);}
++        for(auto id:ids)check(slots.release(id));check(!slots.release(ids[0]));
++        }
++        for(std::uint64_t size=1;size<=4096;++size){auto n=BufferSlots::stride(size,stride);check(n>=size&&n>=stride&&(n%stride)==0&&n<=4096);}
++    }
++    std::cout<<"PASS pool_range_assertions="<<checks<<" GPU_calls=0\n";return 0;
++}catch(const std::exception&e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}

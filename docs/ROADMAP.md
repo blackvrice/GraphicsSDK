@@ -185,3 +185,10 @@ The [small-buffer slab experiment](PHASE3_VULKAN_BUFFER_POOL_REPORT.md) implemen
 and measures fresh baseline/candidate/SDL intervals. The fixed policy was not adopted:
 large batches improve, but sparse use reserves more bytes and single creation regresses.
 Adaptive reservation and fault-injected failure acceptance remain before promotion.
+
+The [adaptive small-buffer reservation candidate](PHASE3_VULKAN_ADAPTIVE_BUFFER_POOL_REPORT.md)
+now starts each live memory-type/size class at one slot and grows up to 64KiB.
+Sparse boundary, retained-survivor/reset, slot lifetime and fresh four-variant measurements
+are covered. The fresh single 4KiB request is 4KiB; a 1000-buffer batch uses 66 allocations.
+Production adoption still requires fault-injected failure cleanup and broader size/churn
+policy acceptance. Long memory and historical Intel AV investigations remain deferred.

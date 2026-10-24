@@ -1,0 +1,10 @@
+import json
+import pathlib
+import subprocess
+import sys
+root=pathlib.Path(__file__).resolve().parents[5];v=pathlib.Path(__file__).resolve().parent.parent
+args=[sys.executable,'-m','unittest','discover','-s','tests','-p','test_*.py','-v']
+p=subprocess.run(args,cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+(v/'python-tests.log').write_bytes(p.stdout)
+(v/'python-command.json').write_text(json.dumps(dict(argv=args,returncode=p.returncode),indent=2)+'\n')
+print(p.stdout.decode('utf-8',errors='replace')[-2200:]);p.check_returncode()

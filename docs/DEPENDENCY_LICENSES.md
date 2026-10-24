@@ -500,3 +500,11 @@ sources and guarded generator receipt are checked, alongside the frozen SDK/SDL 
 No new third-party allocator or binary redistribution is introduced. Source archives
 include own candidate code/diff, original SDK source, scripts and notices; vendor trees,
 SDK/layer binaries and debug/runtime artifacts are excluded.
+
+The adaptive allocator experiment adds
+[its own candidate inventory](../licenses/generated/windows-vulkan-adaptive-buffer-pool-candidate-release/inventory.json)
+from the new SDK/installed-consumer compiler and linker reads plus the preserved fixed
+candidate/SDK/SDL closure. It has 805 conservative inputs/21 components and 35 new compiler/
+34 new linker read logs. No new third-party allocator or vendor changes are introduced.
+This is source provenance, not symbol reachability or legal approval; candidate binaries
+and vendor trees are excluded from the own-source ZIP.

@@ -210,3 +210,10 @@ baseline/candidate/SDL independent processes for one/1,000 4KiB buffers. Correct
 native tracing and CPU timing are separate. Reserved Vulkan request bytes are reported
 beside latency, including the candidate's single-buffer 16x reservation. Historical
 baselines are not mixed with the new campaign and the experiment is not a product gate.
+
+The [adaptive reservation comparison](PHASE3_VULKAN_ADAPTIVE_BUFFER_POOL_REPORT.md)
+adds a fourth freshly measured variant: original SDK, fixed slab, adaptive slab and
+pinned SDL. It preserves the allocation workload source and separate create/release
+CPU intervals, full-resource readback, randomized three-process repetitions, and
+validation/native-trace separation. Policy-specific native call/byte expectations
+are reviewed independently; neither public release nor native free measures residency.

@@ -490,3 +490,9 @@ It honors native alignment/dedicated preferences and counts shared reserved byte
 Host buffers and images stay dedicated; empty blocks return immediately. It remains
 outside the product because fixed reservation penalizes sparse use. Product behavior,
 public API and the current dedicated allocation path are unchanged.
+
+An [adaptive small-buffer candidate](PHASE3_VULKAN_ADAPTIVE_BUFFER_POOL_REPORT.md)
+uses one-slot-first geometric growth per live memory type/stride, capped at 64KiB.
+It is applied only to a copied SDK. Public ABI and product sources remain unchanged.
+Empty blocks are freed, existing slots retain native lifetimes, and occupied large
+blocks do not compact automatically. Request-byte accounting is not physical residency.
