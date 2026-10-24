@@ -496,3 +496,10 @@ uses one-slot-first geometric growth per live memory type/stride, capped at 64Ki
 It is applied only to a copied SDK. Public ABI and product sources remain unchanged.
 Empty blocks are freed, existing slots retain native lifetimes, and occupied large
 blocks do not compact automatically. Request-byte accounting is not physical residency.
+
+The [buffer failure study](PHASE3_VULKAN_BUFFER_POOL_FAULT_REPORT.md)
+changes a separate adaptive candidate to acquire buffer memory output ownership only
+after allocation succeeds. Guarded poison-output controls reproduce the prior invalid
+free without forwarding fake handles to VVL/the driver. Slot rollback, native lifetime,
+existing data and retry are verified. Product creation paths still need their own
+output-ownership audit/fix; this experiment does not modify the product SDK.

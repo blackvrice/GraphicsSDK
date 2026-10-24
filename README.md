@@ -155,3 +155,9 @@ The [adaptive Vulkan buffer reservation study](docs/PHASE3_VULKAN_ADAPTIVE_BUFFE
 adds an isolated 1-slot-first growth candidate and fresh baseline/fixed/adaptive/SDL
 comparison. It removes the fresh single-buffer 64KiB request while retaining batch
 allocation savings. Production adoption, failure injection and broader churn acceptance remain open.
+
+The [Vulkan allocator failure study](docs/PHASE3_VULKAN_BUFFER_POOL_FAULT_REPORT.md)
+adds guarded synthetic OOM/bind errors and an isolated buffer output-ownership fix.
+It reproduces 24 invalid frees in the old candidate and none after the fix, with 60
+clean GPU failure/retry processes. Product-wide ownership and broader churn/performance
+acceptance remain open; product sources are unchanged.

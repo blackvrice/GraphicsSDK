@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "contract": "vulkan_buffer_fault_campaign_v1",
+  "source_fingerprint": "a1c4c1afeac077217593c78de5942d0922f4e28f025a7bd97cf4d879aa351db1",
+  "SDK_source_fingerprint": "3b0f54c6caf225a0d9ed3d43f00543e3f29579d5f72e00e2c481aeadbeb94808",
+  "prior_SDK_source_fingerprint": "4f4e63639037f18613227e71cc5635956fa3a2b095807621aadb6fcba6aecb43",
+  "production_adopted": false,
+  "performance_remeasured": false,
+  "physical_memory_reclamation_verified": false,
+  "probe": {
+    "SDK_source_fingerprint": "3b0f54c6caf225a0d9ed3d43f00543e3f29579d5f72e00e2c481aeadbeb94808",
+    "adapters": [
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "Intel(R) UHD Graphics 770"
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "out/vulkan-buffer-pool-fault-prior/Release/VkLayer_gfx_buffer_fault.dll",
+      "sha256": "a5b4d2e7743422addb04e790d39f8e0f5d4d45979ca8ff6a408f68cdc69648cc",
+      "bytes": 52736
+    },
+    {
+      "path": "out/vulkan-buffer-pool-fault-prior/Release/VkLayer_gfx_buffer_fault.json",
+      "sha256": "53dad237d0ffc979bb5c946c7d88ad68067196a3a33189bbc84aad0975d36e8f",
+      "bytes": 335
+    },
+    {
+      "path": "out/vulkan-buffer-pool-fault-prior/Release/vulkan_buffer_fault.exe",
+      "sha256": "2ada7f2ff2a9e9321151f325ec4bdda29ade4e4a6b10173c377ec6d3d883265d",
+      "bytes": 430592
+    },
+    {
+      "path": "out/vulkan-buffer-pool-fault-prior/Release/vulkan_fault_plan.exe",
+      "sha256": "057198befd5bebf070960c34fbeb8f1d82dea4ef917de0ef4496898725b20544",
+      "bytes": 17920
+    },
+    {
+      "path": "out/vulkan-buffer-pool-fault-fixed/Release/VkLayer_gfx_buffer_fault.dll",
+      "sha256": "449c307a71078a388458e0cfd6969297432a452aca2c4eab9fb5564f7a27e4e6",
+      "bytes": 52736
+    },
+    {
+      "path": "out/vulkan-buffer-pool-fault-fixed/Release/VkLayer_gfx_buffer_fault.json",
+      "sha256": "53dad237d0ffc979bb5c946c7d88ad68067196a3a33189bbc84aad0975d36e8f",
+      "bytes": 335
+    },
+    {
+      "path": "out/vulkan-buffer-pool-fault-fixed/Release/vulkan_buffer_fault.exe",
+      "sha256": "0e6797f7bad4b894baa83f71231152088be6d851f2f633e6c73853fefc945c92",
+      "bytes": 430592
+    },
+    {
+      "path": "out/vulkan-buffer-pool-fault-fixed/Release/vulkan_fault_plan.exe",
+      "sha256": "f944146cccb2f02fd82baabfe7911dfe81461c49605e44fb4cc13f4961d484df",
+      "bytes": 17920
+    }
+  ],
+  "candidate_CTests": 57,
+  "consumer_CTests": 2,
+  "Python_tests": 506,
+  "native_fault_plan_assertions": 914,
+  "positive_processes": 60,
+  "guarded_regression_processes": 8,
+  "fail_closed_processes": 8,
+  "total_commands": 77,
+  "positive_iterations": 180,
+  "guarded_control_iterations": 24,
+  "positive_verified_buffers": 540,
+  "positive_verified_bytes": 2260992,
+  "positive_injected_failures": 216,
+  "guarded_invalid_frees": 24,
+  "positive_invalid_frees": 0,
+  "Phase3_complete": false,
+  "memory_acceptance": false,
+  "Intel_AV_cause_resolved": false,
+  "product_SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+  "inventory": {
+    "path": "licenses/generated/windows-vulkan-buffer-pool-fault-release/inventory.json",
+    "sha256": "385f3bfed997483d3542b7219bc15f56efcfe90d43ff005d2b39b05362c030e4",
+    "bytes": 468184
+  },
+  "compiler_inputs": 886,
+  "components": 21,
+  "new_compiler_logs": 35,
+  "new_linker_logs": 34,
+  "historical_packages_preserved": 23
+}

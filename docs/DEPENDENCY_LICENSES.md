@@ -508,3 +508,9 @@ candidate/SDK/SDL closure. It has 805 conservative inputs/21 components and 35 n
 34 new linker read logs. No new third-party allocator or vendor changes are introduced.
 This is source provenance, not symbol reachability or legal approval; candidate binaries
 and vendor trees are excluded from the own-source ZIP.
+
+The [guarded fault-layer inventory](../licenses/generated/windows-vulkan-buffer-pool-fault-release/inventory.json)
+records 886 conservative inputs/21 components and 35 new compiler/34 new linker read
+logs for the isolated SDK and both installed consumers, plus preserved adaptive/SDK/SDL
+closure. The layer/client are own sources; no new third-party dependency or vendor
+modification is introduced. The source ZIP excludes binaries, vendor trees and VVL.

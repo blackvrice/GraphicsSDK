@@ -1,0 +1,15 @@
+probe PASS
+gpu0-validation0-control PASS
+Traceback (most recent call last):
+  File "D:\source\GraphicsSDK\tools\run_vulkan_buffer_pool_fault.py", line 135, in <module>
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=pathlib.Path,required=True);run(p.parse_args().output)
+                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\source\GraphicsSDK\tools\run_vulkan_buffer_pool_fault.py", line 124, in run
+    name=f'gpu{index}-validation{int(validation)}-{case}';r=call(name,'fixed',[case,gpu,str(int(validation))],validation);validate(r,case,validation,sdk);runs.append(dict(name=name,variant='fixed',result=r))
+                                                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\source\GraphicsSDK\tools\run_vulkan_buffer_pool_fault.py", line 43, in validate
+    require(all(k in r and r[k]==v and type(r[k]) is type(v) for k,v in expected.items()),'Fault process metadata/readback differs')
+  File "D:\source\GraphicsSDK\tools\run_vulkan_buffer_pool_fault.py", line 34, in require
+    if not b:raise ValueError(message)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Fault process metadata/readback differs

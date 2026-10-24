@@ -1,0 +1,14 @@
+--- a/src/backends/vulkan/Vulkan.cpp
++++ b/src/backends/vulkan/Vulkan.cpp
+@@ -1146,7 +1146,10 @@
+             VkMemoryDedicatedAllocateInfo dedicatedInfo{VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO};dedicatedInfo.buffer=a->buffer;
+             VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize=req.size;allocate.memoryTypeIndex=*type;
+             if(dedicated.requiresDedicatedAllocation||dedicated.prefersDedicatedAllocation)allocate.pNext=&dedicatedInfo;
+-            if(auto ok=owner->accept(owner->native->AllocateMemory(owner->native->handle,&allocate,nullptr,&a->memory),"vkAllocateMemory");!ok)return std::unexpected(ok.error());
++            // Failed Vulkan output handles have undefined contents. Acquire ownership only on success.
++            VkDeviceMemory allocated{};
++            if(auto ok=owner->accept(owner->native->AllocateMemory(owner->native->handle,&allocate,nullptr,&allocated),"vkAllocateMemory");!ok)return std::unexpected(ok.error());
++            a->memory=allocated;
+         }
+         if(auto ok=owner->accept(owner->native->BindBufferMemory(owner->native->handle,a->buffer,a->memory,bindOffset),"vkBindBufferMemory");!ok)return std::unexpected(ok.error());
+         auto value = std::make_shared<VulkanBuffer>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();

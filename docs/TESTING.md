@@ -627,3 +627,10 @@ survivors, reset after empty and retained GPU data. The four-variant matrix has 
 correctness, 48 performance and 12 separate native-trace processes. The 3 deferred
 `memory_reclamation_` cases remain excluded at initial CTest selection; no policy change
 or long memory/Intel AV completion is implied. Failure injection remains an adoption gate.
+
+The [guarded allocator failure campaign](PHASE3_VULKAN_BUFFER_POOL_FAULT_REPORT.md)
+adds 15 cases × two GPUs × validation OFF/ON, each with three failure/retry cycles.
+Eight pre-fix controls deliberately detect guarded invalid frees; eight malformed
+runtime controls fail closed. It records SDK CTests 57, consumer plan CTests 2, plan
+assertions 914 per variant, and Python tests 506. Synthetic errors do not exhaust
+real GPU memory or inject device loss. The three deferred memory tests remain excluded.

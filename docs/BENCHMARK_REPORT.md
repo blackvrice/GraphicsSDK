@@ -165,3 +165,9 @@ records the next isolated implementation and fresh baseline/fixed/adaptive/SDL r
 One fresh 4KiB buffer requests 4KiB, and 1000 use 66 native allocations/4,124,672 bytes.
 The first-buffer reservation objective is met; production adoption and broader failure/
 occupancy acceptance remain open. No whole-SDK or physical-memory ranking is inferred.
+
+The [buffer allocator failure report](PHASE3_VULKAN_BUFFER_POOL_FAULT_REPORT.md)
+records 60 clean failure/retry processes and eight guarded pre-fix regressions. The
+isolated output-ownership fix reduces observed poisoned-handle free attempts from 24
+to zero. New performance is not measured; product adoption, broader churn acceptance
+and product creation-output auditing remain open.

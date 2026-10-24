@@ -192,3 +192,10 @@ Sparse boundary, retained-survivor/reset, slot lifetime and fresh four-variant m
 are covered. The fresh single 4KiB request is 4KiB; a 1000-buffer batch uses 66 allocations.
 Production adoption still requires fault-injected failure cleanup and broader size/churn
 policy acceptance. Long memory and historical Intel AV investigations remain deferred.
+
+The [guarded buffer failure study](PHASE3_VULKAN_BUFFER_POOL_FAULT_REPORT.md)
+now covers pool OOM/exact fallback, repeated OOM, bind failures on fresh/growing/shared
+slots, host/dedicated buffers and retained recordings on NVIDIA/Intel with validation
+OFF/ON. A failed-output ownership defect was reproduced and fixed in a new isolated
+candidate. Product-wide creation-output ownership audit/fix, mixed size/occupancy/churn
+and performance acceptance remain before adoption. Long memory/Intel AV deferral is unchanged.

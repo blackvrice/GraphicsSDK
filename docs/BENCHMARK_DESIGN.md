@@ -217,3 +217,10 @@ pinned SDL. It preserves the allocation workload source and separate create/rele
 CPU intervals, full-resource readback, randomized three-process repetitions, and
 validation/native-trace separation. Policy-specific native call/byte expectations
 are reviewed independently; neither public release nor native free measures residency.
+
+The [buffer fault campaign](PHASE3_VULKAN_BUFFER_POOL_FAULT_REPORT.md)
+is a correctness/cleanup experiment, not another CPU/GPU timing comparison. It separates
+guard preparation, planned failure, retry/full GPU verification, release/idle and
+teardown. Native attempt/success and request-byte conservation plus poisoned-output
+guards distinguish a returned error from actual allocator cleanup. No physical-memory
+or new performance claim is made.

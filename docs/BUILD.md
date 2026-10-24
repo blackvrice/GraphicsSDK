@@ -485,3 +485,9 @@ and [generator](../tools/prepare_vulkan_adaptive_buffer_pool.py). The recorded p
 new source/build/install/benchmark/trace roots, MSVC `--parallel 1`, child-only VVL settings,
 and the deferred memory exclusion from the start. Existing product and fixed-candidate
 builds are preserved. Reruns require new roots and matching runner/audit paths.
+
+The [failure-study build script](../benchmarks/reports/validation/2026-10-24-phase3-vulkan-buffer-pool-fault/verification-scripts/build.py)
+builds a new hardened copy, then links the same guarded fault client to prior and new
+SDK installations. It uses MSVC serial builds, new roots, child-only VVL settings and
+the deferred memory CTest exclusion from initial selection. Existing source/build/result
+roots are preserved; new reruns require matching new runner/audit paths.
