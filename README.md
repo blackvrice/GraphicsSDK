@@ -161,3 +161,9 @@ adds guarded synthetic OOM/bind errors and an isolated buffer output-ownership f
 It reproduces 24 invalid frees in the old candidate and none after the fix, with 60
 clean GPU failure/retry processes. Product-wide ownership and broader churn/performance
 acceptance remain open; product sources are unchanged.
+
+Product Vulkan [creation-output ownership](docs/VULKAN_CREATION_OWNERSHIP_REPORT.md)
+is now hardened at 29 creation sites. Actual-implementation PFN tests reproduce 21
+invalid cleanup attempts before the fix and zero afterward; separate NVIDIA/Intel
+buffer error/readback tests also pass. This is a product correctness fix. Buffer
+pooling remains experimental, and no new timing or physical-memory claim is made.

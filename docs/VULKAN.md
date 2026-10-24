@@ -503,3 +503,10 @@ after allocation succeeds. Guarded poison-output controls reproduce the prior in
 free without forwarding fake handles to VVL/the driver. Slot rollback, native lifetime,
 existing data and retry are verified. Product creation paths still need their own
 output-ownership audit/fix; this experiment does not modify the product SDK.
+
+The [product creation-output fix](VULKAN_CREATION_OWNERSHIP_REPORT.md) uses
+private `acquireOutput` to take ownership only after successful creation. Graphics
+pipeline arrays retain their defined null/partial-success cleanup. Public ABI,
+host-memory preference and dedicated resource allocation remain unchanged; no pool
+policy is promoted. Historical product inputs are resolved through a verified
+pre-fix snapshot by the new audit, without changing old inventories/reports.

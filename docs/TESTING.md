@@ -634,3 +634,11 @@ Eight pre-fix controls deliberately detect guarded invalid frees; eight malforme
 runtime controls fail closed. It records SDK CTests 57, consumer plan CTests 2, plan
 assertions 914 per variant, and Python tests 506. Synthetic errors do not exhaust
 real GPU memory or inject device loss. The three deferred memory tests remain excluded.
+
+The [creation-ownership tests](VULKAN_CREATION_OWNERSHIP_REPORT.md) add a private
+helper CPU contract (3640 assertions), 27 actual-implementation failure/retry cases
+compiled against before/after sources, and separate actual-GPU buffer failure/readback
+processes. Product selected CTests are 55 (54 prior + 1 new); Python tests are 526.
+The CPU PFNs load no driver. Hardware tests cover two GPUs with validation OFF/ON.
+Instance/device/debug-messenger/surface failures are statically audited/helper-tested,
+not loader-level injected. The three deferred memory tests remain excluded.

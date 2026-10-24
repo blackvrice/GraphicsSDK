@@ -1,0 +1,36 @@
+[
+  {
+    "name": "cpu-before-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_creation_fault",
+      "-B",
+      "out/vulkan-creation-cpu-before",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_IMPLEMENTATION_ROOT=D:\\source\\GraphicsSDK\\out\\vulkan-creation-before-source",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-presentation-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 4.75
+  },
+  {
+    "name": "cpu-before-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-creation-cpu-before",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 1,
+    "expected": 0,
+    "seconds": 4.734000000000378
+  }
+]

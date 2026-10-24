@@ -224,3 +224,9 @@ guard preparation, planned failure, retry/full GPU verification, release/idle an
 teardown. Native attempt/success and request-byte conservation plus poisoned-output
 guards distinguish a returned error from actual allocator cleanup. No physical-memory
 or new performance claim is made.
+
+The [product ownership profile](VULKAN_CREATION_OWNERSHIP_REPORT.md) combines
+CPU-only actual-implementation PFN injection with separate real-GPU error/readback
+checks. Those evidence types remain distinct. It reports a correctness fix without
+new timing measurements and preserves the old baseline bytes/source identity for
+historical comparisons. New performance comparisons must rebuild matched consumers.

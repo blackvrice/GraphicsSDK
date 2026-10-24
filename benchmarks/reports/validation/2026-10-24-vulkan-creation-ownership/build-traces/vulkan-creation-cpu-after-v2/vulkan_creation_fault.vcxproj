@@ -1,0 +1,401 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8A9F834B-7053-3B28-9756-6EFC03D5AB2F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>vulkan_creation_fault</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vulkan_creation_fault.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vulkan_creation_fault</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vulkan_creation_fault.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vulkan_creation_fault</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">vulkan_creation_fault.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">vulkan_creation_fault</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">vulkan_creation_fault.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">vulkan_creation_fault</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/source/GraphicsSDK/out/vulkan-creation-install/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4100</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION="D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp";CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION=\"D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp\";CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>D:\source\GraphicsSDK\out\vulkan-creation-install\lib\GraphicsSDKCore.lib;user32.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;user32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/Debug/vulkan_creation_fault.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/Debug/vulkan_creation_fault.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/source/GraphicsSDK/out/vulkan-creation-install/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DisableSpecificWarnings>4100</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION="D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp";CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION=\"D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp\";CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>D:\source\GraphicsSDK\out\vulkan-creation-install\lib\GraphicsSDKCore.lib;user32.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;user32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/Release/vulkan_creation_fault.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/Release/vulkan_creation_fault.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/source/GraphicsSDK/out/vulkan-creation-install/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DisableSpecificWarnings>4100</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION="D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp";CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION=\"D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp\";CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>D:\source\GraphicsSDK\out\vulkan-creation-install\lib\GraphicsSDKCore.lib;user32.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;user32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/MinSizeRel/vulkan_creation_fault.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/MinSizeRel/vulkan_creation_fault.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/source/GraphicsSDK/out/vulkan-creation-install/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4100</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION="D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp";CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;WIN32_LEAN_AND_MEAN;GFX_VULKAN_IMPLEMENTATION=\"D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp\";CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;D:\source\GraphicsSDK\out\vulkan-creation-install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>D:\source\GraphicsSDK\out\vulkan-creation-install\lib\GraphicsSDKCore.lib;user32.lib;d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;user32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/RelWithDebInfo/vulkan_creation_fault.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/RelWithDebInfo/vulkan_creation_fault.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\source\GraphicsSDK\tests\vulkan_creation_fault\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/source/GraphicsSDK/tests/vulkan_creation_fault/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/tests/vulkan_creation_fault -BD:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2 --check-stamp-file D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompilerABI.cpp;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCompilerIdDetection.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerABI.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerSupport.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeFindBinUtils.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseLibraryArchitecture.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystem.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCompilerCommon.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Diab-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Renesas-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CompilerId\VS-10.vcxproj.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\FeatureTesting.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Determine-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeSystem.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfig.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfigVersion.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets-release.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/source/GraphicsSDK/tests/vulkan_creation_fault/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/tests/vulkan_creation_fault -BD:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2 --check-stamp-file D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompilerABI.cpp;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCompilerIdDetection.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerABI.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerSupport.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeFindBinUtils.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseLibraryArchitecture.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystem.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCompilerCommon.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Diab-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Renesas-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CompilerId\VS-10.vcxproj.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\FeatureTesting.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Determine-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeSystem.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfig.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfigVersion.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets-release.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/source/GraphicsSDK/tests/vulkan_creation_fault/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/tests/vulkan_creation_fault -BD:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2 --check-stamp-file D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompilerABI.cpp;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCompilerIdDetection.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerABI.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerSupport.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeFindBinUtils.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseLibraryArchitecture.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystem.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCompilerCommon.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Diab-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Renesas-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CompilerId\VS-10.vcxproj.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\FeatureTesting.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Determine-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeSystem.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfig.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfigVersion.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets-release.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/source/GraphicsSDK/tests/vulkan_creation_fault/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/tests/vulkan_creation_fault -BD:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2 --check-stamp-file D:/source/GraphicsSDK/out/vulkan-creation-cpu-after-v2/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXCompilerABI.cpp;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCompilerIdDetection.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerABI.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerSupport.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeFindBinUtils.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeParseLibraryArchitecture.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystem.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCXXCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCompilerCommon.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestRCCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Diab-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Renesas-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CompilerId\VS-10.vcxproj.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Internal\FeatureTesting.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Determine-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\4.3.1\CMakeSystem.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfig.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKConfigVersion.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets-release.cmake;D:\source\GraphicsSDK\out\vulkan-creation-install\lib\cmake\GraphicsSDK\GraphicsSDKTargets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\source\GraphicsSDK\tests\vulkan_creation_fault\main.cpp" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\source\GraphicsSDK\out\vulkan-creation-cpu-after-v2\ZERO_CHECK.vcxproj">
+      <Project>{48A8E225-B271-3BBA-BEFC-6A64A3E3DAB2}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

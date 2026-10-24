@@ -514,3 +514,10 @@ records 886 conservative inputs/21 components and 35 new compiler/34 new linker 
 logs for the isolated SDK and both installed consumers, plus preserved adaptive/SDK/SDL
 closure. The layer/client are own sources; no new third-party dependency or vendor
 modification is introduced. The source ZIP excludes binaries, vendor trees and VVL.
+
+The [product ownership inventory](../licenses/generated/windows-vulkan-creation-ownership-release/inventory.json)
+records 909 conservative inputs/21 components with 36 compiler and 35 linker read logs.
+Changed historical product inputs resolve only to a verified original source snapshot;
+unchanged artifacts are still hash-checked directly. Exact-signature test stub generation
+also records the pinned Vulkan registry input. No new dependency/vendor modification
+or binary redistribution is introduced; this is not legal approval or symbol reachability.

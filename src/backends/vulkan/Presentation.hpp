@@ -68,7 +68,7 @@ struct VulkanSwapchain final : SwapChain {
         if (native) native->alive = false;
         buffers.clear();
         auto& n = *owner->native;
-        auto r = n.CreateSwapchainKHR(n.handle, &info, nullptr, &next->handle);
+        auto r = vulkan::acquireOutput(next->handle, n.CreateSwapchainKHR, n.handle, &info, nullptr);
         native.reset();
         if (r != VK_SUCCESS) return owner->accept(r, "vkCreateSwapchainKHR (retry resize after failure)");
         std::uint32_t count{};
@@ -89,9 +89,9 @@ struct VulkanSwapchain final : SwapChain {
             a->footprint = {std::uint64_t(pitch) * info.imageExtent.height, pitch, row, info.imageExtent.height};
             VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO}; view.image = a->image; view.viewType = VK_IMAGE_VIEW_TYPE_2D;
             view.format = VK_FORMAT_R8G8B8A8_UNORM; view.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-            if (auto ok = owner->accept(n.CreateImageView(n.handle, &view, nullptr, &a->view), "Swapchain image view"); !ok) return ok;
+            if (auto ok = owner->accept(vulkan::acquireOutput(a->view, n.CreateImageView, n.handle, &view, nullptr), "Swapchain image view"); !ok) return ok;
             VkSemaphoreCreateInfo semaphore{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-            if (auto ok = owner->accept(n.CreateSemaphore(n.handle, &semaphore, nullptr, &next->finished[i]), "Present semaphore"); !ok) return ok;
+            if (auto ok = owner->accept(vulkan::acquireOutput(next->finished[i], n.CreateSemaphore, n.handle, &semaphore, nullptr), "Present semaphore"); !ok) return ok;
             auto t = std::make_shared<VulkanTexture>(); t->owner = owner; t->allocation = a; t->token = std::make_shared<int>();
             owner->allocations.push_back(a); owner->objects.push_back(t->token); created.push_back(std::move(t));
         }
@@ -106,7 +106,7 @@ struct VulkanSwapchain final : SwapChain {
 #endif
         if (!native->acquired) {
             auto& n = *owner->native; VkFence fence{}; VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-            if (auto ok = owner->accept(n.CreateFence(n.handle, &ci, nullptr, &fence), "Acquire fence"); !ok) return std::unexpected(ok.error());
+            if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Acquire fence"); !ok) return std::unexpected(ok.error());
             auto r = n.AcquireNextImageKHR(n.handle, native->handle, 1000000000ull, {}, fence, &native->current);
             if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR) {
                 r = n.WaitForFences(n.handle, 1, &fence, VK_TRUE, UINT64_MAX);
@@ -125,9 +125,9 @@ struct VulkanSwapchain final : SwapChain {
                 // The acquisition fence has completed all presentation reads of this image.
                 Recording init; init.native = owner->native;
                 VkCommandPoolCreateInfo pool{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}; pool.queueFamilyIndex = owner->family;
-                if (auto ok = owner->accept(n.CreateCommandPool(n.handle, &pool, nullptr, &init.pool), "Initial present pool"); !ok) return std::unexpected(ok.error());
+                if (auto ok = owner->accept(vulkan::acquireOutput(init.pool, n.CreateCommandPool, n.handle, &pool, nullptr), "Initial present pool"); !ok) return std::unexpected(ok.error());
                 VkCommandBufferAllocateInfo allocate{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO}; allocate.commandPool = init.pool; allocate.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; allocate.commandBufferCount = 1;
-                if (auto ok = owner->accept(n.AllocateCommandBuffers(n.handle, &allocate, &init.command), "Initial present command"); !ok) return std::unexpected(ok.error());
+                if (auto ok = owner->accept(vulkan::acquireOutput(init.command, n.AllocateCommandBuffers, n.handle, &allocate), "Initial present command"); !ok) return std::unexpected(ok.error());
                 VkCommandBufferBeginInfo begin{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}; begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
                 if (auto ok = owner->accept(n.BeginCommandBuffer(init.command, &begin), "Initial present begin"); !ok) return std::unexpected(ok.error());
                 VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER}; barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -149,7 +149,7 @@ struct VulkanSwapchain final : SwapChain {
         if (a.state != ResourceState::Present || a.version == UINT64_MAX) return fail(ErrorCode::InvalidState, "Present requires submitted Present state and available version");
         auto& n = *owner->native;
         VkFence fence{}; VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-        if (auto ok = owner->accept(n.CreateFence(n.handle, &ci, nullptr, &fence), "Present completion fence"); !ok) return ok;
+        if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Present completion fence"); !ok) return ok;
         // One semaphore per native image, reused only after reacquiring that image.
         // An empty ordered submission signals completion of all earlier SDK rendering.
         auto semaphore = native->finished[native->current]; VkSubmitInfo submit{VK_STRUCTURE_TYPE_SUBMIT_INFO};
@@ -193,7 +193,7 @@ Result<std::unique_ptr<SwapChain>> makeSwapchain(const std::shared_ptr<State>& o
     value->surface = std::make_shared<NativeSurface>(); value->surface->native = owner->native; value->surface->window = surface.window;
     VkWin32SurfaceCreateInfoKHR info{VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR}; info.hinstance = GetModuleHandleW(nullptr); info.hwnd = static_cast<HWND>(surface.window);
     auto& in = *owner->native->instance;
-    if (auto ok = owner->accept(in.CreateWin32SurfaceKHR(in.handle, &info, nullptr, &value->surface->handle), "Create Win32 surface"); !ok) return std::unexpected(ok.error());
+    if (auto ok = owner->accept(vulkan::acquireOutput(value->surface->handle, in.CreateWin32SurfaceKHR, in.handle, &info, nullptr), "Create Win32 surface"); !ok) return std::unexpected(ok.error());
     VkBool32 supported{};
     if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceSupportKHR(owner->physical, owner->family, value->surface->handle, &supported), "Query surface queue support"); !ok) return std::unexpected(ok.error());
     if (!supported) return fail(ErrorCode::Unsupported, "Selected graphics queue cannot present to this surface");

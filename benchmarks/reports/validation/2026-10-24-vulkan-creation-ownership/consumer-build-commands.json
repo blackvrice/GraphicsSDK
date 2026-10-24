@@ -1,0 +1,154 @@
+[
+  {
+    "name": "cpu-before-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_creation_fault",
+      "-B",
+      "out/vulkan-creation-cpu-before-v2",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_IMPLEMENTATION_ROOT=D:\\source\\GraphicsSDK\\out\\vulkan-creation-before-source",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-presentation-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 4.985000000000582
+  },
+  {
+    "name": "cpu-before-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-creation-cpu-before-v2",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 11.45299999999952
+  },
+  {
+    "name": "cpu-before-run",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-creation-cpu-before-v2\\Release\\vulkan_creation_fault.exe"
+    ],
+    "returncode": 2,
+    "expected": 2,
+    "seconds": 0.10900000000037835
+  },
+  {
+    "name": "native-before-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "experiments/vulkan_buffer_pool_fault",
+      "-B",
+      "out/vulkan-creation-native-before",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-presentation-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 4.781000000000859
+  },
+  {
+    "name": "native-before-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-creation-native-before",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 13.609000000000378
+  },
+  {
+    "name": "cpu-after-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_creation_fault",
+      "-B",
+      "out/vulkan-creation-cpu-after-v2",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_IMPLEMENTATION_ROOT=D:\\source\\GraphicsSDK",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-creation-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 3.8909999999996217
+  },
+  {
+    "name": "cpu-after-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-creation-cpu-after-v2",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 9.265999999999622
+  },
+  {
+    "name": "cpu-after-run",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-creation-cpu-after-v2\\Release\\vulkan_creation_fault.exe"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.06199999999989814
+  },
+  {
+    "name": "native-after-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "experiments/vulkan_buffer_pool_fault",
+      "-B",
+      "out/vulkan-creation-native-after",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-creation-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 3.811999999999898
+  },
+  {
+    "name": "native-after-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-creation-native-after",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 10.610000000000582
+  }
+]

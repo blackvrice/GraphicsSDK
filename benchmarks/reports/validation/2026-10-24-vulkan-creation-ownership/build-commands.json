@@ -1,0 +1,70 @@
+[
+  {
+    "name": "product-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "out/vulkan-creation-product",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_D3D12=ON",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF",
+      "-DGFX_VULKAN_HEADERS=D:\\source\\GraphicsSDK\\.deps\\Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "seconds": 5.531000000000859
+  },
+  {
+    "name": "product-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-creation-product",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 110.82799999999952
+  },
+  {
+    "name": "product-tests",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-creation-product",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "-E",
+      "^memory_reclamation_",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-24-vulkan-creation-ownership\\product-tests.xml"
+    ],
+    "returncode": 0,
+    "seconds": 166.59400000000096
+  },
+  {
+    "name": "product-install",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/vulkan-creation-product",
+      "--config",
+      "Release",
+      "--prefix",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-creation-install"
+    ],
+    "returncode": 0,
+    "seconds": 0.13999999999941792
+  }
+]

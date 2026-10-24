@@ -491,3 +491,11 @@ builds a new hardened copy, then links the same guarded fault client to prior an
 SDK installations. It uses MSVC serial builds, new roots, child-only VVL settings and
 the deferred memory CTest exclusion from initial selection. Existing source/build/result
 roots are preserved; new reruns require matching new runner/audit paths.
+
+The [product ownership profile](VULKAN_CREATION_OWNERSHIP_REPORT.md) uses
+new product and before/after consumer roots with MSVC serial builds and the deferred
+memory exclusion from initial CTest selection. The recorded
+[build script](../benchmarks/reports/validation/2026-10-24-vulkan-creation-ownership/verification-scripts/build.py)
+builds the current product rather than a pool candidate. Historical experiment tools
+pin the old SDK source identity: reproduce them from the older commit/source ZIP or
+preserved original source, not by relaxing their guards against the new product.

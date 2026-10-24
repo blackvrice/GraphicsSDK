@@ -171,3 +171,8 @@ records 60 clean failure/retry processes and eight guarded pre-fix regressions. 
 isolated output-ownership fix reduces observed poisoned-handle free attempts from 24
 to zero. New performance is not measured; product adoption, broader churn acceptance
 and product creation-output auditing remain open.
+
+The [product creation-ownership report](VULKAN_CREATION_OWNERSHIP_REPORT.md)
+records the adopted correctness fix: CPU invalid cleanup 21 to zero and guarded real
+GPU invalid frees 12 to zero. Buffer pooling is not adopted and prior timing values
+are not reattributed to the new product fingerprint. Old evidence/packages are preserved.

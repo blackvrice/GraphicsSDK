@@ -199,3 +199,10 @@ slots, host/dedicated buffers and retained recordings on NVIDIA/Intel with valid
 OFF/ON. A failed-output ownership defect was reproduced and fixed in a new isolated
 candidate. Product-wide creation-output ownership audit/fix, mixed size/occupancy/churn
 and performance acceptance remain before adoption. Long memory/Intel AV deferral is unchanged.
+
+The [product creation-ownership fix](VULKAN_CREATION_OWNERSHIP_REPORT.md)
+now guards 29 single-output creation sites and preserves defined array/pipeline
+failure cleanup. Product CTests 55, Python 526, before/after actual-implementation
+PFN tests and separate hardware OOM/bind controls pass. Loader-level failure
+injection, broader errors and pool/churn/performance acceptance remain separate;
+this does not reopen the deferred long-memory/Intel AV investigation.

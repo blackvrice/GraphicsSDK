@@ -1,0 +1,310 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -97,6 +97,10 @@
+   target_include_directories(gfx_vulkan_timestamp_math_tests PRIVATE src/backends/vulkan)
+   target_link_libraries(gfx_vulkan_timestamp_math_tests PRIVATE GraphicsSDK::Core)
+   add_test(NAME vulkan_timestamp_math COMMAND gfx_vulkan_timestamp_math_tests)
++  add_executable(gfx_vulkan_creation_tests tests/VulkanCreationTests.cpp)
++  target_include_directories(gfx_vulkan_creation_tests PRIVATE src/backends/vulkan)
++  target_link_libraries(gfx_vulkan_creation_tests PRIVATE GraphicsSDK::Core)
++  add_test(NAME vulkan_creation_ownership COMMAND gfx_vulkan_creation_tests)
+   if(GFX_ENABLE_VULKAN)
+     add_executable(gfx_vulkan_tests tests/VulkanTests.cpp)
+     target_link_libraries(gfx_vulkan_tests PRIVATE GraphicsSDK::Core)
+--- a/src/backends/vulkan/Creation.hpp
++++ b/src/backends/vulkan/Creation.hpp
+@@ -0,0 +1,14 @@
++#pragma once
++
++namespace gfx::vulkan {
++// Single-output creation only. Vulkan errors leave most outputs undefined.
++// Batch pipeline creation has defined partial-success outputs and must keep its
++// own cleanup. The caller must pass an empty destination for a new object.
++template<class Handle, class Function, class... Args>
++auto acquireOutput(Handle& destination, Function function, Args... args) {
++    Handle value{};
++    const auto result = function(args..., &value);
++    if (result == decltype(result){}) destination = value;
++    return result;
++}
++}
+--- a/src/backends/vulkan/Presentation.hpp
++++ b/src/backends/vulkan/Presentation.hpp
+@@ -68,7 +68,7 @@
+         if (native) native->alive = false;
+         buffers.clear();
+         auto& n = *owner->native;
+-        auto r = n.CreateSwapchainKHR(n.handle, &info, nullptr, &next->handle);
++        auto r = vulkan::acquireOutput(next->handle, n.CreateSwapchainKHR, n.handle, &info, nullptr);
+         native.reset();
+         if (r != VK_SUCCESS) return owner->accept(r, "vkCreateSwapchainKHR (retry resize after failure)");
+         std::uint32_t count{};
+@@ -89,9 +89,9 @@
+             a->footprint = {std::uint64_t(pitch) * info.imageExtent.height, pitch, row, info.imageExtent.height};
+             VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO}; view.image = a->image; view.viewType = VK_IMAGE_VIEW_TYPE_2D;
+             view.format = VK_FORMAT_R8G8B8A8_UNORM; view.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+-            if (auto ok = owner->accept(n.CreateImageView(n.handle, &view, nullptr, &a->view), "Swapchain image view"); !ok) return ok;
++            if (auto ok = owner->accept(vulkan::acquireOutput(a->view, n.CreateImageView, n.handle, &view, nullptr), "Swapchain image view"); !ok) return ok;
+             VkSemaphoreCreateInfo semaphore{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+-            if (auto ok = owner->accept(n.CreateSemaphore(n.handle, &semaphore, nullptr, &next->finished[i]), "Present semaphore"); !ok) return ok;
++            if (auto ok = owner->accept(vulkan::acquireOutput(next->finished[i], n.CreateSemaphore, n.handle, &semaphore, nullptr), "Present semaphore"); !ok) return ok;
+             auto t = std::make_shared<VulkanTexture>(); t->owner = owner; t->allocation = a; t->token = std::make_shared<int>();
+             owner->allocations.push_back(a); owner->objects.push_back(t->token); created.push_back(std::move(t));
+         }
+@@ -106,7 +106,7 @@
+ #endif
+         if (!native->acquired) {
+             auto& n = *owner->native; VkFence fence{}; VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+-            if (auto ok = owner->accept(n.CreateFence(n.handle, &ci, nullptr, &fence), "Acquire fence"); !ok) return std::unexpected(ok.error());
++            if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Acquire fence"); !ok) return std::unexpected(ok.error());
+             auto r = n.AcquireNextImageKHR(n.handle, native->handle, 1000000000ull, {}, fence, &native->current);
+             if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR) {
+                 r = n.WaitForFences(n.handle, 1, &fence, VK_TRUE, UINT64_MAX);
+@@ -125,9 +125,9 @@
+                 // The acquisition fence has completed all presentation reads of this image.
+                 Recording init; init.native = owner->native;
+                 VkCommandPoolCreateInfo pool{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}; pool.queueFamilyIndex = owner->family;
+-                if (auto ok = owner->accept(n.CreateCommandPool(n.handle, &pool, nullptr, &init.pool), "Initial present pool"); !ok) return std::unexpected(ok.error());
++                if (auto ok = owner->accept(vulkan::acquireOutput(init.pool, n.CreateCommandPool, n.handle, &pool, nullptr), "Initial present pool"); !ok) return std::unexpected(ok.error());
+                 VkCommandBufferAllocateInfo allocate{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO}; allocate.commandPool = init.pool; allocate.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; allocate.commandBufferCount = 1;
+-                if (auto ok = owner->accept(n.AllocateCommandBuffers(n.handle, &allocate, &init.command), "Initial present command"); !ok) return std::unexpected(ok.error());
++                if (auto ok = owner->accept(vulkan::acquireOutput(init.command, n.AllocateCommandBuffers, n.handle, &allocate), "Initial present command"); !ok) return std::unexpected(ok.error());
+                 VkCommandBufferBeginInfo begin{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}; begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                 if (auto ok = owner->accept(n.BeginCommandBuffer(init.command, &begin), "Initial present begin"); !ok) return std::unexpected(ok.error());
+                 VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER}; barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+@@ -149,7 +149,7 @@
+         if (a.state != ResourceState::Present || a.version == UINT64_MAX) return fail(ErrorCode::InvalidState, "Present requires submitted Present state and available version");
+         auto& n = *owner->native;
+         VkFence fence{}; VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+-        if (auto ok = owner->accept(n.CreateFence(n.handle, &ci, nullptr, &fence), "Present completion fence"); !ok) return ok;
++        if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Present completion fence"); !ok) return ok;
+         // One semaphore per native image, reused only after reacquiring that image.
+         // An empty ordered submission signals completion of all earlier SDK rendering.
+         auto semaphore = native->finished[native->current]; VkSubmitInfo submit{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+@@ -193,7 +193,7 @@
+     value->surface = std::make_shared<NativeSurface>(); value->surface->native = owner->native; value->surface->window = surface.window;
+     VkWin32SurfaceCreateInfoKHR info{VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR}; info.hinstance = GetModuleHandleW(nullptr); info.hwnd = static_cast<HWND>(surface.window);
+     auto& in = *owner->native->instance;
+-    if (auto ok = owner->accept(in.CreateWin32SurfaceKHR(in.handle, &info, nullptr, &value->surface->handle), "Create Win32 surface"); !ok) return std::unexpected(ok.error());
++    if (auto ok = owner->accept(vulkan::acquireOutput(value->surface->handle, in.CreateWin32SurfaceKHR, in.handle, &info, nullptr), "Create Win32 surface"); !ok) return std::unexpected(ok.error());
+     VkBool32 supported{};
+     if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceSupportKHR(owner->physical, owner->family, value->surface->handle, &supported), "Query surface queue support"); !ok) return std::unexpected(ok.error());
+     if (!supported) return fail(ErrorCode::Unsupported, "Selected graphics queue cannot present to this surface");
+--- a/src/backends/vulkan/Vulkan.cpp
++++ b/src/backends/vulkan/Vulkan.cpp
+@@ -4,6 +4,7 @@
+ #include "VulkanValidation.hpp"
+ #include "Spirv.hpp"
+ #include "Timestamp.hpp"
++#include "Creation.hpp"
+ #include <algorithm>
+ #include <array>
+ #include <atomic>
+@@ -135,7 +136,7 @@
+         info.pNext = &validationConfig.layerSettings;
+     }
+     info.enabledExtensionCount = static_cast<std::uint32_t>(enabledExtensions.size()); info.ppEnabledExtensionNames = enabledExtensions.data();
+-    if (auto r = create(&info, nullptr, &instance->handle); r != VK_SUCCESS) return nativeError(r, "vkCreateInstance");
++    if (auto r = vulkan::acquireOutput(instance->handle, create, &info, nullptr); r != VK_SUCCESS) return nativeError(r, "vkCreateInstance");
+ #define LOAD(name) instance->name = reinterpret_cast<PFN_vk##name>(get(instance->handle, "vk" #name)); \
+     if (!instance->name) return fail(ErrorCode::Unsupported, "Vulkan instance entry point missing: vk" #name);
+     INSTANCE_FUNCTIONS(LOAD)
+@@ -153,7 +154,7 @@
+         const auto make = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(get(instance->handle, "vkCreateDebugUtilsMessengerEXT"));
+         instance->destroyMessenger = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(get(instance->handle, "vkDestroyDebugUtilsMessengerEXT"));
+         if (!make || !instance->destroyMessenger) return fail(ErrorCode::Unsupported, "Vulkan debug messenger unavailable");
+-        if (auto r = make(instance->handle, &validationConfig.messenger, nullptr, &instance->messenger); r != VK_SUCCESS) return nativeError(r, "Create validation messenger");
++        if (auto r = vulkan::acquireOutput(instance->messenger, make, instance->handle, &validationConfig.messenger, nullptr); r != VK_SUCCESS) return nativeError(r, "Create validation messenger");
+     }
+     return instance;
+ }
+@@ -583,15 +584,15 @@
+         if (record && (record->open || record->submitted > owner->completed)) return fail(ErrorCode::InvalidState, "Command list open or in flight");
+         auto next = std::make_shared<Recording>(); next->native = owner->native;
+         VkCommandPoolCreateInfo pool{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}; pool.queueFamilyIndex = owner->family;
+-        if (auto ok = owner->accept(owner->native->CreateCommandPool(owner->native->handle, &pool, nullptr, &next->pool), "vkCreateCommandPool"); !ok) return ok;
++        if (auto ok = owner->accept(vulkan::acquireOutput(next->pool, owner->native->CreateCommandPool, owner->native->handle, &pool, nullptr), "vkCreateCommandPool"); !ok) return ok;
+         VkCommandBufferAllocateInfo allocate{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+         allocate.commandPool = next->pool; allocate.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; allocate.commandBufferCount = 1;
+-        if (auto ok = owner->accept(owner->native->AllocateCommandBuffers(owner->native->handle, &allocate, &next->command), "vkAllocateCommandBuffers"); !ok) return ok;
++        if (auto ok = owner->accept(vulkan::acquireOutput(next->command, owner->native->AllocateCommandBuffers, owner->native->handle, &allocate), "vkAllocateCommandBuffers"); !ok) return ok;
+         VkCommandBufferBeginInfo start{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}; start.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+         if (auto ok = owner->accept(owner->native->BeginCommandBuffer(next->command, &start), "vkBeginCommandBuffer"); !ok) return ok;
+         if (vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) {
+             VkQueryPoolCreateInfo queries{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO}; queries.queryType = VK_QUERY_TYPE_TIMESTAMP; queries.queryCount = 2;
+-            if (auto ok = owner->accept(owner->native->CreateQueryPool(owner->native->handle, &queries, nullptr, &next->queries), "vkCreateQueryPool"); !ok) return ok;
++            if (auto ok = owner->accept(vulkan::acquireOutput(next->queries, owner->native->CreateQueryPool, owner->native->handle, &queries, nullptr), "vkCreateQueryPool"); !ok) return ok;
+             owner->native->CmdResetQueryPool(next->command, next->queries, 0, 2);
+         }
+         next->open = true;
+@@ -781,12 +782,12 @@
+         VkRenderPassCreateInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+         info.attachmentCount = static_cast<std::uint32_t>(attachments.size()); info.pAttachments = attachments.data();
+         info.subpassCount = 1; info.pSubpasses = &subpass; info.dependencyCount = 2; info.pDependencies = dependencies.data();
+-        if (auto ok = owner->accept(owner->native->CreateRenderPass(owner->native->handle, &info, nullptr, &pass->pass), "vkCreateRenderPass"); !ok) return ok;
++        if (auto ok = owner->accept(vulkan::acquireOutput(pass->pass, owner->native->CreateRenderPass, owner->native->handle, &info, nullptr), "vkCreateRenderPass"); !ok) return ok;
+         const auto desc = colors.front()->textureDesc;
+         VkFramebufferCreateInfo framebuffer{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+         framebuffer.renderPass = pass->pass; framebuffer.attachmentCount = static_cast<std::uint32_t>(views.size()); framebuffer.pAttachments = views.data();
+         framebuffer.width = desc.width; framebuffer.height = desc.height; framebuffer.layers = 1;
+-        if (auto ok = owner->accept(owner->native->CreateFramebuffer(owner->native->handle, &framebuffer, nullptr, &pass->framebuffer), "vkCreateFramebuffer"); !ok) return ok;
++        if (auto ok = owner->accept(vulkan::acquireOutput(pass->framebuffer, owner->native->CreateFramebuffer, owner->native->handle, &framebuffer, nullptr), "vkCreateFramebuffer"); !ok) return ok;
+         VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}; begin.renderPass = pass->pass; begin.framebuffer = pass->framebuffer;
+         begin.renderArea.extent = {desc.width, desc.height}; begin.clearValueCount = static_cast<std::uint32_t>(clears.size()); begin.pClearValues = clears.data();
+         for (const auto& a : colors) retain(a).contentsInitialized = true;
+@@ -878,9 +879,9 @@
+             const VkDescriptorType types[]{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_SAMPLER};
+             for (unsigned i = 0; i < 3; ++i) if (counts[i]) sizes.push_back({types[i], counts[i]});
+             VkDescriptorPoolCreateInfo pool{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO}; pool.maxSets = 1; pool.poolSizeCount = static_cast<unsigned>(sizes.size()); pool.pPoolSizes = sizes.data();
+-            if (auto ok = owner->accept(owner->native->CreateDescriptorPool(owner->native->handle, &pool, nullptr, &snapshot->pool), "vkCreateDescriptorPool"); !ok) return ok;
++            if (auto ok = owner->accept(vulkan::acquireOutput(snapshot->pool, owner->native->CreateDescriptorPool, owner->native->handle, &pool, nullptr), "vkCreateDescriptorPool"); !ok) return ok;
+             VkDescriptorSetAllocateInfo allocate{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO}; allocate.descriptorPool = snapshot->pool; allocate.descriptorSetCount = 1; allocate.pSetLayouts = &p->setLayout;
+-            if (auto ok = owner->accept(owner->native->AllocateDescriptorSets(owner->native->handle, &allocate, &snapshot->set), "vkAllocateDescriptorSets"); !ok) return ok;
++            if (auto ok = owner->accept(vulkan::acquireOutput(snapshot->set, owner->native->AllocateDescriptorSets, owner->native->handle, &allocate), "vkAllocateDescriptorSets"); !ok) return ok;
+             for (auto& w : writes) w.dstSet = snapshot->set;
+             owner->native->UpdateDescriptorSets(owner->native->handle, static_cast<unsigned>(writes.size()), writes.data(), 0, nullptr);
+             owner->native->CmdBindDescriptorSets(record->command, VK_PIPELINE_BIND_POINT_GRAPHICS, p->layout, 0, 1, &snapshot->set, 0, nullptr);
+@@ -1012,7 +1013,7 @@
+         // Allocate the retention node before native submission; no throwing work follows success.
+         auto& pending = owner->pending.emplace_back(Pending{{}, owner->last + 1, record});
+         VkFenceCreateInfo fence{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+-        auto r = owner->native->CreateFence(owner->native->handle, &fence, nullptr, &pending.fence);
++        auto r = vulkan::acquireOutput(pending.fence, owner->native->CreateFence, owner->native->handle, &fence, nullptr);
+         if (r != VK_SUCCESS) { owner->pending.pop_back(); return nativeError(r, "vkCreateFence"); }
+         VkSubmitInfo info{VK_STRUCTURE_TYPE_SUBMIT_INFO}; info.commandBufferCount = 1; info.pCommandBuffers = &record->command;
+         const auto submittedAt = std::chrono::steady_clock::now();
+@@ -1094,7 +1095,7 @@
+         a->state = desc.memory == Memory::Upload ? ResourceState::CopySource : desc.memory == Memory::Readback ? ResourceState::CopyDestination : ResourceState::Common;
+         VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; info.size = desc.size;
+         info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+-        if (auto ok = owner->accept(owner->native->CreateBuffer(owner->native->handle, &info, nullptr, &a->buffer), "vkCreateBuffer"); !ok) return std::unexpected(ok.error());
++        if (auto ok = owner->accept(vulkan::acquireOutput(a->buffer, owner->native->CreateBuffer, owner->native->handle, &info, nullptr), "vkCreateBuffer"); !ok) return std::unexpected(ok.error());
+         VkMemoryRequirements req{}; owner->native->GetBufferMemoryRequirements(owner->native->handle, a->buffer, &req);
+         const VkMemoryPropertyFlags required = desc.memory == Memory::Device ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+         std::optional<std::uint32_t> type;
+@@ -1107,7 +1108,7 @@
+         if (!type) return fail(ErrorCode::Unsupported, "No compatible Vulkan buffer memory type");
+         a->bytes = req.size; a->coherent = (owner->memory.memoryTypes[*type].propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
+         VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize = req.size; allocate.memoryTypeIndex = *type;
+-        if (auto ok = owner->accept(owner->native->AllocateMemory(owner->native->handle, &allocate, nullptr, &a->memory), "vkAllocateMemory"); !ok) return std::unexpected(ok.error());
++        if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory"); !ok) return std::unexpected(ok.error());
+         if (auto ok = owner->accept(owner->native->BindBufferMemory(owner->native->handle, a->buffer, a->memory, 0), "vkBindBufferMemory"); !ok) return std::unexpected(ok.error());
+         auto value = std::make_shared<VulkanBuffer>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
+         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+@@ -1137,7 +1138,7 @@
+         info.imageType = VK_IMAGE_TYPE_2D; info.format = format; info.extent = {desc.width, desc.height, 1};
+         info.mipLevels = info.arrayLayers = 1; info.samples = VK_SAMPLE_COUNT_1_BIT; info.tiling = VK_IMAGE_TILING_OPTIMAL;
+         info.usage = usage; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE; info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+-        if (auto ok = owner->accept(owner->native->CreateImage(owner->native->handle, &info, nullptr, &a->image), "vkCreateImage"); !ok) return std::unexpected(ok.error());
++        if (auto ok = owner->accept(vulkan::acquireOutput(a->image, owner->native->CreateImage, owner->native->handle, &info, nullptr), "vkCreateImage"); !ok) return std::unexpected(ok.error());
+         VkMemoryRequirements req{}; owner->native->GetImageMemoryRequirements(owner->native->handle, a->image, &req);
+         std::optional<std::uint32_t> type;
+         for (std::uint32_t n = 0; n < owner->memory.memoryTypeCount; ++n)
+@@ -1145,13 +1146,13 @@
+         if (!type) return fail(ErrorCode::Unsupported, "No device-local Vulkan image memory type");
+         a->bytes = req.size;
+         VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize = req.size; allocate.memoryTypeIndex = *type;
+-        if (auto ok = owner->accept(owner->native->AllocateMemory(owner->native->handle, &allocate, nullptr, &a->memory), "vkAllocateMemory image"); !ok) return std::unexpected(ok.error());
++        if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory image"); !ok) return std::unexpected(ok.error());
+         if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, a->memory, 0), "vkBindImageMemory"); !ok) return std::unexpected(ok.error());
+         {
+             VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+             view.image = a->image; view.viewType = VK_IMAGE_VIEW_TYPE_2D; view.format = format;
+             view.subresourceRange = {imageAspect(*a), 0, 1, 0, 1};
+-            if (auto ok = owner->accept(owner->native->CreateImageView(owner->native->handle, &view, nullptr, &a->view), "vkCreateImageView"); !ok) return std::unexpected(ok.error());
++            if (auto ok = owner->accept(vulkan::acquireOutput(a->view, owner->native->CreateImageView, owner->native->handle, &view, nullptr), "vkCreateImageView"); !ok) return std::unexpected(ok.error());
+         }
+         auto value = std::make_shared<VulkanTexture>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
+         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+@@ -1215,7 +1216,7 @@
+             info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+             info.addressModeU = info.addressModeV = info.addressModeW = s.address == SamplerAddress::Clamp ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : VK_SAMPLER_ADDRESS_MODE_REPEAT;
+             VkSampler sampler{};
+-            if (auto ok = owner->accept(owner->native->CreateSampler(owner->native->handle, &info, nullptr, &sampler), "vkCreateSampler"); !ok) return std::unexpected(ok.error());
++            if (auto ok = owner->accept(vulkan::acquireOutput(sampler, owner->native->CreateSampler, owner->native->handle, &info, nullptr), "vkCreateSampler"); !ok) return std::unexpected(ok.error());
+             p->samplers.push_back(sampler); p->linear |= s.filter == SamplerFilter::Linear;
+         }
+         std::vector<VkDescriptorSetLayoutBinding> resources;
+@@ -1225,7 +1226,7 @@
+         for (unsigned i = 0; i < p->samplers.size(); ++i) resources.push_back({32 + i, VK_DESCRIPTOR_TYPE_SAMPLER, 1, stages(resourceLayout.samplers[i].visibility), &p->samplers[i]});
+         if (!resources.empty()) {
+             VkDescriptorSetLayoutCreateInfo info{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO}; info.bindingCount = static_cast<unsigned>(resources.size()); info.pBindings = resources.data();
+-            if (auto ok = owner->accept(owner->native->CreateDescriptorSetLayout(owner->native->handle, &info, nullptr, &p->setLayout), "vkCreateDescriptorSetLayout"); !ok) return std::unexpected(ok.error());
++            if (auto ok = owner->accept(vulkan::acquireOutput(p->setLayout, owner->native->CreateDescriptorSetLayout, owner->native->handle, &info, nullptr), "vkCreateDescriptorSetLayout"); !ok) return std::unexpected(ok.error());
+         }
+         std::vector<VkVertexInputBindingDescription> bindings;
+         std::vector<VkVertexInputAttributeDescription> attributes;
+@@ -1252,13 +1253,13 @@
+         } modules{owner->native};
+         auto module = [&](const std::vector<std::uint32_t>& code, VkShaderModule& result) {
+             VkShaderModuleCreateInfo info{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO}; info.codeSize = code.size() * 4; info.pCode = code.data();
+-            return owner->accept(owner->native->CreateShaderModule(owner->native->handle, &info, nullptr, &result), "vkCreateShaderModule");
++            return owner->accept(vulkan::acquireOutput(result, owner->native->CreateShaderModule, owner->native->handle, &info, nullptr), "vkCreateShaderModule");
+         };
+         if (auto ok = module(*vertex, modules.vertex); !ok) return std::unexpected(ok.error());
+         if (auto ok = hasFragment ? module(*fragment, modules.fragment) : Result<void>{}; !ok) return std::unexpected(ok.error());
+         VkPipelineLayoutCreateInfo layout{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+         if (p->setLayout) { layout.setLayoutCount = 1; layout.pSetLayouts = &p->setLayout; }
+-        if (auto ok = owner->accept(owner->native->CreatePipelineLayout(owner->native->handle, &layout, nullptr, &p->layout), "vkCreatePipelineLayout"); !ok) return std::unexpected(ok.error());
++        if (auto ok = owner->accept(vulkan::acquireOutput(p->layout, owner->native->CreatePipelineLayout, owner->native->handle, &layout, nullptr), "vkCreatePipelineLayout"); !ok) return std::unexpected(ok.error());
+         std::vector<VkAttachmentDescription> attachments;
+         std::vector<VkAttachmentReference> references;
+         for (auto format : targets.colors) {
+@@ -1280,7 +1281,7 @@
+         VkRenderPassCreateInfo pass{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}; pass.attachmentCount = static_cast<std::uint32_t>(attachments.size()); pass.pAttachments = attachments.data(); pass.subpassCount = 1; pass.pSubpasses = &subpass;
+         if (targets.depth) subpass.pDepthStencilAttachment = &depthReference;
+         const auto dependencies = passDependencies(); pass.dependencyCount = 2; pass.pDependencies = dependencies.data();
+-        if (auto ok = owner->accept(owner->native->CreateRenderPass(owner->native->handle, &pass, nullptr, &p->pass), "vkCreateRenderPass pipeline"); !ok) return std::unexpected(ok.error());
++        if (auto ok = owner->accept(vulkan::acquireOutput(p->pass, owner->native->CreateRenderPass, owner->native->handle, &pass, nullptr), "vkCreateRenderPass pipeline"); !ok) return std::unexpected(ok.error());
+         VkPipelineShaderStageCreateInfo shaderStages[2]{};
+         for (auto& s : shaderStages) { s.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO; s.pName = "main"; }
+         shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT; shaderStages[0].module = modules.vertex; shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT; shaderStages[1].module = modules.fragment;
+@@ -1306,6 +1307,8 @@
+         depth.depthCompareOp = static_cast<VkCompareOp>(desc.depthState.compare); // Both enumerations use Never..Always order.
+         if (targets.depth) info.pDepthStencilState = &depth;
+         info.layout = p->layout; info.renderPass = p->pass;
++        // Pipeline arrays have defined null/partial-success outputs. Keep every
++        // non-null handle in RAII cleanup even if the overall call fails.
+         if (auto ok = owner->accept(owner->native->CreateGraphicsPipelines(owner->native->handle, {}, 1, &info, nullptr, &p->pipeline), "vkCreateGraphicsPipelines"); !ok) return std::unexpected(ok.error());
+         auto value = std::make_shared<VulkanPipeline>(); value->owner = owner; value->native = p; value->token = std::make_shared<int>();
+         std::erase_if(owner->objects, [](auto& w) { return w.expired(); }); std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
+@@ -1367,7 +1370,7 @@
+     const char* swapchainExtensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME};
+     if (native->presentation) { info.enabledExtensionCount = 2; info.ppEnabledExtensionNames = swapchainExtensions; info.pNext = &maintenance; }
+     VkPhysicalDeviceFeatures enabled{}; enabled.fullDrawIndexUint32 = selected->features.fullDrawIndexUint32; info.pEnabledFeatures = &enabled;
+-    if (auto r = (*instance)->CreateDevice(selected->physical, &info, nullptr, &native->handle); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
++    if (auto r = vulkan::acquireOutput(native->handle, (*instance)->CreateDevice, selected->physical, &info, nullptr); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
+ #define LOAD(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); \
+     if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan device entry point missing: vk" #name);
+     DEVICE_FUNCTIONS(LOAD)
+--- a/tests/VulkanCreationTests.cpp
++++ b/tests/VulkanCreationTests.cpp
+@@ -0,0 +1,28 @@
++#include "Creation.hpp"
++#include <cstdint>
++#include <iostream>
++#include <stdexcept>
++
++namespace {
++enum class Result { Success=0,HostOOM=-1,DeviceOOM=-2,Unknown=-13 };
++unsigned checks{};
++void check(bool b){++checks;if(!b)throw std::runtime_error("Creation ownership contract");}
++template<class Handle>void run(Handle good,Handle poison){
++    for(auto error:{Result::HostOOM,Result::DeviceOOM,Result::Unknown}){
++        unsigned calls{};Handle owner{};
++        auto create=[&](unsigned argument,Handle*out){++calls;check(argument==73);*out=poison;return error;};
++        check(gfx::vulkan::acquireOutput(owner,create,73u)==error);check(calls==1);check(owner==Handle{});
++        owner=good;check(gfx::vulkan::acquireOutput(owner,create,73u)==error);check(owner==good);check(calls==2);
++    }
++    unsigned calls{};Handle owner{};
++    auto create=[&](Handle*out){++calls;*out=good;return Result::Success;};
++    check(gfx::vulkan::acquireOutput(owner,create)==Result::Success);check(calls==1&&owner==good);
++    owner={};auto noWrite=[&](Handle*){++calls;return Result::HostOOM;};
++    check(gfx::vulkan::acquireOutput(owner,noWrite)==Result::HostOOM);check(owner==Handle{}&&calls==2);
++}
++}
++int main()try{
++    for(std::uint64_t i=1;i<=128;++i)run(i,std::uint64_t(0xf11));
++    int object{},fake{};run(&object,&fake);run(static_cast<void*>(&object),static_cast<void*>(&fake));
++    std::cout<<"PASS creation_assertions="<<checks<<" GPU_calls=0\n";return 0;
++}catch(const std::exception&e){std::cerr<<"FAIL: "<<e.what()<<'\n';return 1;}
