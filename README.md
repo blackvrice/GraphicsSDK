@@ -139,3 +139,8 @@ covers batches of one/1,000 device buffers and sampled textures, with every reso
 verified by GPU copy and full readback on NVIDIA/Intel. It measures separate CPU
 API intervals under each library's default allocation policy; physical reclamation
 and native allocation counts are not inferred. SDK production sources are unchanged.
+
+The [native Vulkan allocation trace](docs/PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.md)
+adds an own process-local layer to count native resource/memory calls by workload phase,
+with full readback and object/byte conservation checks on NVIDIA/Intel. These diagnostic
+records explain API policy differences; physical reclamation and profiler timing are not inferred.

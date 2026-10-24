@@ -485,3 +485,10 @@ shader inputs; historical SDK closure entries remain conservative. Missing notic
 and changed inventory are rejected. The source reproduction ZIP excludes vendor trees,
 executables, libraries, debug dumps and the validation runtime. This is input provenance,
 not symbol reachability or a legal approval.
+
+The [native allocation trace inventory](../licenses/generated/windows-benchmarks-vulkan-allocation-trace-release-final/inventory.json)
+adds four own compiler/linker closures (653 conservative files, 21 components) and
+the pinned Apache-2.0 vk_layer.h interface header, whose source notice is retained.
+The [additional policy](../licenses/vulkan-allocation-trace-policy.json) records its SHA,
+source and selected license. SDK/SDL binaries remain frozen. Source reproduction archives
+exclude vendor trees, own layer/benchmark binaries and the VVL runtime.

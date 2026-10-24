@@ -476,3 +476,10 @@ It uses public defaults: SDK dedicated allocation and broad buffer usage versus 
 internal allocation policy and vertex-buffer usage. These are semantic API workloads,
 not identical VkMemory allocation flags/counts or actual memory reclamation timings.
 The production implementation is unchanged.
+
+The [process-local native allocation layer](PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.md)
+observes eight resource/memory commands without wrapping or replacing Vulkan objects.
+It binds phases to explicit diagnostic workload markers, tracks device-scoped handles
+and validates memory/object conservation through teardown. VkDeviceMemory request bytes
+are not OS commitment, residency, VRAM peaks or driver-internal allocation counts.
+SDK production code and API are unchanged.

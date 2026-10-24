@@ -455,3 +455,19 @@ python tools/report_vulkan_allocation.py --input benchmarks/results/your-new-all
 
 Use fresh build/result roots. The current audit profile uses out/vulkan-allocation-benchmark-final.
 Run GPU validation and performance processes serially, separately from other GPU tests.
+
+The [native allocation diagnostic](PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.md) builds
+an isolated executable, an own explicit layer DLL and two CPU controls. Use fresh roots:
+
+```powershell
+cmake -S benchmarks/vulkan_allocation_trace -B out/your-new-trace-build -G "Visual Studio 17 2022" -A x64
+cmake --build out/your-new-trace-build --config Release --parallel 1
+ctest --test-dir out/your-new-trace-build -C Release --output-on-failure
+python tools/run_vulkan_allocation_trace.py --build out/your-new-trace-build --output benchmarks/results/your-new-trace-run
+python tools/report_vulkan_allocation_trace.py --input benchmarks/results/your-new-trace-run --output benchmarks/reports/your-new-trace-report
+```
+
+The reviewed runner/audit profile uses out/vulkan-allocation-trace-verified. The runner
+sets child-only VK_LAYER_PATH/VK_INSTANCE_LAYERS and expected DLL paths; it does not
+install registry entries or change driver/system settings. Source SDK/SDL installs and
+the pinned validation runtime are prerequisites. Diagnostic times are excluded.

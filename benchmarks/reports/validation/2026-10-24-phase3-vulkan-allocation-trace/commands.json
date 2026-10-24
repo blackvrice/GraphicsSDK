@@ -1,0 +1,87 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_allocation_trace",
+      "-B",
+      "out/vulkan-allocation-trace-verified",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "seconds": 3.625
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-allocation-trace-verified",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 13.0
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-allocation-trace-verified",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-24-phase3-vulkan-allocation-trace\\ctest.xml"
+    ],
+    "returncode": 0,
+    "seconds": 0.25
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 7.375
+  },
+  {
+    "name": "benchmark-audit",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_allocation_trace.py",
+      "--output",
+      "licenses/generated/windows-benchmarks-vulkan-allocation-trace-release",
+      "--create"
+    ],
+    "returncode": 0,
+    "seconds": 2.4220000000000255
+  },
+  {
+    "name": "matrix",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_vulkan_allocation_trace.py",
+      "--output",
+      "benchmarks/results/2026-10-24-vulkan-allocation-trace"
+    ],
+    "returncode": 0,
+    "seconds": 133.6869999999999
+  }
+]

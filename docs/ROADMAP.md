@@ -173,3 +173,9 @@ now covers buffer1/buffer1000/texture1/texture1000 on NVIDIA/Intel with full res
 readback. Creation and public release are separate CPU API intervals. Native allocator
 profiling, reuse/in-flight release, broader competitors and Linux remain open.
 The long memory criterion and historical Intel AV investigation remain deferred.
+
+The [bounded native allocation study](PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.md) now
+observes target creation, helpers/GPU use, helper release, target release, post-release
+idle and device teardown using an own explicit Vulkan layer. Paired validation/layer-only
+observations check native call/byte conservation. OS/driver memory profiling, allocator
+optimization, reuse/in-flight release, broader competitors and Linux remain open.

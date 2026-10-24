@@ -603,3 +603,11 @@ before separate performance processes. Report mutation and missing-layer/device/
 controls must fail closed. The unchanged production SDK's previous 93 selected CTests
 are preserved historical evidence, not a new full SDK run. Memory reclamation tests
 and the deferred Intel AV investigation are not part of this benchmark.
+
+The [native allocation trace](PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.md) adds 30 Python
+contracts (417 total), two CPU CTests (17 ledger + 13 DLL interface assertions), real
+SDK dedicated-allocation count controls and SDK/SDL full readback with/without VVL.
+Every phase checks live-object/byte conservation, complete phase order, source identity
+and zero accounting/dropped events. Missing trace/VVL, changed DLL path/GPU, invalid
+phase/options and report mutations must fail closed. This is bounded diagnostics;
+the deferred long memory/Intel AV gate and previous SDK CTests are not rerun.

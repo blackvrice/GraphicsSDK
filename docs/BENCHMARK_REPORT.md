@@ -147,3 +147,9 @@ older mixed-backend allocation series: resource sizes, full readback and timing 
 differ. CPU creation/public-release latency includes each SDK's default policy and is
 not a GPU-memory reclamation or whole-SDK ranking. See the linked report for raw data,
 independent-process statistics and evidence.
+
+The [bounded Vulkan native allocation observations](PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.md)
+add phase-scoped call counts/request bytes for the existing one/1,000 buffer/texture
+contract on NVIDIA/Intel. This is diagnostic data, separate from prior API latency
+statistics and deferred long memory acceptance. Counts describe layer-visible Vulkan
+objects/requests, not physical driver allocations or memory efficiency rankings.

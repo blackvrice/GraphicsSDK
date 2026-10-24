@@ -197,3 +197,10 @@ fences and verifies every tight byte, then publicly releases N targets. Only tar
 creation and public release are timed as separate CPU API intervals; helpers, GPU
 commands, waits, comparison and post-release idle are outside. API allocation/usage
 policies differ and are recorded. No native allocation count or reclamation claim.
+
+The [native allocation trace contract](PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.md) is
+separate from CPU API performance. The same changing payload and resource sizes are
+checked for four iterations in each of 32 validation/layer-only processes. Native
+resource creates/destroys, memory allocate/free requests and bind calls are recorded
+by phase. No instrumentation time enters baseline metrics, and successful vkFreeMemory
+observation does not certify driver/OS physical reclamation.
