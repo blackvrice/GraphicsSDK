@@ -189,3 +189,11 @@ reported as a frame wall time. Repeated identical states retain SDK/driver
 cache policy; neither cold creation nor cache hits are inferred. Each cell
 has three processes, five warmups and 30 measured iterations, seed 20261026.
 Public release latency does not normalize deferred native destruction policies.
+
+The [same-Vulkan resource contract](PHASE3_VULKAN_ALLOCATION_BENCHMARK_REPORT.md)
+adds four shaderless scenarios with 4,096-byte buffers or 65x37 RGBA8 sampled textures.
+Each iteration creates N targets, uploads unique changing payloads, performs GPU copies,
+fences and verifies every tight byte, then publicly releases N targets. Only target
+creation and public release are timed as separate CPU API intervals; helpers, GPU
+commands, waits, comparison and post-release idle are outside. API allocation/usage
+policies differ and are recorded. No native allocation count or reclamation claim.

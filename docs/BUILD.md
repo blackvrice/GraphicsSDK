@@ -441,3 +441,17 @@ commands/results and emits distinct creation/public-release statistics.
 `tools/audit_vulkan_pso.py` audits the frozen `out/vulkan-pso-benchmark` root.
 Shader assembly is not rerun; the same validated SPIR-V 1.3 and Vulkan 1.1
 request are used for both SDKs. New result/report directories must not exist.
+
+The [Vulkan allocation profile](PHASE3_VULKAN_ALLOCATION_BENCHMARK_REPORT.md) is an
+isolated shaderless project using the frozen installed SDK and reviewed SDL build:
+
+```powershell
+cmake -S benchmarks/vulkan_allocation -B out/your-new-allocation-build -G "Visual Studio 17 2022" -A x64
+cmake --build out/your-new-allocation-build --config Release --parallel 1
+ctest --test-dir out/your-new-allocation-build -C Release --output-on-failure
+python tools/run_vulkan_allocation.py --exe out/your-new-allocation-build/Release/vulkan_allocation.exe --output benchmarks/results/your-new-allocation-run
+python tools/report_vulkan_allocation.py --input benchmarks/results/your-new-allocation-run --output benchmarks/reports/your-new-allocation-report
+```
+
+Use fresh build/result roots. The current audit profile uses out/vulkan-allocation-benchmark-final.
+Run GPU validation and performance processes serially, separately from other GPU tests.

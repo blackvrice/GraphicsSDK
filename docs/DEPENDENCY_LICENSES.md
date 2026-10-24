@@ -476,3 +476,12 @@ static closures, libraries and original shader validation receipt are reused
 with SHA checks. No new vendor sources, shader assembler run, SDK binary
 package or runtime redistribution is introduced. Complete preceding evidence,
 source archives and all 23 historical SDK packages are retained.
+
+The [Vulkan allocation inventory](../licenses/generated/windows-benchmarks-vulkan-allocation-release/inventory.json)
+checks 648 conservative compiler inputs / 21 components, two new compiler and two new
+linker traces, including the CPU reference. It reuses frozen SDK/SDL closures and
+checks installed headers and static libraries byte-for-byte. This profile needs no
+shader inputs; historical SDK closure entries remain conservative. Missing notices
+and changed inventory are rejected. The source reproduction ZIP excludes vendor trees,
+executables, libraries, debug dumps and the validation runtime. This is input provenance,
+not symbol reachability or a legal approval.

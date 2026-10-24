@@ -1,0 +1,95 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_allocation",
+      "-B",
+      "out/vulkan-allocation-benchmark-final",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64"
+    ],
+    "returncode": 0,
+    "seconds": 5.093999999999937
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-allocation-benchmark-final",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 13.859000000000037
+  },
+  {
+    "name": "ctest",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-allocation-benchmark-final",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-24-phase3-vulkan-allocation\\ctest.xml"
+    ],
+    "returncode": 0,
+    "seconds": 1.625
+  },
+  {
+    "name": "python-tests",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py"
+    ],
+    "returncode": 0,
+    "seconds": 11.5
+  },
+  {
+    "name": "benchmark-audit",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/audit_vulkan_allocation.py",
+      "--output",
+      "licenses/generated/windows-benchmarks-vulkan-allocation-release",
+      "--create"
+    ],
+    "returncode": 0,
+    "seconds": 7.109000000000037
+  },
+  {
+    "name": "matrix",
+    "argv": [
+      "C:\\Users\\black\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/run_vulkan_allocation.py",
+      "--exe",
+      "out/vulkan-allocation-benchmark-final/Release/vulkan_allocation.exe",
+      "--output",
+      "benchmarks/results/2026-10-24-vulkan-allocation",
+      "--repetitions",
+      "3",
+      "--warmup",
+      "5",
+      "--samples",
+      "30"
+    ],
+    "returncode": 0,
+    "seconds": 606.9689999999999
+  }
+]

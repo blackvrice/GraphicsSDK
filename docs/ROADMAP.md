@@ -118,6 +118,9 @@ acceptance or later SDK feature milestones.
   Linux WSI, broader driver coverage and interactive/physical acceptance remain open.
 - [ ] Linux native compile/runtime and equivalent readback/lifetime tests.
 - [ ] Matching Vulkan competitor workloads and comparable measurements.
+  GraphicsSDK/SDL now have Windows NVIDIA/Intel upload, draw/instancing, repeated PSO
+  and resource creation/public-release baselines with full readback. Broader Vulkan
+  competitors, controlled cache/native profiling and Linux measurements remain open.
 
 ## Release milestones
 
@@ -164,3 +167,9 @@ batches of one/eight pipelines on NVIDIA/Intel, including shader object creation
 and GPU use checks. Creation and public release are separate CPU API intervals;
 cache hits, actual memory reclamation and whole-SDK ranking are not inferred.
 Allocation workloads, internal profiling, broader competitors and Linux remain open.
+
+The [initial Vulkan resource allocation comparison](PHASE3_VULKAN_ALLOCATION_BENCHMARK_REPORT.md)
+now covers buffer1/buffer1000/texture1/texture1000 on NVIDIA/Intel with full resource
+readback. Creation and public release are separate CPU API intervals. Native allocator
+profiling, reuse/in-flight release, broader competitors and Linux remain open.
+The long memory criterion and historical Intel AV investigation remain deferred.

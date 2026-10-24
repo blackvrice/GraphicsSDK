@@ -133,3 +133,9 @@ The [Vulkan pipeline comparison](docs/PHASE3_VULKAN_PSO_BENCHMARK_REPORT.md) mea
 repeated shader/pipeline creation and public handle release as separate CPU API
 intervals, with each pipeline used in full-image-verified drawing. Release latency
 is not actual GPU memory reclamation; production SDK sources remain unchanged.
+
+The [Vulkan resource creation/public-release comparison](docs/PHASE3_VULKAN_ALLOCATION_BENCHMARK_REPORT.md)
+covers batches of one/1,000 device buffers and sampled textures, with every resource
+verified by GPU copy and full readback on NVIDIA/Intel. It measures separate CPU
+API intervals under each library's default allocation policy; physical reclamation
+and native allocation counts are not inferred. SDK production sources are unchanged.

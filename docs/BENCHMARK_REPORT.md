@@ -140,3 +140,10 @@ creation P50 is longer in the four measured cells. Public release timings
 include different immediate/deferred ownership policies and do not establish
 actual GPU memory reclamation performance. No driver/cache or whole-SDK ranking
 is inferred. These CPU API intervals are not pooled with draw/upload wall times.
+
+The [2026-10-24 same-Vulkan allocation results](PHASE3_VULKAN_ALLOCATION_BENCHMARK_REPORT.md)
+add buffer/texture batches of one/1,000 on NVIDIA/Intel. They remain separate from the
+older mixed-backend allocation series: resource sizes, full readback and timing contracts
+differ. CPU creation/public-release latency includes each SDK's default policy and is
+not a GPU-memory reclamation or whole-SDK ranking. See the linked report for raw data,
+independent-process statistics and evidence.

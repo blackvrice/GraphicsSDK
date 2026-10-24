@@ -469,3 +469,10 @@ created in batches of one/eight, used for striped full-image checks, then releas
 after untimed fence/idle completion. CPU creation and public release intervals
 are separate; native destruction, actual memory reclamation and cache hit/miss
 classification are outside its claims.
+
+The standalone [resource creation/public-release profile](PHASE3_VULKAN_ALLOCATION_BENCHMARK_REPORT.md)
+compares one/1,000 device buffers or sampled RGBA8 textures with GPU copy/full readback.
+It uses public defaults: SDK dedicated allocation and broad buffer usage versus SDL's
+internal allocation policy and vertex-buffer usage. These are semantic API workloads,
+not identical VkMemory allocation flags/counts or actual memory reclamation timings.
+The production implementation is unchanged.

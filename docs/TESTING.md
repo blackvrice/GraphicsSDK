@@ -594,3 +594,12 @@ Eight report controls reject scope/cache/reclamation/count/statistic/raw/command
 changes. The public release measurement does not prove native destruction time
 or GPU memory reclamation. Previous SDK CTests and 23 packages remain preserved;
 no long memory run or historical Intel AV investigation is resumed.
+
+The [Vulkan allocation comparison](PHASE3_VULKAN_ALLOCATION_BENCHMARK_REPORT.md)
+adds three isolated CTests and 48 Python contract tests (387 total). The CPU reference
+checks 1,000 distinct resource payload prefixes, iteration changes, padded/tight rows
+and malformed layouts. Required-layer processes verify every byte of all resources
+before separate performance processes. Report mutation and missing-layer/device/option
+controls must fail closed. The unchanged production SDK's previous 93 selected CTests
+are preserved historical evidence, not a new full SDK run. Memory reclamation tests
+and the deferred Intel AV investigation are not part of this benchmark.
