@@ -649,3 +649,10 @@ NVIDIA adapter. New CPU plan assertions are 216; current Python tests are 550.
 The 55-product-CTest result remains prior evidence for the unchanged SDK, not a new
 run. Deferred memory tests remain registered and unselected. Native object conservation
 and readback are bounded correctness checks, not physical-memory acceptance.
+
+The [mixed-size churn profile](VULKAN_POOL_CHURN_REPORT.md) adds exact native
+binding/slot/range/public-statistics checks and full buffer references in 24 clean
+NVIDIA/Intel validation OFF/ON processes. New CPU model assertions are 172; Python
+tests are 581. The rebased candidate passes the 55 selected product CTests with the
+three deferred memory tests excluded at initial selection. Sparse survivor sets are
+defined by native blocks and are not matched performance workloads.

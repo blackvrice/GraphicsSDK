@@ -213,3 +213,10 @@ covered by a separate explicit layer/installed SDK consumer: 32 clean processes,
 Intel initialization is covered; surface injection runs on the adapter advertising
 swapchain support (NVIDIA). Broader errors, mixed-size/occupancy/churn, performance
 acceptance and Linux remain open. The long-memory/Intel AV deferral is unchanged.
+
+The [rebased pool churn stage](VULKAN_POOL_CHURN_REPORT.md) adds actual native
+binding metadata, first-free-slot/growth checks, mixed sizes, sparse block survivors,
+ended/pending recordings and 224 bind-error rollback cycles. The isolated candidate
+passes 55 selected CTests; Python tests are 581. Product adoption still needs full
+allocation-OOM/fallback retesting for the new fingerprint, reservation policy and
+fresh matched performance acceptance. Long-memory/Intel AV investigations remain deferred.

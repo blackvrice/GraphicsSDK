@@ -505,3 +505,9 @@ before/after product installations without rebuilding or changing product source
 Its final recorded build script is `2026-10-24-vulkan-loader-fault/verification-scripts/build-v4.py`
 under benchmark validation reports; serial MSVC Release builds use fresh roots.
 Pilot/failed build roots are retained separately from final evidence.
+
+The [rebased pool experiment](VULKAN_POOL_CHURN_REPORT.md) uses new
+`out/vulkan-pool-churn-source`, `-sdk`, `-install` and separate product/candidate
+consumer roots. `prepare_vulkan_pool_churn.py` verifies the current product and
+historical candidate before patching only the new copy. SDK and consumers build
+serially with MSVC Release; the original product and old artifacts stay preserved.

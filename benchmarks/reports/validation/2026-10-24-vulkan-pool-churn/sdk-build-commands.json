@@ -1,0 +1,70 @@
+[
+  {
+    "name": "candidate-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "out/vulkan-pool-churn-source",
+      "-B",
+      "out/vulkan-pool-churn-sdk",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_D3D12=ON",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF",
+      "-DGFX_VULKAN_HEADERS=D:\\source\\GraphicsSDK\\.deps\\Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "seconds": 4.75
+  },
+  {
+    "name": "candidate-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-pool-churn-sdk",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 80.5630000000001
+  },
+  {
+    "name": "candidate-tests",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-pool-churn-sdk",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "-E",
+      "^memory_reclamation_",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-24-vulkan-pool-churn\\candidate-tests.xml"
+    ],
+    "returncode": 0,
+    "seconds": 106.76499999999987
+  },
+  {
+    "name": "candidate-install",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/vulkan-pool-churn-sdk",
+      "--config",
+      "Release",
+      "--prefix",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-pool-churn-install"
+    ],
+    "returncode": 0,
+    "seconds": 0.1410000000000764
+  }
+]

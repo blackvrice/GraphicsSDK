@@ -1,0 +1,90 @@
+[
+  {
+    "name": "product-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "experiments/vulkan_pool_churn",
+      "-B",
+      "out/vulkan-pool-churn-product",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-creation-install"
+    ],
+    "returncode": 0,
+    "seconds": 2.780999999999949
+  },
+  {
+    "name": "product-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-pool-churn-product",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 9.297000000000025
+  },
+  {
+    "name": "product-model",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-pool-churn-product",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "seconds": 0.07799999999997453
+  },
+  {
+    "name": "candidate-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "experiments/vulkan_pool_churn",
+      "-B",
+      "out/vulkan-pool-churn-candidate",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-pool-churn-install"
+    ],
+    "returncode": 0,
+    "seconds": 2.3899999999998727
+  },
+  {
+    "name": "candidate-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-pool-churn-candidate",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 9.829000000000178
+  },
+  {
+    "name": "candidate-model",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-pool-churn-candidate",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "seconds": 0.0929999999998472
+  }
+]

@@ -173,3 +173,9 @@ instance/device/messenger failures on NVIDIA/Intel and Win32 surface failures on
 the supported NVIDIA adapter. It passes 96 synthetic error/retry cycles with zero
 invalid cleanup; the old SDK reproduces 24 guarded invalid cleanup calls. Product
 sources remain unchanged; this adds correctness evidence without a timing claim.
+
+The [mixed-size pool study](docs/VULKAN_POOL_CHURN_REPORT.md) rebases the adaptive
+candidate onto the hardened product and tests mixed churn, sparse occupancy and
+retained recordings on both GPUs. It passes 224 injected bind errors and 35,392
+full readbacks. Sparse reservation reaches 6.2x live native requirements; pooling
+remains experimental and the production dedicated policy is unchanged.

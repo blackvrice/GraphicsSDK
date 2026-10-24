@@ -527,3 +527,9 @@ extends the preserved conservative product inventory to 915 inputs/21 components
 adding six compiler and six linker read logs for new before/after consumers. The
 same pinned Vulkan-Headers aggregator/Win32 declarations were explicitly reviewed.
 No new third-party dependency or binary redistribution is introduced.
+
+The [rebased pool churn inventory](../licenses/generated/windows-vulkan-pool-churn-release/inventory.json)
+records 996 conservative inputs/21 components and 34 compiler/33 linker read logs
+from the new candidate SDK and product/candidate consumers, preserving the prior
+closure. Read-only binding metadata reuses the own guarded layer and pinned Vulkan
+declarations. No new dependency/vendor modification or binary redistribution is introduced.

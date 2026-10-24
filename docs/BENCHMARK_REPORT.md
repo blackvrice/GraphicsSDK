@@ -176,3 +176,9 @@ The [product creation-ownership report](VULKAN_CREATION_OWNERSHIP_REPORT.md)
 records the adopted correctness fix: CPU invalid cleanup 21 to zero and guarded real
 GPU invalid frees 12 to zero. Buffer pooling is not adopted and prior timing values
 are not reattributed to the new product fingerprint. Old evidence/packages are preserved.
+
+The [pool mixed-size/occupancy contracts](VULKAN_POOL_CHURN_REPORT.md) are
+instrumented correctness observations, without new timings. Mixed/held logical
+sequences match across product/candidate; block-based sparse survivor sets differ.
+The 6.2x sparse reservation is native requested bytes, not OS residency. Prior
+timings are not attributed to the rebased fingerprint, and pooling is not adopted.

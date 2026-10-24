@@ -516,3 +516,9 @@ synthetic host/device OOM in instance, debug messenger, device and supported Win
 surface creation. The current 29-site ownership fix needs no further product change.
 Dispatchable failures use null; non-dispatchable null/poison paths have guarded
 cleanup controls. Successful retries preserve live guard data and zero VVL errors.
+
+The [current-product pool rebase](VULKAN_POOL_CHURN_REPORT.md) keeps all 29 product
+creation guards and adds one for block allocation in an isolated candidate. Pool
+policy headers retain their reviewed bytes. Mixed churn and retained recordings
+pass exact binding/data checks, but one survivor per block retains 6.2x the live
+native requirements in the recorded sparse case. No product promotion is made.
