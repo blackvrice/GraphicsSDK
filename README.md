@@ -31,6 +31,8 @@ find_package(GraphicsSDK CONFIG REQUIRED)
 target_link_libraries(MyApplication PRIVATE GraphicsSDK::Core)
 ```
 
+See the [consolidated benchmark scorecard](docs/BENCHMARK_SCORECARD.md) for per-SDK 100-point, same-campaign comparisons.
+
 See [build and benchmark commands](docs/BUILD.md), [actual measurements and limitations](docs/BENCHMARK_REPORT.md),
 [API](docs/PUBLIC_API.md), [architecture](docs/ARCHITECTURE.md), [competitor analysis](docs/COMPETITOR_ANALYSIS.md),
 [testing](docs/TESTING.md), [optimization log](docs/OPTIMIZATION_LOG.md), and [remaining roadmap](docs/ROADMAP.md).
