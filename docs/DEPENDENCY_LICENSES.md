@@ -492,3 +492,11 @@ the pinned Apache-2.0 vk_layer.h interface header, whose source notice is retain
 The [additional policy](../licenses/vulkan-allocation-trace-policy.json) records its SHA,
 source and selected license. SDK/SDL binaries remain frozen. Source reproduction archives
 exclude vendor trees, own layer/benchmark binaries and the VVL runtime.
+
+The [isolated buffer-pool inventory](../licenses/generated/windows-vulkan-buffer-pool-candidate-release/inventory.json)
+checks 730 conservative compiler inputs / 21 components, 35 compiler and 34 linker
+logs from the candidate SDK and installed benchmark/trace consumers. The own copied
+sources and guarded generator receipt are checked, alongside the frozen SDK/SDL closure.
+No new third-party allocator or binary redistribution is introduced. Source archives
+include own candidate code/diff, original SDK source, scripts and notices; vendor trees,
+SDK/layer binaries and debug/runtime artifacts are excluded.

@@ -1,0 +1,132 @@
+[
+  {
+    "name": "candidate-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "out/vulkan-buffer-pool-source-v2",
+      "-B",
+      "out/vulkan-buffer-pool-sdk",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_ENABLE_D3D12=ON",
+      "-DGFX_ENABLE_VULKAN=ON",
+      "-DGFX_VULKAN_VALIDATION_TESTS=ON",
+      "-DGFX_BUILD_EXAMPLES=OFF",
+      "-DGFX_VULKAN_HEADERS=D:\\source\\GraphicsSDK\\.deps\\Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "seconds": 2.9839999999999236
+  },
+  {
+    "name": "candidate-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-buffer-pool-sdk",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 81.70299999999997
+  },
+  {
+    "name": "candidate-tests",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-buffer-pool-sdk",
+      "-C",
+      "Release",
+      "--output-on-failure",
+      "-j",
+      "1",
+      "-E",
+      "^memory_reclamation_",
+      "--output-junit",
+      "D:\\source\\GraphicsSDK\\benchmarks\\reports\\validation\\2026-10-24-phase3-vulkan-buffer-pool\\candidate-tests.xml"
+    ],
+    "returncode": 0,
+    "seconds": 128.25
+  },
+  {
+    "name": "candidate-install",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/vulkan-buffer-pool-sdk",
+      "--config",
+      "Release",
+      "--prefix",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-buffer-pool-install"
+    ],
+    "returncode": 0,
+    "seconds": 0.15599999999994907
+  },
+  {
+    "name": "benchmark-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_allocation",
+      "-B",
+      "out/vulkan-buffer-pool-benchmark",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-buffer-pool-install"
+    ],
+    "returncode": 0,
+    "seconds": 3.4850000000001273
+  },
+  {
+    "name": "benchmark-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-buffer-pool-benchmark",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 8.077999999999975
+  },
+  {
+    "name": "trace-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "benchmarks/vulkan_allocation_trace",
+      "-B",
+      "out/vulkan-buffer-pool-trace",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-buffer-pool-install"
+    ],
+    "returncode": 0,
+    "seconds": 2.782000000000153
+  },
+  {
+    "name": "trace-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-buffer-pool-trace",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 10.875
+  }
+]

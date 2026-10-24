@@ -1,0 +1,709 @@
+{
+  "schema_version": 1,
+  "contract": "vulkan_small_buffer_slab_candidate_trial_v1",
+  "product_SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+  "candidate_SDK_source_fingerprint": "6a675e995d9ec778aacbc8046bee660292b80aa182c23b0db61b32757bc81476",
+  "benchmark_source_fingerprint": "9be610abfe51bd2ac20b6f07f3816bae3040d09bab776b2a657393ced7be3a9c",
+  "trace_source_fingerprint": "4e00b0bc59f4674efdbc4414356ac18f1c566d6664b8b4443703f0aab1fc6ea9",
+  "artifacts": [
+    {
+      "path": "out/vulkan-allocation-benchmark-final/Release/vulkan_allocation.exe",
+      "sha256": "6d29cefdd52f734db3d71ba1bd4e4ad683c405f44b7ac23678316f3fdce70571",
+      "bytes": 2729984
+    },
+    {
+      "path": "out/vulkan-allocation-trace-verified/Release/VkLayer_gfx_allocation.dll",
+      "sha256": "30bd76b3890d042b9bcd7e116322c09cf5aecf3d514b389372135c6285599bb6",
+      "bytes": 46080
+    },
+    {
+      "path": "out/vulkan-allocation-trace-verified/Release/VkLayer_gfx_allocation.json",
+      "sha256": "c7775866b71b0d5bfc48f0ec37367bd00a900c6fb181c5aa738a23d69a87e86c",
+      "bytes": 336
+    },
+    {
+      "path": "out/vulkan-allocation-trace-verified/Release/vulkan_allocation_trace.exe",
+      "sha256": "a4706d67692efeb4179d83fb4ff009c45c0283eb5962e698774a6dbf657fd157",
+      "bytes": 2733568
+    },
+    {
+      "path": "out/vulkan-buffer-pool-benchmark/Release/vulkan_allocation.exe",
+      "sha256": "370e9bcb127756da9fec103c6caa0797940ef235bde5023df3ae42815b0c1b6a",
+      "bytes": 2734592
+    },
+    {
+      "path": "out/vulkan-buffer-pool-trace/Release/VkLayer_gfx_allocation.dll",
+      "sha256": "b95100f57d8e2837d247ec87199e2b2e245305eed07244b85f28331daa607c49",
+      "bytes": 46080
+    },
+    {
+      "path": "out/vulkan-buffer-pool-trace/Release/VkLayer_gfx_allocation.json",
+      "sha256": "c7775866b71b0d5bfc48f0ec37367bd00a900c6fb181c5aa738a23d69a87e86c",
+      "bytes": 336
+    },
+    {
+      "path": "out/vulkan-buffer-pool-trace/Release/vulkan_allocation_trace.exe",
+      "sha256": "f5d60ca0a4ef29928e188346e57a882045e41a72656015a59a90f55faae9de2c",
+      "bytes": 2737664
+    }
+  ],
+  "probes": {
+    "high": {
+      "schema_version": 1,
+      "sdk": "sdl",
+      "api": "vulkan",
+      "category": "cpu_api",
+      "contract": "vulkan_resource_create_public_release_full_readback_v1",
+      "probe": true,
+      "scenario": "probe",
+      "preference": "high",
+      "configuration": "Release",
+      "validation": false,
+      "source_fingerprint": "9be610abfe51bd2ac20b6f07f3816bae3040d09bab776b2a657393ced7be3a9c",
+      "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+      "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+      "requested_instance_api_version": 4198400,
+      "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+      "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+      "device_luid": "c97b010000000000",
+      "native_vendor_id": 4318,
+      "native_device_id": 8644,
+      "native_driver_version": 2604679168,
+      "native_api_version": 4211045,
+      "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+      "environment": {
+        "cpu": "Intel(R) Core(TM) i7-14700K",
+        "ram_bytes": 68473667584,
+        "os": "Windows 10.0.26220",
+        "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+        "vendor_id": 4318,
+        "device_id": 8644,
+        "luid": "0:97225",
+        "driver": "32.0.16.2101",
+        "driver_query_available": true,
+        "software_renderer": false,
+        "compiler": "MSVC 194435228",
+        "pointer_bits": 64
+      },
+      "loaded_validation_layer": "",
+      "warmup": 0,
+      "sample_count": 0,
+      "width": 0,
+      "height": 0,
+      "texel_bytes": 0,
+      "buffer_bytes": 4096,
+      "resource_kind": "buffer",
+      "resources_per_iteration": 0,
+      "created_resources": 0,
+      "released_resource_handles": 0,
+      "used_resources": 0,
+      "verified_resources": 0,
+      "verified_images": 0,
+      "verified_buffers": 0,
+      "verified_bytes": 0,
+      "readback_verified": false,
+      "allocation_policy": "public_device_resource_default_policy",
+      "usage_policy": "sdl_vertex_buffer",
+      "GPU_use_in_timing": false,
+      "GPU_memory_reclamation_verified": false,
+      "native_allocation_count_verified": false,
+      "gpu_ms": null,
+      "columns": [
+        "create_ms",
+        "public_release_ms"
+      ],
+      "samples_ms": []
+    },
+    "low": {
+      "schema_version": 1,
+      "sdk": "sdl",
+      "api": "vulkan",
+      "category": "cpu_api",
+      "contract": "vulkan_resource_create_public_release_full_readback_v1",
+      "probe": true,
+      "scenario": "probe",
+      "preference": "low",
+      "configuration": "Release",
+      "validation": false,
+      "source_fingerprint": "9be610abfe51bd2ac20b6f07f3816bae3040d09bab776b2a657393ced7be3a9c",
+      "SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25",
+      "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+      "requested_instance_api_version": 4198400,
+      "device_name": "Intel(R) UHD Graphics 770",
+      "device_uuid": "868080a7040000000002000000000000",
+      "driver_uuid": "33322e302e3130312e36313239000000",
+      "device_luid": "57a3010000000000",
+      "native_vendor_id": 32902,
+      "native_device_id": 42880,
+      "native_driver_version": 1660913,
+      "native_api_version": 4206887,
+      "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+      "environment": {
+        "cpu": "Intel(R) Core(TM) i7-14700K",
+        "ram_bytes": 68473667584,
+        "os": "Windows 10.0.26220",
+        "gpu": "Intel(R) UHD Graphics 770",
+        "vendor_id": 32902,
+        "device_id": 42880,
+        "luid": "0:107351",
+        "driver": "32.0.101.6129",
+        "driver_query_available": true,
+        "software_renderer": false,
+        "compiler": "MSVC 194435228",
+        "pointer_bits": 64
+      },
+      "loaded_validation_layer": "",
+      "warmup": 0,
+      "sample_count": 0,
+      "width": 0,
+      "height": 0,
+      "texel_bytes": 0,
+      "buffer_bytes": 4096,
+      "resource_kind": "buffer",
+      "resources_per_iteration": 0,
+      "created_resources": 0,
+      "released_resource_handles": 0,
+      "used_resources": 0,
+      "verified_resources": 0,
+      "verified_images": 0,
+      "verified_buffers": 0,
+      "verified_bytes": 0,
+      "readback_verified": false,
+      "allocation_policy": "public_device_resource_default_policy",
+      "usage_policy": "sdl_vertex_buffer",
+      "GPU_use_in_timing": false,
+      "GPU_memory_reclamation_verified": false,
+      "native_allocation_count_verified": false,
+      "gpu_ms": null,
+      "columns": [
+        "create_ms",
+        "public_release_ms"
+      ],
+      "samples_ms": []
+    }
+  },
+  "groups": [
+    {
+      "preference": "high",
+      "scenario": "buffer1",
+      "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "statistics": {
+        "baseline": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.06785,
+            "p95_ms": 0.114495,
+            "p99_ms": 0.11587499999999999,
+            "min_ms": 0.0401,
+            "max_ms": 0.1181,
+            "MAD_ms": 0.012850000000000007,
+            "process_medians_ms": [
+              0.07135,
+              0.0639,
+              0.06785
+            ],
+            "outliers_above_3MAD": 9,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.12885000000000002,
+            "p95_ms": 0.19031499999999998,
+            "p99_ms": 0.21767699999999995,
+            "min_ms": 0.1071,
+            "max_ms": 0.2717,
+            "MAD_ms": 0.013599999999999994,
+            "process_medians_ms": [
+              0.13335,
+              0.12229999999999999,
+              0.13974999999999999
+            ],
+            "outliers_above_3MAD": 12,
+            "samples_removed": 0
+          }
+        },
+        "candidate": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.07255,
+            "p95_ms": 0.12637999999999994,
+            "p99_ms": 0.16942199999999996,
+            "min_ms": 0.0454,
+            "max_ms": 0.2586,
+            "MAD_ms": 0.013399999999999999,
+            "process_medians_ms": [
+              0.07600000000000001,
+              0.0665,
+              0.07535
+            ],
+            "outliers_above_3MAD": 7,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.13815,
+            "p95_ms": 0.20340499999999997,
+            "p99_ms": 0.29729799999999984,
+            "min_ms": 0.1139,
+            "max_ms": 0.557,
+            "MAD_ms": 0.010749999999999996,
+            "process_medians_ms": [
+              0.13805,
+              0.13679999999999998,
+              0.13895000000000002
+            ],
+            "outliers_above_3MAD": 12,
+            "samples_removed": 0
+          }
+        },
+        "sdl": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.00185,
+            "p95_ms": 0.0031199999999999986,
+            "p99_ms": 0.0039429999999999995,
+            "min_ms": 0.0009,
+            "max_ms": 0.0051,
+            "MAD_ms": 0.0004999999999999999,
+            "process_medians_ms": [
+              0.0022,
+              0.00135,
+              0.0019
+            ],
+            "outliers_above_3MAD": 3,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.0001,
+            "p95_ms": 0.0002,
+            "p99_ms": 0.0003659999999999996,
+            "min_ms": 0,
+            "max_ms": 0.0009,
+            "MAD_ms": 0.0,
+            "process_medians_ms": [
+              0.00015000000000000001,
+              0.0001,
+              0.0001
+            ],
+            "outliers_above_3MAD": 33,
+            "samples_removed": 0
+          }
+        }
+      },
+      "candidate_over_baseline_p50_ratio": {
+        "create_ms": 1.0692704495210024,
+        "public_release_ms": 1.0721769499417926
+      }
+    },
+    {
+      "preference": "high",
+      "scenario": "buffer1000",
+      "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "statistics": {
+        "baseline": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 54.4311,
+            "p95_ms": 66.787625,
+            "p99_ms": 73.47592999999999,
+            "min_ms": 39.9872,
+            "max_ms": 83.1173,
+            "MAD_ms": 4.402000000000001,
+            "process_medians_ms": [
+              54.1823,
+              55.1246,
+              54.51275
+            ],
+            "outliers_above_3MAD": 4,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 157.15185,
+            "p95_ms": 165.711035,
+            "p99_ms": 178.652673,
+            "min_ms": 149.2151,
+            "max_ms": 193.5818,
+            "MAD_ms": 2.1895999999999987,
+            "process_medians_ms": [
+              157.67464999999999,
+              156.3834,
+              157.06560000000002
+            ],
+            "outliers_above_3MAD": 9,
+            "samples_removed": 0
+          }
+        },
+        "candidate": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 6.215999999999999,
+            "p95_ms": 9.25977,
+            "p99_ms": 11.594317999999998,
+            "min_ms": 4.5207,
+            "max_ms": 15.3802,
+            "MAD_ms": 0.9484500000000002,
+            "process_medians_ms": [
+              6.69175,
+              5.86665,
+              6.20465
+            ],
+            "outliers_above_3MAD": 5,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 10.474499999999999,
+            "p95_ms": 12.16198,
+            "p99_ms": 14.684838999999997,
+            "min_ms": 8.2482,
+            "max_ms": 18.9256,
+            "MAD_ms": 0.6676500000000001,
+            "process_medians_ms": [
+              10.477,
+              10.34585,
+              10.5003
+            ],
+            "outliers_above_3MAD": 4,
+            "samples_removed": 0
+          }
+        },
+        "sdl": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.33775,
+            "p95_ms": 0.6006899999999998,
+            "p99_ms": 0.713519,
+            "min_ms": 0.2867,
+            "max_ms": 0.7517,
+            "MAD_ms": 0.02654999999999999,
+            "process_medians_ms": [
+              0.34355,
+              0.3301,
+              0.34185
+            ],
+            "outliers_above_3MAD": 18,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.0674,
+            "p95_ms": 0.19260499999999994,
+            "p99_ms": 0.480304,
+            "min_ms": 0.0472,
+            "max_ms": 0.5127,
+            "MAD_ms": 0.008650000000000001,
+            "process_medians_ms": [
+              0.06265000000000001,
+              0.0702,
+              0.06839999999999999
+            ],
+            "outliers_above_3MAD": 17,
+            "samples_removed": 0
+          }
+        }
+      },
+      "candidate_over_baseline_p50_ratio": {
+        "create_ms": 0.11419941908210562,
+        "public_release_ms": 0.06665209477330365
+      }
+    },
+    {
+      "preference": "low",
+      "scenario": "buffer1",
+      "device_name": "Intel(R) UHD Graphics 770",
+      "statistics": {
+        "baseline": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.033350000000000005,
+            "p95_ms": 0.06902999999999997,
+            "p99_ms": 0.134875,
+            "min_ms": 0.018,
+            "max_ms": 0.1727,
+            "MAD_ms": 0.010500000000000004,
+            "process_medians_ms": [
+              0.0341,
+              0.026549999999999997,
+              0.034850000000000006
+            ],
+            "outliers_above_3MAD": 5,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.0248,
+            "p95_ms": 0.04332999999999998,
+            "p99_ms": 0.072336,
+            "min_ms": 0.0191,
+            "max_ms": 0.088,
+            "MAD_ms": 0.0034999999999999996,
+            "process_medians_ms": [
+              0.024050000000000002,
+              0.0229,
+              0.0287
+            ],
+            "outliers_above_3MAD": 9,
+            "samples_removed": 0
+          }
+        },
+        "candidate": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.036750000000000005,
+            "p95_ms": 0.07990499999999999,
+            "p99_ms": 0.178773,
+            "min_ms": 0.0186,
+            "max_ms": 0.2004,
+            "MAD_ms": 0.011700000000000006,
+            "process_medians_ms": [
+              0.03405,
+              0.0421,
+              0.0292
+            ],
+            "outliers_above_3MAD": 7,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.0241,
+            "p95_ms": 0.043295,
+            "p99_ms": 0.07164899999999992,
+            "min_ms": 0.0189,
+            "max_ms": 0.1837,
+            "MAD_ms": 0.0019999999999999983,
+            "process_medians_ms": [
+              0.02255,
+              0.02475,
+              0.0245
+            ],
+            "outliers_above_3MAD": 19,
+            "samples_removed": 0
+          }
+        },
+        "sdl": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.0036,
+            "p95_ms": 0.006764999999999999,
+            "p99_ms": 0.013295999999999999,
+            "min_ms": 0.0018,
+            "max_ms": 0.0165,
+            "MAD_ms": 0.0013,
+            "process_medians_ms": [
+              0.0049499999999999995,
+              0.00285,
+              0.0029
+            ],
+            "outliers_above_3MAD": 3,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.0001,
+            "p95_ms": 0.0002,
+            "p99_ms": 0.0003,
+            "min_ms": 0,
+            "max_ms": 0.0003,
+            "MAD_ms": 0.0,
+            "process_medians_ms": [
+              0.0002,
+              0.0001,
+              0.0001
+            ],
+            "outliers_above_3MAD": 36,
+            "samples_removed": 0
+          }
+        }
+      },
+      "candidate_over_baseline_p50_ratio": {
+        "create_ms": 1.1019490254872564,
+        "public_release_ms": 0.9717741935483871
+      }
+    },
+    {
+      "preference": "low",
+      "scenario": "buffer1000",
+      "device_name": "Intel(R) UHD Graphics 770",
+      "statistics": {
+        "baseline": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 30.5868,
+            "p95_ms": 36.887505,
+            "p99_ms": 39.19064,
+            "min_ms": 25.2229,
+            "max_ms": 39.5591,
+            "MAD_ms": 1.5218000000000007,
+            "process_medians_ms": [
+              30.902250000000002,
+              30.827199999999998,
+              30.29805
+            ],
+            "outliers_above_3MAD": 6,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 32.7528,
+            "p95_ms": 36.792445,
+            "p99_ms": 40.996807999999994,
+            "min_ms": 28.8345,
+            "max_ms": 46.4817,
+            "MAD_ms": 1.10515,
+            "process_medians_ms": [
+              32.56355,
+              34.1179,
+              32.5945
+            ],
+            "outliers_above_3MAD": 8,
+            "samples_removed": 0
+          }
+        },
+        "candidate": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 5.1749,
+            "p95_ms": 7.66123,
+            "p99_ms": 7.954669999999999,
+            "min_ms": 4.3301,
+            "max_ms": 8.0677,
+            "MAD_ms": 0.5820499999999997,
+            "process_medians_ms": [
+              5.3177,
+              4.9795,
+              5.4731000000000005
+            ],
+            "outliers_above_3MAD": 11,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 2.87845,
+            "p95_ms": 6.03435,
+            "p99_ms": 6.779161999999999,
+            "min_ms": 2.322,
+            "max_ms": 8.4294,
+            "MAD_ms": 0.4053499999999999,
+            "process_medians_ms": [
+              2.8855500000000003,
+              2.89405,
+              2.87845
+            ],
+            "outliers_above_3MAD": 20,
+            "samples_removed": 0
+          }
+        },
+        "sdl": {
+          "create_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 1.6496499999999998,
+            "p95_ms": 3.109275,
+            "p99_ms": 3.648635,
+            "min_ms": 1.3953,
+            "max_ms": 4.0656,
+            "MAD_ms": 0.1388999999999998,
+            "process_medians_ms": [
+              1.66255,
+              1.6008,
+              1.66505
+            ],
+            "outliers_above_3MAD": 18,
+            "samples_removed": 0
+          },
+          "public_release_ms": {
+            "processes": 3,
+            "samples": 90,
+            "p50_ms": 0.06555,
+            "p95_ms": 0.45053499999999946,
+            "p99_ms": 0.6112049999999999,
+            "min_ms": 0.0435,
+            "max_ms": 0.7941,
+            "MAD_ms": 0.008449999999999996,
+            "process_medians_ms": [
+              0.06405,
+              0.06555,
+              0.0679
+            ],
+            "outliers_above_3MAD": 26,
+            "samples_removed": 0
+          }
+        }
+      },
+      "candidate_over_baseline_p50_ratio": {
+        "create_ms": 0.16918736186851846,
+        "public_release_ms": 0.08788408929923548
+      }
+    }
+  ],
+  "repetitions": 3,
+  "warmup": 5,
+  "samples": 30,
+  "seed": 20261029,
+  "candidate_only": true,
+  "production_adopted": false,
+  "physical_memory_reclamation_verified": false,
+  "samples_removed": 0,
+  "GPU_timestamps": false,
+  "created_resources": 654654,
+  "released_resource_handles": 654654,
+  "verified_resources": 654654,
+  "verified_buffers": 654654,
+  "verified_bytes": 2681462784,
+  "candidate_CTests": 57,
+  "Python_tests": 444,
+  "measurement_processes": 36,
+  "correctness_processes": 12,
+  "native_trace_processes": 8,
+  "measurement_iterations": 1080,
+  "CPU_interval_observations": 2160,
+  "trace_buffers": 16016,
+  "trace_bytes": 65601536,
+  "native_allocation_calls_1000_baseline": 1000,
+  "native_allocation_calls_1000_candidate": 63,
+  "requested_bytes_1000_baseline": 4096000,
+  "requested_bytes_1000_candidate": 4128768,
+  "requested_bytes_1_baseline": 4096,
+  "requested_bytes_1_candidate": 65536,
+  "overall_SDK_ranking": false,
+  "Phase3_complete": false,
+  "memory_acceptance": false,
+  "Intel_AV_cause_resolved": false,
+  "inventory": {
+    "path": "licenses/generated/windows-vulkan-buffer-pool-candidate-release/inventory.json",
+    "sha256": "4ca1b59ebd738d305fc383758c52190c32a01b71bbab732516ce39390a53e97c",
+    "bytes": 433557
+  },
+  "compiler_inputs": 730,
+  "components": 21,
+  "new_compiler_logs": 35,
+  "new_linker_logs": 34,
+  "historical_packages_preserved": 23,
+  "raw_commands": 70,
+  "prior_SDK_source_fingerprint": "44b92cdf3a4ae01c97af10fe25d57b6dea487bf6ed7826a7f322e338a1d39e25"
+}

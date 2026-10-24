@@ -153,3 +153,9 @@ add phase-scoped call counts/request bytes for the existing one/1,000 buffer/tex
 contract on NVIDIA/Intel. This is diagnostic data, separate from prior API latency
 statistics and deferred long memory acceptance. Counts describe layer-visible Vulkan
 objects/requests, not physical driver allocations or memory efficiency rankings.
+
+The [small-buffer candidate measurements](PHASE3_VULKAN_BUFFER_POOL_REPORT.md) show
+lower large-batch creation/release latency on NVIDIA/Intel, with fewer native memory
+calls, while single creation regresses and requests more bytes. The fixed policy is
+not adopted as the product default. See the fresh matched baseline/candidate/SDL data;
+these are API intervals, not GPU timestamps or physical memory reclamation timings.

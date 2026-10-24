@@ -144,3 +144,9 @@ The [native Vulkan allocation trace](docs/PHASE3_VULKAN_ALLOCATION_TRACE_REPORT.
 adds an own process-local layer to count native resource/memory calls by workload phase,
 with full readback and object/byte conservation checks on NVIDIA/Intel. These diagnostic
 records explain API policy differences; physical reclamation and profiler timing are not inferred.
+
+The [small Vulkan buffer-pool candidate](docs/PHASE3_VULKAN_BUFFER_POOL_REPORT.md)
+adds a guarded isolated SDK implementation and fresh baseline/candidate/SDL trials.
+It cuts 1,000-buffer native memory calls to 63 but increases a single buffer's
+requested reservation and creation latency. It remains an experiment; product SDK
+sources and defaults are unchanged.

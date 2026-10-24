@@ -179,3 +179,9 @@ observes target creation, helpers/GPU use, helper release, target release, post-
 idle and device teardown using an own explicit Vulkan layer. Paired validation/layer-only
 observations check native call/byte conservation. OS/driver memory profiling, allocator
 optimization, reuse/in-flight release, broader competitors and Linux remain open.
+
+The [small-buffer slab experiment](PHASE3_VULKAN_BUFFER_POOL_REPORT.md) implements
+64KiB blocks in an isolated SDK copy, validates retained slots/statistics/native calls
+and measures fresh baseline/candidate/SDL intervals. The fixed policy was not adopted:
+large batches improve, but sparse use reserves more bytes and single creation regresses.
+Adaptive reservation and fault-injected failure acceptance remain before promotion.

@@ -611,3 +611,11 @@ Every phase checks live-object/byte conservation, complete phase order, source i
 and zero accounting/dropped events. Missing trace/VVL, changed DLL path/GPU, invalid
 phase/options and report mutations must fail closed. This is bounded diagnostics;
 the deferred long memory/Intel AV gate and previous SDK CTests are not rerun.
+
+The [small-buffer candidate study](PHASE3_VULKAN_BUFFER_POOL_REPORT.md) passes 57
+selected integrated CTests (54 existing + three candidate tests), excluding the three
+deferred memory reclamation cases. CPU slab tests check 34,810 invariants; two-adapter
+GPU tests cover fragmented reuse, retained recording aliases, mixed sizes, large-buffer
+fallback and retired generations. Python 444/444 (27 new), report mutation controls,
+actual native allocation/byte conservation and full readback pass. OOM/bind-failure
+injection and broad multithread use are not accepted; the candidate is not promoted.

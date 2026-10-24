@@ -483,3 +483,10 @@ It binds phases to explicit diagnostic workload markers, tracks device-scoped ha
 and validates memory/object conservation through teardown. VkDeviceMemory request bytes
 are not OS commitment, residency, VRAM peaks or driver-internal allocation counts.
 SDK production code and API are unchanged.
+
+The [isolated small-device-buffer candidate](PHASE3_VULKAN_BUFFER_POOL_REPORT.md)
+uses 64KiB blocks with memory-type/stride-separated slots and native-lifetime leases.
+It honors native alignment/dedicated preferences and counts shared reserved bytes once.
+Host buffers and images stay dedicated; empty blocks return immediately. It remains
+outside the product because fixed reservation penalizes sparse use. Product behavior,
+public API and the current dedicated allocation path are unchanged.

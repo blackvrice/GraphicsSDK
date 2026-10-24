@@ -471,3 +471,10 @@ The reviewed runner/audit profile uses out/vulkan-allocation-trace-verified. The
 sets child-only VK_LAYER_PATH/VK_INSTANCE_LAYERS and expected DLL paths; it does not
 install registry entries or change driver/system settings. Source SDK/SDL installs and
 the pinned validation runtime are prerequisites. Diagnostic times are excluded.
+
+The [isolated buffer-pool candidate](PHASE3_VULKAN_BUFFER_POOL_REPORT.md) is generated
+by tools/prepare_vulkan_buffer_pool.py into a new out/ source root. It requires the
+exact reviewed product fingerprint and unique patch anchors. The report links the
+actual serial SDK/installed-consumer build, pinned VVL environment and CTest selection
+excluding ^memory_reclamation_ from the start. Reproduction needs new source/build/
+install/result roots and matching runner/audit paths. Never patch product/vendor files.

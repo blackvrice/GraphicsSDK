@@ -204,3 +204,9 @@ checked for four iterations in each of 32 validation/layer-only processes. Nativ
 resource creates/destroys, memory allocate/free requests and bind calls are recorded
 by phase. No instrumentation time enters baseline metrics, and successful vkFreeMemory
 observation does not certify driver/OS physical reclamation.
+
+The [small-buffer candidate contract](PHASE3_VULKAN_BUFFER_POOL_REPORT.md) uses fresh
+baseline/candidate/SDL independent processes for one/1,000 4KiB buffers. Correctness,
+native tracing and CPU timing are separate. Reserved Vulkan request bytes are reported
+beside latency, including the candidate's single-buffer 16x reservation. Historical
+baselines are not mixed with the new campaign and the experiment is not a product gate.
