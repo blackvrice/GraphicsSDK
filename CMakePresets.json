@@ -3,8 +3,43 @@
   "cmakeMinimumRequired": {"major": 3, "minor": 25, "patch": 0},
   "configurePresets": [
     {"name": "windows", "generator": "Visual Studio 17 2022", "architecture": "x64", "binaryDir": "${sourceDir}/out/core", "cacheVariables": {"GFX_ENABLE_D3D12": "ON", "GFX_BUILD_TESTS": "ON", "GFX_BUILD_EXAMPLES": "ON"}},
-    {"name": "portable-core", "generator": "Ninja", "binaryDir": "${sourceDir}/out/portable", "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "GFX_ENABLE_D3D12": "OFF", "GFX_BUILD_TESTS": "ON", "GFX_BUILD_EXAMPLES": "OFF"}}
+    {"name": "portable-core", "generator": "Ninja", "binaryDir": "${sourceDir}/out/portable", "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "GFX_ENABLE_D3D12": "OFF", "GFX_BUILD_TESTS": "ON", "GFX_BUILD_EXAMPLES": "OFF"}},
+    {
+      "name": "linux-vulkan",
+      "displayName": "Linux Vulkan correctness (Release)",
+      "description": "Native Linux, Ninja, D3D12 OFF/Vulkan ON; requires an external Vulkan-Headers checkout.",
+      "condition": {"type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux"},
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/${presetName}-install",
+        "GFX_ENABLE_D3D12": "OFF",
+        "GFX_ENABLE_VULKAN": "ON",
+        "GFX_BUILD_TESTS": "ON",
+        "GFX_BUILD_EXAMPLES": "OFF",
+        "GFX_VULKAN_VALIDATION_TESTS": "OFF",
+        "GFX_VULKAN_HEADERS": "${sourceDir}/.deps/Vulkan-Headers"
+      }
+    },
+    {
+      "name": "linux-vulkan-validation",
+      "inherits": "linux-vulkan",
+      "displayName": "Linux Vulkan with required validation (Release)",
+      "description": "Separate native Linux build/install roots; missing required Vulkan validation support fails tests.",
+      "cacheVariables": {"GFX_VULKAN_VALIDATION_TESTS": "ON"}
+    }
   ],
-  "buildPresets": [{"name": "windows-release", "configurePreset": "windows", "configuration": "Release"}, {"name": "portable-core", "configurePreset": "portable-core"}],
-  "testPresets": [{"name": "windows-release", "configurePreset": "windows", "configuration": "Release", "output": {"outputOnFailure": true}}, {"name": "portable-core", "configurePreset": "portable-core", "output": {"outputOnFailure": true}}]
+  "buildPresets": [
+    {"name": "windows-release", "configurePreset": "windows", "configuration": "Release"},
+    {"name": "portable-core", "configurePreset": "portable-core"},
+    {"name": "linux-vulkan", "configurePreset": "linux-vulkan", "jobs": 1, "condition": {"type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux"}},
+    {"name": "linux-vulkan-validation", "inherits": "linux-vulkan", "configurePreset": "linux-vulkan-validation"}
+  ],
+  "testPresets": [
+    {"name": "windows-release", "configurePreset": "windows", "configuration": "Release", "output": {"outputOnFailure": true}},
+    {"name": "portable-core", "configurePreset": "portable-core", "output": {"outputOnFailure": true}},
+    {"name": "linux-vulkan", "configurePreset": "linux-vulkan", "output": {"outputOnFailure": true}, "execution": {"jobs": 1, "noTestsAction": "error"}, "condition": {"type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux"}},
+    {"name": "linux-vulkan-validation", "inherits": "linux-vulkan", "configurePreset": "linux-vulkan-validation"}
+  ]
 }

@@ -841,15 +841,19 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "Vulkan 활성 Linux build preset",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-01"
       ],
-      "work": "D3D12 OFF/Vulkan ON의 전용 CMake preset과 외부 헤더 경로를 구성한다.",
+      "work": "Linux-only D3D12 OFF/Vulkan ON preset 두 조합과 외부 헤더·격리 build/install 경로를 구성했다. Windows CMake 정의/fixture 검사는 완료했으며 실제 Linux configure/compile은 P3-LNX-03에서 검사한다.",
       "done_when": "portable-core와 구분된 재현 configure 명령·플랫폼 의존성 명시.",
-      "evidence": [],
-      "requires": "Linux compiler/CMake 환경"
+      "evidence": [
+        "CMakePresets.json",
+        "docs/PHASE3_LINUX_PRESETS.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-presets/summary.json"
+      ],
+      "requires": "preset 정의 검사는 CMake 3.25+; 실제 configure에는 Linux C++23 compiler/CMake/Ninja 필요"
     },
     {
       "id": "P3-LNX-03",
@@ -861,7 +865,7 @@
       "depends_on": [
         "P3-LNX-02"
       ],
-      "work": "실제 compiler 오류와 플랫폼 의존성을 수정하고 별도 build root에 빌드한다.",
+      "work": "실제 Linux configure·compiler 오류와 플랫폼 의존성을 수정하고 별도 build root에 SDK를 빌드한다. Windows 설정 fixture로 대체하지 않는다.",
       "done_when": "현재 source fingerprint의 native build 성공 로그. Windows 빌드로 대체하지 않음.",
       "evidence": [],
       "requires": "Linux native build 환경"

@@ -263,3 +263,8 @@
 # Preserve raw Windows/WSL inventory bytes and their recorded hashes.
 /benchmarks/reports/2026-10-25-phase3-linux-environment/** -text whitespace=cr-at-eol
 /benchmarks/reports/validation/2026-10-25-phase3-linux-environment/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+# Preset definition checks are Windows fixtures, not Linux runtime evidence.
+/CMakePresets.json text eol=lf
+/benchmarks/reports/2026-10-25-phase3-linux-presets/** -text whitespace=cr-at-eol
+/benchmarks/reports/validation/2026-10-25-phase3-linux-presets/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof

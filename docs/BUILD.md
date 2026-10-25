@@ -20,6 +20,9 @@ Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux/macOS
 현재 미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 현재 host의 Linux 환경 가용성은 [P3-LNX-01 조사](PHASE3_LINUX_ENVIRONMENT.md)에
 기록한다. WSL 미설치 관측을 보존했으며 Linux native build/runtime 통과 근거는 없다.
+Linux 전용 `linux-vulkan` / `linux-vulkan-validation` preset의 backend flag·외부 헤더·
+분리된 build/install 경로와 재현 명령은 [P3-LNX-02 설정](PHASE3_LINUX_PRESETS.md)을 따른다.
+실제 Linux configure/compile 수용은 `P3-LNX-03`에서 검사한다.
 
 현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).

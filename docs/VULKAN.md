@@ -46,6 +46,9 @@ Windows loads the system `vulkan-1.dll`; Linux code loads `libvulkan.so.1` and l
 prerequisites and are never bundled. Linux native compilation/runtime is still pending.
 The [Linux environment inventory](PHASE3_LINUX_ENVIRONMENT.md) records the current
 Windows host's unavailable WSL path and the prerequisites for a native receipt.
+Native Linux preset definitions and external-header commands are in the
+[Linux preset guide](PHASE3_LINUX_PRESETS.md); their Windows configuration fixtures
+do not establish Linux SDK compilation or runtime acceptance.
 
 ## Contract
 
