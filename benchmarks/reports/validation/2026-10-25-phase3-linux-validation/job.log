@@ -1,0 +1,437 @@
+﻿2026-10-25T10:17:02.7747689Z Current runner version: '2.338.0'
+2026-10-25T10:17:02.7774262Z ##[group]Runner Image Provisioner
+2026-10-25T10:17:02.7775485Z Hosted Compute Agent
+2026-10-25T10:17:02.7776135Z Version: 20261021.618
+2026-10-25T10:17:02.7776839Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T10:17:02.7777610Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T10:17:02.7778347Z Worker ID: {00b7b9fc-00c4-4090-a47b-d27d309f8dcc}
+2026-10-25T10:17:02.7779138Z Region: westus
+2026-10-25T10:17:02.7779682Z Cloud: Azure
+2026-10-25T10:17:02.7780264Z ##[endgroup]
+2026-10-25T10:17:02.7782088Z ##[group]Operating System
+2026-10-25T10:17:02.7782760Z Ubuntu
+2026-10-25T10:17:02.7783556Z 24.04.5
+2026-10-25T10:17:02.7784109Z LTS
+2026-10-25T10:17:02.7784625Z ##[endgroup]
+2026-10-25T10:17:02.7785264Z ##[group]Runner Image
+2026-10-25T10:17:02.7785932Z Image: ubuntu-24.04
+2026-10-25T10:17:02.7786936Z Version: 20261012.334.1
+2026-10-25T10:17:02.7788221Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T10:17:02.7789891Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T10:17:02.7790917Z ##[endgroup]
+2026-10-25T10:17:02.7792112Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T10:17:02.7794563Z Contents: read
+2026-10-25T10:17:02.7795314Z Metadata: read
+2026-10-25T10:17:02.7795895Z ##[endgroup]
+2026-10-25T10:17:02.7798093Z Secret source: Actions
+2026-10-25T10:17:02.7799152Z Cache mode: write
+2026-10-25T10:17:02.7799898Z Prepare workflow directory
+2026-10-25T10:17:02.8190046Z Prepare all required actions
+2026-10-25T10:17:02.8255817Z Getting action download info
+2026-10-25T10:17:03.1556764Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-25T10:17:03.2699420Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-25T10:17:03.4876903Z Complete job name: software-validation
+2026-10-25T10:17:03.5783707Z ##[group]Run actions/checkout@v4
+2026-10-25T10:17:03.5784678Z with:
+2026-10-25T10:17:03.5785138Z   persist-credentials: false
+2026-10-25T10:17:03.5785685Z   repository: blackvrice/GraphicsSDK
+2026-10-25T10:17:03.5789344Z   token: ***
+2026-10-25T10:17:03.5789781Z   ssh-strict: true
+2026-10-25T10:17:03.5790222Z   ssh-user: git
+2026-10-25T10:17:03.5790646Z   clean: true
+2026-10-25T10:17:03.5791097Z   sparse-checkout-cone-mode: true
+2026-10-25T10:17:03.5791622Z   fetch-depth: 1
+2026-10-25T10:17:03.5792070Z   fetch-tags: false
+2026-10-25T10:17:03.5792519Z   show-progress: true
+2026-10-25T10:17:03.5792969Z   lfs: false
+2026-10-25T10:17:03.5793573Z   submodules: false
+2026-10-25T10:17:03.5794040Z   set-safe-directory: true
+2026-10-25T10:17:03.5794552Z   allow-unsafe-pr-checkout: false
+2026-10-25T10:17:03.5795330Z ##[endgroup]
+2026-10-25T10:17:03.6876048Z Syncing repository: blackvrice/GraphicsSDK
+2026-10-25T10:17:03.6878728Z ##[group]Getting Git version info
+2026-10-25T10:17:03.6879624Z Working directory is '/home/runner/work/GraphicsSDK/GraphicsSDK'
+2026-10-25T10:17:03.6880786Z [command]/usr/bin/git version
+2026-10-25T10:17:03.6952752Z git version 2.55.0
+2026-10-25T10:17:03.6986164Z ##[endgroup]
+2026-10-25T10:17:03.7000066Z Temporarily overriding HOME='/home/runner/work/_temp/4d610b81-7983-4245-8b3b-cf35bcec8db0' before making global git config changes
+2026-10-25T10:17:03.7001747Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T10:17:03.7006362Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK
+2026-10-25T10:17:03.7065049Z Deleting the contents of '/home/runner/work/GraphicsSDK/GraphicsSDK'
+2026-10-25T10:17:03.7071152Z ##[group]Initializing the repository
+2026-10-25T10:17:03.7076725Z [command]/usr/bin/git init /home/runner/work/GraphicsSDK/GraphicsSDK
+2026-10-25T10:17:03.7196183Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T10:17:03.7199132Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T10:17:03.7202702Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T10:17:03.7204528Z hint: call:
+2026-10-25T10:17:03.7205613Z hint:
+2026-10-25T10:17:03.7206470Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T10:17:03.7207405Z hint:
+2026-10-25T10:17:03.7208270Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T10:17:03.7209472Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T10:17:03.7210409Z hint:
+2026-10-25T10:17:03.7210972Z hint: 	git branch -m <name>
+2026-10-25T10:17:03.7211889Z hint:
+2026-10-25T10:17:03.7213274Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T10:17:03.7215072Z Initialized empty Git repository in /home/runner/work/GraphicsSDK/GraphicsSDK/.git/
+2026-10-25T10:17:03.7217414Z [command]/usr/bin/git remote add origin https://github.com/blackvrice/GraphicsSDK
+2026-10-25T10:17:03.7266579Z ##[endgroup]
+2026-10-25T10:17:03.7267392Z ##[group]Disabling automatic garbage collection
+2026-10-25T10:17:03.7271807Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T10:17:03.7312842Z ##[endgroup]
+2026-10-25T10:17:03.7314682Z ##[group]Setting up auth
+2026-10-25T10:17:03.7326007Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T10:17:03.7371811Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T10:17:03.7767811Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T10:17:03.7804665Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T10:17:03.8039971Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T10:17:03.8077377Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T10:17:03.8315631Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T10:17:03.8367000Z ##[endgroup]
+2026-10-25T10:17:03.8381909Z ##[group]Fetching the repository
+2026-10-25T10:17:03.8383999Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +051efe65d0d7a535474a10024ab3d5c99f4e4161:refs/remotes/origin/main
+2026-10-25T10:17:05.9444657Z From https://github.com/blackvrice/GraphicsSDK
+2026-10-25T10:17:05.9447630Z  * [new ref]         051efe65d0d7a535474a10024ab3d5c99f4e4161 -> origin/main
+2026-10-25T10:17:05.9454503Z ##[endgroup]
+2026-10-25T10:17:05.9457097Z ##[group]Determining the checkout info
+2026-10-25T10:17:05.9460208Z ##[endgroup]
+2026-10-25T10:17:05.9462407Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T10:17:05.9516807Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T10:17:05.9550230Z ##[group]Checking out the ref
+2026-10-25T10:17:05.9553774Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T10:17:06.8051622Z Switched to a new branch 'main'
+2026-10-25T10:17:06.8056203Z branch 'main' set up to track 'origin/main'.
+2026-10-25T10:17:06.8131127Z ##[endgroup]
+2026-10-25T10:17:06.8177343Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T10:17:06.8204252Z 051efe65d0d7a535474a10024ab3d5c99f4e4161
+2026-10-25T10:17:06.8213609Z ##[group]Removing auth
+2026-10-25T10:17:06.8217214Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T10:17:06.8249918Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T10:17:06.8494712Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T10:17:06.8524802Z http.https://github.com/.extraheader
+2026-10-25T10:17:06.8533678Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T10:17:06.8569251Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T10:17:06.8814597Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T10:17:06.8850272Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T10:17:06.9096701Z ##[endgroup]
+2026-10-25T10:17:06.9434641Z ##[group]Run actions/checkout@v4
+2026-10-25T10:17:06.9435240Z with:
+2026-10-25T10:17:06.9435687Z   repository: KhronosGroup/Vulkan-Headers
+2026-10-25T10:17:06.9436346Z   ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T10:17:06.9436950Z   path: .deps/Vulkan-Headers
+2026-10-25T10:17:06.9437528Z   persist-credentials: false
+2026-10-25T10:17:06.9442344Z   token: ***
+2026-10-25T10:17:06.9442817Z   ssh-strict: true
+2026-10-25T10:17:06.9443261Z   ssh-user: git
+2026-10-25T10:17:06.9443969Z   clean: true
+2026-10-25T10:17:06.9444442Z   sparse-checkout-cone-mode: true
+2026-10-25T10:17:06.9444976Z   fetch-depth: 1
+2026-10-25T10:17:06.9445406Z   fetch-tags: false
+2026-10-25T10:17:06.9445868Z   show-progress: true
+2026-10-25T10:17:06.9446412Z   lfs: false
+2026-10-25T10:17:06.9446872Z   submodules: false
+2026-10-25T10:17:06.9447334Z   set-safe-directory: true
+2026-10-25T10:17:06.9447820Z   allow-unsafe-pr-checkout: false
+2026-10-25T10:17:06.9448146Z ##[endgroup]
+2026-10-25T10:17:07.0344924Z Syncing repository: KhronosGroup/Vulkan-Headers
+2026-10-25T10:17:07.0347738Z ##[group]Getting Git version info
+2026-10-25T10:17:07.0349416Z Working directory is '/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers'
+2026-10-25T10:17:07.0394159Z [command]/usr/bin/git version
+2026-10-25T10:17:07.0438919Z git version 2.55.0
+2026-10-25T10:17:07.0461437Z ##[endgroup]
+2026-10-25T10:17:07.0476018Z Temporarily overriding HOME='/home/runner/work/_temp/99789712-e109-4cf7-9f23-af0222ed22a6' before making global git config changes
+2026-10-25T10:17:07.0477466Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T10:17:07.0481125Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers
+2026-10-25T10:17:07.0517412Z ##[group]Initializing the repository
+2026-10-25T10:17:07.0523508Z [command]/usr/bin/git init /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers
+2026-10-25T10:17:07.0575571Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T10:17:07.0577211Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T10:17:07.0578489Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T10:17:07.0579466Z hint: call:
+2026-10-25T10:17:07.0580145Z hint:
+2026-10-25T10:17:07.0580982Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T10:17:07.0581811Z hint:
+2026-10-25T10:17:07.0582644Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T10:17:07.0584068Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T10:17:07.0585196Z hint:
+2026-10-25T10:17:07.0585838Z hint: 	git branch -m <name>
+2026-10-25T10:17:07.0586510Z hint:
+2026-10-25T10:17:07.0587421Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T10:17:07.0590131Z Initialized empty Git repository in /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers/.git/
+2026-10-25T10:17:07.0592902Z [command]/usr/bin/git remote add origin https://github.com/KhronosGroup/Vulkan-Headers
+2026-10-25T10:17:07.0628343Z ##[endgroup]
+2026-10-25T10:17:07.0629135Z ##[group]Disabling automatic garbage collection
+2026-10-25T10:17:07.0631799Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T10:17:07.0666000Z ##[endgroup]
+2026-10-25T10:17:07.0666763Z ##[group]Setting up auth
+2026-10-25T10:17:07.0673860Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T10:17:07.0708895Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T10:17:07.0967332Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T10:17:07.1007380Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T10:17:07.1268710Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T10:17:07.1307686Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T10:17:07.1542534Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T10:17:07.1586645Z ##[endgroup]
+2026-10-25T10:17:07.1587192Z ##[group]Fetching the repository
+2026-10-25T10:17:07.1596494Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T10:17:08.7416648Z From https://github.com/KhronosGroup/Vulkan-Headers
+2026-10-25T10:17:08.7417802Z  * branch            b379292b2ab6df5771ba9870d53cf8b2c9295daf -> FETCH_HEAD
+2026-10-25T10:17:08.7431166Z ##[endgroup]
+2026-10-25T10:17:08.7432078Z ##[group]Determining the checkout info
+2026-10-25T10:17:08.7433056Z ##[endgroup]
+2026-10-25T10:17:08.7441815Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T10:17:08.7482615Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T10:17:08.7516755Z ##[group]Checking out the ref
+2026-10-25T10:17:08.7522353Z [command]/usr/bin/git checkout --progress --force b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T10:17:08.8151181Z Note: switching to 'b379292b2ab6df5771ba9870d53cf8b2c9295daf'.
+2026-10-25T10:17:08.8151951Z 
+2026-10-25T10:17:08.8152307Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-25T10:17:08.8153177Z changes and commit them, and you can discard any commits you make in this
+2026-10-25T10:17:08.8154486Z state without impacting any branches by switching back to a branch.
+2026-10-25T10:17:08.8155140Z 
+2026-10-25T10:17:08.8155667Z If you want to create a new branch to retain commits you create, you may
+2026-10-25T10:17:08.8156746Z do so (now or later) by using -c with the switch command. Example:
+2026-10-25T10:17:08.8157387Z 
+2026-10-25T10:17:08.8157638Z   git switch -c <new-branch-name>
+2026-10-25T10:17:08.8158036Z 
+2026-10-25T10:17:08.8158246Z Or undo this operation with:
+2026-10-25T10:17:08.8158611Z 
+2026-10-25T10:17:08.8158792Z   git switch -
+2026-10-25T10:17:08.8159093Z 
+2026-10-25T10:17:08.8159585Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-25T10:17:08.8160165Z 
+2026-10-25T10:17:08.8160565Z HEAD is now at b379292 cmake: Disable modules if clang-scan-deps is missing
+2026-10-25T10:17:08.8167525Z ##[endgroup]
+2026-10-25T10:17:08.8213958Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T10:17:08.8243082Z b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T10:17:08.8255264Z ##[group]Removing auth
+2026-10-25T10:17:08.8260096Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T10:17:08.8298304Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T10:17:08.8521590Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T10:17:08.8547612Z http.https://github.com/.extraheader
+2026-10-25T10:17:08.8555216Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T10:17:08.8590157Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T10:17:08.8809019Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T10:17:08.8842508Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T10:17:08.9065115Z ##[endgroup]
+2026-10-25T10:17:08.9208236Z ##[group]Run sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools
+2026-10-25T10:17:08.9209226Z [36;1msudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools[0m
+2026-10-25T10:17:08.9472386Z shell: /usr/bin/bash -e {0}
+2026-10-25T10:17:08.9472733Z ##[endgroup]
+2026-10-25T10:17:09.0310664Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-25T10:17:09.0643020Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-25T10:17:09.0647605Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-25T10:17:09.0657152Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-25T10:17:09.0758242Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-25T10:17:09.0799062Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-25T10:17:09.1971630Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [598 kB]
+2026-10-25T10:17:09.2099108Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [660 kB]
+2026-10-25T10:17:09.2154258Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+2026-10-25T10:17:09.2478091Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1400 kB]
+2026-10-25T10:17:09.2560569Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [310 kB]
+2026-10-25T10:17:09.2578794Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1706 kB]
+2026-10-25T10:17:09.2716086Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+2026-10-25T10:17:09.2736953Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+2026-10-25T10:17:09.2820460Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+2026-10-25T10:17:09.3574377Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1146 kB]
+2026-10-25T10:17:09.3634948Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+2026-10-25T10:17:09.3650880Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1222 kB]
+2026-10-25T10:17:09.3712119Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+2026-10-25T10:17:09.4151543Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+2026-10-25T10:17:09.4257549Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+2026-10-25T10:17:12.7840184Z Fetched 12.6 MB in 1s (9783 kB/s)
+2026-10-25T10:17:13.7624595Z Reading package lists...
+2026-10-25T10:17:13.7929112Z Reading package lists...
+2026-10-25T10:17:14.0047365Z Building dependency tree...
+2026-10-25T10:17:14.0054833Z Reading state information...
+2026-10-25T10:17:14.1695980Z g++-14 is already the newest version (14.2.0-4ubuntu2~24.04.1).
+2026-10-25T10:17:14.1697207Z libvulkan1 is already the newest version (1.3.275.0-1build1).
+2026-10-25T10:17:14.1697819Z libvulkan1 set to manually installed.
+2026-10-25T10:17:14.1698285Z The following NEW packages will be installed:
+2026-10-25T10:17:14.1698647Z   mesa-vulkan-drivers ninja-build vulkan-tools
+2026-10-25T10:17:14.1878673Z 0 upgraded, 3 newly installed, 0 to remove and 100 not upgraded.
+2026-10-25T10:17:14.1879323Z Need to get 17.9 MB of archives.
+2026-10-25T10:17:14.1879745Z After this operation, 101 MB of additional disk space will be used.
+2026-10-25T10:17:14.1880174Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-25T10:17:14.3464914Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 mesa-vulkan-drivers amd64 25.2.8-0ubuntu0.24.04.4 [17.5 MB]
+2026-10-25T10:17:15.7931701Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ninja-build amd64 1.11.1-2 [129 kB]
+2026-10-25T10:17:15.8670336Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 vulkan-tools amd64 1.3.275.0+dfsg1-1 [298 kB]
+2026-10-25T10:17:16.1254832Z Fetched 17.9 MB in 2s (10.6 MB/s)
+2026-10-25T10:17:16.1469706Z Selecting previously unselected package mesa-vulkan-drivers:amd64.
+2026-10-25T10:17:16.1765573Z (Reading database ... 
+2026-10-25T10:17:16.1766231Z (Reading database ... 5%
+2026-10-25T10:17:16.1766563Z (Reading database ... 10%
+2026-10-25T10:17:16.1766868Z (Reading database ... 15%
+2026-10-25T10:17:16.1836209Z (Reading database ... 20%
+2026-10-25T10:17:16.1836695Z (Reading database ... 25%
+2026-10-25T10:17:16.1837150Z (Reading database ... 30%
+2026-10-25T10:17:16.1837447Z (Reading database ... 35%
+2026-10-25T10:17:16.1837842Z (Reading database ... 40%
+2026-10-25T10:17:16.1838150Z (Reading database ... 45%
+2026-10-25T10:17:16.1838435Z (Reading database ... 50%
+2026-10-25T10:17:16.1838725Z (Reading database ... 55%
+2026-10-25T10:17:16.3220396Z (Reading database ... 60%
+2026-10-25T10:17:16.5297100Z (Reading database ... 65%
+2026-10-25T10:17:16.6792958Z (Reading database ... 70%
+2026-10-25T10:17:16.8849129Z (Reading database ... 75%
+2026-10-25T10:17:17.0249749Z (Reading database ... 80%
+2026-10-25T10:17:17.2283264Z (Reading database ... 85%
+2026-10-25T10:17:17.3682084Z (Reading database ... 90%
+2026-10-25T10:17:17.5393797Z (Reading database ... 95%
+2026-10-25T10:17:17.5394425Z (Reading database ... 100%
+2026-10-25T10:17:17.5394979Z (Reading database ... 203540 files and directories currently installed.)
+2026-10-25T10:17:17.5435444Z Preparing to unpack .../mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb ...
+2026-10-25T10:17:17.5471203Z Unpacking mesa-vulkan-drivers:amd64 (25.2.8-0ubuntu0.24.04.4) ...
+2026-10-25T10:17:17.8586827Z Selecting previously unselected package ninja-build.
+2026-10-25T10:17:17.8716209Z Preparing to unpack .../ninja-build_1.11.1-2_amd64.deb ...
+2026-10-25T10:17:17.8722787Z Unpacking ninja-build (1.11.1-2) ...
+2026-10-25T10:17:17.9069522Z Selecting previously unselected package vulkan-tools.
+2026-10-25T10:17:17.9197406Z Preparing to unpack .../vulkan-tools_1.3.275.0+dfsg1-1_amd64.deb ...
+2026-10-25T10:17:17.9204868Z Unpacking vulkan-tools (1.3.275.0+dfsg1-1) ...
+2026-10-25T10:17:17.9654668Z Setting up mesa-vulkan-drivers:amd64 (25.2.8-0ubuntu0.24.04.4) ...
+2026-10-25T10:17:17.9683175Z Setting up vulkan-tools (1.3.275.0+dfsg1-1) ...
+2026-10-25T10:17:17.9707931Z Setting up ninja-build (1.11.1-2) ...
+2026-10-25T10:17:17.9734545Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-25T10:17:17.9761410Z Not building database; man-db/auto-update is not 'true'.
+2026-10-25T10:17:17.9774836Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+2026-10-25T10:17:18.6537044Z 
+2026-10-25T10:17:18.6537676Z Running kernel seems to be up-to-date.
+2026-10-25T10:17:18.6538236Z 
+2026-10-25T10:17:18.6538492Z No services need to be restarted.
+2026-10-25T10:17:18.6538821Z 
+2026-10-25T10:17:18.6539017Z No containers need to be restarted.
+2026-10-25T10:17:18.6539319Z 
+2026-10-25T10:17:18.6539521Z No user sessions are running outdated binaries.
+2026-10-25T10:17:18.6540202Z 
+2026-10-25T10:17:18.6540522Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-25T10:17:19.6297465Z ##[group]Run python3 tools/prepare_linux_validation.py
+2026-10-25T10:17:19.6297903Z [36;1mpython3 tools/prepare_linux_validation.py[0m
+2026-10-25T10:17:19.6363139Z shell: /usr/bin/bash -e {0}
+2026-10-25T10:17:19.6363657Z ##[endgroup]
+2026-10-25T10:17:19.6997655Z Vulkan-ValidationLayers-init exit=0 seconds=0.0
+2026-10-25T10:17:19.7035735Z Vulkan-ValidationLayers-remote exit=0 seconds=0.0
+2026-10-25T10:17:21.9234116Z Vulkan-ValidationLayers-fetch exit=0 seconds=2.2
+2026-10-25T10:17:22.0882907Z Vulkan-ValidationLayers-checkout exit=0 seconds=0.2
+2026-10-25T10:17:22.3070488Z Vulkan-Utility-Libraries-init exit=0 seconds=0.0
+2026-10-25T10:17:22.3109552Z Vulkan-Utility-Libraries-remote exit=0 seconds=0.0
+2026-10-25T10:17:22.8767848Z Vulkan-Utility-Libraries-fetch exit=0 seconds=0.6
+2026-10-25T10:17:22.9090752Z Vulkan-Utility-Libraries-checkout exit=0 seconds=0.0
+2026-10-25T10:17:22.9401286Z SPIRV-Headers-init exit=0 seconds=0.0
+2026-10-25T10:17:22.9440540Z SPIRV-Headers-remote exit=0 seconds=0.0
+2026-10-25T10:17:23.4596499Z SPIRV-Headers-fetch exit=0 seconds=0.5
+2026-10-25T10:17:23.4758199Z SPIRV-Headers-checkout exit=0 seconds=0.0
+2026-10-25T10:17:23.4969985Z SPIRV-Tools-init exit=0 seconds=0.0
+2026-10-25T10:17:23.5010007Z SPIRV-Tools-remote exit=0 seconds=0.0
+2026-10-25T10:17:24.7183212Z SPIRV-Tools-fetch exit=0 seconds=1.2
+2026-10-25T10:17:24.8832163Z SPIRV-Tools-checkout exit=0 seconds=0.2
+2026-10-25T10:17:24.9699837Z robin-hood-hashing-init exit=0 seconds=0.0
+2026-10-25T10:17:24.9740595Z robin-hood-hashing-remote exit=0 seconds=0.0
+2026-10-25T10:17:25.4395943Z robin-hood-hashing-fetch exit=0 seconds=0.5
+2026-10-25T10:17:25.4557812Z robin-hood-hashing-checkout exit=0 seconds=0.0
+2026-10-25T10:17:28.3338251Z Vulkan-Headers-configure exit=0 seconds=2.9
+2026-10-25T10:17:39.3265088Z Vulkan-Headers-build exit=0 seconds=11.0
+2026-10-25T10:17:39.5418014Z Vulkan-Utility-Libraries-configure exit=0 seconds=0.2
+2026-10-25T10:17:45.7226893Z Vulkan-Utility-Libraries-build exit=0 seconds=6.2
+2026-10-25T10:17:45.8877952Z SPIRV-Headers-configure exit=0 seconds=0.2
+2026-10-25T10:17:46.0027548Z SPIRV-Headers-build exit=0 seconds=0.1
+2026-10-25T10:17:46.5687836Z SPIRV-Tools-configure exit=0 seconds=0.6
+2026-10-25T10:21:43.1567337Z SPIRV-Tools-build exit=0 seconds=236.6
+2026-10-25T10:21:43.3217298Z robin-hood-hashing-configure exit=0 seconds=0.2
+2026-10-25T10:21:43.3382346Z robin-hood-hashing-build exit=0 seconds=0.0
+2026-10-25T10:21:43.5533505Z layer-configure exit=0 seconds=0.2
+2026-10-25T10:30:03.7393638Z layer-build exit=0 seconds=500.2
+2026-10-25T10:30:04.0069664Z GFX_LINUX_VVL_RUNTIME={"schema_version":1,"profile":{"schema_version":1,"source_lock":"tools/vulkan-validation.lock.json","platform":"Linux-x86_64","compiler":"g++-14","build_type":"Release","runtime_release_flags":"-O0 -DNDEBUG","prerequisite_parallel":2,"layer_parallel":1,"WSI_support":false,"mimalloc":false,"upstream_tests":false,"SPIRV_executables":false,"scope":"Headless external validation runtime only; not SDK payload or performance measurement"},"profile_file":{"path":"tools/linux-vulkan-validation.json","bytes":459,"sha256":"dce8d2443045ac57e377bc7549474a01c0712e778d004d0523335ca2694a548d"},"source_lock":{"path":"tools/vulkan-validation.lock.json","bytes":1628,"sha256":"227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"},"components":[{"name":"Vulkan-ValidationLayers","url":"https://github.com/KhronosGroup/Vulkan-ValidationLayers.git","commit":"79f4759c2c492c1be37e18c0318330f2959327cb","ref":"v1.3.290"},{"name":"Vulkan-Headers","url":"https://github.com/KhronosGroup/Vulkan-Headers.git","commit":"b379292b2ab6df5771ba9870d53cf8b2c9295daf","ref":"v1.3.290"},{"name":"Vulkan-Utility-Libraries","url":"https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git","commit":"5f26cf65a18bc89a8e3d6569c14314b6fdac8d4d","ref":"v1.3.290"},{"name":"SPIRV-Headers","url":"https://github.com/KhronosGroup/SPIRV-Headers.git","commit":"2acb319af38d43be3ea76bfabf3998e5281d8d12","ref":"2acb319af38d43be3ea76bfabf3998e5281d8d12"},{"name":"SPIRV-Tools","url":"https://github.com/KhronosGroup/SPIRV-Tools.git","commit":"0cfe9e7219148716dfd30b37f4d21753f098707a","ref":"0cfe9e7219148716dfd30b37f4d21753f098707a"},{"name":"robin-hood-hashing","url":"https://github.com/martinus/robin-hood-hashing.git","commit":"9145f963d80d6a02f0f96a47758050a89184a3ed","ref":"3.11.5"}],"layer_manifest":{"path":"out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/VkLayer_khronos_validation.json","bytes":95948,"sha256":"e7a747e87a6663097db54662a353efe25fa92061995b89db9f2693ffd219f4ef"},"layer_library":{"path":"out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so","bytes":59913736,"sha256":"264f6326379cdb9d562037aa06a49c7d6ec477cc4df7c4d8f5b894c9b9f93e5d"},"builder":{"path":"tools/prepare_linux_validation.py","bytes":5823,"sha256":"70eb0c4ae8f6d5429b4a42eb63dcaa6c4d756d76f7e157e62568ce0fff9ba6e7"},"licenses":[{"path":".deps/vvl-linux/Vulkan-ValidationLayers/LICENSE.txt","bytes":12983,"sha256":"ac7f9f4384d1cec4c318493e0614a68871a74a4ae6c1f592022b0b8b86690c71"},{"path":".deps/Vulkan-Headers/LICENSE.md","bytes":458,"sha256":"ac24e5ea920e4318e4d02c4086ae51f53cfb03feed06c18df1019e7ada1ec7bc"},{"path":".deps/vvl-linux/Vulkan-Utility-Libraries/LICENSE.md","bytes":304,"sha256":"69760673abf91cfd0280ae73739a29c078f493804d9016a122b3b189b48ad6e6"},{"path":".deps/vvl-linux/SPIRV-Headers/LICENSE","bytes":4812,"sha256":"ff04ae7e6a468587fe59434fee2e67c0e2a749b592c794b764ff80f30b94a084"},{"path":".deps/vvl-linux/SPIRV-Tools/LICENSE","bytes":11358,"sha256":"cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"},{"path":".deps/vvl-linux/robin-hood-hashing/LICENSE","bytes":1075,"sha256":"686cf8d62cc44fecff4be967238aba89665f9b6acf8a728987801ffc3a626bc7"}],"runtime_redistributed":false,"system_installation":false,"diagnostics":[{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-build.log","bytes":11540,"sha256":"56067c860bc552505abab600237dc67c62b12eb3af06969802b4ead48cbe9d16"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-checkout.log","bytes":65,"sha256":"fafce0afe61a9605cbc95c88d302196af0fb163a3b5b2d4f9875dddf0ecf5f60"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-configure.log","bytes":593,"sha256":"b2840934455430073ffb2838fe08deab5398602800276e8c17d290465c5a620e"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-fetch.log","bytes":127,"sha256":"54391d8ca4132941af7059aa9c5cf6b14954a9a17a2920507d1538d4175f8e71"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-init.log","bytes":700,"sha256":"9842dde5affbbd8a530125bee246db0019d77270a0c81cdd0a2a9e128d1ae9f4"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-build.log","bytes":35740,"sha256":"a4b56e7d67d358922f0315c8f9b7f260644a553fcaaaece2bd45add34131d337"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-checkout.log","bytes":55,"sha256":"6dcd416b6fd94fc6de0df83f26d6dc5a46457f55199d8f6037c5624b14543b68"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-configure.log","bytes":904,"sha256":"900daa8dab720c732596acfedad1d1bde257fe5f73436bb8713b412033951712"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-fetch.log","bytes":125,"sha256":"f6b1c52453b9f3f76b29b4aa485e86966b91cb53514902289721f9b9c0233fed"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-init.log","bytes":698,"sha256":"581edc81896fcd4517fe7a0f07f40d9dd20a301cfa234d2bf0f6bda62bc7c272"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-build.log","bytes":9005,"sha256":"4db0520c3ece98a3c54d72c5c98f11090405ed782528867f4a3abf9de32eac59"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-configure.log","bytes":840,"sha256":"2c6d4ede5e7e3fa692107351248fc0a30de9ac953cc2498dd2ea6863068490e6"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-build.log","bytes":3884,"sha256":"f18caf2c251de87d1499f7ff4e3299e28f76b6a48307945d4c8659f4938a78b1"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-checkout.log","bytes":55,"sha256":"9a128d44a96fbebd5478daaeb8242e49d7e733fa3a0676948475a7cb93393a8c"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-configure.log","bytes":604,"sha256":"a914619048f2f43d9be3dab83e3cd1248fa61476e540eb821b674785b9a520d1"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-fetch.log","bytes":138,"sha256":"91eea0b59313b9d91aa89f6fd131923e4c6c52f8944fad424816a1b7720bf81b"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-init.log","bytes":711,"sha256":"b3a803d3b38a9b72cadb90fa415425600120ed6d7f6080d1724a57fe87dec450"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-checkout.log","bytes":55,"sha256":"850f081411e3f8b2d40e6820467bf26f80d9377d83fb4ebba8dcee334d6fbecf"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-fetch.log","bytes":137,"sha256":"4467b68a2e55a84117b69a665b72fa0f661017bc3e9cc212df17f1cfe4dae604"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-init.log","bytes":710,"sha256":"ef3d826e4df1765d0d536369846198d7221200d90a1571e0eac19d4580373326"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/commands.json","bytes":14214,"sha256":"1ba519cc7f0a666a933793ef0757f53a6f119c650999b1d3c0d7338fa32e771c"},{"path":"out/linux-vulkan-validation-evidence/runtime/layer-build.log","bytes":15797,"sha256":"b241b24d0c9754d088745beaec1965eb4f72db08fa2ab20a0b6559fa87088820"},{"path":"out/linux-vulkan-validation-evidence/runtime/layer-configure.log","bytes":620,"sha256":"d5a3528734b552919c410bf3e9f0b9b87127416ac09a8291f2b90d62b053a941"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-build.log","bytes":473,"sha256":"3585348c9007b538b39f54e8b587f5118526e48624b3d12ac2674dad800a4e42"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-checkout.log","bytes":46,"sha256":"8a3386e13581fbf0206eac053bd955d237695199cab4b211c9de679d78247563"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-configure.log","bytes":968,"sha256":"f61876fc4b3cb4905aec9eeb13c763c5bc8905da1f176ae67fc5c5b433bc6e69"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-fetch.log","bytes":128,"sha256":"5403082df6c3e06f72882b6a16549e227bd881543a51ac149f613ef724a6197a"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-init.log","bytes":705,"sha256":"7a910f938e40348398c80024cb2653597f9d076490446342dd91e38bce0ee533"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]}
+2026-10-25T10:30:04.0136137Z ##[group]Run python3 tools/run_linux_validation.py
+2026-10-25T10:30:04.0136562Z [36;1mpython3 tools/run_linux_validation.py[0m
+2026-10-25T10:30:04.0198808Z shell: /usr/bin/bash -e {0}
+2026-10-25T10:30:04.0199067Z ##[endgroup]
+2026-10-25T10:30:04.1292937Z source-commit PASS
+2026-10-25T10:30:05.1417944Z source-status PASS
+2026-10-25T10:30:05.1439626Z headers-commit PASS
+2026-10-25T10:30:05.1588944Z packages PASS
+2026-10-25T10:30:08.2994591Z vulkaninfo PASS
+2026-10-25T10:30:08.5230287Z configure-sdk PASS
+2026-10-25T10:30:48.5121171Z build-suites PASS
+2026-10-25T10:30:48.5190100Z install-sdk PASS
+2026-10-25T10:30:48.6775057Z configure-identity PASS
+2026-10-25T10:30:51.0598980Z build-identity PASS
+2026-10-25T10:30:51.1189489Z identity PASS
+2026-10-25T10:30:51.2852793Z configure-consumer PASS
+2026-10-25T10:31:16.1998689Z build-consumer PASS
+2026-10-25T10:31:17.3298693Z ctest-buffer PASS
+2026-10-25T10:31:17.5432976Z installed-buffer PASS
+2026-10-25T10:31:17.5625049Z missing-layer-buffer PASS
+2026-10-25T10:31:18.8425112Z ctest-texture PASS
+2026-10-25T10:31:20.1175498Z installed-texture PASS
+2026-10-25T10:31:20.1369653Z missing-layer-texture PASS
+2026-10-25T10:31:21.9142462Z ctest-color-pass PASS
+2026-10-25T10:31:23.6540303Z installed-color-pass PASS
+2026-10-25T10:31:23.6734611Z missing-layer-color-pass PASS
+2026-10-25T10:31:24.9319584Z ctest-draw PASS
+2026-10-25T10:31:25.7568367Z installed-draw PASS
+2026-10-25T10:31:25.7761308Z missing-layer-draw PASS
+2026-10-25T10:31:26.9384161Z ctest-vertex PASS
+2026-10-25T10:31:27.9206187Z installed-vertex PASS
+2026-10-25T10:31:27.9407066Z missing-layer-vertex PASS
+2026-10-25T10:31:30.7533087Z ctest-binding PASS
+2026-10-25T10:31:33.3191458Z installed-binding PASS
+2026-10-25T10:31:33.3381542Z missing-layer-binding PASS
+2026-10-25T10:31:34.8399816Z ctest-depth PASS
+2026-10-25T10:31:35.8334080Z installed-depth PASS
+2026-10-25T10:31:35.8546157Z missing-layer-depth PASS
+2026-10-25T10:31:36.9259127Z ctest-timestamp PASS
+2026-10-25T10:31:37.9677631Z installed-timestamp PASS
+2026-10-25T10:31:37.9877524Z missing-layer-timestamp PASS
+2026-10-25T10:31:38.0795409Z ctest-controls PASS
+2026-10-25T10:31:38.1655944Z GFX_LINUX_VALIDATION_RECEIPT={"schema_version":1,"task":"P3-LNX-11","source_commit":"051efe65d0d7a535474a10024ab3d5c99f4e4161","native_SDK_source_fingerprint":"ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830","github_run_id":"40184124754","platform":{"os_release":{"NAME":"Ubuntu","ID":"ubuntu","PRETTY_NAME":"Ubuntu 24.04.5 LTS","VERSION_ID":"24.04","VERSION":"24.04.5 LTS (Noble Numbat)","VERSION_CODENAME":"noble","ID_LIKE":"debian","HOME_URL":"https://www.ubuntu.com/","SUPPORT_URL":"https://help.ubuntu.com/","BUG_REPORT_URL":"https://bugs.launchpad.net/ubuntu/","PRIVACY_POLICY_URL":"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy","UBUNTU_CODENAME":"noble","LOGO":"ubuntu-logo"},"kernel":"6.17.0-1022-azure","machine":"x86_64"},"environment":{"VK_DRIVER_FILES":"/usr/share/vulkan/icd.d/lvp_icd.json","VK_ICD_FILENAMES":"/usr/share/vulkan/icd.d/lvp_icd.json","VK_LOADER_LAYERS_DISABLE":"~implicit~","VK_LAYER_PATH":"/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers","VK_LAYER_SETTINGS_PATH":"/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/settings","GFX_EXPECT_VULKAN_LAYER":"/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so","XDG_RUNTIME_DIR":"/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/xdg-runtime","LP_NUM_THREADS":"2"},"runtime_receipt":{"path":"out/linux-vulkan-validation-evidence/runtime/receipt.json","bytes":10774,"sha256":"f875e604323e5f9ee281e22949cee8d6898c8ba675a57ac3518a60cd5865cb2e"},"identity":{"schema_version":1,"case":"selection","SDK_source_fingerprint":"ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830","assertions":32,"device_creations":3,"software_adapters":1,"hardware_adapters":0,"loader_path":"/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275","adapters":[{"name":"llvmpipe (LLVM 20.1.2, 256 bits)","id":"5892941257450743403","vendor_id":65541,"device_id":0,"device_type":4,"api_version_raw":4211006,"driver_version_raw":104865800,"device_uuid":"6d65736132352e322e382d3075627500","driver_uuid":"6c6c766d706970655555494400000000"}],"runtime_modules":["/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275","/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so"],"rejections":[{"case":"software-kind-mismatch","code":"InvalidArgument","native":0},{"case":"backend-id-mismatch","code":"InvalidArgument","native":0},{"case":"missing-exact-id-no-fallback","code":"Unsupported","native":0},{"case":"zero-id-no-fallback","code":"Unsupported","native":0},{"case":"hardware-default-never-falls-back-to-software","code":"Unsupported","native":0},{"case":"uncompiled-backend-enumeration","code":"Unsupported","native":0},{"case":"unsupported-loss-opt-in","code":"Unsupported","native":0}]},"results":[{"suite":"buffer","kind":"in-tree-ctest","assertions":361,"transfers":24,"verified_bytes":28521273,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"buffer","kind":"installed-consumer","assertions":361,"transfers":24,"verified_bytes":28521273,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"texture","kind":"in-tree-ctest","assertions":418,"roundtrips":37,"verified_texel_bytes":249685916,"padded_roundtrips":20,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"texture","kind":"installed-consumer","assertions":418,"roundtrips":37,"verified_texel_bytes":249685916,"padded_roundtrips":20,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"color-pass","kind":"in-tree-ctest","assertions":297,"passes":64,"images":69,"verified_texel_bytes":373531756,"padded_images":57,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"color-pass","kind":"installed-consumer","assertions":297,"passes":64,"images":69,"verified_texel_bytes":373531756,"padded_images":57,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"draw","kind":"in-tree-ctest","assertions":319,"draws":31,"images":33,"verified_texel_bytes":124745708,"padded_images":29,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"draw","kind":"installed-consumer","assertions":319,"draws":31,"images":33,"verified_texel_bytes":124745708,"padded_images":29,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"vertex","kind":"in-tree-ctest","assertions":386,"draws":75,"indexed_draws":39,"images":73,"verified_texel_bytes":125406860,"padded_images":69,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"vertex","kind":"installed-consumer","assertions":386,"draws":75,"indexed_draws":39,"images":73,"verified_texel_bytes":125406860,"padded_images":69,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"binding","kind":"in-tree-ctest","assertions":287,"draws":78,"snapshots":129,"images":40,"verified_texel_bytes":124944768,"padded_images":36,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"binding","kind":"installed-consumer","assertions":287,"draws":78,"snapshots":129,"images":40,"verified_texel_bytes":124944768,"padded_images":36,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"depth","kind":"in-tree-ctest","assertions":442,"passes":103,"draws":129,"images":139,"depth_images":63,"verified_texel_bytes":167427552,"padded_images":131,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"depth","kind":"installed-consumer","assertions":442,"passes":103,"draws":129,"images":139,"depth_images":63,"verified_texel_bytes":167427552,"padded_images":131,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"timestamp","kind":"in-tree-ctest","assertions":156,"measured_pairs":26,"dropped_query_recordings":3,"draws":3,"images":9,"depth_images":3,"verified_texel_bytes":165926480,"verified_buffer_bytes":37822482,"padded_images":3,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0},{"suite":"timestamp","kind":"installed-consumer","assertions":156,"measured_pairs":26,"dropped_query_recordings":3,"draws":3,"images":9,"depth_images":3,"verified_texel_bytes":165926480,"verified_buffer_bytes":37822482,"padded_images":3,"adapters":1,"loaded_layer_paths":["/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"],"normal_error_count_at_suite_assertions":0}],"controls":{"assertions":137,"adapters":1,"native_core_errors":32,"native_sync_hazards":1,"sync_disabled_controls":1,"synthetic_errors":1025,"invalid_GPU_submissions":0},"required_layer_execution_accepted":true,"hardware_GPU_accepted":false,"WSI_accepted":false,"GPU_assisted_accepted":false,"long_memory_accepted":false,"SDK_library":{"path":"out/linux-vulkan-validation/libGraphicsSDKCore.a","bytes":413918,"sha256":"c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"},"installed_library":{"path":"out/linux-vulkan-validation-install/lib/libGraphicsSDKCore.a","bytes":413918,"sha256":"c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"},"settings":{"path":"out/linux-vulkan-validation-evidence/settings/vk_layer_settings.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"runner":{"path":"tools/run_linux_validation.py","bytes":11548,"sha256":"9283b929d1871b27a68a5f2750cf3a38460dc0aca7d8aad4e307b3cd7d090a89"},"inputs":[{"path":".github/workflows/linux-vulkan-validation.yml","bytes":2268,"sha256":"d276e37a2c5c377df68ad3568d2707eab24a2a4a3e364ce25d3078e3dfac2a19"},{"path":"CMakePresets.json","bytes":2735,"sha256":"b063363efa72fb23809638e21e82e85a4e144ac5eda4801e7245a8287fa2411a"},{"path":"src/backends/vulkan/VulkanValidation.hpp","bytes":2690,"sha256":"23718513bf663b2d91730e386c382c19aa3e0c855b664e099d12e38a5590acf0"},{"path":"tests/VulkanAllocationBenchmarkTests.cpp","bytes":1625,"sha256":"733ddcd2ef5ca4d2878fd0723b146f3f45568a1439ed163fd9363f0cfaa7fae9"},{"path":"tests/VulkanAllocationTraceInterfaceTests.cpp","bytes":1736,"sha256":"ead81c54c2421b931072f1ca25089d83aa10a2ba8889494474a034f8fab746e6"},{"path":"tests/VulkanAllocationTraceTests.cpp","bytes":1940,"sha256":"c78456f1149e9fbcf62bfcf9a4e691d247de99c0de438a8c68d5d8d7fc42f71e"},{"path":"tests/VulkanBindingSupport.hpp","bytes":1409,"sha256":"60e899c60f8eb3c96609a51d6c7b8753c921a0861d5d3676321bfbd4baff36e6"},{"path":"tests/VulkanBindingTests.cpp","bytes":18643,"sha256":"d7d304c80bd116faa617a3a19c0a9002b1c2fb430b5af07fac1017de0edb35b2"},{"path":"tests/VulkanCreationTests.cpp","bytes":1521,"sha256":"6e110e8a3cc111f8034db6cfd5f7b362c6c7f01226330e47144c4952c331afa0"},{"path":"tests/VulkanDepthSupport.hpp","bytes":998,"sha256":"55c2189282d843d6acd8a001393cf305d32d20dc8595029d0eeeff8798634eb3"},{"path":"tests/VulkanDepthTests.cpp","bytes":20317,"sha256":"2b9fc8ba4c98d06747f9afca50b39a3e97fad24a45dca049c5e66135b626c3e7"},{"path":"tests/VulkanDrawBenchmarkTests.cpp","bytes":1886,"sha256":"1d531cffa257e78ce9d13b62f6004e5d70290913d0ff36599881700cc57bd2b1"},{"path":"tests/VulkanDrawTests.cpp","bytes":15781,"sha256":"2ec005ffb65134c60ea1596113bdf683f1e311dee68c6607d248ae00457de330"},{"path":"tests/VulkanPresentationTests.cpp","bytes":15315,"sha256":"56c48d5b575e062df2eebc60235959f36f824673337c53b1e73a971fffb72521"},{"path":"tests/VulkanPsoBenchmarkTests.cpp","bytes":1729,"sha256":"c7ec894281a9da8eeb8c099952a139bc075371883127e57859e3c33237aa1ccc"},{"path":"tests/VulkanRenderPassTests.cpp","bytes":16098,"sha256":"8de3c558e9747f6e765ab9fc35a0abc966777354b4449789418810d32fb6a9f8"},{"path":"tests/VulkanTests.cpp","bytes":14372,"sha256":"06939e1394934c06142667437329b8dc9aa579db4dd1278ec82906eb406071b9"},{"path":"tests/VulkanTextureTests.cpp","bytes":15307,"sha256":"6f5d24f5295497a6515e4027011293b814b5693b7b98dd7ae3c0bd5e13259184"},{"path":"tests/VulkanTimestampMathTests.cpp","bytes":2799,"sha256":"2266c7125ddf4a5b4e377d3c6c6b685740de27031ac9558da4e047932347151f"},{"path":"tests/VulkanTimestampTests.cpp","bytes":15310,"sha256":"e70386a38c7e3cffec82bcb3bf49ba98bf37db6b362c2b92ce1a8d3ba3eca2b5"},{"path":"tests/VulkanValidationTests.cpp","bytes":13603,"sha256":"8c540ffd22589b52be5864be9d9790e01b7bb7e3ec4a4b4217b3646e3307f7f8"},{"path":"tests/VulkanVertexSupport.hpp","bytes":1578,"sha256":"89743dbb11ba4191ebbc857dd5ae88579b6e11e8109e11bed2c30e72720791bc"},{"path":"tests/VulkanVertexTests.cpp","bytes":20880,"sha256":"f4e7406df3bf3645c2ffdeac5e3d9153c00b884524b848a7433a8035306b19dc"},{"path":"tests/fixtures/BindingFixtures.hpp","bytes":19543,"sha256":"d6bf122321f59b6a57c5b88633f3173e4001567d412192dc4bb289d4922bce4f"},{"path":"tests/fixtures/DepthFixtures.hpp","bytes":10215,"sha256":"5b55b258ae8861f3635c284670d917e440015dc8cc6ffdc4a4253c0f303d7d71"},{"path":"tests/fixtures/SpirvFixtures.hpp","bytes":20483,"sha256":"3001f8aecfd8c2ce4fe71d6486af4457dc02a281c81865e092b59d7b120eba4a"},{"path":"tests/fixtures/VertexFixtures.hpp","bytes":11895,"sha256":"2790a2bbd2f4143e06357bc17349e23d01666e0d964de3a29675f9d9ea8dd557"},{"path":"tests/vulkan_consumer/CMakeLists.txt","bytes":1382,"sha256":"29d421413847b3d4f142e333be93d5041d9a81715e881d4d8ae83c746a889bb6"},{"path":"tools/linux-vulkan-validation.json","bytes":459,"sha256":"dce8d2443045ac57e377bc7549474a01c0712e778d004d0523335ca2694a548d"},{"path":"tools/prepare_linux_validation.py","bytes":5823,"sha256":"70eb0c4ae8f6d5429b4a42eb63dcaa6c4d756d76f7e157e62568ce0fff9ba6e7"},{"path":"tools/run_linux_depth.py","bytes":10455,"sha256":"cd916f297bb701d56a3c52df4fe6eb4f57dd349561d543b90a2254b07c28eef4"},{"path":"tools/run_linux_device.py","bytes":8620,"sha256":"0ab9c9c74c32c65a07bab471997b453c582ffbd2991c35cc34da4e94326ac1ed"},{"path":"tools/run_linux_draw.py","bytes":10911,"sha256":"2eb4b876795bbffe820c7257fb301630334b8fb6b39c1897cb2bfd6505d559bd"},{"path":"tools/run_linux_input.py","bytes":11264,"sha256":"f310d44e8a06e94186152cd02b87d14b2f3b6cdee678964323539cff79182baa"},{"path":"tools/run_linux_timestamp.py","bytes":13089,"sha256":"2fd19c1dacfb1235e06c4a47728bbf6ba69bbbd69dfcca7608cd14fa8f9a3567"},{"path":"tools/vulkan-validation.lock.json","bytes":1628,"sha256":"227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"}],"diagnostics":[{"path":"out/linux-vulkan-validation-evidence/binding-ctest.xml","bytes":1473,"sha256":"029f694ee4490899c27f64569a209c14a93de54ed1e7d4565f62d4c9b4c3e94a"},{"path":"out/linux-vulkan-validation-evidence/buffer-ctest.xml","bytes":1477,"sha256":"8cf28f8d2fbf20ccf113dec54b11482fba20e011023dbc61a5a8be0272bd84b7"},{"path":"out/linux-vulkan-validation-evidence/build-consumer.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/build-consumer.stdout","bytes":7655,"sha256":"b1c8998daa8e0807f2125c5a3d6f169763435454f14c4241d19e5f5c751ad5f8"},{"path":"out/linux-vulkan-validation-evidence/build-identity.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/build-identity.stdout","bytes":5326,"sha256":"09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"},{"path":"out/linux-vulkan-validation-evidence/build-suites.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/build-suites.stdout","bytes":108230,"sha256":"db818266f886b6f2f624f01b79a2a82779b7d27b6048c1978c7013fdd8687741"},{"path":"out/linux-vulkan-validation-evidence/color-pass-ctest.xml","bytes":1480,"sha256":"7de7f2261613f2e93008c2320ac998df08945bd2309dbb4cccabb3f2f27c8d82"},{"path":"out/linux-vulkan-validation-evidence/commands.json","bytes":14490,"sha256":"2e81370d9d812f49838e48ff3e0ad794b8463c7e2c5a5eae57050beba5836e10"},{"path":"out/linux-vulkan-validation-evidence/configure-consumer.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/configure-consumer.stdout","bytes":424,"sha256":"9afbe46513fafc1c1223ffe216b481c98b206f3efbd2522f0baf592bf83342ba"},{"path":"out/linux-vulkan-validation-evidence/configure-identity.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/configure-identity.stdout","bytes":424,"sha256":"7f185b3833c2948da4aff2cb3dc40919e135c736c15f04a4b5f46d8edb6678de"},{"path":"out/linux-vulkan-validation-evidence/configure-sdk.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/configure-sdk.stdout","bytes":801,"sha256":"b69b93e7e8f129685ab094b9c4cdbc12bff343877c3e9074b6fea116ccef413b"},{"path":"out/linux-vulkan-validation-evidence/controls-ctest.xml","bytes":1478,"sha256":"f7b42713f4dca702fb52b223d1eed300ead3ce1083e65fa428bfc2f1709c01e7"},{"path":"out/linux-vulkan-validation-evidence/ctest-binding.stderr","bytes":2063,"sha256":"5f55752bae7735dcdaa95dadb35f9380705e3bafecee68b53730fafe54407b05"},{"path":"out/linux-vulkan-validation-evidence/ctest-binding.stdout","bytes":15798,"sha256":"1a107608ca003f12ed3be0edb99ac3d05efc3e53b721c92b0f450f7d4d2cc180"},{"path":"out/linux-vulkan-validation-evidence/ctest-buffer.stderr","bytes":2063,"sha256":"be48c7f4414c862dd235d32c83ffe3217b96fee24f58432ac22feff89806a3bb"},{"path":"out/linux-vulkan-validation-evidence/ctest-buffer.stdout","bytes":16540,"sha256":"99e9f408a4cc33b4cb68f4926a2d42318b4cd7f6298a767c0c6f06af62b2efc3"},{"path":"out/linux-vulkan-validation-evidence/ctest-color-pass.stderr","bytes":2063,"sha256":"f13922816340896a8f13c99abcbd14e3617f390ca879a2fab98c67293f3719d4"},{"path":"out/linux-vulkan-validation-evidence/ctest-color-pass.stdout","bytes":15780,"sha256":"89154e13f346ff51edb7bf82b3bb59bec83b1d12200efe083dd852245b5e1e8d"},{"path":"out/linux-vulkan-validation-evidence/ctest-controls.stderr","bytes":2063,"sha256":"db91519e7d9f0eab85451ac7dd3a46518ae59451712fd524aa8986b29a954964"},{"path":"out/linux-vulkan-validation-evidence/ctest-controls.stdout","bytes":16277,"sha256":"d17190808624a53ca185f86c94dce743a5ab83ecee10be1f5d39da0831644bc6"},{"path":"out/linux-vulkan-validation-evidence/ctest-depth.stderr","bytes":2063,"sha256":"689022103f172ffdccd3ef7b330176dc56bc6128ee16587e5a0fed85234f337d"},{"path":"out/linux-vulkan-validation-evidence/ctest-depth.stdout","bytes":15802,"sha256":"5dfb20b164508f021bf8b666930b15cf945ea84327df1b6c92170f918408f6fb"},{"path":"out/linux-vulkan-validation-evidence/ctest-draw.stderr","bytes":2063,"sha256":"2b3b3e16edcb6e259c31f3c82685f652e10ccdca471df041ebdb2f05e7e3e5d7"},{"path":"out/linux-vulkan-validation-evidence/ctest-draw.stdout","bytes":15766,"sha256":"d785035fb94116d2e0da22c8623bb864725af4ed8ea5739e30a670ef8f7b49af"},{"path":"out/linux-vulkan-validation-evidence/ctest-texture.stderr","bytes":2063,"sha256":"c1f9e4c94c3a4cd90cdc31d93e604a2b190701a9f353cc5d0827c6573b653141"},{"path":"out/linux-vulkan-validation-evidence/ctest-texture.stdout","bytes":15775,"sha256":"52d8830466e4ebde3388c4bcf84f150290cfe27e9fb8b06bf4cdfbc13da5fc22"},{"path":"out/linux-vulkan-validation-evidence/ctest-timestamp.stderr","bytes":2063,"sha256":"712416ce6b74bb44156dde1ee530e0a84e7d4eae400dd4b913e878c459640d5f"},{"path":"out/linux-vulkan-validation-evidence/ctest-timestamp.stdout","bytes":18359,"sha256":"49ea674498890b20310673f70e6565798b4c34b38ae4e39462e8af6c769ffc3b"},{"path":"out/linux-vulkan-validation-evidence/ctest-vertex.stderr","bytes":2063,"sha256":"9a9ed959b5f6cd878766ede98f65bcc326d706831390434db6915dd687bfb402"},{"path":"out/linux-vulkan-validation-evidence/ctest-vertex.stdout","bytes":15795,"sha256":"bc99f7662822fca46431b5d98cd7a56185377f3266657644ce78f2be4e71f52c"},{"path":"out/linux-vulkan-validation-evidence/depth-ctest.xml","bytes":1469,"sha256":"de8c5205ec07f70e42174e932d3b7531aef438730d5671c1df2e4b83e685badc"},{"path":"out/linux-vulkan-validation-evidence/draw-ctest.xml","bytes":1467,"sha256":"fcb5b71df947f4631d631d64cdf5ce85060db65be4fc86ed8f36c4da3b7a6312"},{"path":"out/linux-vulkan-validation-evidence/headers-commit.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/headers-commit.stdout","bytes":41,"sha256":"3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"},{"path":"out/linux-vulkan-validation-evidence/identity.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/identity.stdout","bytes":1194,"sha256":"1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"},{"path":"out/linux-vulkan-validation-evidence/install-sdk.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/install-sdk.stdout","bytes":2557,"sha256":"d9b625d54447334f605213a043f497b18b0a5823d7906f1f73cd4868c92aeec0"},{"path":"out/linux-vulkan-validation-evidence/installed-binding.stderr","bytes":13075,"sha256":"33dd2a14cb89dadef8b3b8dafed72b51f9dbb8c28f8853fadad0ce18d1487d9a"},{"path":"out/linux-vulkan-validation-evidence/installed-binding.stdout","bytes":269,"sha256":"4686ce66aec77f6355c12df5ced1f717609010349361f4b38b570b2667c3a13e"},{"path":"out/linux-vulkan-validation-evidence/installed-buffer.stderr","bytes":13771,"sha256":"ebf9b0f3d76a467d1719dd3019158b0de6232265ff4d5266c1e52c62e318306f"},{"path":"out/linux-vulkan-validation-evidence/installed-buffer.stdout","bytes":241,"sha256":"4335f762331420b54228d6c272af440286fc5ec6953c7d59d41fba93f7c548c7"},{"path":"out/linux-vulkan-validation-evidence/installed-color-pass.stderr","bytes":13073,"sha256":"000d3845adf5e1c82e69f3e1f4b36a0edcea20f6395b74629234d976fc740e76"},{"path":"out/linux-vulkan-validation-evidence/installed-color-pass.stdout","bytes":248,"sha256":"143acc171960709696f3f723ddc61166eddf7f07c1cb14e68a2239f228bfba2f"},{"path":"out/linux-vulkan-validation-evidence/installed-depth.stderr","bytes":13071,"sha256":"d6c8da3da22f57a52a65aaba3fb9fec497bb4e6bcaa52a8a7b45a74737ce41bd"},{"path":"out/linux-vulkan-validation-evidence/installed-depth.stdout","bytes":283,"sha256":"eba821eb17425796f33bd56cede40c9e92e598ad9ff32f6e840bbef846c33ed1"},{"path":"out/linux-vulkan-validation-evidence/installed-draw.stderr","bytes":13069,"sha256":"d8d55d91c95a34e6e30a5347e4ec6fe51280bbff6d7a9b2b1e118fcacfc20df0"},{"path":"out/linux-vulkan-validation-evidence/installed-draw.stdout","bytes":252,"sha256":"d4ef5ace9bed69518f987e3a3f34e0f52c319393951bcd93e8806939e31097e5"},{"path":"out/linux-vulkan-validation-evidence/installed-texture.stderr","bytes":13075,"sha256":"78f5530f2dbff3601a1cc604c2b256c61a123f6c5b5f9b99d4305852fe9e3b07"},{"path":"out/linux-vulkan-validation-evidence/installed-texture.stdout","bytes":246,"sha256":"cabdd6539f0f77ad7bebbf3f2064581d3e5cc445f5cd78ba03e5d12b95d80c50"},{"path":"out/linux-vulkan-validation-evidence/installed-timestamp.stderr","bytes":13079,"sha256":"09e5b5d1a02296c818e8daead7a3bce26a346ffc2a341a81ec91e8a739169acc"},{"path":"out/linux-vulkan-validation-evidence/installed-timestamp.stdout","bytes":2618,"sha256":"d7e46316054041c9ac7a49eb78a7dffe082a2e695c9bcb8f1a60384cf65e4411"},{"path":"out/linux-vulkan-validation-evidence/installed-vertex.stderr","bytes":13073,"sha256":"ade6102de18c63d6d6b808c0a98776eb08814e6bf45bf09306b0930f2c6fa2dc"},{"path":"out/linux-vulkan-validation-evidence/installed-vertex.stdout","bytes":271,"sha256":"bf86c927fbdb977badafe218ae524ccbeb76c7d8ec434935679b76547107a056"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-binding.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-binding.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-buffer.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-buffer.stdout","bytes":173,"sha256":"ff0c90710accb6e702ed05c5e97fd0c235b9f92ee39b8f63e5ad9d38e29f182f"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-color-pass.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-color-pass.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-depth.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-depth.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-draw.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-draw.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-texture.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-texture.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-timestamp.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-timestamp.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-vertex.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-validation-evidence/missing-layer-vertex.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-validation-evidence/packages.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/packages.stdout","bytes":104,"sha256":"2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-build.log","bytes":11540,"sha256":"56067c860bc552505abab600237dc67c62b12eb3af06969802b4ead48cbe9d16"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-checkout.log","bytes":65,"sha256":"fafce0afe61a9605cbc95c88d302196af0fb163a3b5b2d4f9875dddf0ecf5f60"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-configure.log","bytes":593,"sha256":"b2840934455430073ffb2838fe08deab5398602800276e8c17d290465c5a620e"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-fetch.log","bytes":127,"sha256":"54391d8ca4132941af7059aa9c5cf6b14954a9a17a2920507d1538d4175f8e71"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-init.log","bytes":700,"sha256":"9842dde5affbbd8a530125bee246db0019d77270a0c81cdd0a2a9e128d1ae9f4"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-build.log","bytes":35740,"sha256":"a4b56e7d67d358922f0315c8f9b7f260644a553fcaaaece2bd45add34131d337"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-checkout.log","bytes":55,"sha256":"6dcd416b6fd94fc6de0df83f26d6dc5a46457f55199d8f6037c5624b14543b68"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-configure.log","bytes":904,"sha256":"900daa8dab720c732596acfedad1d1bde257fe5f73436bb8713b412033951712"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-fetch.log","bytes":125,"sha256":"f6b1c52453b9f3f76b29b4aa485e86966b91cb53514902289721f9b9c0233fed"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-init.log","bytes":698,"sha256":"581edc81896fcd4517fe7a0f07f40d9dd20a301cfa234d2bf0f6bda62bc7c272"},{"path":"out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-build.log","bytes":9005,"sha256":"4db0520c3ece98a3c54d72c5c98f11090405ed782528867f4a3abf9de32eac59"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-configure.log","bytes":840,"sha256":"2c6d4ede5e7e3fa692107351248fc0a30de9ac953cc2498dd2ea6863068490e6"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-build.log","bytes":3884,"sha256":"f18caf2c251de87d1499f7ff4e3299e28f76b6a48307945d4c8659f4938a78b1"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-checkout.log","bytes":55,"sha256":"9a128d44a96fbebd5478daaeb8242e49d7e733fa3a0676948475a7cb93393a8c"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-configure.log","bytes":604,"sha256":"a914619048f2f43d9be3dab83e3cd1248fa61476e540eb821b674785b9a520d1"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-fetch.log","bytes":138,"sha256":"91eea0b59313b9d91aa89f6fd131923e4c6c52f8944fad424816a1b7720bf81b"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-init.log","bytes":711,"sha256":"b3a803d3b38a9b72cadb90fa415425600120ed6d7f6080d1724a57fe87dec450"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-checkout.log","bytes":55,"sha256":"850f081411e3f8b2d40e6820467bf26f80d9377d83fb4ebba8dcee334d6fbecf"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-fetch.log","bytes":137,"sha256":"4467b68a2e55a84117b69a665b72fa0f661017bc3e9cc212df17f1cfe4dae604"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-init.log","bytes":710,"sha256":"ef3d826e4df1765d0d536369846198d7221200d90a1571e0eac19d4580373326"},{"path":"out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/runtime/commands.json","bytes":14214,"sha256":"1ba519cc7f0a666a933793ef0757f53a6f119c650999b1d3c0d7338fa32e771c"},{"path":"out/linux-vulkan-validation-evidence/runtime/layer-build.log","bytes":15797,"sha256":"b241b24d0c9754d088745beaec1965eb4f72db08fa2ab20a0b6559fa87088820"},{"path":"out/linux-vulkan-validation-evidence/runtime/layer-configure.log","bytes":620,"sha256":"d5a3528734b552919c410bf3e9f0b9b87127416ac09a8291f2b90d62b053a941"},{"path":"out/linux-vulkan-validation-evidence/runtime/receipt.json","bytes":10774,"sha256":"f875e604323e5f9ee281e22949cee8d6898c8ba675a57ac3518a60cd5865cb2e"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-build.log","bytes":473,"sha256":"3585348c9007b538b39f54e8b587f5118526e48624b3d12ac2674dad800a4e42"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-checkout.log","bytes":46,"sha256":"8a3386e13581fbf0206eac053bd955d237695199cab4b211c9de679d78247563"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-configure.log","bytes":968,"sha256":"f61876fc4b3cb4905aec9eeb13c763c5bc8905da1f176ae67fc5c5b433bc6e69"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-fetch.log","bytes":128,"sha256":"5403082df6c3e06f72882b6a16549e227bd881543a51ac149f613ef724a6197a"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-init.log","bytes":705,"sha256":"7a910f938e40348398c80024cb2653597f9d076490446342dd91e38bce0ee533"},{"path":"out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-remote.log","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/sdk-cache.txt","bytes":16818,"sha256":"697cb2830c6031d1ebf89f91e956c00e72b4bc85b2aa680203313e1709454146"},{"path":"out/linux-vulkan-validation-evidence/sdk-compile-commands.json","bytes":14870,"sha256":"f4920f9e7e9ecd55511690863d3277dfffd940fbdc8e5a6dac785074de09ccf8"},{"path":"out/linux-vulkan-validation-evidence/settings/vk_layer_settings.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/source-commit.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/source-commit.stdout","bytes":41,"sha256":"97e50ff4f91799fabe2e43555b56d9b45826b826ca1b81b9a2a7d68ee79de336"},{"path":"out/linux-vulkan-validation-evidence/source-status.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/source-status.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-validation-evidence/texture-ctest.xml","bytes":1474,"sha256":"9cf0a858c085921827f21b40e6d9270113ae046c710d3bb623524735da510664"},{"path":"out/linux-vulkan-validation-evidence/timestamp-ctest.xml","bytes":1478,"sha256":"babd82204126c4bdcb62c30a84032a5885cd726ba9ec622d13e386c8f6f9da0a"},{"path":"out/linux-vulkan-validation-evidence/vertex-ctest.xml","bytes":1472,"sha256":"68b572b01731494018b0b168ffbb96e771b9131be10e1a7a13cbff766c50bdcf"},{"path":"out/linux-vulkan-validation-evidence/vulkaninfo.stderr","bytes":218,"sha256":"df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"},{"path":"out/linux-vulkan-validation-evidence/vulkaninfo.stdout","bytes":1913,"sha256":"8a0e39834f4be6f16d8b3cd3b5413f7ddf0d159453d44dd4e789151fa2536892"}]}
+2026-10-25T10:31:38.1861060Z ##[group]Run actions/upload-artifact@v4
+2026-10-25T10:31:38.1861378Z with:
+2026-10-25T10:31:38.1861708Z   name: linux-vulkan-validation-051efe65d0d7a535474a10024ab3d5c99f4e4161
+2026-10-25T10:31:38.1862150Z   path: out/linux-vulkan-validation-evidence/
+2026-10-25T10:31:38.1862449Z   if-no-files-found: error
+2026-10-25T10:31:38.1862677Z   retention-days: 14
+2026-10-25T10:31:38.1862890Z   compression-level: 6
+2026-10-25T10:31:38.1863096Z   overwrite: false
+2026-10-25T10:31:38.1863503Z   include-hidden-files: false
+2026-10-25T10:31:38.1863748Z ##[endgroup]
+2026-10-25T10:31:38.3473140Z (node:6273) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T10:31:38.3474598Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T10:31:38.3755401Z With the provided path, there will be 124 files uploaded
+2026-10-25T10:31:38.3764137Z Artifact name is valid!
+2026-10-25T10:31:38.3765053Z Root directory input is valid!
+2026-10-25T10:31:38.8328012Z Beginning upload of artifact content to blob storage
+2026-10-25T10:31:38.9606715Z (node:6273) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-25T10:31:39.3630048Z Uploaded bytes 95515
+2026-10-25T10:31:39.4360001Z Finished uploading artifact content to blob storage!
+2026-10-25T10:31:39.4361749Z SHA256 digest of uploaded artifact zip is e84ddc7676f781fac7af44a0c083bc1ee23746ebae383a4d0676ba8ce94e8e88
+2026-10-25T10:31:39.4363015Z Finalizing artifact upload
+2026-10-25T10:31:39.9084626Z Artifact linux-vulkan-validation-051efe65d0d7a535474a10024ab3d5c99f4e4161.zip successfully finalized. Artifact ID 12596136069
+2026-10-25T10:31:39.9086896Z Artifact linux-vulkan-validation-051efe65d0d7a535474a10024ab3d5c99f4e4161 has been successfully uploaded! Final size is 95515 bytes. Artifact ID is 12596136069
+2026-10-25T10:31:39.9091814Z Artifact download URL: https://github.com/blackvrice/GraphicsSDK/actions/runs/40184124754/artifacts/12596136069
+2026-10-25T10:31:39.9286939Z Post job cleanup.
+2026-10-25T10:31:40.0170252Z [command]/usr/bin/git version
+2026-10-25T10:31:40.0217291Z git version 2.55.0
+2026-10-25T10:31:40.0258844Z Temporarily overriding HOME='/home/runner/work/_temp/918eb34b-a605-4428-a759-5d7ac11ad195' before making global git config changes
+2026-10-25T10:31:40.0260154Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T10:31:40.0265502Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers
+2026-10-25T10:31:40.0311856Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T10:31:40.0354503Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T10:31:40.0649072Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T10:31:40.0670494Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T10:31:40.0962264Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T10:31:40.1004492Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T10:31:40.1417717Z Post job cleanup.
+2026-10-25T10:31:40.2288799Z [command]/usr/bin/git version
+2026-10-25T10:31:40.2333592Z git version 2.55.0
+2026-10-25T10:31:40.2375135Z Temporarily overriding HOME='/home/runner/work/_temp/b1b60e11-7492-4276-8de6-2bdb8847d37a' before making global git config changes
+2026-10-25T10:31:40.2376663Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T10:31:40.2378971Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK
+2026-10-25T10:31:40.2417819Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T10:31:40.2454919Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T10:31:40.2728029Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T10:31:40.2766898Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T10:31:40.3055610Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T10:31:40.3093815Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T10:31:40.3508047Z Cleaning up orphan processes
+2026-10-25T10:31:40.3879997Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

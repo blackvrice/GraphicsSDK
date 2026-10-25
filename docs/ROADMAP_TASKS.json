@@ -1007,16 +1007,19 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "Linux core/sync validation 수용",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-09",
         "P3-LNX-10"
       ],
-      "work": "고정 VVL/환경·실제 layer 경로·오류 주입 controls를 구성한다.",
-      "done_when": "Linux 공통 GPU suite의 정상 오류 0과 의도한 native 오류 검출. 누락 layer 명시적 실패.",
-      "evidence": [],
-      "requires": "Linux VVL/GPU"
+      "work": "고정 VVL 1.3.290을 별도 Linux profile로 빌드하고 software ICD의 공통 suite 8개를 in-tree/설치 SDK에서 실행했다. 정상 오류 계수 0·실제 shared-library 경로/해시·core/sync/callback controls·missing-layer 실패 통과. 물리 GPU 수용은 P3-LNX-15 필수 gate에 유지한다.",
+      "done_when": "Linux 공통 suite의 정상 오류 0과 의도한 native 오류 검출. 누락 layer 명시적 실패. 이번 근거는 software ICD이며 물리 GPU 수용은 P3-LNX-15에서 별도 필수 검증.",
+      "evidence": [
+        "docs/PHASE3_LINUX_VALIDATION_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-validation/summary.json"
+      ],
+      "requires": "Linux 고정 VVL/Vulkan runtime; 이번 수용은 software ICD, 물리 GPU는 P3-LNX-15 필수"
     },
     {
       "id": "P3-LNX-12",
@@ -1065,7 +1068,8 @@
       "work": "기존 CI의 Python 증거 검사 오류를 fresh checkout·플랫폼별 source identity와 대조해 수정한다. 과거 Windows 관측과 native Linux source를 혼합하거나 오류 테스트를 제거해 통과시키지 않는다.",
       "done_when": "Windows/Linux fresh CI에서 전체 Python 회귀 통과와 기존 자료·검증 계약 보존. 변경 전 614 tests/errors=92 원본 및 수정 후 실제 실행 근거.",
       "evidence": [
-        "docs/PHASE3_LINUX_COMPILE_REPORT.md"
+        "docs/PHASE3_LINUX_COMPILE_REPORT.md",
+        "docs/PHASE3_LINUX_VALIDATION_REPORT.md"
       ],
       "requires": "Windows/Linux CI와 보존된 benchmark evidence"
     },

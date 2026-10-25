@@ -1,0 +1,584 @@
+[
+  {
+    "name": "source-commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.002072421999969265
+  },
+  {
+    "name": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 1.0123013869999795
+  },
+  {
+    "name": "headers-commit",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.0019657230000120762
+  },
+  {
+    "name": "packages",
+    "argv": [
+      "dpkg-query",
+      "-W",
+      "-f=${Package} ${Version}\n",
+      "libvulkan1",
+      "mesa-vulkan-drivers",
+      "vulkan-tools"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.011683220000008987
+  },
+  {
+    "name": "vulkaninfo",
+    "argv": [
+      "vulkaninfo",
+      "--summary"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 3.140217944000028
+  },
+  {
+    "name": "configure-sdk",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan-validation",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.2231766450000805
+  },
+  {
+    "name": "build-suites",
+    "argv": [
+      "cmake",
+      "--build",
+      "--preset",
+      "linux-vulkan-validation",
+      "--target",
+      "gfx_vulkan_tests",
+      "gfx_vulkan_texture_tests",
+      "gfx_vulkan_render_tests",
+      "gfx_vulkan_draw_tests",
+      "gfx_vulkan_vertex_tests",
+      "gfx_vulkan_binding_tests",
+      "gfx_vulkan_depth_tests",
+      "gfx_vulkan_timestamp_tests",
+      "gfx_vulkan_validation_tests",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 39.98869662599998
+  },
+  {
+    "name": "install-sdk",
+    "argv": [
+      "cmake",
+      "--install",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.006547111999907429
+  },
+  {
+    "name": "configure-identity",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/linux_vulkan_device",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-identity",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-install",
+      "-DGFX_VULKAN_HEADERS=/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.15801928400003362
+  },
+  {
+    "name": "build-identity",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-identity",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 2.3811901729999363
+  },
+  {
+    "name": "identity",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-identity/gfx_linux_vulkan_device",
+      "selection"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.05846292499995798
+  },
+  {
+    "name": "configure-consumer",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_consumer",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 0.16588839599990024
+  },
+  {
+    "name": "build-consumer",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer",
+      "--parallel",
+      "1",
+      "--target",
+      "vulkan_consumer",
+      "vulkan_texture_consumer",
+      "vulkan_render_consumer",
+      "vulkan_draw_consumer",
+      "vulkan_vertex_consumer",
+      "vulkan_binding_consumer",
+      "vulkan_depth_consumer",
+      "vulkan_timestamp_consumer",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {},
+    "seconds": 24.914074805999917
+  },
+  {
+    "name": "ctest-buffer",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_transfer_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/buffer-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.1295963280000478
+  },
+  {
+    "name": "installed-buffer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 0.2127637539999796
+  },
+  {
+    "name": "missing-layer-buffer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.01790224399996987
+  },
+  {
+    "name": "ctest-texture",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_texture_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/texture-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.279502793000006
+  },
+  {
+    "name": "installed-texture",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_texture_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.2743331789999957
+  },
+  {
+    "name": "missing-layer-texture",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_texture_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.018238351999912084
+  },
+  {
+    "name": "ctest-color-pass",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_color_pass_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/color-pass-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.7768135619999157
+  },
+  {
+    "name": "installed-color-pass",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_render_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.7390525759999491
+  },
+  {
+    "name": "missing-layer-color-pass",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_render_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.01820383699998729
+  },
+  {
+    "name": "ctest-draw",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_draw_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/draw-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.257922342000029
+  },
+  {
+    "name": "installed-draw",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_draw_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 0.8241432680000571
+  },
+  {
+    "name": "missing-layer-draw",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_draw_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.01807293399997434
+  },
+  {
+    "name": "ctest-vertex",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_vertex_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/vertex-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.1617533800000501
+  },
+  {
+    "name": "installed-vertex",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_vertex_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 0.981489027000066
+  },
+  {
+    "name": "missing-layer-vertex",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_vertex_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.01878586800000903
+  },
+  {
+    "name": "ctest-binding",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_binding_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/binding-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 2.8120012440000437
+  },
+  {
+    "name": "installed-binding",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_binding_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 2.5641674700000294
+  },
+  {
+    "name": "missing-layer-binding",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_binding_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.017680941999969946
+  },
+  {
+    "name": "ctest-depth",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_depth_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/depth-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.5011116870000478
+  },
+  {
+    "name": "installed-depth",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_depth_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 0.9925148880000734
+  },
+  {
+    "name": "missing-layer-depth",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_depth_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.018114158000003044
+  },
+  {
+    "name": "ctest-timestamp",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_timestamp_validation$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/timestamp-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.070394839999949
+  },
+  {
+    "name": "installed-timestamp",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_timestamp_consumer",
+      "--validation"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 1.0410901559999957
+  },
+  {
+    "name": "missing-layer-timestamp",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-validation-consumer/vulkan_timestamp_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "environment": {
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/empty-layers"
+    },
+    "seconds": 0.01846923199991579
+  },
+  {
+    "name": "ctest-controls",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^vulkan_validation_controls$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/controls-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "environment": {
+      "LD_DEBUG": "libs"
+    },
+    "seconds": 0.09006823599997915
+  }
+]

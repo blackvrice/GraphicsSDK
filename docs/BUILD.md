@@ -33,7 +33,8 @@ software ICD의 두 경로에서 통과했다. [P3-LNX-08](PHASE3_LINUX_INPUT_RE
 배열·sampler·resource snapshot도 두 경로에서 검증했다. [P3-LNX-09](PHASE3_LINUX_DEPTH_REPORT.md)에서는
 D32·depth-only/read-only·비교/쓰기 mask·depth/MRT의 색·깊이 참조도 통과했다.
 [P3-LNX-10](PHASE3_LINUX_TIMESTAMP_REPORT.md)에서는 native queue metadata·실제 timestamp elapsed/availability·수명과
-CPU wrap 변환을 구분해 통과했다. 물리 GPU(P3-LNX-15), 정상 layer·전체 설치 감사 수용은 별도 잔여다.
+CPU wrap 변환을 구분해 통과했다. [P3-LNX-11](PHASE3_LINUX_VALIDATION_REPORT.md)에서는 고정 VVL 1.3.290으로
+정상 8개 suite·설치 소비자와 native 오류 controls를 통과했다. 물리 GPU(P3-LNX-15), 전체 설치 감사 수용은 별도 잔여다.
 
 현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).

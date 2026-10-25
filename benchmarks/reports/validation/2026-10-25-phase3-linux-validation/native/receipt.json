@@ -1,0 +1,1174 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-11",
+  "source_commit": "051efe65d0d7a535474a10024ab3d5c99f4e4161",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "github_run_id": "40184124754",
+  "platform": {
+    "os_release": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 24.04.5 LTS",
+      "VERSION_ID": "24.04",
+      "VERSION": "24.04.5 LTS (Noble Numbat)",
+      "VERSION_CODENAME": "noble",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "noble",
+      "LOGO": "ubuntu-logo"
+    },
+    "kernel": "6.17.0-1022-azure",
+    "machine": "x86_64"
+  },
+  "environment": {
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+    "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers",
+    "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/settings",
+    "GFX_EXPECT_VULKAN_LAYER": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so",
+    "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-validation-evidence/xdg-runtime",
+    "LP_NUM_THREADS": "2"
+  },
+  "runtime_receipt": {
+    "path": "out/linux-vulkan-validation-evidence/runtime/receipt.json",
+    "bytes": 10774,
+    "sha256": "f875e604323e5f9ee281e22949cee8d6898c8ba675a57ac3518a60cd5865cb2e"
+  },
+  "identity": {
+    "schema_version": 1,
+    "case": "selection",
+    "SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+    "assertions": 32,
+    "device_creations": 3,
+    "software_adapters": 1,
+    "hardware_adapters": 0,
+    "loader_path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+    "adapters": [
+      {
+        "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "id": "5892941257450743403",
+        "vendor_id": 65541,
+        "device_id": 0,
+        "device_type": 4,
+        "api_version_raw": 4211006,
+        "driver_version_raw": 104865800,
+        "device_uuid": "6d65736132352e322e382d3075627500",
+        "driver_uuid": "6c6c766d706970655555494400000000"
+      }
+    ],
+    "runtime_modules": [
+      "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+      "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so"
+    ],
+    "rejections": [
+      {
+        "case": "software-kind-mismatch",
+        "code": "InvalidArgument",
+        "native": 0
+      },
+      {
+        "case": "backend-id-mismatch",
+        "code": "InvalidArgument",
+        "native": 0
+      },
+      {
+        "case": "missing-exact-id-no-fallback",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "zero-id-no-fallback",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "hardware-default-never-falls-back-to-software",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "uncompiled-backend-enumeration",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "unsupported-loss-opt-in",
+        "code": "Unsupported",
+        "native": 0
+      }
+    ]
+  },
+  "results": [
+    {
+      "suite": "buffer",
+      "kind": "in-tree-ctest",
+      "assertions": 361,
+      "transfers": 24,
+      "verified_bytes": 28521273,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "buffer",
+      "kind": "installed-consumer",
+      "assertions": 361,
+      "transfers": 24,
+      "verified_bytes": 28521273,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "texture",
+      "kind": "in-tree-ctest",
+      "assertions": 418,
+      "roundtrips": 37,
+      "verified_texel_bytes": 249685916,
+      "padded_roundtrips": 20,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "texture",
+      "kind": "installed-consumer",
+      "assertions": 418,
+      "roundtrips": 37,
+      "verified_texel_bytes": 249685916,
+      "padded_roundtrips": 20,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "color-pass",
+      "kind": "in-tree-ctest",
+      "assertions": 297,
+      "passes": 64,
+      "images": 69,
+      "verified_texel_bytes": 373531756,
+      "padded_images": 57,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "color-pass",
+      "kind": "installed-consumer",
+      "assertions": 297,
+      "passes": 64,
+      "images": 69,
+      "verified_texel_bytes": 373531756,
+      "padded_images": 57,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "draw",
+      "kind": "in-tree-ctest",
+      "assertions": 319,
+      "draws": 31,
+      "images": 33,
+      "verified_texel_bytes": 124745708,
+      "padded_images": 29,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "draw",
+      "kind": "installed-consumer",
+      "assertions": 319,
+      "draws": 31,
+      "images": 33,
+      "verified_texel_bytes": 124745708,
+      "padded_images": 29,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "vertex",
+      "kind": "in-tree-ctest",
+      "assertions": 386,
+      "draws": 75,
+      "indexed_draws": 39,
+      "images": 73,
+      "verified_texel_bytes": 125406860,
+      "padded_images": 69,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "vertex",
+      "kind": "installed-consumer",
+      "assertions": 386,
+      "draws": 75,
+      "indexed_draws": 39,
+      "images": 73,
+      "verified_texel_bytes": 125406860,
+      "padded_images": 69,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "binding",
+      "kind": "in-tree-ctest",
+      "assertions": 287,
+      "draws": 78,
+      "snapshots": 129,
+      "images": 40,
+      "verified_texel_bytes": 124944768,
+      "padded_images": 36,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "binding",
+      "kind": "installed-consumer",
+      "assertions": 287,
+      "draws": 78,
+      "snapshots": 129,
+      "images": 40,
+      "verified_texel_bytes": 124944768,
+      "padded_images": 36,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "depth",
+      "kind": "in-tree-ctest",
+      "assertions": 442,
+      "passes": 103,
+      "draws": 129,
+      "images": 139,
+      "depth_images": 63,
+      "verified_texel_bytes": 167427552,
+      "padded_images": 131,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "depth",
+      "kind": "installed-consumer",
+      "assertions": 442,
+      "passes": 103,
+      "draws": 129,
+      "images": 139,
+      "depth_images": 63,
+      "verified_texel_bytes": 167427552,
+      "padded_images": 131,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "timestamp",
+      "kind": "in-tree-ctest",
+      "assertions": 156,
+      "measured_pairs": 26,
+      "dropped_query_recordings": 3,
+      "draws": 3,
+      "images": 9,
+      "depth_images": 3,
+      "verified_texel_bytes": 165926480,
+      "verified_buffer_bytes": 37822482,
+      "padded_images": 3,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    },
+    {
+      "suite": "timestamp",
+      "kind": "installed-consumer",
+      "assertions": 156,
+      "measured_pairs": 26,
+      "dropped_query_recordings": 3,
+      "draws": 3,
+      "images": 9,
+      "depth_images": 3,
+      "verified_texel_bytes": 165926480,
+      "verified_buffer_bytes": 37822482,
+      "padded_images": 3,
+      "adapters": 1,
+      "loaded_layer_paths": [
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so"
+      ],
+      "normal_error_count_at_suite_assertions": 0
+    }
+  ],
+  "controls": {
+    "assertions": 137,
+    "adapters": 1,
+    "native_core_errors": 32,
+    "native_sync_hazards": 1,
+    "sync_disabled_controls": 1,
+    "synthetic_errors": 1025,
+    "invalid_GPU_submissions": 0
+  },
+  "required_layer_execution_accepted": true,
+  "hardware_GPU_accepted": false,
+  "WSI_accepted": false,
+  "GPU_assisted_accepted": false,
+  "long_memory_accepted": false,
+  "SDK_library": {
+    "path": "out/linux-vulkan-validation/libGraphicsSDKCore.a",
+    "bytes": 413918,
+    "sha256": "c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"
+  },
+  "installed_library": {
+    "path": "out/linux-vulkan-validation-install/lib/libGraphicsSDKCore.a",
+    "bytes": 413918,
+    "sha256": "c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"
+  },
+  "settings": {
+    "path": "out/linux-vulkan-validation-evidence/settings/vk_layer_settings.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "runner": {
+    "path": "tools/run_linux_validation.py",
+    "bytes": 11548,
+    "sha256": "9283b929d1871b27a68a5f2750cf3a38460dc0aca7d8aad4e307b3cd7d090a89"
+  },
+  "inputs": [
+    {
+      "path": ".github/workflows/linux-vulkan-validation.yml",
+      "bytes": 2268,
+      "sha256": "d276e37a2c5c377df68ad3568d2707eab24a2a4a3e364ce25d3078e3dfac2a19"
+    },
+    {
+      "path": "CMakePresets.json",
+      "bytes": 2735,
+      "sha256": "b063363efa72fb23809638e21e82e85a4e144ac5eda4801e7245a8287fa2411a"
+    },
+    {
+      "path": "src/backends/vulkan/VulkanValidation.hpp",
+      "bytes": 2690,
+      "sha256": "23718513bf663b2d91730e386c382c19aa3e0c855b664e099d12e38a5590acf0"
+    },
+    {
+      "path": "tests/VulkanAllocationBenchmarkTests.cpp",
+      "bytes": 1625,
+      "sha256": "733ddcd2ef5ca4d2878fd0723b146f3f45568a1439ed163fd9363f0cfaa7fae9"
+    },
+    {
+      "path": "tests/VulkanAllocationTraceInterfaceTests.cpp",
+      "bytes": 1736,
+      "sha256": "ead81c54c2421b931072f1ca25089d83aa10a2ba8889494474a034f8fab746e6"
+    },
+    {
+      "path": "tests/VulkanAllocationTraceTests.cpp",
+      "bytes": 1940,
+      "sha256": "c78456f1149e9fbcf62bfcf9a4e691d247de99c0de438a8c68d5d8d7fc42f71e"
+    },
+    {
+      "path": "tests/VulkanBindingSupport.hpp",
+      "bytes": 1409,
+      "sha256": "60e899c60f8eb3c96609a51d6c7b8753c921a0861d5d3676321bfbd4baff36e6"
+    },
+    {
+      "path": "tests/VulkanBindingTests.cpp",
+      "bytes": 18643,
+      "sha256": "d7d304c80bd116faa617a3a19c0a9002b1c2fb430b5af07fac1017de0edb35b2"
+    },
+    {
+      "path": "tests/VulkanCreationTests.cpp",
+      "bytes": 1521,
+      "sha256": "6e110e8a3cc111f8034db6cfd5f7b362c6c7f01226330e47144c4952c331afa0"
+    },
+    {
+      "path": "tests/VulkanDepthSupport.hpp",
+      "bytes": 998,
+      "sha256": "55c2189282d843d6acd8a001393cf305d32d20dc8595029d0eeeff8798634eb3"
+    },
+    {
+      "path": "tests/VulkanDepthTests.cpp",
+      "bytes": 20317,
+      "sha256": "2b9fc8ba4c98d06747f9afca50b39a3e97fad24a45dca049c5e66135b626c3e7"
+    },
+    {
+      "path": "tests/VulkanDrawBenchmarkTests.cpp",
+      "bytes": 1886,
+      "sha256": "1d531cffa257e78ce9d13b62f6004e5d70290913d0ff36599881700cc57bd2b1"
+    },
+    {
+      "path": "tests/VulkanDrawTests.cpp",
+      "bytes": 15781,
+      "sha256": "2ec005ffb65134c60ea1596113bdf683f1e311dee68c6607d248ae00457de330"
+    },
+    {
+      "path": "tests/VulkanPresentationTests.cpp",
+      "bytes": 15315,
+      "sha256": "56c48d5b575e062df2eebc60235959f36f824673337c53b1e73a971fffb72521"
+    },
+    {
+      "path": "tests/VulkanPsoBenchmarkTests.cpp",
+      "bytes": 1729,
+      "sha256": "c7ec894281a9da8eeb8c099952a139bc075371883127e57859e3c33237aa1ccc"
+    },
+    {
+      "path": "tests/VulkanRenderPassTests.cpp",
+      "bytes": 16098,
+      "sha256": "8de3c558e9747f6e765ab9fc35a0abc966777354b4449789418810d32fb6a9f8"
+    },
+    {
+      "path": "tests/VulkanTests.cpp",
+      "bytes": 14372,
+      "sha256": "06939e1394934c06142667437329b8dc9aa579db4dd1278ec82906eb406071b9"
+    },
+    {
+      "path": "tests/VulkanTextureTests.cpp",
+      "bytes": 15307,
+      "sha256": "6f5d24f5295497a6515e4027011293b814b5693b7b98dd7ae3c0bd5e13259184"
+    },
+    {
+      "path": "tests/VulkanTimestampMathTests.cpp",
+      "bytes": 2799,
+      "sha256": "2266c7125ddf4a5b4e377d3c6c6b685740de27031ac9558da4e047932347151f"
+    },
+    {
+      "path": "tests/VulkanTimestampTests.cpp",
+      "bytes": 15310,
+      "sha256": "e70386a38c7e3cffec82bcb3bf49ba98bf37db6b362c2b92ce1a8d3ba3eca2b5"
+    },
+    {
+      "path": "tests/VulkanValidationTests.cpp",
+      "bytes": 13603,
+      "sha256": "8c540ffd22589b52be5864be9d9790e01b7bb7e3ec4a4b4217b3646e3307f7f8"
+    },
+    {
+      "path": "tests/VulkanVertexSupport.hpp",
+      "bytes": 1578,
+      "sha256": "89743dbb11ba4191ebbc857dd5ae88579b6e11e8109e11bed2c30e72720791bc"
+    },
+    {
+      "path": "tests/VulkanVertexTests.cpp",
+      "bytes": 20880,
+      "sha256": "f4e7406df3bf3645c2ffdeac5e3d9153c00b884524b848a7433a8035306b19dc"
+    },
+    {
+      "path": "tests/fixtures/BindingFixtures.hpp",
+      "bytes": 19543,
+      "sha256": "d6bf122321f59b6a57c5b88633f3173e4001567d412192dc4bb289d4922bce4f"
+    },
+    {
+      "path": "tests/fixtures/DepthFixtures.hpp",
+      "bytes": 10215,
+      "sha256": "5b55b258ae8861f3635c284670d917e440015dc8cc6ffdc4a4253c0f303d7d71"
+    },
+    {
+      "path": "tests/fixtures/SpirvFixtures.hpp",
+      "bytes": 20483,
+      "sha256": "3001f8aecfd8c2ce4fe71d6486af4457dc02a281c81865e092b59d7b120eba4a"
+    },
+    {
+      "path": "tests/fixtures/VertexFixtures.hpp",
+      "bytes": 11895,
+      "sha256": "2790a2bbd2f4143e06357bc17349e23d01666e0d964de3a29675f9d9ea8dd557"
+    },
+    {
+      "path": "tests/vulkan_consumer/CMakeLists.txt",
+      "bytes": 1382,
+      "sha256": "29d421413847b3d4f142e333be93d5041d9a81715e881d4d8ae83c746a889bb6"
+    },
+    {
+      "path": "tools/linux-vulkan-validation.json",
+      "bytes": 459,
+      "sha256": "dce8d2443045ac57e377bc7549474a01c0712e778d004d0523335ca2694a548d"
+    },
+    {
+      "path": "tools/prepare_linux_validation.py",
+      "bytes": 5823,
+      "sha256": "70eb0c4ae8f6d5429b4a42eb63dcaa6c4d756d76f7e157e62568ce0fff9ba6e7"
+    },
+    {
+      "path": "tools/run_linux_depth.py",
+      "bytes": 10455,
+      "sha256": "cd916f297bb701d56a3c52df4fe6eb4f57dd349561d543b90a2254b07c28eef4"
+    },
+    {
+      "path": "tools/run_linux_device.py",
+      "bytes": 8620,
+      "sha256": "0ab9c9c74c32c65a07bab471997b453c582ffbd2991c35cc34da4e94326ac1ed"
+    },
+    {
+      "path": "tools/run_linux_draw.py",
+      "bytes": 10911,
+      "sha256": "2eb4b876795bbffe820c7257fb301630334b8fb6b39c1897cb2bfd6505d559bd"
+    },
+    {
+      "path": "tools/run_linux_input.py",
+      "bytes": 11264,
+      "sha256": "f310d44e8a06e94186152cd02b87d14b2f3b6cdee678964323539cff79182baa"
+    },
+    {
+      "path": "tools/run_linux_timestamp.py",
+      "bytes": 13089,
+      "sha256": "2fd19c1dacfb1235e06c4a47728bbf6ba69bbbd69dfcca7608cd14fa8f9a3567"
+    },
+    {
+      "path": "tools/vulkan-validation.lock.json",
+      "bytes": 1628,
+      "sha256": "227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"
+    }
+  ],
+  "diagnostics": [
+    {
+      "path": "out/linux-vulkan-validation-evidence/binding-ctest.xml",
+      "bytes": 1473,
+      "sha256": "029f694ee4490899c27f64569a209c14a93de54ed1e7d4565f62d4c9b4c3e94a"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/buffer-ctest.xml",
+      "bytes": 1477,
+      "sha256": "8cf28f8d2fbf20ccf113dec54b11482fba20e011023dbc61a5a8be0272bd84b7"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/build-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/build-consumer.stdout",
+      "bytes": 7655,
+      "sha256": "b1c8998daa8e0807f2125c5a3d6f169763435454f14c4241d19e5f5c751ad5f8"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/build-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/build-identity.stdout",
+      "bytes": 5326,
+      "sha256": "09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/build-suites.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/build-suites.stdout",
+      "bytes": 108230,
+      "sha256": "db818266f886b6f2f624f01b79a2a82779b7d27b6048c1978c7013fdd8687741"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/color-pass-ctest.xml",
+      "bytes": 1480,
+      "sha256": "7de7f2261613f2e93008c2320ac998df08945bd2309dbb4cccabb3f2f27c8d82"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/commands.json",
+      "bytes": 14490,
+      "sha256": "2e81370d9d812f49838e48ff3e0ad794b8463c7e2c5a5eae57050beba5836e10"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/configure-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/configure-consumer.stdout",
+      "bytes": 424,
+      "sha256": "9afbe46513fafc1c1223ffe216b481c98b206f3efbd2522f0baf592bf83342ba"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/configure-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/configure-identity.stdout",
+      "bytes": 424,
+      "sha256": "7f185b3833c2948da4aff2cb3dc40919e135c736c15f04a4b5f46d8edb6678de"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/configure-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/configure-sdk.stdout",
+      "bytes": 801,
+      "sha256": "b69b93e7e8f129685ab094b9c4cdbc12bff343877c3e9074b6fea116ccef413b"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/controls-ctest.xml",
+      "bytes": 1478,
+      "sha256": "f7b42713f4dca702fb52b223d1eed300ead3ce1083e65fa428bfc2f1709c01e7"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-binding.stderr",
+      "bytes": 2063,
+      "sha256": "5f55752bae7735dcdaa95dadb35f9380705e3bafecee68b53730fafe54407b05"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-binding.stdout",
+      "bytes": 15798,
+      "sha256": "1a107608ca003f12ed3be0edb99ac3d05efc3e53b721c92b0f450f7d4d2cc180"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-buffer.stderr",
+      "bytes": 2063,
+      "sha256": "be48c7f4414c862dd235d32c83ffe3217b96fee24f58432ac22feff89806a3bb"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-buffer.stdout",
+      "bytes": 16540,
+      "sha256": "99e9f408a4cc33b4cb68f4926a2d42318b4cd7f6298a767c0c6f06af62b2efc3"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-color-pass.stderr",
+      "bytes": 2063,
+      "sha256": "f13922816340896a8f13c99abcbd14e3617f390ca879a2fab98c67293f3719d4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-color-pass.stdout",
+      "bytes": 15780,
+      "sha256": "89154e13f346ff51edb7bf82b3bb59bec83b1d12200efe083dd852245b5e1e8d"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-controls.stderr",
+      "bytes": 2063,
+      "sha256": "db91519e7d9f0eab85451ac7dd3a46518ae59451712fd524aa8986b29a954964"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-controls.stdout",
+      "bytes": 16277,
+      "sha256": "d17190808624a53ca185f86c94dce743a5ab83ecee10be1f5d39da0831644bc6"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-depth.stderr",
+      "bytes": 2063,
+      "sha256": "689022103f172ffdccd3ef7b330176dc56bc6128ee16587e5a0fed85234f337d"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-depth.stdout",
+      "bytes": 15802,
+      "sha256": "5dfb20b164508f021bf8b666930b15cf945ea84327df1b6c92170f918408f6fb"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-draw.stderr",
+      "bytes": 2063,
+      "sha256": "2b3b3e16edcb6e259c31f3c82685f652e10ccdca471df041ebdb2f05e7e3e5d7"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-draw.stdout",
+      "bytes": 15766,
+      "sha256": "d785035fb94116d2e0da22c8623bb864725af4ed8ea5739e30a670ef8f7b49af"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-texture.stderr",
+      "bytes": 2063,
+      "sha256": "c1f9e4c94c3a4cd90cdc31d93e604a2b190701a9f353cc5d0827c6573b653141"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-texture.stdout",
+      "bytes": 15775,
+      "sha256": "52d8830466e4ebde3388c4bcf84f150290cfe27e9fb8b06bf4cdfbc13da5fc22"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-timestamp.stderr",
+      "bytes": 2063,
+      "sha256": "712416ce6b74bb44156dde1ee530e0a84e7d4eae400dd4b913e878c459640d5f"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-timestamp.stdout",
+      "bytes": 18359,
+      "sha256": "49ea674498890b20310673f70e6565798b4c34b38ae4e39462e8af6c769ffc3b"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-vertex.stderr",
+      "bytes": 2063,
+      "sha256": "9a9ed959b5f6cd878766ede98f65bcc326d706831390434db6915dd687bfb402"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/ctest-vertex.stdout",
+      "bytes": 15795,
+      "sha256": "bc99f7662822fca46431b5d98cd7a56185377f3266657644ce78f2be4e71f52c"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/depth-ctest.xml",
+      "bytes": 1469,
+      "sha256": "de8c5205ec07f70e42174e932d3b7531aef438730d5671c1df2e4b83e685badc"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/draw-ctest.xml",
+      "bytes": 1467,
+      "sha256": "fcb5b71df947f4631d631d64cdf5ce85060db65be4fc86ed8f36c4da3b7a6312"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/identity.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/install-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/install-sdk.stdout",
+      "bytes": 2557,
+      "sha256": "d9b625d54447334f605213a043f497b18b0a5823d7906f1f73cd4868c92aeec0"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-binding.stderr",
+      "bytes": 13075,
+      "sha256": "33dd2a14cb89dadef8b3b8dafed72b51f9dbb8c28f8853fadad0ce18d1487d9a"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-binding.stdout",
+      "bytes": 269,
+      "sha256": "4686ce66aec77f6355c12df5ced1f717609010349361f4b38b570b2667c3a13e"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-buffer.stderr",
+      "bytes": 13771,
+      "sha256": "ebf9b0f3d76a467d1719dd3019158b0de6232265ff4d5266c1e52c62e318306f"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-buffer.stdout",
+      "bytes": 241,
+      "sha256": "4335f762331420b54228d6c272af440286fc5ec6953c7d59d41fba93f7c548c7"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-color-pass.stderr",
+      "bytes": 13073,
+      "sha256": "000d3845adf5e1c82e69f3e1f4b36a0edcea20f6395b74629234d976fc740e76"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-color-pass.stdout",
+      "bytes": 248,
+      "sha256": "143acc171960709696f3f723ddc61166eddf7f07c1cb14e68a2239f228bfba2f"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-depth.stderr",
+      "bytes": 13071,
+      "sha256": "d6c8da3da22f57a52a65aaba3fb9fec497bb4e6bcaa52a8a7b45a74737ce41bd"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-depth.stdout",
+      "bytes": 283,
+      "sha256": "eba821eb17425796f33bd56cede40c9e92e598ad9ff32f6e840bbef846c33ed1"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-draw.stderr",
+      "bytes": 13069,
+      "sha256": "d8d55d91c95a34e6e30a5347e4ec6fe51280bbff6d7a9b2b1e118fcacfc20df0"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-draw.stdout",
+      "bytes": 252,
+      "sha256": "d4ef5ace9bed69518f987e3a3f34e0f52c319393951bcd93e8806939e31097e5"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-texture.stderr",
+      "bytes": 13075,
+      "sha256": "78f5530f2dbff3601a1cc604c2b256c61a123f6c5b5f9b99d4305852fe9e3b07"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-texture.stdout",
+      "bytes": 246,
+      "sha256": "cabdd6539f0f77ad7bebbf3f2064581d3e5cc445f5cd78ba03e5d12b95d80c50"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-timestamp.stderr",
+      "bytes": 13079,
+      "sha256": "09e5b5d1a02296c818e8daead7a3bce26a346ffc2a341a81ec91e8a739169acc"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-timestamp.stdout",
+      "bytes": 2618,
+      "sha256": "d7e46316054041c9ac7a49eb78a7dffe082a2e695c9bcb8f1a60384cf65e4411"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-vertex.stderr",
+      "bytes": 13073,
+      "sha256": "ade6102de18c63d6d6b808c0a98776eb08814e6bf45bf09306b0930f2c6fa2dc"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/installed-vertex.stdout",
+      "bytes": 271,
+      "sha256": "bf86c927fbdb977badafe218ae524ccbeb76c7d8ec434935679b76547107a056"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-binding.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-binding.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-buffer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-buffer.stdout",
+      "bytes": 173,
+      "sha256": "ff0c90710accb6e702ed05c5e97fd0c235b9f92ee39b8f63e5ad9d38e29f182f"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-color-pass.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-color-pass.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-depth.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-depth.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-draw.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-draw.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-texture.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-texture.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-timestamp.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-timestamp.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-vertex.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/missing-layer-vertex.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/packages.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/packages.stdout",
+      "bytes": 104,
+      "sha256": "2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-build.log",
+      "bytes": 11540,
+      "sha256": "56067c860bc552505abab600237dc67c62b12eb3af06969802b4ead48cbe9d16"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-checkout.log",
+      "bytes": 65,
+      "sha256": "fafce0afe61a9605cbc95c88d302196af0fb163a3b5b2d4f9875dddf0ecf5f60"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-configure.log",
+      "bytes": 593,
+      "sha256": "b2840934455430073ffb2838fe08deab5398602800276e8c17d290465c5a620e"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-fetch.log",
+      "bytes": 127,
+      "sha256": "54391d8ca4132941af7059aa9c5cf6b14954a9a17a2920507d1538d4175f8e71"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-init.log",
+      "bytes": 700,
+      "sha256": "9842dde5affbbd8a530125bee246db0019d77270a0c81cdd0a2a9e128d1ae9f4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-build.log",
+      "bytes": 35740,
+      "sha256": "a4b56e7d67d358922f0315c8f9b7f260644a553fcaaaece2bd45add34131d337"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-checkout.log",
+      "bytes": 55,
+      "sha256": "6dcd416b6fd94fc6de0df83f26d6dc5a46457f55199d8f6037c5624b14543b68"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-configure.log",
+      "bytes": 904,
+      "sha256": "900daa8dab720c732596acfedad1d1bde257fe5f73436bb8713b412033951712"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-fetch.log",
+      "bytes": 125,
+      "sha256": "f6b1c52453b9f3f76b29b4aa485e86966b91cb53514902289721f9b9c0233fed"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-init.log",
+      "bytes": 698,
+      "sha256": "581edc81896fcd4517fe7a0f07f40d9dd20a301cfa234d2bf0f6bda62bc7c272"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-build.log",
+      "bytes": 9005,
+      "sha256": "4db0520c3ece98a3c54d72c5c98f11090405ed782528867f4a3abf9de32eac59"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-configure.log",
+      "bytes": 840,
+      "sha256": "2c6d4ede5e7e3fa692107351248fc0a30de9ac953cc2498dd2ea6863068490e6"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-build.log",
+      "bytes": 3884,
+      "sha256": "f18caf2c251de87d1499f7ff4e3299e28f76b6a48307945d4c8659f4938a78b1"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-checkout.log",
+      "bytes": 55,
+      "sha256": "9a128d44a96fbebd5478daaeb8242e49d7e733fa3a0676948475a7cb93393a8c"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-configure.log",
+      "bytes": 604,
+      "sha256": "a914619048f2f43d9be3dab83e3cd1248fa61476e540eb821b674785b9a520d1"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-fetch.log",
+      "bytes": 138,
+      "sha256": "91eea0b59313b9d91aa89f6fd131923e4c6c52f8944fad424816a1b7720bf81b"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-init.log",
+      "bytes": 711,
+      "sha256": "b3a803d3b38a9b72cadb90fa415425600120ed6d7f6080d1724a57fe87dec450"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-checkout.log",
+      "bytes": 55,
+      "sha256": "850f081411e3f8b2d40e6820467bf26f80d9377d83fb4ebba8dcee334d6fbecf"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-fetch.log",
+      "bytes": 137,
+      "sha256": "4467b68a2e55a84117b69a665b72fa0f661017bc3e9cc212df17f1cfe4dae604"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-init.log",
+      "bytes": 710,
+      "sha256": "ef3d826e4df1765d0d536369846198d7221200d90a1571e0eac19d4580373326"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/commands.json",
+      "bytes": 14214,
+      "sha256": "1ba519cc7f0a666a933793ef0757f53a6f119c650999b1d3c0d7338fa32e771c"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/layer-build.log",
+      "bytes": 15797,
+      "sha256": "b241b24d0c9754d088745beaec1965eb4f72db08fa2ab20a0b6559fa87088820"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/layer-configure.log",
+      "bytes": 620,
+      "sha256": "d5a3528734b552919c410bf3e9f0b9b87127416ac09a8291f2b90d62b053a941"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/receipt.json",
+      "bytes": 10774,
+      "sha256": "f875e604323e5f9ee281e22949cee8d6898c8ba675a57ac3518a60cd5865cb2e"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-build.log",
+      "bytes": 473,
+      "sha256": "3585348c9007b538b39f54e8b587f5118526e48624b3d12ac2674dad800a4e42"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-checkout.log",
+      "bytes": 46,
+      "sha256": "8a3386e13581fbf0206eac053bd955d237695199cab4b211c9de679d78247563"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-configure.log",
+      "bytes": 968,
+      "sha256": "f61876fc4b3cb4905aec9eeb13c763c5bc8905da1f176ae67fc5c5b433bc6e69"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-fetch.log",
+      "bytes": 128,
+      "sha256": "5403082df6c3e06f72882b6a16549e227bd881543a51ac149f613ef724a6197a"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-init.log",
+      "bytes": 705,
+      "sha256": "7a910f938e40348398c80024cb2653597f9d076490446342dd91e38bce0ee533"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/sdk-cache.txt",
+      "bytes": 16818,
+      "sha256": "697cb2830c6031d1ebf89f91e956c00e72b4bc85b2aa680203313e1709454146"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/sdk-compile-commands.json",
+      "bytes": 14870,
+      "sha256": "f4920f9e7e9ecd55511690863d3277dfffd940fbdc8e5a6dac785074de09ccf8"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/settings/vk_layer_settings.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "97e50ff4f91799fabe2e43555b56d9b45826b826ca1b81b9a2a7d68ee79de336"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/texture-ctest.xml",
+      "bytes": 1474,
+      "sha256": "9cf0a858c085921827f21b40e6d9270113ae046c710d3bb623524735da510664"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/timestamp-ctest.xml",
+      "bytes": 1478,
+      "sha256": "babd82204126c4bdcb62c30a84032a5885cd726ba9ec622d13e386c8f6f9da0a"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/vertex-ctest.xml",
+      "bytes": 1472,
+      "sha256": "68b572b01731494018b0b168ffbb96e771b9131be10e1a7a13cbff766c50bdcf"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/vulkaninfo.stderr",
+      "bytes": 218,
+      "sha256": "df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/vulkaninfo.stdout",
+      "bytes": 1913,
+      "sha256": "8a0e39834f4be6f16d8b3cd3b5413f7ddf0d159453d44dd4e789151fa2536892"
+    }
+  ]
+}
