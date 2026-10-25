@@ -1,0 +1,438 @@
+{
+  "schema_version": 1,
+  "task": "P2-ACC-01",
+  "task_status": "todo",
+  "gate": "required",
+  "resumed_by_user": true,
+  "source_commit": "a93af3b52719dfb9402081cf4b633351d6057928",
+  "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "original_policy_preserved": true,
+  "policy_sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba",
+  "accepted": false,
+  "overall_result": "rejected: full GBV private growth guard during warmup",
+  "started_utc": "2026-10-25T13:49:08.477779+00:00",
+  "completed_utc": "2026-10-25T14:10:22.579873+00:00",
+  "results": [
+    {
+      "mode": "gpu",
+      "adapter_id": 96751,
+      "native_exit": 0,
+      "runner_exit": 0,
+      "measured_seconds": 900.0409438,
+      "elapsed_seconds": 930.0818116,
+      "frames": 98088,
+      "full_images": 294264,
+      "verified_buffer_bytes": 25713180672,
+      "status": "passed",
+      "stop_reason": "completed",
+      "private_baseline_bytes": 88387584,
+      "private_final_bytes": 111747072,
+      "private_growth_bytes": 23359488,
+      "owned_after_drain": 0,
+      "public_memory_budget": {
+        "recorded": true,
+        "segments": {
+          "local": {
+            "snapshots": 369,
+            "available": 369,
+            "unsupported": 0,
+            "stable_native_matches": 369,
+            "unstable_native_brackets": 0
+          },
+          "nonlocal": {
+            "snapshots": 369,
+            "available": 369,
+            "unsupported": 0,
+            "stable_native_matches": 369,
+            "unstable_native_brackets": 0
+          }
+        }
+      },
+      "accepted": true,
+      "metrics": {
+        "private_bytes": {
+          "supported": true,
+          "median_drift": 3803136.0,
+          "slope_per_minute": 690346.0903716102,
+          "range": 7548928,
+          "tail_checkpoint_maximum": 111747072
+        },
+        "handles": {
+          "supported": true,
+          "median_drift": 0.0,
+          "slope_per_minute": -0.07760635224270296,
+          "range": 2,
+          "tail_checkpoint_maximum": 367
+        },
+        "gpu_local_bytes": {
+          "supported": true,
+          "median_drift": 0.0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 11808768
+        },
+        "gpu_nonlocal_bytes": {
+          "supported": true,
+          "median_drift": 0.0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 29503488
+        }
+      },
+      "drained_samples": 181,
+      "tail_samples": 91
+    },
+    {
+      "mode": "validation",
+      "adapter_id": 96751,
+      "native_exit": 2,
+      "runner_exit": 1,
+      "measured_seconds": 0,
+      "elapsed_seconds": 9.3977073,
+      "frames": 608,
+      "full_images": 1824,
+      "verified_buffer_bytes": 159383552,
+      "status": "aborted",
+      "stop_reason": "private_growth_limit",
+      "private_baseline_bytes": 140677120,
+      "private_final_bytes": 682496000,
+      "private_growth_bytes": 541818880,
+      "owned_after_drain": 0,
+      "public_memory_budget": {
+        "recorded": true,
+        "segments": {
+          "local": {
+            "snapshots": 7,
+            "available": 7,
+            "unsupported": 0,
+            "stable_native_matches": 7,
+            "unstable_native_brackets": 0
+          },
+          "nonlocal": {
+            "snapshots": 7,
+            "available": 7,
+            "unsupported": 0,
+            "stable_native_matches": 7,
+            "unstable_native_brackets": 0
+          }
+        }
+      },
+      "original_analyzer_rejection": "Missing evidence records",
+      "accepted": false
+    },
+    {
+      "mode": "warp",
+      "adapter_id": 107125,
+      "native_exit": 0,
+      "runner_exit": 0,
+      "measured_seconds": 300.0235935,
+      "elapsed_seconds": 330.0773349,
+      "frames": 62728,
+      "full_images": 188184,
+      "verified_buffer_bytes": 16443768832,
+      "status": "passed",
+      "stop_reason": "completed",
+      "private_baseline_bytes": 3940352,
+      "private_final_bytes": 145874944,
+      "private_growth_bytes": 141934592,
+      "owned_after_drain": 0,
+      "public_memory_budget": {
+        "recorded": true,
+        "segments": {
+          "local": {
+            "snapshots": 129,
+            "available": 129,
+            "unsupported": 0,
+            "stable_native_matches": 129,
+            "unstable_native_brackets": 0
+          },
+          "nonlocal": {
+            "snapshots": 129,
+            "available": 129,
+            "unsupported": 0,
+            "stable_native_matches": 129,
+            "unstable_native_brackets": 0
+          }
+        }
+      },
+      "accepted": true,
+      "metrics": {
+        "private_bytes": {
+          "supported": true,
+          "median_drift": -65536,
+          "slope_per_minute": 97059.83355363394,
+          "range": 2592768,
+          "tail_checkpoint_maximum": 145911808
+        },
+        "handles": {
+          "supported": true,
+          "median_drift": 0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 201
+        },
+        "gpu_local_bytes": {
+          "supported": true,
+          "median_drift": 0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 0
+        },
+        "gpu_nonlocal_bytes": {
+          "supported": true,
+          "median_drift": 0,
+          "slope_per_minute": 0.0,
+          "range": 0,
+          "tail_checkpoint_maximum": 0
+        }
+      },
+      "drained_samples": 61,
+      "tail_samples": 31
+    }
+  ],
+  "total_frames": 161424,
+  "total_full_images": 484272,
+  "total_verified_buffer_bytes": 42316333056,
+  "inputs_unchanged": true,
+  "recorded_environment_controls_match": true,
+  "selected_adapter": {
+    "name": "NVIDIA GeForce GTX 1660 SUPER",
+    "vendor_id": 4318,
+    "device_id": 8644,
+    "pnp_sha256": "659e5ec08aa3ae4ef354d15293b5c7c186ed13faa4d455c09e9cb6f62273c897"
+  },
+  "selected_driver": {
+    "version": "32.0.16.2101",
+    "date": "2026-10-19T00:00:00.0000000Z"
+  },
+  "os": {
+    "version": "10.0.26220",
+    "build": "26220"
+  },
+  "Intel_AV_investigation_resumed": false,
+  "memory_Python_tests": 57,
+  "source_archive": {
+    "path": "benchmarks/reports/sources/memory-resumed-2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401-1720e2ab2123b1eb.zip",
+    "bytes": 117074,
+    "sha256": "1720e2ab2123b1eb28857fa2585fd0a5215bc3e51b369580149b21d7422db0a1"
+  },
+  "verification": {
+    "result": "pass",
+    "meaning": "Evidence/strict rejection verified; original three-mode memory gate remains incomplete"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/binary-identities.json",
+      "bytes": 676,
+      "sha256": "adfe0a314f71cda6d6e8bbb09af0ce3dd1aa4e3f7c9ded7457e5389f7d301ccb"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/adapters.jsonl",
+      "bytes": 706,
+      "sha256": "bf4ee1e869b992d1a37f2be1a8b44f87dc83e78bda5ff721ba8ed959e5064537"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/environment-after.json",
+      "bytes": 4428,
+      "sha256": "663b6086d57c0cc5cba2ca0e29cf5f2bf72a737e2e1f31adb386e2101c21dbe3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/environment-before.json",
+      "bytes": 4428,
+      "sha256": "bd47aac6257c768e039e27b66589e3b167f0e4e78564644300e73d8c1865db4b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/environment-comparison.json",
+      "bytes": 389,
+      "sha256": "a471a1fea477ddee5fce13ca7c7b24ec097a32ef71f0827560ece980eab6955a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/acceptance.json",
+      "bytes": 2173,
+      "sha256": "e03c10cb5fc97b2ef71192692e6f6ca5547134f1372cf2db688fac48580fe354"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/campaign.json",
+      "bytes": 1872,
+      "sha256": "3adf81f77d23e765d93ea391d48b5855cfe024608d72cb7162a21aea7b17946f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/gpu.jsonl",
+      "bytes": 472193,
+      "sha256": "57b570a50c69171b07ed93899ec837e5069fbdcae973e4dd6241c4f24b060e82"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/gpu.log",
+      "bytes": 8468,
+      "sha256": "ad18e583e3ccc1db9c2b95954543b180f26547f47f299988ba23065e5312c73c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/source/tools/analyze_memory_stress.py",
+      "bytes": 16432,
+      "sha256": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/source/tools/memory_stress_policy.json",
+      "bytes": 897,
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/source/tools/MemoryStress.cpp",
+      "bytes": 19696,
+      "sha256": "04a93ec808b009d3b0594b0c30d10915e606f67060477ae62c7cfe1726ced16f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/gpu/source/tools/run_memory_stress.py",
+      "bytes": 9981,
+      "sha256": "9bb48a27f46d392e040f4f8a8cf3a3f8e178389c83ffc55f41b4f65267449619"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/resumption.json",
+      "bytes": 9899,
+      "sha256": "095d97b53df945104b6a7154eae72fbff195bacca02cb031452f66ed7ffd13e7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/acceptance.json",
+      "bytes": 1240,
+      "sha256": "654f63039c770fab530957b3b3ff4f8e73bc284cc1aaf7f19d34831e2b87b8f5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/campaign.json",
+      "bytes": 1901,
+      "sha256": "ec7ab3194dacdc874c8bf9ef30ed6646af8f2b6afce168d8c9f847d8eba5f5f3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/source/tools/analyze_memory_stress.py",
+      "bytes": 16432,
+      "sha256": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/source/tools/memory_stress_policy.json",
+      "bytes": 897,
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/source/tools/MemoryStress.cpp",
+      "bytes": 19696,
+      "sha256": "04a93ec808b009d3b0594b0c30d10915e606f67060477ae62c7cfe1726ced16f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/source/tools/run_memory_stress.py",
+      "bytes": 9981,
+      "sha256": "9bb48a27f46d392e040f4f8a8cf3a3f8e178389c83ffc55f41b4f65267449619"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/validation.jsonl",
+      "bytes": 9656,
+      "sha256": "7a948b52ff0643190b6398996dc5a87dc01d7b1315e42f74a2a28a83c127c9f4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/validation/validation.log",
+      "bytes": 193,
+      "sha256": "0d7085c0c68145e1f2b487988530910594550e8253d219539a326e8a6b4ec01f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/acceptance.json",
+      "bytes": 2134,
+      "sha256": "8db2dd9f16c737e2089b6611d025637bd6682a9a93f3d6630e77c28da1c2077b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/campaign.json",
+      "bytes": 1877,
+      "sha256": "ba884c3f7b2fe6d8ceb6589803f83e903d7d31e5490dc994d9d30dec506dea67"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/source/tools/analyze_memory_stress.py",
+      "bytes": 16432,
+      "sha256": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/source/tools/memory_stress_policy.json",
+      "bytes": 897,
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/source/tools/MemoryStress.cpp",
+      "bytes": 19696,
+      "sha256": "04a93ec808b009d3b0594b0c30d10915e606f67060477ae62c7cfe1726ced16f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/source/tools/run_memory_stress.py",
+      "bytes": 9981,
+      "sha256": "9bb48a27f46d392e040f4f8a8cf3a3f8e178389c83ffc55f41b4f65267449619"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/warp.jsonl",
+      "bytes": 154624,
+      "sha256": "7b3166416a0d913fefb19bebb4b27db116824dede4d6e0c6b89d64d5a5a4c4b5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/native/warp/warp.log",
+      "bytes": 3029,
+      "sha256": "ff7fbb6d69808bb4baee447b28d3b3572bb4e87f8ee63624913a421b16b7f6ee"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/adapters.jsonl",
+      "bytes": 706,
+      "sha256": "bf4ee1e869b992d1a37f2be1a8b44f87dc83e78bda5ff721ba8ed959e5064537"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/full-python-receipt.json",
+      "bytes": 89582,
+      "sha256": "bd303de05bdba3caa7aac741150cc57e3413beba77c9c4c3cd75b9a345ad56ca"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/full-python-unittest.log",
+      "bytes": 81388,
+      "sha256": "31de97480b93a227414e42de008d656d70f3e784f1ad136778d045e82aeb2384"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/memory-python-tests.log",
+      "bytes": 11525,
+      "sha256": "5f71214007e509ed53e8bf14eaab0ff452c831cf60a6d1134d3bb783c4f7d238"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/memory-resume-build.log",
+      "bytes": 567,
+      "sha256": "d0f27f9ca19e2153848bb2dec6fabf3fe31940280a0ea27a633b75ef9c1cb2dd"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/memory-resume-configure.log",
+      "bytes": 201,
+      "sha256": "4fe29d17604fe2b691cc79abd565f5360b33c0a728184655660c089be7f7d9c8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/memory-resume-enumerator-build.log",
+      "bytes": 295,
+      "sha256": "f094eac7d3e1943d7488719cadced38a1b099d54ba4b93a5aca66984571e0880"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/memory-resume-enumerator-configure.log",
+      "bytes": 628,
+      "sha256": "7ac2f8e0de9fc0e2e79b394a590f673f1a16f188a48e4e8d9fabd99d15e5a9bf"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/memory-resume-install.log",
+      "bytes": 1940,
+      "sha256": "8428293555fa42c64c0de2cadc57b76a5168b6c8ca804c13e716d6e519a6378a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/setup/prior-build-receipt.json",
+      "bytes": 496,
+      "sha256": "be8499955d5cdca2f8bca7db5e267636541cebaa12de818e43722a6bbb7605a0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/source-manifest.json",
+      "bytes": 7181,
+      "sha256": "fc3e49fdeeed9d0c4a1a67a3a43747d5e4521f009b73523e5b81ca93122192be"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-memory-resumed/verify_evidence.py",
+      "bytes": 9927,
+      "sha256": "9e2e168b7b9b7f24d591ac1e20a8c97e603aa68bd0f4da6a616bf63b7bd60abb"
+    }
+  ],
+  "full_Python_tests": 654,
+  "historical_validation_scope": "Exact source ZIP validators and policy restored byte-for-byte; original SDK fingerprint is not normalized or reassigned"
+}

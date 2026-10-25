@@ -22,7 +22,7 @@
     {
       "id": 2,
       "title": "D3D12 core·잔여 수용",
-      "scope": "구현·자동 회귀는 완료 근거를 유지. 장시간 메모리/Intel AV는 보류, 실제 표시·물리 손실 수용은 별도 미완료."
+      "scope": "구현·자동 회귀는 완료 근거를 유지. 장시간 메모리는 사용자 지시로 재개했으며 Intel AV는 별도 보류. 실제 표시·물리 사건 수용도 별도 미완료."
     },
     {
       "id": 3,
@@ -465,15 +465,16 @@
       "phase": 2,
       "group": "P2-ACC",
       "title": "장시간 메모리 수용",
-      "status": "deferred",
-      "gate": "deferred",
+      "status": "todo",
+      "gate": "required",
       "depends_on": [],
-      "work": "기존 실패 관측과 정책을 보존한다. 자동 재개하지 않는다.",
-      "done_when": "사용자가 재개한 뒤 원래 정책의 실제 수용 증거가 있어야 함.",
+      "work": "2026-10-25 사용자 명시 재개. 현재 SDK의 NVIDIA GPU 900초와 WARP 300초는 원래 기준 통과. Full GBV는 warmup 9.398초/608 frames에서 baseline 대비 516.719MiB 증가로 512MiB guard 중단. 정책·입력·관측 환경을 보존했고 전체 세 모드 수용은 실패해 필수 미완료다. Intel AV 원인 조사는 별도 보류.",
+      "done_when": "원래 정책의 GPU 900초·full GBV 300초·WARP 300초, 각 30초 warmup·참조·정상 오류 0·메모리 plateau·동일 입력과 장치·환경의 실제 수용 증거. 기준 완화나 짧은 진단으로 대체하지 않음.",
       "evidence": [
-        "docs/PHASE2_MEMORY_CAMPAIGN_REPORT.md"
-      ],
-      "reason": "2026-10-23 사용자 지시로 보류. 완료·하드웨어 원인 확정 아님."
+        "docs/PHASE2_MEMORY_CAMPAIGN_REPORT.md",
+        "docs/PHASE2_MEMORY_RESUMPTION_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase2-memory-resumed/summary.json"
+      ]
     },
     {
       "id": "P2-ACC-02",

@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "task": "P2-ACC-01",
+  "started_utc": "2026-10-25T13:49:08.477779+00:00",
+  "source_commit": "a93af3b52719dfb9402081cf4b633351d6057928",
+  "user_resumption": "2026-10-25 explicit user request to resume P2-ACC-01; Intel AV investigation remains deferred",
+  "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "policy_sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba",
+  "hardware": {
+    "event": "adapter",
+    "adapter_id": 96751,
+    "name": "NVIDIA GeForce GTX 1660 SUPER",
+    "software": false,
+    "vendor_id": 4318,
+    "device_id": 8644,
+    "dedicated_video_bytes": 6255804416,
+    "shared_system_bytes": 51293798400
+  },
+  "warp": {
+    "event": "adapter",
+    "adapter_id": 107125,
+    "name": "Microsoft Basic Render Driver",
+    "software": true,
+    "vendor_id": 5140,
+    "device_id": 140,
+    "dedicated_video_bytes": 0,
+    "shared_system_bytes": 51293798400
+  },
+  "guard_MiB": 512,
+  "original_policy_preserved": true,
+  "serialized": true,
+  "accepted": false,
+  "status": "rejected",
+  "cases": [
+    {
+      "mode": "gpu",
+      "adapter_id": 96751,
+      "runner_exit": 0,
+      "wall_seconds": 930.9380000000001,
+      "inputs_unchanged": true,
+      "acceptance": {
+        "accepted": false,
+        "diagnostic_only": false,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "policy_sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba",
+        "continuous_peak_claim": false,
+        "campaigns": [
+          {
+            "mode": "gpu",
+            "adapter_id": 96751,
+            "frames": 98088,
+            "full_images": 294264,
+            "verified_buffer_bytes": 25713180672,
+            "functional_references_passed": true,
+            "validation_errors": 0,
+            "status": "passed",
+            "accepted": true,
+            "public_memory_budget": {
+              "recorded": true,
+              "segments": {
+                "local": {
+                  "snapshots": 369,
+                  "available": 369,
+                  "unsupported": 0,
+                  "stable_native_matches": 369,
+                  "unstable_native_brackets": 0
+                },
+                "nonlocal": {
+                  "snapshots": 369,
+                  "available": 369,
+                  "unsupported": 0,
+                  "stable_native_matches": 369,
+                  "unstable_native_brackets": 0
+                }
+              }
+            },
+            "measured_seconds": 900.0409438,
+            "drained_samples": 181,
+            "tail_samples": 91,
+            "owned_after_drain": 0,
+            "metrics": {
+              "private_bytes": {
+                "supported": true,
+                "median_drift": 3803136.0,
+                "slope_per_minute": 690346.0903716102,
+                "range": 7548928,
+                "tail_checkpoint_maximum": 111747072
+              },
+              "handles": {
+                "supported": true,
+                "median_drift": 0.0,
+                "slope_per_minute": -0.07760635224270296,
+                "range": 2,
+                "tail_checkpoint_maximum": 367
+              },
+              "gpu_local_bytes": {
+                "supported": true,
+                "median_drift": 0.0,
+                "slope_per_minute": 0.0,
+                "range": 0,
+                "tail_checkpoint_maximum": 11808768
+              },
+              "gpu_nonlocal_bytes": {
+                "supported": true,
+                "median_drift": 0.0,
+                "slope_per_minute": 0.0,
+                "range": 0,
+                "tail_checkpoint_maximum": 29503488
+              }
+            }
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "mode": "validation",
+      "adapter_id": 96751,
+      "runner_exit": 1,
+      "wall_seconds": 10.344000000000051,
+      "inputs_unchanged": true,
+      "acceptance": {
+        "accepted": false,
+        "diagnostic_only": false,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "policy_sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba",
+        "continuous_peak_claim": false,
+        "campaigns": [
+          {
+            "mode": "validation",
+            "adapter_id": 96751,
+            "frames": 608,
+            "full_images": 1824,
+            "verified_buffer_bytes": 159383552,
+            "functional_references_passed": true,
+            "validation_errors": 0,
+            "status": "aborted",
+            "accepted": false,
+            "public_memory_budget": {
+              "recorded": true,
+              "segments": {
+                "local": {
+                  "snapshots": 7,
+                  "available": 7,
+                  "unsupported": 0,
+                  "stable_native_matches": 7,
+                  "unstable_native_brackets": 0
+                },
+                "nonlocal": {
+                  "snapshots": 7,
+                  "available": 7,
+                  "unsupported": 0,
+                  "stable_native_matches": 7,
+                  "unstable_native_brackets": 0
+                }
+              }
+            }
+          }
+        ],
+        "errors": [
+          {
+            "mode": "validation",
+            "error": "Private growth guard aborted: validation"
+          }
+        ]
+      }
+    },
+    {
+      "mode": "warp",
+      "adapter_id": 107125,
+      "runner_exit": 0,
+      "wall_seconds": 330.4380000000001,
+      "inputs_unchanged": true,
+      "acceptance": {
+        "accepted": false,
+        "diagnostic_only": false,
+        "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+        "policy_sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba",
+        "continuous_peak_claim": false,
+        "campaigns": [
+          {
+            "mode": "warp",
+            "adapter_id": 107125,
+            "frames": 62728,
+            "full_images": 188184,
+            "verified_buffer_bytes": 16443768832,
+            "functional_references_passed": true,
+            "validation_errors": 0,
+            "status": "passed",
+            "accepted": true,
+            "public_memory_budget": {
+              "recorded": true,
+              "segments": {
+                "local": {
+                  "snapshots": 129,
+                  "available": 129,
+                  "unsupported": 0,
+                  "stable_native_matches": 129,
+                  "unstable_native_brackets": 0
+                },
+                "nonlocal": {
+                  "snapshots": 129,
+                  "available": 129,
+                  "unsupported": 0,
+                  "stable_native_matches": 129,
+                  "unstable_native_brackets": 0
+                }
+              }
+            },
+            "measured_seconds": 300.0235935,
+            "drained_samples": 61,
+            "tail_samples": 31,
+            "owned_after_drain": 0,
+            "metrics": {
+              "private_bytes": {
+                "supported": true,
+                "median_drift": -65536,
+                "slope_per_minute": 97059.83355363394,
+                "range": 2592768,
+                "tail_checkpoint_maximum": 145911808
+              },
+              "handles": {
+                "supported": true,
+                "median_drift": 0,
+                "slope_per_minute": 0.0,
+                "range": 0,
+                "tail_checkpoint_maximum": 201
+              },
+              "gpu_local_bytes": {
+                "supported": true,
+                "median_drift": 0,
+                "slope_per_minute": 0.0,
+                "range": 0,
+                "tail_checkpoint_maximum": 0
+              },
+              "gpu_nonlocal_bytes": {
+                "supported": true,
+                "median_drift": 0,
+                "slope_per_minute": 0.0,
+                "range": 0,
+                "tail_checkpoint_maximum": 0
+              }
+            }
+          }
+        ],
+        "errors": []
+      }
+    }
+  ],
+  "errors": [
+    {
+      "mode": "validation",
+      "errors": [
+        {
+          "mode": "validation",
+          "error": "Private growth guard aborted: validation"
+        }
+      ],
+      "runner_exit": 1
+    }
+  ],
+  "inputs_unchanged": true,
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\tools\\memory_stress_policy.json": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba",
+    "D:\\source\\GraphicsSDK\\tools\\run_memory_stress.py": "9bb48a27f46d392e040f4f8a8cf3a3f8e178389c83ffc55f41b4f65267449619",
+    "D:\\source\\GraphicsSDK\\tools\\MemoryStress.cpp": "04a93ec808b009d3b0594b0c30d10915e606f67060477ae62c7cfe1726ced16f",
+    "D:\\source\\GraphicsSDK\\tools\\analyze_memory_stress.py": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\GraphicsSDKCore.lib": "14e09ea926bacdd412d9065199667ce2a97c37c325cb6b95ca30b6fc37993124",
+    "D:\\source\\GraphicsSDK\\out\\core\\Release\\gfx_memory_stress.exe": "c807a1afbe62cfe952429ed9fad8eac257e21e0fd6e59dfa2cf1c7ead60f5d4b",
+    "D:\\source\\GraphicsSDK\\out\\memory-resume-presentation\\Release\\gfx_presentation.exe": "8fab7d224769b476ab2bb702d272acd2b19e37628d8d8d9906f9ca7a419a2a3c",
+    "D:\\source\\GraphicsSDK\\out\\resume_p2_memory.py": "f77c4cbfe133ceaab66236da41b1cb70ace8e39bdc1fece8a15386eb03ab2cf0"
+  },
+  "recorded_environment_controls_match": true,
+  "completed_utc": "2026-10-25T14:10:22.579873+00:00"
+}

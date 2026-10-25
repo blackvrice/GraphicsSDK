@@ -139,7 +139,7 @@ def render(data, ids):
     else:
         lines += ['자동 선택 가능한 필수 작업이 없다. 미충족 선행 조건·환경·범위 결정·최종 수용 상태를 확인한다.', '']
     lines += ['## 변경하지 않는 경계', '',
-              '- 장시간 메모리 수용과 과거 Intel AV 조사는 사용자 지시에 따라 보류한다. 완료나 하드웨어 원인 확정으로 표시하지 않는다.',
+              '- 보류 수용 항목: ' + (', '.join(t['id'] + ' (' + t['title'] + ')' for t in ids.values() if t['id'] in ('P2-ACC-01', 'P2-ACC-02') and t['status'] == 'deferred') or '없음') + '. 각 작업의 재개·수용 상태를 따르며 하드웨어 원인 확정으로 표시하지 않는다.',
               '- Windows Vulkan의 기본 그래픽스 기능과 최근 생성/로더/할당 장애 검증은 완료 근거를 보존한다. 미완료 Linux 검증과 혼합하지 않는다.',
               '- 버퍼 풀은 실험 후보다. sparse 예약 6.2배 관측은 유지하며 제품 dedicated 기본 정책은 그대로다. 후보 채택은 Phase 6의 별도 결정이다.',
               '- DXC/일반 reflection/MSL 변환은 Phase 5, allocator/upload ring/cache 최적화는 Phase 6, 전체 배포는 Phase 7이다. Linux native 설치 smoke 등 Phase 3 수용에 필요한 좁은 작업은 해당 ID에서 검사한다.',
