@@ -1,0 +1,39 @@
+[
+  {
+    "name": "windows-drivers",
+    "argv": [
+      "powershell",
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "\n[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)\n$supportOs = Get-CimInstance Win32_OperatingSystem\n$supportGpus = @(Get-CimInstance Win32_VideoController | ForEach-Object {\n    $supportVendor = [regex]::Match($_.PNPDeviceID, 'VEN_([0-9A-Fa-f]{4})').Groups[1].Value\n    $supportDevice = [regex]::Match($_.PNPDeviceID, 'DEV_([0-9A-Fa-f]{4})').Groups[1].Value\n    [pscustomobject]@{name=$_.Name;driver_version=$_.DriverVersion;vendor_id=$supportVendor;device_id=$supportDevice}\n})\n[pscustomobject]@{os_version=$supportOs.Version;os_build=$supportOs.BuildNumber;architecture=$supportOs.OSArchitecture;adapters=$supportGpus} | ConvertTo-Json -Depth 4\n"
+    ],
+    "returncode": 0,
+    "seconds": 1.1410000000000764
+  },
+  {
+    "name": "native-wsi-query",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\wsi-probe\\build\\Release\\probe.exe"
+    ],
+    "returncode": 0,
+    "seconds": 0.7970000000000255
+  },
+  {
+    "name": "presentation-driver",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-creation-product\\Release\\gfx_vulkan_presentation_tests.exe"
+    ],
+    "returncode": 0,
+    "seconds": 2.921999999999798
+  },
+  {
+    "name": "presentation-validation",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\vulkan-creation-product\\Release\\gfx_vulkan_presentation_tests.exe",
+      "--validation"
+    ],
+    "returncode": 0,
+    "seconds": 2.8589999999999236
+  }
+]

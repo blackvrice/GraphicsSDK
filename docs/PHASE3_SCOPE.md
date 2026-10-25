@@ -70,7 +70,7 @@
 | `P3-CAP-03` loss injection | 조건부, 초기 subset에서는 미지원 유지 | D3D12의 opt-in native 제거 시험을 Vulkan에 동일 기능으로 주장하지 않는다. 선택 시 시험 방식과 native/합성 차이를 구현·검증. 원래 loss 처리 요구와 실제 TDR 수용을 제거하지 않음 |
 | `P3-CAP-04` OS memory budget | 조건부, 공개 API의 Unsupported 유지 | 공개 계약은 정확한 adapter/process의 usage·budget·예약 필드다. heap capacity나 SDK 소유 bytes로 성공을 합성할 수 없다. 같은 의미를 제공할 근거가 확보되면 별도 구현 검토. 검토 작업 자체는 미완료 유지 |
 | `P3-CAP-07` GPU-assisted validation | 조건부, 초기 subset에서는 추가하지 않음 | 필수 검증은 실제 core+sync validation과 오류 검출 controls다. GPU-assisted는 별도 계측/오류 control 경로가 필요하고 기존 sync validation 결과로 대체할 수 없음 |
-| `P3-CAP-05` Intel 출력 확대, `P3-CAP-06` 추가 GPU/driver | **이번 작업에서 결정하지 않음** | `P3-SCP-02`의 실제 GPU·driver·출력 지원 조합 및 fallback 정책 작업으로 유지. 특정 driver 기능 부재와 과거 Intel AV 원인을 연결하지 않음 |
+| `P3-CAP-05` Intel 출력 확대, `P3-CAP-06` 추가 GPU/driver | **후속 `P3-SCP-02`에서 정책 결정 완료, 두 구현/검증 작업은 미완료 유지** | [Windows 지원 정책](PHASE3_WINDOWS_SUPPORT.md)의 정확한 조합을 초기 후보로 제한하고 legacy fallback은 미채택. 범위 확대는 해당 ID의 새 근거 필요. 특정 driver 기능 부재와 과거 Intel AV 원인을 연결하지 않음 |
 
 메모리 수용·Intel AV 원인 조사는 사용자 지시에 따른 보류를 유지한다. 하드웨어 원인 확정이나 완료 판정으로 바꾸지 않는다. Pooling/upload ring/cache 등 성능 정책은 Phase 6이며 marker 등 필수 기능을 대신하지 않는다.
 

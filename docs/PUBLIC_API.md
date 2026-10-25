@@ -435,3 +435,5 @@ present는 host 대기가 있는 초기 구현이며 present 완료 펜스는 �
 현재 D3D12/Vulkan의 capability별 조건, 포맷·동기화·미지원 API와 후속 검사 ID는
 [Phase 3 지원 범위표](PHASE3_SCOPE.md)에 정리한다. `DeviceCaps`에는 debug marker와
 OS memory budget 지원 필드가 없으며 해당 API의 Result로 지원 여부를 구분한다.
+정확한 Windows GPU/driver 출력 조합과 fallback 결정은
+[Windows Vulkan 지원 정책](PHASE3_WINDOWS_SUPPORT.md)에 기록한다.

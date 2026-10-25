@@ -10,6 +10,8 @@ backend when enabled; Win32 presentation requires the completion-fence capabilit
 The [D3D12/Vulkan support matrix](PHASE3_SCOPE.md) separates current capability/API
 contracts, required gaps and conditional features. Vulkan debug markers remain a
 required Phase 3 task; Linux native execution and WSI acceptance remain pending.
+The [Windows GPU/driver support policy](PHASE3_WINDOWS_SUPPORT.md) records the
+tested NVIDIA presentation and Intel unsupported combinations, plus fallback decisions.
 
 ## Upload CPU diagnostics
 
