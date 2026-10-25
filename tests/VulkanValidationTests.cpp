@@ -12,6 +12,7 @@
 #include <Windows.h>
 #else
 #include <dlfcn.h>
+#include <link.h>
 #endif
 
 namespace {
@@ -97,6 +98,18 @@ struct Probe {
         if (const auto expected = std::getenv("GFX_EXPECT_VULKAN_LAYER"))
             check(std::filesystem::equivalent(path, expected), "Loaded validation DLL matches frozen expected runtime");
 #endif
+        #ifndef _WIN32
+        std::vector<std::filesystem::path> layers;
+        dl_iterate_phdr([](dl_phdr_info* module, std::size_t, void* user) {
+            if (module->dlpi_name && std::filesystem::path(module->dlpi_name).filename() == "libVkLayer_khronos_validation.so")
+                static_cast<std::vector<std::filesystem::path>*>(user)->emplace_back(module->dlpi_name);
+            return 0;
+        }, &layers);
+        check(layers.size() == 1, "Exactly one native validation shared library is loaded");
+        std::cout << "loaded_layer=" << std::filesystem::canonical(layers.front()).generic_string() << std::endl;
+        if (const auto expected = std::getenv("GFX_EXPECT_VULKAN_LAYER"))
+            check(std::filesystem::equivalent(layers.front(), expected), "Loaded validation shared library matches frozen expected runtime");
+        #endif
 #define LOAD(n) n = reinterpret_cast<PFN_vk##n>(get(instance, "vk" #n)); check(n != nullptr, "vk" #n);
         INSTANCE(LOAD)
 #undef LOAD

@@ -1,0 +1,65 @@
+name: Linux Vulkan core and sync validation (software ICD)
+on:
+  push:
+    paths:
+      - '.github/workflows/linux-vulkan-validation.yml'
+      - 'tools/prepare_linux_validation.py'
+      - 'tools/run_linux_validation.py'
+      - 'tools/linux-vulkan-validation.json'
+      - 'tools/vulkan-validation.lock.json'
+      - 'tools/run_linux_*.py'
+      - 'tests/Vulkan*'
+      - 'tests/fixtures/**'
+      - 'tests/vulkan_consumer/**'
+      - 'tests/linux_vulkan_device/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+  pull_request:
+    paths:
+      - '.github/workflows/linux-vulkan-validation.yml'
+      - 'tools/prepare_linux_validation.py'
+      - 'tools/run_linux_validation.py'
+      - 'tools/linux-vulkan-validation.json'
+      - 'tools/vulkan-validation.lock.json'
+      - 'tools/run_linux_*.py'
+      - 'tests/Vulkan*'
+      - 'tests/fixtures/**'
+      - 'tests/vulkan_consumer/**'
+      - 'tests/linux_vulkan_device/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  software-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - name: Prepare native software Vulkan runtime and compiler
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools
+      - name: Build pinned external VVL 1.3.290 and prerequisites
+        run: python3 tools/prepare_linux_validation.py
+      - name: Run required core/sync suites and isolated error controls
+        run: python3 tools/run_linux_validation.py
+      - name: Preserve evidence without external runtime binaries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-vulkan-validation-${{ github.sha }}
+          path: out/linux-vulkan-validation-evidence/
+          if-no-files-found: error
+          retention-days: 14
