@@ -290,3 +290,8 @@
 # Preserve Linux buffer contract diagnostics and artifact hashes.
 /benchmarks/reports/2026-10-25-phase3-linux-transfer/** -text whitespace=cr-at-eol
 /benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+# Keep the Linux texture runner reproducible and preserve its raw diagnostics.
+/tools/run_linux_texture.py text eol=lf
+/benchmarks/reports/2026-10-25-phase3-linux-texture/** -text whitespace=cr-at-eol
+/benchmarks/reports/validation/2026-10-25-phase3-linux-texture/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
