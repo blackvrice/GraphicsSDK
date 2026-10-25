@@ -61,7 +61,7 @@ def main():
     vendor = {(headers_root / row['path']).resolve(): row['sha256'] for row in policy['dependency']['reviewed_headers']}
     require(policy['dependency']['commit'] == HEADERS, 'Policy pin differs')
     for path, digest in vendor.items():
-        require(audit.sha(path) == digest, 'Reviewed Vulkan header changed')
+        require(audit.sha(path) == digest, 'Reviewed native Vulkan header changed: ' + str(path))
     fp = sdk_fingerprint(ROOT)
     run('compiler-version', ['g++-14', '--version'])
     run('linker-version', ['ld', '--version'])
