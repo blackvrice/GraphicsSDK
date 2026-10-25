@@ -27,6 +27,9 @@ its unchanged SDK archive retains the separate required-validation evidence abov
 platform with zero errors, failures or skips. Historical source snapshots and actual
 checkout byte identities remain separate; the SDK C++ implementation is unchanged.
 Physical GPU and WSI acceptance remain pending.
+The [physical Linux GPU runner and manual CI](PHASE3_LINUX_HARDWARE_READINESS.md)
+are prepared; actual software-device rejection is verified. The physical positive
+path remains unexecuted because no reachable Linux GPU target has been identified.
 The [Windows GPU/driver support policy](PHASE3_WINDOWS_SUPPORT.md) records the
 tested NVIDIA presentation and Intel unsupported combinations, plus fallback decisions.
 

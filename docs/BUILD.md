@@ -39,6 +39,9 @@ CPU wrap 변환을 구분해 통과했다. [P3-LNX-11](PHASE3_LINUX_VALIDATION_R
 고지는 전용 도구의 설치 후 패키징 단계에서 추가한다. [P3-LNX-14](PHASE3_PYTHON_CI_REPORT.md)에서는
 새 Windows/Linux CI의 전체 Python 640개씩을 오류·실패·건너뜀 0으로 통과했다. 과거 source ZIP 검증과
 현재 checkout identity를 분리하고 Windows 경로 별칭을 수정했다. 물리 GPU(P3-LNX-15)는 별도 잔여다.
+[P3-LNX-15 실행 준비](PHASE3_LINUX_HARDWARE_READINESS.md)에서는 하드웨어 전용 도구·수동 CI와 실제
+software 장치 거부를 검증했다. 현재 전체 Python은 두 플랫폼 각각 654개가 통과했으며,
+실제 Linux GPU 접속 대상이 없어 물리 GPU 정상 suite·validation 수용은 미완료다.
 
 현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).

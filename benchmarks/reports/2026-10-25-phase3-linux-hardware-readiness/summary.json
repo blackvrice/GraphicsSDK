@@ -1,0 +1,466 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-15",
+  "task_status": "todo",
+  "source_commit": "0ee90428c04ebd18c2e248dbb1ea1fdc5c6ab818",
+  "scope": "Execution readiness and actual software rejection only; physical positive path unexecuted",
+  "hardware_GPU_accepted": false,
+  "physical_preflight_passed": false,
+  "physical_positive_path_executed": false,
+  "hardware_suite_executions": 0,
+  "required_environment": "Reachable physical Linux GPU SSH target or registered GPU runner, physical ICD path and exact UUID set",
+  "software_rejection_CI": {
+    "id": 40197045560,
+    "job_id": 121180037437,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40197045560",
+    "conclusion": "success",
+    "expected_preflight_exit": 1
+  },
+  "software_observation": {
+    "schema_version": 1,
+    "case": "selection",
+    "SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+    "assertions": 32,
+    "device_creations": 3,
+    "software_adapters": 1,
+    "hardware_adapters": 0,
+    "loader_path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+    "adapters": [
+      {
+        "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "id": "5892941257450743403",
+        "vendor_id": 65541,
+        "device_id": 0,
+        "device_type": 4,
+        "api_version_raw": 4211006,
+        "driver_version_raw": 104865800,
+        "device_uuid": "6d65736132352e322e382d3075627500",
+        "driver_uuid": "6c6c766d706970655555494400000000"
+      }
+    ],
+    "runtime_modules": [
+      "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+      "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so"
+    ],
+    "rejections": [
+      {
+        "case": "software-kind-mismatch",
+        "code": "InvalidArgument",
+        "native": 0
+      },
+      {
+        "case": "backend-id-mismatch",
+        "code": "InvalidArgument",
+        "native": 0
+      },
+      {
+        "case": "missing-exact-id-no-fallback",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "zero-id-no-fallback",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "hardware-default-never-falls-back-to-software",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "uncompiled-backend-enumeration",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "unsupported-loss-opt-in",
+        "code": "Unsupported",
+        "native": 0
+      }
+    ]
+  },
+  "preflight": {
+    "schema_version": 1,
+    "source_commit": "0ee90428c04ebd18c2e248dbb1ea1fdc5c6ab818",
+    "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+    "expected_UUIDs": [
+      "0123456789abcdef0123456789abcdef"
+    ],
+    "driver_manifest": {
+      "path": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "bytes": 135,
+      "sha256": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398"
+    },
+    "runtime_libraries": [
+      {
+        "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+        "bytes": 510592,
+        "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e"
+      },
+      {
+        "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+        "bytes": 11929384,
+        "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+      }
+    ],
+    "SDK_library": {
+      "path": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-sdk/libGraphicsSDKCore.a",
+      "bytes": 413918,
+      "sha256": "c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"
+    },
+    "probe": {
+      "path": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-probe/gfx_linux_vulkan_device",
+      "bytes": 348528,
+      "sha256": "fd2d185c7b47798f53a4d81b39522ce877031d8c74c93e5a91ce4c617cb09eb1"
+    },
+    "identity": {
+      "schema_version": 1,
+      "case": "selection",
+      "SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+      "assertions": 32,
+      "device_creations": 3,
+      "software_adapters": 1,
+      "hardware_adapters": 0,
+      "loader_path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+      "adapters": [
+        {
+          "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "id": "5892941257450743403",
+          "vendor_id": 65541,
+          "device_id": 0,
+          "device_type": 4,
+          "api_version_raw": 4211006,
+          "driver_version_raw": 104865800,
+          "device_uuid": "6d65736132352e322e382d3075627500",
+          "driver_uuid": "6c6c766d706970655555494400000000"
+        }
+      ],
+      "runtime_modules": [
+        "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+        "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so"
+      ],
+      "rejections": [
+        {
+          "case": "software-kind-mismatch",
+          "code": "InvalidArgument",
+          "native": 0
+        },
+        {
+          "case": "backend-id-mismatch",
+          "code": "InvalidArgument",
+          "native": 0
+        },
+        {
+          "case": "missing-exact-id-no-fallback",
+          "code": "Unsupported",
+          "native": 0
+        },
+        {
+          "case": "zero-id-no-fallback",
+          "code": "Unsupported",
+          "native": 0
+        },
+        {
+          "case": "hardware-default-never-falls-back-to-software",
+          "code": "Unsupported",
+          "native": 0
+        },
+        {
+          "case": "uncompiled-backend-enumeration",
+          "code": "Unsupported",
+          "native": 0
+        },
+        {
+          "case": "unsupported-loss-opt-in",
+          "code": "Unsupported",
+          "native": 0
+        }
+      ]
+    },
+    "pci": [],
+    "physical_preflight_passed": false,
+    "hardware_GPU_accepted": false,
+    "rejection": "Physical GPU required; software/CPU or empty candidate set rejected"
+  },
+  "synthetic_gate_tests": 14,
+  "manual_hardware_runs_observed": 0,
+  "common_CI": {
+    "id": 40197045611,
+    "Python_tests_per_platform": 654,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "all_previous_640_tests_retained": true
+  },
+  "native_compile_CI": {
+    "id": 40196873742,
+    "source_commit": "a8668d9a26ce4ad4780f9549493c7abaedfa3fac",
+    "CPU_tests": 22,
+    "GPU_tests": 0
+  },
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "source_inputs": [
+    {
+      "path": "tools/linux_hardware.py",
+      "bytes": 15524,
+      "sha256": "e547616047bb0f8afcf5161edb4007bbe68591fdda682a5e77095d0d38c4b02f"
+    },
+    {
+      "path": "tests/test_linux_hardware.py",
+      "bytes": 3714,
+      "sha256": "68de86b53c64aae91d111d2382ef8c550700e28fd2785c5ca4b31007768724b2"
+    },
+    {
+      "path": ".github/workflows/linux-hardware-guards.yml",
+      "bytes": 2276,
+      "sha256": "5479774f4c9901841642bbb5a90abc439b0d1fa4459f99bd5e54543c5ccbe18a"
+    },
+    {
+      "path": ".github/workflows/linux-hardware-acceptance.yml",
+      "bytes": 2156,
+      "sha256": "7c3f184969fa96951e7ca56ddab52bf7ebc22487d8f29972c685da74baea382e"
+    }
+  ],
+  "verification": {
+    "result": "pass",
+    "meaning": "Readiness/negative gate verified; this is not P3-LNX-15 hardware acceptance"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/artifact-metadata.json",
+      "bytes": 872,
+      "sha256": "76c8655d1995b665f1b8f50094400a1a8ce1a8ba2524e4fbf3e769a23c5c756e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/artifact.zip",
+      "bytes": 18057,
+      "sha256": "8fe51a844b7f84ddbe527ec2c4e998db713b416bf4c9d1ba01f54113522bdb84"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/common/linux-receipt.json",
+      "bytes": 89235,
+      "sha256": "08d390ebaf3d07223b8cd1dcdced8e90995b05808a704c7a1691550e8716282a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/common/windows-receipt.json",
+      "bytes": 89263,
+      "sha256": "4174face0afbd9ec323968f0f059d2fa36d6fbc4df3d0d01ccb93c83547cb141"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/common-job-status.json",
+      "bytes": 4359,
+      "sha256": "92fbf8eab3ded031eb1648d3f8d89f956052fd6c6fc3c72ce9f55821b0fc2a08"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/common-linux-job.log",
+      "bytes": 216873,
+      "sha256": "43bd0021f62acdc6abedd4ec6c034b3ec522a980a44bcb912a4344a5db2bd80f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/common-windows-job.log",
+      "bytes": 219344,
+      "sha256": "131e080bcc768a0ee84c61b2520b7678a71adfef1054004d11a7bdc7de6f221e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/compile-job.log",
+      "bytes": 37953,
+      "sha256": "37a587d891a714fb8e814cf5b3bdc83bb8cd7a8b9545b0b90921ecad70026d42"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/environment/commands.json",
+      "bytes": 1314,
+      "sha256": "3c435f951bd9934569794063e32c32335101201ed606e2a9fb22bbd4e121a376"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/environment/host-inventory.json",
+      "bytes": 657,
+      "sha256": "4c02b91f6ddfaebc1f868d80b1fd4400af45f3f0a5643b447fabeefcea5b81ea"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/environment/wsl-list.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/environment/wsl-list.stdout",
+      "bytes": 336,
+      "sha256": "1660c2fe5669482713e1ea7a2f22fcf1d17b1fc9b9b016a388bf59aa6d52a744"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/environment/wsl-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/environment/wsl-status.stdout",
+      "bytes": 678,
+      "sha256": "03b0c4a39d67b4284d2c23be2feafc631cac72456168ffd126dbf4c6c51adb0b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/failed-a8668d9-job.log",
+      "bytes": 38257,
+      "sha256": "291461c3bb854abb26679191dc34c7a01e967e5f7a6ce371f9f27c8d9201b430"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/guard-job-status.json",
+      "bytes": 1966,
+      "sha256": "697825f556bdfbc99b0e742bb54cafcd844d8a13c1ffdb048ce0e16c42aa1e96"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/guard-job.log",
+      "bytes": 36645,
+      "sha256": "48e5dfd54201af213fc1c4709e19ee919ef2aaadc44b918b7dc925bbe9ba66c7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/manual-run-status.json",
+      "bytes": 43,
+      "sha256": "bbefc124bde49737b1e091b45cc01a5985eb432eb599ab1b9c1bb2dcd625721f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/build-probe.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/build-probe.stdout",
+      "bytes": 5326,
+      "sha256": "09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/build-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/build-sdk.stdout",
+      "bytes": 98431,
+      "sha256": "0379b402ca803e7859379fbece85ec3ecf08467000be5ca3d3416b3b6b5fc2e3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/commands.json",
+      "bytes": 3814,
+      "sha256": "9e89a02b25049ee38c243db1366ade7ef30ab220119e76c654bd812d817a3827"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/configure-probe.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/configure-probe.stdout",
+      "bytes": 419,
+      "sha256": "b5401bdb10d5eba56cfbbaf39e103ce61c0589b9a3578d407886316a9169ec67"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/configure-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/configure-sdk.stdout",
+      "bytes": 693,
+      "sha256": "5e3a80ffeaadea429efeae2f56a769129dd32014cff1c1598dde85247646d923"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/install-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/install-sdk.stdout",
+      "bytes": 2377,
+      "sha256": "905cca739bddf280daec1cfde70950170f14f7870fca4ba1dc43ce36759347a7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-headers.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-headers.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-pci.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-source.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-source.stdout",
+      "bytes": 41,
+      "sha256": "ae692408707f7fdd5fe0727201b55c5736c9af5631e87fa65d9423d0e7402f61"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/preflight.json",
+      "bytes": 3173,
+      "sha256": "54a6d81103329e52477d0a648271e0b1e4ab903171550eb61434ab5266c152d4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/selection-1.stderr",
+      "bytes": 12329,
+      "sha256": "7ae01cb82297bf71e0172d5544f38060c82b7e4f5f1726a16c4b4ecfcc4c99ce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/selection-1.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/selection-2.stderr",
+      "bytes": 12329,
+      "sha256": "709781a46e8b50cc5bccf1c87e0a05f0f3269f0c741e645788a1fa91844bc68d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/selection-2.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/vulkaninfo.stderr",
+      "bytes": 218,
+      "sha256": "df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/native/vulkaninfo.stdout",
+      "bytes": 1821,
+      "sha256": "5cfbf74d270cfda1ea5c36a079cb06ab6d19596427f4083b624570ecee90bca6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/run-status.json",
+      "bytes": 266,
+      "sha256": "f943914199a06bf5aef0df565e5e400cf46c4014d131266345193c3642f99b9c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-hardware-readiness/verify_readiness.py",
+      "bytes": 7939,
+      "sha256": "8cd2e3ad8c38b948bb5f7d5f403a4c9d5bb2c6d5d6883d8337c415b7ebcae524"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "source_commit": "0ee90428c04ebd18c2e248dbb1ea1fdc5c6ab818",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "expected_UUIDs": [
+    "0123456789abcdef0123456789abcdef"
+  ],
+  "driver_manifest": {
+    "path": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "bytes": 135,
+    "sha256": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398"
+  },
+  "runtime_libraries": [
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+      "bytes": 510592,
+      "sha256": "e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e"
+    },
+    {
+      "path": "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+      "bytes": 11929384,
+      "sha256": "5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"
+    }
+  ],
+  "SDK_library": {
+    "path": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-sdk/libGraphicsSDKCore.a",
+    "bytes": 413918,
+    "sha256": "c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"
+  },
+  "probe": {
+    "path": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-probe/gfx_linux_vulkan_device",
+    "bytes": 348528,
+    "sha256": "fd2d185c7b47798f53a4d81b39522ce877031d8c74c93e5a91ce4c617cb09eb1"
+  },
+  "identity": {
+    "schema_version": 1,
+    "case": "selection",
+    "SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+    "assertions": 32,
+    "device_creations": 3,
+    "software_adapters": 1,
+    "hardware_adapters": 0,
+    "loader_path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+    "adapters": [
+      {
+        "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "id": "5892941257450743403",
+        "vendor_id": 65541,
+        "device_id": 0,
+        "device_type": 4,
+        "api_version_raw": 4211006,
+        "driver_version_raw": 104865800,
+        "device_uuid": "6d65736132352e322e382d3075627500",
+        "driver_uuid": "6c6c766d706970655555494400000000"
+      }
+    ],
+    "runtime_modules": [
+      "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275",
+      "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so"
+    ],
+    "rejections": [
+      {
+        "case": "software-kind-mismatch",
+        "code": "InvalidArgument",
+        "native": 0
+      },
+      {
+        "case": "backend-id-mismatch",
+        "code": "InvalidArgument",
+        "native": 0
+      },
+      {
+        "case": "missing-exact-id-no-fallback",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "zero-id-no-fallback",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "hardware-default-never-falls-back-to-software",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "uncompiled-backend-enumeration",
+        "code": "Unsupported",
+        "native": 0
+      },
+      {
+        "case": "unsupported-loss-opt-in",
+        "code": "Unsupported",
+        "native": 0
+      }
+    ]
+  },
+  "pci": [],
+  "physical_preflight_passed": false,
+  "hardware_GPU_accepted": false,
+  "rejection": "Physical GPU required; software/CPU or empty candidate set rejected"
+}

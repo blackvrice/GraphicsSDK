@@ -1093,9 +1093,12 @@
       "work": "P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/driver·exact 선택 및 공통 GPU suite를 검증한다. software/CPU 종류의 성공을 hardware 수용으로 합산하지 않는다.",
       "done_when": "관측된 물리 GPU/driver의 native 식별·선택과 버퍼/텍스처/draw/binding/depth/timestamp·정상 validation/수명 참조의 실제 실행 근거.",
       "evidence": [
-        "docs/PHASE3_LINUX_DEVICE_REPORT.md"
+        "docs/PHASE3_LINUX_DEVICE_REPORT.md",
+        "docs/PHASE3_LINUX_HARDWARE_READINESS.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-hardware-readiness/summary.json",
+        ".github/workflows/linux-hardware-acceptance.yml"
       ],
-      "requires": "실제 Linux 물리 GPU/ICD와 VVL 환경"
+      "requires": "실제 Linux 물리 GPU/ICD와 VVL 환경. 하드웨어 전용 도구·수동 CI 준비 및 software 거부 검증 완료; SSH 대상 또는 GPU runner·ICD 경로·정확한 UUID 집합 필요. 물리 정상 suite/validation 실행은 미완료."
     },
     {
       "id": "P3-WSI-01",

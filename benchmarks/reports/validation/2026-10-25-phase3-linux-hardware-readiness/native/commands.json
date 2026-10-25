@@ -1,0 +1,171 @@
+[
+  {
+    "name": "preflight-source",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.0019638029999953233,
+    "environment": {}
+  },
+  {
+    "name": "preflight-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.7976730209999943,
+    "environment": {}
+  },
+  {
+    "name": "preflight-headers",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.0019825620000020194,
+    "environment": {}
+  },
+  {
+    "name": "preflight-headers-status",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "status",
+      "--porcelain"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.14322082700000038,
+    "environment": {}
+  },
+  {
+    "name": "vulkaninfo",
+    "argv": [
+      "vulkaninfo",
+      "--summary"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.3036190110000021,
+    "environment": {}
+  },
+  {
+    "name": "configure-sdk",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan-validation",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-sdk",
+      "-DCMAKE_INSTALL_PREFIX=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-install",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 1.3553177639999987,
+    "environment": {}
+  },
+  {
+    "name": "build-sdk",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-sdk",
+      "--parallel",
+      "1",
+      "--target",
+      "GraphicsSDKCore"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 14.606644424000002,
+    "environment": {}
+  },
+  {
+    "name": "install-sdk",
+    "argv": [
+      "cmake",
+      "--install",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-sdk"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.0071927810000005366,
+    "environment": {}
+  },
+  {
+    "name": "configure-probe",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/linux_vulkan_device",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-probe",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-install",
+      "-DGFX_VULKAN_HEADERS=/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.15610210399999858,
+    "environment": {}
+  },
+  {
+    "name": "build-probe",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-probe",
+      "--parallel",
+      "1"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 2.4199845570000065,
+    "environment": {}
+  },
+  {
+    "name": "selection-1",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-probe/gfx_linux_vulkan_device",
+      "selection"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.05424063399999568,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "selection-2",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-hardware-probe/gfx_linux_vulkan_device",
+      "selection"
+    ],
+    "expected": 0,
+    "returncode": 0,
+    "seconds": 0.055396205999997505,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  }
+]
