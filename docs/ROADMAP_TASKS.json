@@ -989,15 +989,18 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "Timestamp 실행",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-05"
       ],
-      "work": "Linux queue valid bits·period·availability·wrap·query 수명 확인.",
-      "done_when": "CPU 시간을 대체하지 않은 실제 GPU 결과와 오류 계약 통과.",
-      "evidence": [],
-      "requires": "Linux timestamp 지원 GPU"
+      "work": "실제 Linux software ICD의 in-tree/설치 SDK에서 Vulkan query 기반 elapsed·availability·수명을 실행하고 native queue valid bits/period를 대조했다. Wrap/변환은 CPU math로 구분해 통과했으며 실제 counter wrap은 미재현이다. 물리 GPU 수용은 P3-LNX-15 필수 gate에 유지한다.",
+      "done_when": "CPU elapsed로 대체하지 않은 Vulkan query 기반 결과와 오류 계약 통과. 이번 근거는 software ICD이며 물리 GPU 수용은 P3-LNX-15에서 별도 필수 검증.",
+      "evidence": [
+        "docs/PHASE3_LINUX_TIMESTAMP_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-timestamp/summary.json"
+      ],
+      "requires": "Linux timestamp 지원 Vulkan runtime; 이번 수용은 software ICD, 물리 GPU는 P3-LNX-15 필수"
     },
     {
       "id": "P3-LNX-11",

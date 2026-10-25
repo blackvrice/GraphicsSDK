@@ -1,0 +1,335 @@
+[
+  {
+    "name": "source-commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.0021293769999957135
+  },
+  {
+    "name": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.8353137659999987
+  },
+  {
+    "name": "headers-commit",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.001992878000002918
+  },
+  {
+    "name": "headers-status",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "status",
+      "--porcelain"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.14305748900000026
+  },
+  {
+    "name": "packages",
+    "argv": [
+      "dpkg-query",
+      "-W",
+      "-f=${Package} ${Version}\n",
+      "libvulkan1",
+      "mesa-vulkan-drivers",
+      "vulkan-tools"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.011632229999996468
+  },
+  {
+    "name": "vulkaninfo",
+    "argv": [
+      "vulkaninfo",
+      "--summary"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 3.3914654189999993
+  },
+  {
+    "name": "configure-sdk",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 4.125007003999997
+  },
+  {
+    "name": "build-suites",
+    "argv": [
+      "cmake",
+      "--build",
+      "--preset",
+      "linux-vulkan",
+      "--target",
+      "gfx_vulkan_timestamp_tests",
+      "gfx_vulkan_timestamp_math_tests",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 27.190224084000008
+  },
+  {
+    "name": "install-sdk",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/linux-vulkan"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.01586523400000317
+  },
+  {
+    "name": "configure-identity",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/linux_vulkan_device",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-identity",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install",
+      "-DGFX_VULKAN_HEADERS=/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.16351303300000097
+  },
+  {
+    "name": "build-identity",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-identity",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 2.526288367999996
+  },
+  {
+    "name": "identity",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-identity/gfx_linux_vulkan_device",
+      "selection"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.054508761999997546
+  },
+  {
+    "name": "configure-metadata",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/linux_vulkan_timestamp",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-metadata",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install",
+      "-DGFX_VULKAN_HEADERS=/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.16334612400000026
+  },
+  {
+    "name": "build-metadata",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-metadata",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.6365809349999978
+  },
+  {
+    "name": "metadata",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-metadata/gfx_linux_timestamp_metadata"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.030502760000004514
+  },
+  {
+    "name": "ctest-math",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan",
+      "-R",
+      "^vulkan_timestamp_math$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-evidence/math-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.7609007150000053
+  },
+  {
+    "name": "configure-consumer",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_consumer",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-consumer",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.16640758500000175
+  },
+  {
+    "name": "build-consumer",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-consumer",
+      "--parallel",
+      "1",
+      "--target",
+      "vulkan_timestamp_consumer",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 2.958414418000004
+  },
+  {
+    "name": "ctest-timestamp",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan",
+      "-R",
+      "^vulkan_timestamps$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-evidence/timestamp-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.2999320240000003
+  },
+  {
+    "name": "installed-timestamp",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-consumer/vulkan_timestamp_consumer"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.9699090149999989
+  },
+  {
+    "name": "timestamp-in-tree-unknown",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_timestamp_tests",
+      "--validaton"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0018905400000051031
+  },
+  {
+    "name": "timestamp-in-tree-extra",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_timestamp_tests",
+      "--validation",
+      "extra"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.001813366000007477
+  },
+  {
+    "name": "timestamp-in-tree-missing-layer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_timestamp_tests",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.018689602999998556
+  },
+  {
+    "name": "timestamp-installed-unknown",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-consumer/vulkan_timestamp_consumer",
+      "--validaton"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0018514780000060682
+  },
+  {
+    "name": "timestamp-installed-extra",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-consumer/vulkan_timestamp_consumer",
+      "--validation",
+      "extra"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.001651456000004714
+  },
+  {
+    "name": "timestamp-installed-missing-layer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-timestamp-consumer/vulkan_timestamp_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.018373152999998865
+  }
+]

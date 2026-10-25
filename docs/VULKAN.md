@@ -15,8 +15,9 @@ required Phase 3 task. Linux software-ICD execution is verified for
 [texture transfer/texel/padding contracts](PHASE3_LINUX_TEXTURE_REPORT.md) and
 [color-pass/basic draw references](PHASE3_LINUX_DRAW_REPORT.md), plus
 [vertex/index/instance inputs and resource bindings](PHASE3_LINUX_INPUT_REPORT.md) and
-[D32/depth-only/read-only/depth-MRT references](PHASE3_LINUX_DEPTH_REPORT.md).
-Physical GPU, timestamps, normal validation and WSI acceptance remain pending.
+[D32/depth-only/read-only/depth-MRT references](PHASE3_LINUX_DEPTH_REPORT.md), plus
+[timestamp query/availability/lifetime execution and CPU wrap conversion](PHASE3_LINUX_TIMESTAMP_REPORT.md).
+Physical GPU, normal validation and WSI acceptance remain pending.
 The [Windows GPU/driver support policy](PHASE3_WINDOWS_SUPPORT.md) records the
 tested NVIDIA presentation and Intel unsupported combinations, plus fallback decisions.
 
@@ -51,7 +52,7 @@ do not include Vulkan headers, and consumers need no Vulkan SDK or import librar
 Windows loads the system `vulkan-1.dll`; Linux code loads `libvulkan.so.1` and links
 `${CMAKE_DL_LIBS}`. The loader, ICD, driver and validation layer are external
 prerequisites and are never bundled. [Native Linux compilation and CPU contracts](PHASE3_LINUX_COMPILE_REPORT.md)
-passed on Ubuntu CI. Linux device/selection, transfers, drawing, input/bindings and D32/depth execution are verified on software ICD;
+passed on Ubuntu CI. Linux device/selection, transfers, drawing, input/bindings, D32/depth and timestamp execution are verified on software ICD;
 physical GPU and full GPU/validation runtime acceptance remain pending.
 The [Linux environment inventory](PHASE3_LINUX_ENVIRONMENT.md) records the current
 Windows host's unavailable WSL path and the prerequisites for a native receipt.
