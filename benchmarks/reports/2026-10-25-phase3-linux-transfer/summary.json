@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-05",
+  "completion_scope": "Native Linux software-ICD buffer/queue/fence/lifetime contracts; physical GPU remains required P3-LNX-15",
+  "source_commit": "5f544c05b2092b3656d97a2170a3e450e6c00bd0",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "Windows_SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "workflow_run": {
+    "id": 40173473104,
+    "job_id": 121109086212,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40173473104",
+    "conclusion": "success"
+  },
+  "platform": {
+    "os_release": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 24.04.5 LTS",
+      "VERSION_ID": "24.04",
+      "VERSION": "24.04.5 LTS (Noble Numbat)",
+      "VERSION_CODENAME": "noble",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "noble",
+      "LOGO": "ubuntu-logo"
+    },
+    "kernel": "6.17.0-1022-azure",
+    "machine": "x86_64"
+  },
+  "packages": "libvulkan1 1.3.275.0-1build1\nmesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.4\nvulkan-tools 1.3.275.0+dfsg1-1\n",
+  "adapters": [
+    {
+      "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "id": "5892941257450743403",
+      "vendor_id": 65541,
+      "device_id": 0,
+      "device_type": 4,
+      "api_version_raw": 4211006,
+      "driver_version_raw": 104865800,
+      "device_uuid": "6d65736132352e322e382d3075627500",
+      "driver_uuid": "6c6c766d706970655555494400000000"
+    }
+  ],
+  "results": [
+    {
+      "kind": "in-tree-ctest",
+      "assertions": 361,
+      "transfers": 24,
+      "verified_bytes": 28521273,
+      "adapters": 1
+    },
+    {
+      "kind": "installed-consumer",
+      "assertions": 361,
+      "transfers": 24,
+      "verified_bytes": 28521273,
+      "adapters": 1
+    }
+  ],
+  "total_assertions": 722,
+  "total_transfers": 48,
+  "total_verified_payload_bytes": 57042546,
+  "CLI_rejections": 4,
+  "missing_layer_rejections": 2,
+  "software_buffer_contracts_accepted": true,
+  "hardware_GPU_accepted": false,
+  "validation_layer_success_accepted": false,
+  "WSI_accepted": false,
+  "long_memory_accepted": false,
+  "zero_poll_actual_timeout_observation": "not counted; unchanged suite accepts completed or Timeout and retries with finite wait",
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "common_CXX_suite_modified": false,
+  "native_receipt": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/receipt.json",
+    "bytes": 15907,
+    "sha256": "c473a89dfedd05d2c222bfd558b26013067a71cf27af4bb25002c2957847ed71"
+  },
+  "artifact": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/artifact.zip",
+    "bytes": 28892,
+    "sha256": "82728c71e59804f62070a5eeee9201500ae92d9a28a86bf2b0e489d58b209438"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/artifact-metadata.json",
+      "bytes": 869,
+      "sha256": "9a7153f42fc7d9d583eea6df5c2885e424c0ffbd8e661e1dbc2ce2c2618f65a5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/artifact.zip",
+      "bytes": 28892,
+      "sha256": "82728c71e59804f62070a5eeee9201500ae92d9a28a86bf2b0e489d58b209438"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/common-jobs-snapshot.json",
+      "bytes": 3758,
+      "sha256": "402af7f2d867f0acccafa13c4ae10d0646188f9d745c2c26bf53aaeec0d3efbf"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/common-portable-job.log",
+      "bytes": 314972,
+      "sha256": "cc926fb2dc355d418a3bf76fbd35b9df1324e26c3863704934cba776a1fad65e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/job-status.json",
+      "bytes": 1664,
+      "sha256": "78e4bca5f6a3ab47020e70a1b54ac140dafd0fa6227a6ffda76801b01683b830"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/job.log",
+      "bytes": 44617,
+      "sha256": "f4277274f87376538c66b648d0b4dff89781c351c640e9bd08c51ee5e40f5dd0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/build-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/build-consumer.stdout",
+      "bytes": 984,
+      "sha256": "ba22fa0e41687c8587a7bd3fa7089261ecfdbf40b7d5e08e6e4152149b11bcb1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/build-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/build-identity.stdout",
+      "bytes": 5326,
+      "sha256": "09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/build-transfer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/build-transfer.stdout",
+      "bytes": 102668,
+      "sha256": "785d91dd105a3ae158feae142815cdc2be8ce1d77ad85f72b9e83260f908277b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/commands.json",
+      "bytes": 6213,
+      "sha256": "42d19cd410d896aad521a6b286c0dfb47c1f36e7f9ba9b8e442b249905d62ea1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/configure-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/configure-consumer.stdout",
+      "bytes": 429,
+      "sha256": "75ee049471959cd65949bb7df95bfde30ff477cfd9f79cd210013db083ca9337"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/configure-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/configure-identity.stdout",
+      "bytes": 429,
+      "sha256": "bfb435cf4a2aa97724a7baef77f9f060714c6f2cc9ee8d4b6917a4f1ff924da8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/configure-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/configure-sdk.stdout",
+      "bytes": 780,
+      "sha256": "82a8b24fee4906981e2536682e9b4dbcca9e0130f0623483deee57ace72cb582"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/ctest-transfer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/ctest-transfer.stdout",
+      "bytes": 1190,
+      "sha256": "1c5da1ee822f987ccad2c8a0c5cba2c83dc0acbcdc5c0a10da45f0fc9d8632c5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/identity.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/in-tree-extra.stderr",
+      "bytes": 45,
+      "sha256": "a2c2a0767a9bf9befa56311d7fcfd0896fe061b47f4f2cb4b7defe7ed536010e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/in-tree-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/in-tree-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/in-tree-missing-layer.stdout",
+      "bytes": 173,
+      "sha256": "ff0c90710accb6e702ed05c5e97fd0c235b9f92ee39b8f63e5ad9d38e29f182f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/in-tree-unknown.stderr",
+      "bytes": 45,
+      "sha256": "a2c2a0767a9bf9befa56311d7fcfd0896fe061b47f4f2cb4b7defe7ed536010e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/in-tree-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/install-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/install-sdk.stdout",
+      "bytes": 2337,
+      "sha256": "f9291427808806fdbff7362fd09fe572d21a2f4f58044fcd891b357972c01c72"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-extra.stderr",
+      "bytes": 45,
+      "sha256": "a2c2a0767a9bf9befa56311d7fcfd0896fe061b47f4f2cb4b7defe7ed536010e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-missing-layer.stdout",
+      "bytes": 173,
+      "sha256": "ff0c90710accb6e702ed05c5e97fd0c235b9f92ee39b8f63e5ad9d38e29f182f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-transfer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-transfer.stdout",
+      "bytes": 241,
+      "sha256": "07dedf4b983800c362ecd4d8f748d4d8c5087351431bca7b37f44d9f8727710a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-unknown.stderr",
+      "bytes": 45,
+      "sha256": "a2c2a0767a9bf9befa56311d7fcfd0896fe061b47f4f2cb4b7defe7ed536010e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/installed-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/packages.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/packages.stdout",
+      "bytes": 104,
+      "sha256": "2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/receipt.json",
+      "bytes": 15907,
+      "sha256": "c473a89dfedd05d2c222bfd558b26013067a71cf27af4bb25002c2957847ed71"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/sdk-cache.txt",
+      "bytes": 16753,
+      "sha256": "5b8cd3d37162d239f1733f67cb53344cf4b60c2e26f2a2d4a18716042cc717e7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/sdk-compile-commands.json",
+      "bytes": 13913,
+      "sha256": "13788032b49e82aadcf2ca9497f339d02196b269a1a4a0b8b2643419a613087d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "2f0797fba32b2d1a7d2dba1dff5dfffcc87aef10471e4329520dfa6c93fe7b47"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/transfer-ctest.xml",
+      "bytes": 579,
+      "sha256": "61e6f7d0c587c41c219e5fbea53633442bbc08b902b2003813403d9850ec8b20"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/vulkaninfo.stderr",
+      "bytes": 218,
+      "sha256": "df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/native/vulkaninfo.stdout",
+      "bytes": 1821,
+      "sha256": "5cfbf74d270cfda1ea5c36a079cb06ab6d19596427f4083b624570ecee90bca6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-transfer/run-status.json",
+      "bytes": 407,
+      "sha256": "a5b4e12f540b740411448895ff9fca374390b932b5b15b2b3698a59a9767e7e7"
+    }
+  ],
+  "verification": {
+    "result": "pass",
+    "checks": [
+      "Successful real Linux workflow; logged receipt matches artifact",
+      "GitHub ZIP digest and every diagnostic/raw tested Git input hash verified",
+      "27-file native SDK fingerprint verified; built and installed library identity equal",
+      "Both exact suites with complete payload byte comparisons, expected CLI/layer rejection and no CTest skip",
+      "Software CPU identity explicitly recorded; physical GPU, normal VVL, WSI and long memory not accepted"
+    ]
+  }
+}

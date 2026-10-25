@@ -25,7 +25,8 @@ Linux 전용 `linux-vulkan` / `linux-vulkan-validation` preset의 backend flag·
 분리된 build/install 경로와 재현 명령은 [P3-LNX-02 설정](PHASE3_LINUX_PRESETS.md)을 따른다.
 실제 Linux configure/compile과 두 preset의 CPU 22개 검사는 `P3-LNX-03`에서 완료했다.
 Linux software ICD의 loader·장치·선택 오류 실행은 [P3-LNX-04](PHASE3_LINUX_DEVICE_REPORT.md)에
-기록한다. 물리 GPU와 전체 전송/그리기·layer·설치 감사 수용은 별도 잔여다.
+기록한다. [P3-LNX-05](PHASE3_LINUX_TRANSFER_REPORT.md)에서는 같은 software ICD의 버퍼·queue/fence·수명 suite를
+in-tree와 설치 소비자에서 통과했다. 물리 GPU(P3-LNX-15), 그리기·정상 layer·전체 설치 감사 수용은 별도 잔여다.
 
 현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).
@@ -42,7 +43,7 @@ portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CT
 구성은 7개, 두 backend OFF 구성은 6개 CTest를 Windows에서 검증한다.
 새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-transfer.zip`이며, 공개 헤더와
 static library/CMake package, MIT/Apache-2.0 고지로 구성된다. Vulkan 헤더·loader·driver는
-묶지 않는다. Linux의 Vulkan GPU 실행은 미검증이며 native compile/CPU 근거는 후속 CI 보고서에 기록한다.
+묶지 않는다. Linux 물리 GPU 실행은 미검증이며 software ICD 장치/버퍼와 native compile/CPU 근거는 위 CI 보고서를 따른다.
 Vulkan core/synchronization layer 실행은 새 [고정 로컬 레이어 검증](PHASE3_VULKAN_VALIDATION_REPORT.md)에
 기록한다. `GFX_VULKAN_VALIDATION_TESTS=ON`은 필요한 레이어가 없으면 실패하며 skip하지 않는다.
 이 검증 구성의 별도 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-validation.zip`이다.

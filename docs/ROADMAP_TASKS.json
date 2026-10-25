@@ -899,15 +899,18 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "버퍼·queue/fence·수명 실행",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-04"
       ],
-      "work": "전송·유한 wait·stale recording·retained allocation을 이식/실행한다.",
-      "done_when": "전체 buffer 참조 일치와 수명/대기/거부 계약 통과.",
-      "evidence": [],
-      "requires": "Linux Vulkan GPU"
+      "work": "기존 공통 suite를 실제 Linux software ICD의 in-tree CTest와 설치 SDK 소비자에서 실행했다. 전체 버퍼 참조·유한 wait·stale recording·retained allocation 계약 통과. 물리 GPU 수용은 P3-LNX-15 필수 gate에 유지한다.",
+      "done_when": "전체 buffer 참조 일치와 수명/대기/거부 계약 통과. 이번 근거는 software ICD이며 물리 GPU 수용은 P3-LNX-15에서 별도 필수 검증.",
+      "evidence": [
+        "docs/PHASE3_LINUX_TRANSFER_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-transfer/summary.json"
+      ],
+      "requires": "Linux Vulkan runtime; 이번 수용은 software ICD, 물리 GPU는 P3-LNX-15 필수"
     },
     {
       "id": "P3-LNX-06",
