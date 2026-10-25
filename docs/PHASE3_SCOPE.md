@@ -81,7 +81,7 @@
 | Windows D3D12 | 기본 그래픽스·통제된 recovery·memory budget 구현과 기존 보고서. 장시간/실제 표시·물리 사건 수용은 별도 | `P2-ACC-03`~`05`; 보류 `P2-ACC-01`~`02` 유지 |
 | Windows Vulkan offscreen | 기존 NVIDIA/Intel 기본 GPU suite 보고서. 모든 장치·driver·현재 source의 새 측정은 아님 | `P3-SCP-02`, `P3-GATE-01` |
 | Windows Vulkan WSI | 기존 NVIDIA 실제 present 경로, 해당 Intel driver의 caps=false/Unsupported | `P3-SCP-02`, 조건 선택 시 `P3-CAP-05`~`06`; 사람의 표시 확인과 구분 |
-| Linux Vulkan headless | `libvulkan.so.1` loader 코드, [후속 native compile/CPU CI](PHASE3_LINUX_COMPILE_REPORT.md) 성공. 실제 adapter/GPU/layer 실행 미검증 | `P3-LNX-04`~`12` 잔여. native compile을 GPU runtime 수용으로 대체 금지 |
+| Linux Vulkan headless | [Native compile/CPU CI](PHASE3_LINUX_COMPILE_REPORT.md)와 [software ICD loader/device 선택](PHASE3_LINUX_DEVICE_REPORT.md) 성공. 물리 GPU·전송/그리기·정상 layer 실행 미검증 | `P3-LNX-05`~`12`, 물리 GPU 수용 `P3-LNX-15` 잔여. software 성공을 hardware 수용으로 합산하지 않음 |
 | Linux Vulkan WSI | 공개 `SurfaceKind`는 Win32만 존재, Linux surface/swapchain 미구현 | `P3-WSI-01`~`08` 필수. API·X11/Wayland 선택, 완료/resize/loss·표시 검증까지 필요 |
 | Vulkan validation | `validation=true`는 Khronos layer와 debug-utils/validation-features/layer-settings 필요. core+sync/submit-time 요청, delivered ERROR 집계. 외부 설정 override와 zero-count 한계 존재 | `vulkan_*_validation`, `vulkan_validation_controls`; `P3-LNX-11`, `P3-GATE-01`; [기존 검증](PHASE3_VULKAN_VALIDATION_REPORT.md) |
 | CI·installed consumer | 현재 portable-core CI는 Vulkan ON/native 실행 근거 아님. Windows 설치 소비자 증거는 해당 구성에 한함 | `P3-LNX-12`~`13`, `P3-GATE-01`; 전체 다중 플랫폼 배포는 Phase 7 |

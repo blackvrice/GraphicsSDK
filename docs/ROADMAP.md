@@ -36,7 +36,7 @@ python tools/roadmap.py --write
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
 | 2 — D3D12 core·잔여 수용 | 9 | 3 | 0 | 0 | 2 | 구현·자동 회귀는 완료 근거를 유지. 장시간 메모리/Intel AV는 보류, 실제 표시·물리 손실 수용은 별도 미완료. |
-| 3 — Vulkan | 24 | 44 | 9 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
+| 3 — Vulkan | 25 | 44 | 9 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 6 | 0 | 0 | 11 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
@@ -161,7 +161,7 @@ python tools/roadmap.py --write
 | [x] `P3-LNX-01`<br>완료 · 필수 | **실행 환경 확인**<br>Windows host의 WSL/컨테이너/VM CLI·선택 서비스와 원격 대상 가용성을 읽기 전용으로 조사했다. WSL 미설치로 Linux OS/compiler/loader/ICD/GPU/VVL은 미관측이며 runtime 작업은 미완료 유지한다.<br>완료: 실제 관측한 환경 receipt와 가능한 build/runtime 범위. 환경 부재는 명시하고 런타임 작업을 완료로 만들지 않음. | 선행: `P3-WIN-01`<br>근거: [PHASE3_LINUX_ENVIRONMENT](PHASE3_LINUX_ENVIRONMENT.md), [summary.json](../benchmarks/reports/2026-10-25-phase3-linux-environment/summary.json) |
 | [x] `P3-LNX-02`<br>완료 · 필수 | **Vulkan 활성 Linux build preset**<br>Linux-only D3D12 OFF/Vulkan ON preset 두 조합과 외부 헤더·격리 build/install 경로를 구성했다. Windows CMake 정의/fixture 검사는 완료했으며 실제 Linux configure/compile은 P3-LNX-03에서 검사한다.<br>완료: portable-core와 구분된 재현 configure 명령·플랫폼 의존성 명시. | 선행: `P3-LNX-01`<br>환경: preset 정의 검사는 CMake 3.25+; 실제 configure에는 Linux C++23 compiler/CMake/Ninja 필요<br>근거: [CMakePresets.json](../CMakePresets.json), [PHASE3_LINUX_PRESETS](PHASE3_LINUX_PRESETS.md), [summary.json](../benchmarks/reports/2026-10-25-phase3-linux-presets/summary.json) |
 | [x] `P3-LNX-03`<br>완료 · 필수 | **Linux SDK 실제 컴파일**<br>GitHub-hosted Ubuntu x86_64에서 두 Vulkan preset의 실제 GCC configure/compile/link와 CPU 11개씩을 완료했다. Linux native fingerprint와 Git commit·compile commands를 대조했으며 GPU runtime은 미검증이다.<br>완료: 현재 source fingerprint의 native build 성공 로그. Windows 빌드로 대체하지 않음. | 선행: `P3-LNX-02`<br>환경: Linux native build 환경<br>근거: [PHASE3_LINUX_COMPILE_REPORT](PHASE3_LINUX_COMPILE_REPORT.md), [summary.json](../benchmarks/reports/2026-10-25-phase3-linux-compile/summary.json), [linux-vulkan-compile.yml](../.github/workflows/linux-vulkan-compile.yml) |
-| [ ] `P3-LNX-04`<br>미완료 · 필수 | **로더·adapter·장치 실행**<br>libvulkan 로딩, 정확한 native ID 선택, 미지원/잘못된 선택 검사.<br>완료: 실제 Linux GPU 장치 생성·정확한 선택과 negative controls. | 선행: `P3-LNX-03`<br>환경: Linux Vulkan runtime/GPU |
+| [x] `P3-LNX-04`<br>완료 · 필수 | **로더·adapter·장치 실행**<br>실제 Linux software ICD에서 loader·native UUID/driver·정확한 device 선택과 부정 대조를 검증했다. hardware 0개이며 물리 GPU·공통 GPU suite 수용은 P3-LNX-15 필수 gate로 분리해 유지한다.<br>완료: 실제 Linux Vulkan device 생성·정확한 선택·negative controls와 software/hardware 종류 명시. 물리 GPU 수용은 P3-LNX-15에서 별도 필수 검증. | 선행: `P3-LNX-03`<br>환경: Linux Vulkan runtime; 이번 수용은 software ICD, 물리 GPU는 P3-LNX-15 필수<br>근거: [PHASE3_LINUX_DEVICE_REPORT](PHASE3_LINUX_DEVICE_REPORT.md), [summary.json](../benchmarks/reports/2026-10-25-phase3-linux-device/summary.json) |
 | [ ] `P3-LNX-05`<br>미완료 · 필수 | **버퍼·queue/fence·수명 실행**<br>전송·유한 wait·stale recording·retained allocation을 이식/실행한다.<br>완료: 전체 buffer 참조 일치와 수명/대기/거부 계약 통과. | 선행: `P3-LNX-04`<br>환경: Linux Vulkan GPU |
 | [ ] `P3-LNX-06`<br>미완료 · 필수 | **텍스처 전송 실행**<br>RGBA8/RGBA16F와 홀수 폭·padding·전이·수명 검사.<br>완료: 전체 texel 및 padding 참조 일치, 지원 포맷 명시. | 선행: `P3-LNX-05`<br>환경: Linux Vulkan GPU |
 | [ ] `P3-LNX-07`<br>미완료 · 필수 | **컬러 pass·기본 draw 실행**<br>Clear/Load/Store와 SPIR-V graphics 참조를 Linux에서 실행한다.<br>완료: 삼각형·blend/scissor/instancing와 MRT 컬러 참조 일치. | 선행: `P3-LNX-06`<br>환경: Linux Vulkan GPU |
@@ -172,6 +172,7 @@ python tools/roadmap.py --write
 | [ ] `P3-LNX-12`<br>미완료 · 필수 | **Linux 설치 소비자·입력 감사**<br>Linux 설치 library/header를 외부 프로젝트가 find_package로 사용한다.<br>완료: 설치 소비자 실행, 실제 compiler/linker 입력·notice 및 설치 payload 검사. | 선행: `P3-LNX-11`<br>환경: Linux build/runtime 환경 |
 | [x] `P3-LNX-13`<br>완료 · 필수 | **Linux Vulkan compile CI**<br>portable-core와 분리된 Vulkan ON native Linux CI를 추가하고 두 preset의 compile/CPU 22개를 수용했다. GPU/layer/WSI 실행 및 기존 전체 CI Python 오류는 별도 잔여다.<br>완료: 실제 CI compile/CPU smoke 결과와 GPU 미실행 경계 기록. Software ICD 성공을 hardware 수용으로 표기하지 않음. | 선행: `P3-LNX-03`<br>환경: Linux CI runner<br>근거: [PHASE3_LINUX_COMPILE_REPORT](PHASE3_LINUX_COMPILE_REPORT.md), [summary.json](../benchmarks/reports/2026-10-25-phase3-linux-compile/summary.json), [linux-vulkan-compile.yml](../.github/workflows/linux-vulkan-compile.yml) |
 | [ ] `P3-LNX-14`<br>미완료 · 필수 | **전체 CI Python 증거 검사 정합성**<br>기존 CI의 Python 증거 검사 오류를 fresh checkout·플랫폼별 source identity와 대조해 수정한다. 과거 Windows 관측과 native Linux source를 혼합하거나 오류 테스트를 제거해 통과시키지 않는다.<br>완료: Windows/Linux fresh CI에서 전체 Python 회귀 통과와 기존 자료·검증 계약 보존. 변경 전 614 tests/errors=92 원본 및 수정 후 실제 실행 근거. | 선행: `P3-LNX-03`<br>환경: Windows/Linux CI와 보존된 benchmark evidence<br>근거: [PHASE3_LINUX_COMPILE_REPORT](PHASE3_LINUX_COMPILE_REPORT.md) |
+| [ ] `P3-LNX-15`<br>미완료 · 필수 | **Linux 물리 GPU·공통 suite 수용**<br>P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/driver·exact 선택 및 공통 GPU suite를 검증한다. software/CPU 종류의 성공을 hardware 수용으로 합산하지 않는다.<br>완료: 관측된 물리 GPU/driver의 native 식별·선택과 버퍼/텍스처/draw/binding/depth/timestamp·정상 validation/수명 참조의 실제 실행 근거. | 선행: `P3-LNX-11`<br>환경: 실제 Linux 물리 GPU/ICD와 VVL 환경<br>근거: [PHASE3_LINUX_DEVICE_REPORT](PHASE3_LINUX_DEVICE_REPORT.md) |
 
 ### P3-WSI — Linux 화면 출력
 
@@ -242,7 +243,7 @@ python tools/roadmap.py --write
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P3-GATE-01`<br>미완료 · 필수 | **현재 지원 구성 통합 회귀**<br>Windows/Linux 지원표·headless/WSI·공통 RHI·필수 debug marker·미지원 응답과 조건부 제외 이유를 현재 source로 검증한다.<br>완료: 필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거. | 선행: `P3-SCP-02`, `P3-LNX-12`, `P3-LNX-13`, `P3-WSI-08`, `P3-CAP-01`, `P3-LNX-14` |
+| [ ] `P3-GATE-01`<br>미완료 · 필수 | **현재 지원 구성 통합 회귀**<br>Windows/Linux 지원표·headless/WSI·공통 RHI·필수 debug marker·미지원 응답과 조건부 제외 이유를 현재 source로 검증한다.<br>완료: 필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거. | 선행: `P3-SCP-02`, `P3-LNX-12`, `P3-LNX-13`, `P3-WSI-08`, `P3-CAP-01`, `P3-LNX-14`, `P3-LNX-15` |
 | [ ] `P3-GATE-02`<br>미완료 · 필수 | **최종 비교·감사·한계 보고서**<br>현재 제품과 지원 경쟁 조합의 원본·통계·라이선스 입력을 종합한다.<br>완료: 새 측정과 과거 자료가 분리된 비교표, 미지원·미측정·환경 한계 및 재현 명령. | 선행: `P3-BEN-03`, `P3-BEN-04`, `P3-BEN-05`, `P3-BEN-06`, `P3-CMP-07`, `P3-CMP-08`, `P3-CMP-09`, `P3-CMP-10`, `P3-LBEN-01`, `P3-LBEN-02`, `P3-LBEN-03`, `P3-LBEN-04` |
 | [ ] `P3-GATE-03`<br>미완료 · 필수 | **Phase 3 완료 판정**<br>필수 작업·지원 범위·조건부 처리·근거를 확인하고 단계 수용을 기록한다.<br>완료: P3 필수 작업 완료와 선택 작업의 완료/지원 제외 근거. 보류 Phase 2·미채택 최적화를 완료로 바꾸지 않음. | 선행: `P3-GATE-01`, `P3-GATE-02` |
 

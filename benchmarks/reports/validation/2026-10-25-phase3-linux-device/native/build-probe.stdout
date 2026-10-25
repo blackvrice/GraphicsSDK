@@ -1,0 +1,36 @@
+Change Dir: '/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe'
+
+Run Build Command(s): /usr/local/bin/ninja -v -j 1
+[1/2] /usr/bin/g++-14  -isystem /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers/include -isystem /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install/include -O3 -DNDEBUG -std=gnu++23 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/gfx_linux_vulkan_device.dir/Device.cpp.o -MF CMakeFiles/gfx_linux_vulkan_device.dir/Device.cpp.o.d -o CMakeFiles/gfx_linux_vulkan_device.dir/Device.cpp.o -c /home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp: In member function ‘std::vector<{anonymous}::NativeInfo> {anonymous}::NativeQuery::enumerate()’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:67:65: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   67 |         VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                 ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:67:65: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:67:65: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:67:65: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:67:65: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:67:65: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:68:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   68 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:68:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:68:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:68:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:68:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:68:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:68:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:78:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   78 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:78:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:78:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:78:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:78:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:78:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:79:89: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   79 |             VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                         ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_vulkan_device/Device.cpp:79:89: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+[2/2] : && /usr/bin/g++-14 -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/gfx_linux_vulkan_device.dir/link.d CMakeFiles/gfx_linux_vulkan_device.dir/Device.cpp.o -o gfx_linux_vulkan_device  /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install/lib/libGraphicsSDKCore.a  -ldl && :
+

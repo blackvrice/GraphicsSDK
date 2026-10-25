@@ -170,6 +170,7 @@
     "P3-LNX-12",
     "P3-LNX-13",
     "P3-LNX-14",
+    "P3-LNX-15",
     "P3-WSI-01",
     "P3-WSI-02",
     "P3-WSI-03",
@@ -880,15 +881,18 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "로더·adapter·장치 실행",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-03"
       ],
-      "work": "libvulkan 로딩, 정확한 native ID 선택, 미지원/잘못된 선택 검사.",
-      "done_when": "실제 Linux GPU 장치 생성·정확한 선택과 negative controls.",
-      "evidence": [],
-      "requires": "Linux Vulkan runtime/GPU"
+      "work": "실제 Linux software ICD에서 loader·native UUID/driver·정확한 device 선택과 부정 대조를 검증했다. hardware 0개이며 물리 GPU·공통 GPU suite 수용은 P3-LNX-15 필수 gate로 분리해 유지한다.",
+      "done_when": "실제 Linux Vulkan device 생성·정확한 선택·negative controls와 software/hardware 종류 명시. 물리 GPU 수용은 P3-LNX-15에서 별도 필수 검증.",
+      "evidence": [
+        "docs/PHASE3_LINUX_DEVICE_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-device/summary.json"
+      ],
+      "requires": "Linux Vulkan runtime; 이번 수용은 software ICD, 물리 GPU는 P3-LNX-15 필수"
     },
     {
       "id": "P3-LNX-05",
@@ -1046,6 +1050,23 @@
         "docs/PHASE3_LINUX_COMPILE_REPORT.md"
       ],
       "requires": "Windows/Linux CI와 보존된 benchmark evidence"
+    },
+    {
+      "id": "P3-LNX-15",
+      "phase": 3,
+      "group": "P3-LNX",
+      "title": "Linux 물리 GPU·공통 suite 수용",
+      "status": "todo",
+      "gate": "required",
+      "depends_on": [
+        "P3-LNX-11"
+      ],
+      "work": "P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/driver·exact 선택 및 공통 GPU suite를 검증한다. software/CPU 종류의 성공을 hardware 수용으로 합산하지 않는다.",
+      "done_when": "관측된 물리 GPU/driver의 native 식별·선택과 버퍼/텍스처/draw/binding/depth/timestamp·정상 validation/수명 참조의 실제 실행 근거.",
+      "evidence": [
+        "docs/PHASE3_LINUX_DEVICE_REPORT.md"
+      ],
+      "requires": "실제 Linux 물리 GPU/ICD와 VVL 환경"
     },
     {
       "id": "P3-WSI-01",
@@ -1703,7 +1724,8 @@
         "P3-LNX-13",
         "P3-WSI-08",
         "P3-CAP-01",
-        "P3-LNX-14"
+        "P3-LNX-14",
+        "P3-LNX-15"
       ],
       "work": "Windows/Linux 지원표·headless/WSI·공통 RHI·필수 debug marker·미지원 응답과 조건부 제외 이유를 현재 source로 검증한다.",
       "done_when": "필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거.",

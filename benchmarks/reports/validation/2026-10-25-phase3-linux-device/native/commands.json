@@ -1,0 +1,240 @@
+[
+  {
+    "name": "source-commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.0019185329999942269,
+    "overrides": {}
+  },
+  {
+    "name": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.6008768290000006,
+    "overrides": {}
+  },
+  {
+    "name": "headers-commit",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.0019595250000037367,
+    "overrides": {}
+  },
+  {
+    "name": "headers-status",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "status",
+      "--porcelain"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.14196630200000016,
+    "overrides": {}
+  },
+  {
+    "name": "packages",
+    "argv": [
+      "dpkg-query",
+      "-W",
+      "-f=${Package} ${Version}\n",
+      "libvulkan1",
+      "mesa-vulkan-drivers",
+      "vulkan-tools"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.011551980000007234,
+    "overrides": {}
+  },
+  {
+    "name": "vulkaninfo",
+    "argv": [
+      "vulkaninfo",
+      "--summary"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.35035234499999035,
+    "overrides": {}
+  },
+  {
+    "name": "configure-sdk",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DGFX_BUILD_TESTS=OFF",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 2.4167099049999905,
+    "overrides": {}
+  },
+  {
+    "name": "build-sdk",
+    "argv": [
+      "cmake",
+      "--build",
+      "--preset",
+      "linux-vulkan",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 14.726835242000007,
+    "overrides": {}
+  },
+  {
+    "name": "install-sdk",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/linux-vulkan"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.015018706000006432,
+    "overrides": {}
+  },
+  {
+    "name": "configure-probe",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/linux_vulkan_device",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install",
+      "-DGFX_VULKAN_HEADERS=/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.16434623700000373,
+    "overrides": {}
+  },
+  {
+    "name": "build-probe",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe",
+      "--parallel",
+      "1",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 2.4308602769999936,
+    "overrides": {}
+  },
+  {
+    "name": "selection-1",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe/gfx_linux_vulkan_device",
+      "selection"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.05380045499998687,
+    "overrides": {}
+  },
+  {
+    "name": "selection-2",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe/gfx_linux_vulkan_device",
+      "selection"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.052703138999987686,
+    "overrides": {}
+  },
+  {
+    "name": "no-driver",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe/gfx_linux_vulkan_device",
+      "no-driver"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.002565637000003562,
+    "overrides": {
+      "VK_DRIVER_FILES": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-evidence/controls/absent-icd.json",
+      "VK_ICD_FILENAMES": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-evidence/controls/absent-icd.json"
+    }
+  },
+  {
+    "name": "no-loader",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe/gfx_linux_vulkan_device",
+      "no-loader"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.0016802949999998873,
+    "overrides": {
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-evidence/controls/unloadable-loader"
+    }
+  },
+  {
+    "name": "missing-layer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe/gfx_linux_vulkan_device",
+      "missing-layer"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.0021007900000142854,
+    "overrides": {}
+  },
+  {
+    "name": "invalid-mode",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe/gfx_linux_vulkan_device",
+      "unknown"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0015441390000034971,
+    "overrides": {}
+  },
+  {
+    "name": "extra-argument",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-device-probe/gfx_linux_vulkan_device",
+      "selection",
+      "extra"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0015144759999827784,
+    "overrides": {}
+  }
+]

@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-04",
+  "completion_scope": "Observed software-ICD loader/device/API branch; mandatory physical-GPU scope retained in P3-LNX-15",
+  "source_commit": "3558b82a85379edddc9bac55f88c2a1530ec8e0d",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "Windows_SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "workflow_run": {
+    "id": 40163549084,
+    "job_id": 121079881822,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40163549084",
+    "conclusion": "success"
+  },
+  "platform": {
+    "os_release": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 24.04.5 LTS",
+      "VERSION_ID": "24.04",
+      "VERSION": "24.04.5 LTS (Noble Numbat)",
+      "VERSION_CODENAME": "noble",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "noble",
+      "LOGO": "ubuntu-logo"
+    },
+    "kernel": "6.17.0-1022-azure",
+    "machine": "x86_64"
+  },
+  "packages": "libvulkan1 1.3.275.0-1build1\nmesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.4\nvulkan-tools 1.3.275.0+dfsg1-1\n",
+  "adapters": [
+    {
+      "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "id": "5892941257450743403",
+      "vendor_id": 65541,
+      "device_id": 0,
+      "device_type": 4,
+      "api_version_raw": 4211006,
+      "driver_version_raw": 104865800,
+      "device_uuid": "6d65736132352e322e382d3075627500",
+      "driver_uuid": "6c6c766d706970655555494400000000"
+    }
+  ],
+  "assertions": 75,
+  "device_creations": 6,
+  "expected_rejections": 19,
+  "CLI_rejections": 2,
+  "hardware_adapters_observed": 0,
+  "software_Vulkan_device_accepted": true,
+  "hardware_GPU_accepted": false,
+  "transfer_render_accepted": false,
+  "validation_layer_success_accepted": false,
+  "WSI_accepted": false,
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "normal_compile_CI_run": 40163549173,
+  "native_receipt": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/receipt.json",
+    "bytes": 17088,
+    "sha256": "d3b811364a65ccab99702349c7bae4cc4d934227eb021373504a9f8bc303f974"
+  },
+  "artifact": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/artifact.zip",
+    "bytes": 25912,
+    "sha256": "10313fe87df79146c6bf5fc3cf7301bfb87544dddc99ae2d21506bd88a183930"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/artifact-metadata.json",
+      "bytes": 866,
+      "sha256": "bc29630a3f740c86d098f53c193528b09153165d52163d751d2d7884a5207efd"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/artifact.zip",
+      "bytes": 25912,
+      "sha256": "10313fe87df79146c6bf5fc3cf7301bfb87544dddc99ae2d21506bd88a183930"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/compile-job-status.json",
+      "bytes": 1668,
+      "sha256": "10ca2061f8b3adb1507a37e8b2475fa3dd1ee9face2804aa316992e85b012791"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/job.log",
+      "bytes": 44381,
+      "sha256": "ee379789119f4bacf5213295e55f289386d13682ee10946c49773ec9bd638749"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/build-probe.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/build-probe.stdout",
+      "bytes": 6118,
+      "sha256": "404cf5f53cdaedcc78a2b7e690957c75d643556f3595e79955aae3ee95711636"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/build-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/build-sdk.stdout",
+      "bytes": 102079,
+      "sha256": "2751fff014a26ddc3356ec4e7bf9fa3ed06c9dfa1aded655c07665a37de4d5a4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/commands.json",
+      "bytes": 5536,
+      "sha256": "d86553b68f9885ad1f57b73a9c0ee0017216e0b7b436c807713769442ea0cfbd"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/configure-probe.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/configure-probe.stdout",
+      "bytes": 424,
+      "sha256": "2eca2012bb6695e890ed6501ca592ea24d79d8aac16c0df67d891f00f7f8521d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/configure-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/configure-sdk.stdout",
+      "bytes": 757,
+      "sha256": "0d8634495bd2aac137015a477ce814f26c244f0246e2d61ba029892f4da2b7be"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/controls/unloadable-loader/libvulkan.so.1",
+      "bytes": 36,
+      "sha256": "8e9df04d958bc282a334fa76d0dcf9cefd5ac41cc86508a44886d0cca256a590"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/extra-argument.stderr",
+      "bytes": 81,
+      "sha256": "48698d764291c73f4d92fd656e0520fac393bc57f0a582a44c1514688d0571e6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/extra-argument.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/install-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/install-sdk.stdout",
+      "bytes": 2337,
+      "sha256": "f9291427808806fdbff7362fd09fe572d21a2f4f58044fcd891b357972c01c72"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/invalid-mode.stderr",
+      "bytes": 81,
+      "sha256": "48698d764291c73f4d92fd656e0520fac393bc57f0a582a44c1514688d0571e6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/invalid-mode.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/missing-layer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/missing-layer.stdout",
+      "bytes": 253,
+      "sha256": "059d8efec360fc033422071f2af3b9455d483f38f66888a61f5aa1b3ed7da13e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/no-driver.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/no-driver.stdout",
+      "bytes": 322,
+      "sha256": "0e4b04f3bb26c83593a05033b1dde23ef3f402a8264126708b50a9f379e8b35e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/no-loader.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/no-loader.stdout",
+      "bytes": 314,
+      "sha256": "2b321b3ac83b9ff26c217d95e194a84e1d37f513ab741fe5a67f3cfbf9e3157f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/packages.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/packages.stdout",
+      "bytes": 104,
+      "sha256": "2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/receipt.json",
+      "bytes": 17088,
+      "sha256": "d3b811364a65ccab99702349c7bae4cc4d934227eb021373504a9f8bc303f974"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/sdk-cache.txt",
+      "bytes": 16754,
+      "sha256": "cd6b2b6bb773a93d171e30f07e1a5cf20a6aa3eb40cfb5a7b0b221fce19f7200"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/sdk-compile-commands.json",
+      "bytes": 4218,
+      "sha256": "1d3cf3454d15d1d707231ed8fe7b11e7e39f41fb9640265d94f39dc1a36253bc"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/selection-1.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/selection-1.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/selection-2.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/selection-2.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "41e0b184f4bdc56735f9f2bc836f3e2ba0775afab5456360e36b09f3aa3a0ad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/vulkaninfo.stderr",
+      "bytes": 218,
+      "sha256": "df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/native/vulkaninfo.stdout",
+      "bytes": 1821,
+      "sha256": "5cfbf74d270cfda1ea5c36a079cb06ab6d19596427f4083b624570ecee90bca6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/run-status.json",
+      "bytes": 305,
+      "sha256": "eaee69ddf66321e1553e8b648c7b4362a46966c3c0d2c5c32f0965f314256c32"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-device/runtime-job-status.json",
+      "bytes": 1663,
+      "sha256": "ab0544893a43a51f363128ed123c286b52f94eaec6afb258c12ab87a98348a2c"
+    }
+  ],
+  "verification": {
+    "result": "pass",
+    "checks": [
+      "Actual successful runtime CI and logged receipt match artifact receipt",
+      "75 assertions, 6 software devices, 19 expected API rejections and 2 CLI rejections validated",
+      "Native device UUID/FNV ID cross-check and exact tested Git input/raw diagnostic hashes verified",
+      "Artifact digest, built/installed SDK identity and unchanged Windows SDK/policy verified",
+      "Only software device task completed; mandatory physical GPU scope preserved in new final-gate dependency",
+      "175 relative links and mentioned IDs resolved; 142-task roadmap checked",
+      "Phase 3: 25 done / 44 required todo / 9 conditional todo"
+    ]
+  }
+}
