@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cmath>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
@@ -20,10 +21,13 @@ gfx::DeviceDesc desc(const gfx::AdapterInfo& a, bool validation) { gfx::DeviceDe
 void reclaimed(gfx::Device& d) { const auto s = take(d.resourceStatistics()); check(!s.trackedObjects && !s.uniqueResources && !s.resourceAllocationBytes && !s.pendingSubmissions && !s.pendingObjectReferences, "All query/recording/resource references reclaimed"); }
 double result(gfx::CommandList& c, bool positive = false) {
     auto ms = take(c.elapsedGpuMilliseconds()); check(std::isfinite(ms) && ms >= 0 && (!positive || ms > 0), "Actual GPU timestamps finite and correct workloads advance clock");
-    check(take(c.elapsedGpuMilliseconds()) == ms, "Repeated results are stable"); ++pairs; return ms;
+    check(take(c.elapsedGpuMilliseconds()) == ms, "Repeated results are stable");
+    std::cout << "TIMESTAMP_RESULT pair=" << pairs << " ms=" << std::setprecision(17) << ms << " require_positive=" << positive << '\n';
+    ++pairs; return ms;
 }
 void immediate(gfx::CommandList& c) {
     auto r = c.elapsedGpuMilliseconds(); check((r && std::isfinite(*r) && *r >= 0) || (!r && r.error().code == gfx::ErrorCode::InvalidState), "An immediate read either observes completion or reports not-ready");
+    std::cout << "TIMESTAMP_IMMEDIATE ready=" << bool(r) << '\n';
 }
 void contracts(gfx::Device& d) {
     check(d.caps().timestampQueries, "Actual graphics queue supports timestamps"); auto c = take(d.createCommandList());
