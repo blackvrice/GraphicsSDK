@@ -59,7 +59,7 @@ def run(args):
     frozen = {str(path.resolve()): digest(path) for path in paths}
     for path in paths:
         if path.suffix in (".cpp", ".py", ".json"):
-            target = args.output/"source"/path.resolve().relative_to(ROOT)
+            target = args.output/"source"/path.resolve().relative_to(ROOT.resolve())
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(path.read_bytes())
     manifest = {"started_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(), "SDK_source_fingerprint": fingerprint,

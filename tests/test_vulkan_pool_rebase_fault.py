@@ -5,11 +5,16 @@ import sys
 import unittest
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'tools'))
 import run_vulkan_pool_rebase_fault as trial
+import recorded_sources
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 class RebasedFallbackContracts(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        recorded_sources.bind(cls, trial, 'rebase')
+
     def data(self):
         p=ROOT/'benchmarks/results/2026-10-24-vulkan-pool-rebase-fault/results.json'
-        if not p.exists():self.skipTest('Recorded hardware matrix required')
+        self.assertTrue(p.is_file(), 'Required recorded hardware matrix missing')
         return json.loads(p.read_text(encoding='utf-8'))['runs']
     def reject(self,fn,case='mixed-host'):
         r=copy.deepcopy(next(x['result'] for x in self.data() if x['kind']=='mixed' and x['result']['case']==case));fn(r)

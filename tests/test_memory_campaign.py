@@ -135,9 +135,12 @@ class MemoryIdentityTests(unittest.TestCase):
 
 
 class CampaignReceiptsTests(unittest.TestCase):
-    def campaign(self, mutate=None, timeout=False, crash=False):
+    def campaign(self, mutate=None, timeout=False, crash=False, root_alias=False):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
+            if root_alias:
+                (root/'alias').mkdir()
+                root = root/'alias'/'..'
             for relative in ("tools/MemoryStress.cpp", "tools/run_memory_stress.py", "tools/analyze_memory_stress.py", "out/core/Release/GraphicsSDKCore.lib"):
                 path = root/relative
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -177,6 +180,13 @@ class CampaignReceiptsTests(unittest.TestCase):
             with patch.object(runner, "ROOT", root), patch.object(runner, "__file__", str(root/"tools/run_memory_stress.py")), patch.object(runner, "POLICY", policy), patch.object(runner, "sdk_fingerprint", return_value=FP), patch.object(runner.subprocess, "check_output", return_value="base\n"), patch.object(runner.subprocess, "Popen", Process):
                 code = runner.run(args)
             return code, json.loads((args.output/"campaign.json").read_text()), json.loads((args.output/"acceptance.json").read_text())
+
+    def test_canonical_root_alias_preserves_source_receipts(self):
+        code, manifest, acceptance = self.campaign(root_alias=True)
+        self.assertEqual(code, 1)
+        self.assertTrue(manifest['inputs_unchanged'])
+        self.assertFalse(acceptance['accepted'])
+        self.assertEqual(len(manifest['frozen_inputs']), 6)
 
     def test_guard_failure_receipt_survives_and_warp_still_runs(self):
         code, manifest, acceptance = self.campaign()

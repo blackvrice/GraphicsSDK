@@ -6,11 +6,16 @@ import unittest
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'tools'))
 import run_vulkan_pool_churn as trial
 import prepare_vulkan_pool_churn as prepare
+import recorded_sources
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 class PoolChurnEvidenceContracts(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        recorded_sources.bind(cls, trial, 'churn')
+
     def rows(self):
         p=ROOT/'benchmarks/results/2026-10-24-vulkan-pool-churn/results.json'
-        if not p.exists():self.skipTest('Recorded hardware matrix required')
+        self.assertTrue(p.is_file(), 'Required recorded hardware matrix missing')
         return json.loads(p.read_text(encoding='utf-8'))['runs']
     def validate(self,r):return trial.validate(r,r['profile'],r['validation'],r['candidate'])
     def reject(self,fn,profile='mixed',candidate=True):

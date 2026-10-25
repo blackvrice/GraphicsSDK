@@ -6,13 +6,18 @@ import unittest
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'tools'))
 import run_vulkan_loader_fault as trial
 import report_vulkan_loader_fault as report
+import recorded_sources
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 class LoaderEvidenceContracts(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        recorded_sources.bind(cls, trial, 'loader')
+
     def data(self):
         # Recorded native evidence makes mutation tests independent of a second
         # hand-written implementation of the loader ownership state machine.
         folder=ROOT/'benchmarks/results/2026-10-24-vulkan-loader-fault-v2'
-        if not (folder/'results.json').exists():self.skipTest('Recorded hardware matrix required')
+        self.assertTrue((folder/'results.json').is_file(), 'Required recorded hardware matrix missing')
         return json.loads((folder/'results.json').read_text(encoding='utf-8'))['runs']
     def validate(self,row):
         r=row['result'];return trial.validate(r,r['kind'],r['validation'],r['result'],r['poison'],trial.OLD if row['variant']=='before' else trial.SDK,row['variant']=='before')

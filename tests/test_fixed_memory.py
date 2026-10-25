@@ -157,5 +157,26 @@ class FixedMemoryContracts(unittest.TestCase):
                 fixed.environment.save(path,data)
                 with self.subTest(mutate=mutate),self.assertRaises(ValueError):fixed.load_case(path)
 
+    def test_equivalent_output_path_preserves_original_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=case(pathlib.Path(tmp)/'a');data=fixed.environment.load(path)
+            (path.parent/'alias').mkdir()
+            data['command'][-1]=str(path.parent/'alias'/'..'/'memory.jsonl')
+            fixed.environment.save(path,data)
+            loaded,_,_=fixed.load_case(path)
+            self.assertEqual(loaded['command'],data['command'])
+
+    def test_command_paths_and_argument_order_remain_bound(self):
+        for mutate in ('binary','output','order','type','extra'):
+            with tempfile.TemporaryDirectory() as tmp:
+                path=case(pathlib.Path(tmp)/'a');data=fixed.environment.load(path)
+                if mutate=='binary':data['command'][0]+='.other'
+                if mutate=='output':data['command'][-1]=str(path.parent/'other.jsonl')
+                if mutate=='order':data['command'][1],data['command'][3]=data['command'][3],data['command'][1]
+                if mutate=='type':data['command'][2]=False
+                if mutate=='extra':data['command'].append('--extra')
+                fixed.environment.save(path,data)
+                with self.subTest(mutate=mutate),self.assertRaises(ValueError):fixed.load_case(path)
+
 
 if __name__=='__main__':unittest.main()

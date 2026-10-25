@@ -140,7 +140,12 @@ def load_case(path):
     command=[str(BINARY),'--mode',h['mode'],'--adapter',str(h['requested_adapter_id']),'--rounds',str(h['measured_round_limit']),
         '--warmup-rounds',str(h['warmup_rounds']),'--checkpoint-rounds',str(h['checkpoint_rounds']),'--max-seconds',str(h['max_seconds']),
         '--max-private-growth-mib',str(h['private_growth_limit_bytes']//2**20),'--output',str(base/'memory.jsonl')]
-    require(case.get('command')==command and frozen[str((ROOT/'out/core/Release/GraphicsSDKCore.lib').resolve())]==a['controls']['files']['core_library']['sha256'],'Fixed command/core identity mismatch')
+    actual=case.get('command')
+    require(isinstance(actual,list) and len(actual)==len(command) and all(type(v) is str for v in actual),'Invalid fixed command')
+    # Compare only the executable/output as canonical paths; flags, order and scalar
+    # arguments remain exact. Preserve the originally recorded argv unchanged.
+    same_paths=all(pathlib.Path(actual[i]).resolve()==pathlib.Path(command[i]).resolve() for i in (0,len(command)-1))
+    require(same_paths and actual[1:-1]==command[1:-1] and frozen[str((ROOT/'out/core/Release/GraphicsSDKCore.lib').resolve())]==a['controls']['files']['core_library']['sha256'],'Fixed command/core identity mismatch')
     return case,a,rows
 
 
