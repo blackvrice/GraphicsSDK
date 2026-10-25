@@ -431,3 +431,7 @@ RGBA8 UNORM만 사용하고 VSync FIFO 또는 비동기 IMMEDIATE/MAILBOX를 선
 present는 host 대기가 있는 초기 구현이며 present 완료 펜스는 모니터 표시 완료를 뜻하지 않는다.
 현재 Intel driver의 해당 feature 미지원은 Unsupported로 반환한다. 공개 API/ABI 모양은 같다.
 [Vulkan 상세 계약](VULKAN.md#win32-presentation)과 [검증 범위](PHASE3_VULKAN_PRESENTATION_REPORT.md)를 따른다.
+
+현재 D3D12/Vulkan의 capability별 조건, 포맷·동기화·미지원 API와 후속 검사 ID는
+[Phase 3 지원 범위표](PHASE3_SCOPE.md)에 정리한다. `DeviceCaps`에는 debug marker와
+OS memory budget 지원 필드가 없으며 해당 API의 Result로 지원 여부를 구분한다.

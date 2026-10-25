@@ -36,7 +36,7 @@ python tools/roadmap.py --write
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
 | 2 — D3D12 core·잔여 수용 | 9 | 3 | 0 | 0 | 2 | 구현·자동 회귀는 완료 근거를 유지. 장시간 메모리/Intel AV는 보류, 실제 표시·물리 손실 수용은 별도 미완료. |
-| 3 — Vulkan | 18 | 48 | 10 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
+| 3 — Vulkan | 19 | 48 | 9 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 6 | 0 | 0 | 11 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
@@ -149,7 +149,7 @@ Linux 후보 환경의 OS/compiler/loader/ICD/GPU/VVL 가용성을 읽기 전용
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P3-SCP-01`<br>미완료 · 필수 | **D3D12/Vulkan 기능·미지원 표**<br>현재 caps/API/포맷/동기화 계약과 초기 Phase 3 지원 경계를 대조한다.<br>완료: 기능별 지원/미지원·필수/조건부 이유와 검사 ID가 연결된 표. 원래 필수 요구를 임의 제거하지 않음. | 선행: `P3-WIN-11` |
+| [x] `P3-SCP-01`<br>완료 · 필수 | **D3D12/Vulkan 기능·미지원 표**<br>현재 caps/API/포맷/동기화 계약을 대조하고 D3D12/Vulkan 지원·미지원·조건부 이유와 검사 ID를 연결했다.<br>완료: 기능별 지원/미지원·필수/조건부 이유와 검사 ID가 연결된 표. 원래 필수 요구를 임의 제거하지 않음. | 선행: `P3-WIN-11`<br>근거: [PHASE3_SCOPE](PHASE3_SCOPE.md), [summary.json](../benchmarks/reports/2026-10-25-phase3-scope/summary.json) |
 | [ ] `P3-SCP-02`<br>미완료 · 필수 | **Windows GPU·드라이버·출력 범위**<br>현재 NVIDIA 출력과 Intel 미지원의 요구 extension/완료 보장 차이를 정리한다.<br>완료: 출시 지원 조합, 추가 검증 대상 및 fallback 채택/미채택 이유 명시. | 선행: `P3-SCP-01` |
 
 ### P3-LNX — Linux 네이티브 구현·검증
@@ -187,13 +187,13 @@ Linux 후보 환경의 OS/compiler/loader/ICD/GPU/VVL 가용성을 읽기 전용
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P3-CAP-01`<br>미완료 · 범위 결정 후 | **Vulkan debug marker**<br>선택 시 debug-utils label을 공통 marker API에 연결한다.<br>완료: 실제 label 관측과 미지원/수명·thread 계약 검사. | 선행: `P3-SCP-01`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01` |
-| [ ] `P3-CAP-02`<br>미완료 · 범위 결정 후 | **Vulkan generation recovery**<br>선택 시 새 장치 generation·기존 handle/fence 거부·자원 재구축 구현.<br>완료: 통제된 손실/퇴역·재시도·재구축 GPU 참조. 실제 TDR 수용과 구분. | 선행: `P3-SCP-01`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01` |
-| [ ] `P3-CAP-03`<br>미완료 · 범위 결정 후 | **Vulkan 손실 시험 경로**<br>선택 시 재현 가능한 손실 시험 계약을 설계한다.<br>완료: 선택 방식·실제 native/합성 경계와 error coverage 확인. | 선행: `P3-CAP-02`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01` |
-| [ ] `P3-CAP-04`<br>미완료 · 범위 결정 후 | **Vulkan memory budget 계약**<br>동일 의미의 OS process budget을 제공할 수 있는지 검토·구현한다.<br>완료: 정확한 의미·field mapping 또는 명시적 Unsupported 유지 근거. heap capacity로 대체 금지. | 선행: `P3-SCP-01`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01` |
+| [ ] `P3-CAP-01`<br>미완료 · 필수 | **Vulkan debug marker**<br>원래 RHI Debug Marker 필수 요구에 따라 debug-utils label을 공통 marker API에 연결한다. 현재 Vulkan은 Unsupported이며 미완료다.<br>완료: 실제 label 관측과 미지원/수명·thread 계약 검사. | 선행: `P3-SCP-01`<br>환경: debug-utils label 관측이 가능한 native GPU/driver/runtime 환경<br>근거: [PHASE3_SCOPE](PHASE3_SCOPE.md) |
+| [ ] `P3-CAP-02`<br>미완료 · 범위 결정 후 | **Vulkan generation recovery**<br>초기 subset은 caps=false/Unsupported를 유지하고 손실 보존·차단·퇴역 계약은 필수로 검사한다. 선택 시 새 generation·기존 handle/fence 거부·자원 재구축을 구현한다.<br>완료: 통제된 손실/퇴역·재시도·재구축 GPU 참조. 실제 TDR 수용과 구분. | 선행: `P3-SCP-01`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01`<br>근거: [PHASE3_SCOPE](PHASE3_SCOPE.md) |
+| [ ] `P3-CAP-03`<br>미완료 · 범위 결정 후 | **Vulkan 손실 시험 경로**<br>초기 subset의 Vulkan loss injection은 미지원 유지. 선택 시 재현 가능한 시험 계약과 실제 native/합성 경계를 설계하며 예상 밖 TDR 수용과 구분한다.<br>완료: 선택 방식·실제 native/합성 경계와 error coverage 확인. | 선행: `P3-CAP-02`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01`<br>근거: [PHASE3_SCOPE](PHASE3_SCOPE.md) |
+| [ ] `P3-CAP-04`<br>미완료 · 범위 결정 후 | **Vulkan memory budget 계약**<br>공개 OS process budget과 같은 의미의 값을 제공할 근거가 없어 Unsupported를 유지한다. 별도 검토·구현 작업은 미완료이며 heap capacity로 대체하지 않는다.<br>완료: 정확한 의미·field mapping 또는 명시적 Unsupported 유지 근거. heap capacity로 대체 금지. | 선행: `P3-SCP-01`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01`<br>근거: [PHASE3_SCOPE](PHASE3_SCOPE.md) |
 | [ ] `P3-CAP-05`<br>미완료 · 범위 결정 후 | **현재 미지원 Intel 출력 확대**<br>선택 시 완료 보장을 유지하는 별도 출력 경로를 구현한다.<br>완료: 해당 Intel GPU/driver에서 실제 present·수명·validation·참조 검사. | 선행: `P3-SCP-02`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-02` |
 | [ ] `P3-CAP-06`<br>미완료 · 범위 결정 후 | **추가 GPU/driver 실행**<br>선택된 추가 장치의 지원 기능과 실행 참조를 확인한다.<br>완료: 실제 식별된 장치별 수용 증거, 미보유/미지원은 통과로 세지 않음. | 선행: `P3-SCP-02`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-02` |
-| [ ] `P3-CAP-07`<br>미완료 · 범위 결정 후 | **GPU-assisted validation**<br>선택 시 별도 설정·capability·오류 검출 controls를 추가한다.<br>완료: 실제 GPU-assisted 실행 증거. 기존 sync validation과 구분. | 선행: `P3-SCP-01`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01` |
+| [ ] `P3-CAP-07`<br>미완료 · 범위 결정 후 | **GPU-assisted validation**<br>초기 subset은 core/sync validation을 필수로 유지한다. GPU-assisted는 별도 선택 기능이며 선택 시 설정·capability·오류 검출 controls와 실제 실행을 추가한다.<br>완료: 실제 GPU-assisted 실행 증거. 기존 sync validation과 구분. | 선행: `P3-SCP-01`<br>환경: 선택한 기능의 native GPU/driver/runtime 환경<br>범위 결정: `P3-SCP-01`<br>근거: [PHASE3_SCOPE](PHASE3_SCOPE.md) |
 
 ### P3-BEN — 현재 제품·동일 Vulkan 비교 기반
 
@@ -239,7 +239,7 @@ Linux 후보 환경의 OS/compiler/loader/ICD/GPU/VVL 가용성을 읽기 전용
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P3-GATE-01`<br>미완료 · 필수 | **현재 지원 구성 통합 회귀**<br>Windows/Linux 지원표·headless/WSI·공통 RHI/미지원 응답을 현재 source로 묶는다.<br>완료: 필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거. | 선행: `P3-SCP-02`, `P3-LNX-12`, `P3-LNX-13`, `P3-WSI-08` |
+| [ ] `P3-GATE-01`<br>미완료 · 필수 | **현재 지원 구성 통합 회귀**<br>Windows/Linux 지원표·headless/WSI·공통 RHI·필수 debug marker·미지원 응답과 조건부 제외 이유를 현재 source로 검증한다.<br>완료: 필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거. | 선행: `P3-SCP-02`, `P3-LNX-12`, `P3-LNX-13`, `P3-WSI-08`, `P3-CAP-01` |
 | [ ] `P3-GATE-02`<br>미완료 · 필수 | **최종 비교·감사·한계 보고서**<br>현재 제품과 지원 경쟁 조합의 원본·통계·라이선스 입력을 종합한다.<br>완료: 새 측정과 과거 자료가 분리된 비교표, 미지원·미측정·환경 한계 및 재현 명령. | 선행: `P3-BEN-03`, `P3-BEN-04`, `P3-BEN-05`, `P3-BEN-06`, `P3-CMP-07`, `P3-CMP-08`, `P3-CMP-09`, `P3-CMP-10`, `P3-LBEN-01`, `P3-LBEN-02`, `P3-LBEN-03`, `P3-LBEN-04` |
 | [ ] `P3-GATE-03`<br>미완료 · 필수 | **Phase 3 완료 판정**<br>필수 작업·지원 범위·조건부 처리·근거를 확인하고 단계 수용을 기록한다.<br>완료: P3 필수 작업 완료와 선택 작업의 완료/지원 제외 근거. 보류 Phase 2·미채택 최적화를 완료로 바꾸지 않음. | 선행: `P3-GATE-01`, `P3-GATE-02` |
 

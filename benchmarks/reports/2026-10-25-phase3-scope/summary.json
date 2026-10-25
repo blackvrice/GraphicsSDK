@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "task": "P3-SCP-01",
+  "reviewed_at": "2026-10-25",
+  "baseline_commit": "3bffac0087c2a80ffceaff1a771f173115ea0bd5",
+  "review_kind": "static public API/backend contract and historical evidence review",
+  "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "SDK_modified": false,
+  "GPU_executed": false,
+  "native_tests_executed": false,
+  "performance_measured": false,
+  "support_matrix": "docs/PHASE3_SCOPE.md",
+  "covered_DeviceCaps_fields": [
+    "backend",
+    "adapterName",
+    "softwareAdapter",
+    "timestampQueries",
+    "compute",
+    "swapChain",
+    "resourceBinding",
+    "vertexInput",
+    "indexedDrawing",
+    "bindingLayouts",
+    "depthAttachment",
+    "multipleRenderTargets",
+    "deviceRecovery",
+    "deviceLossInjection",
+    "adapterId"
+  ],
+  "reviewed_inputs": [
+    {
+      "path": "include/graphics/Types.hpp",
+      "sha256": "fb41ae8c6f621347b193fca5b4799f32a1c16099644f0e1e36759813253ff9aa"
+    },
+    {
+      "path": "include/graphics/Device.hpp",
+      "sha256": "1297f206128a3698d36e940f5f384afe33d2bdfa827ef727bbcaa10f505540b1"
+    },
+    {
+      "path": "include/graphics/CommandList.hpp",
+      "sha256": "5ce778322e916ab5e15d6832aef5f7d1cc166fbeb2744237a45e0e20eea56f16"
+    },
+    {
+      "path": "include/graphics/Surface.hpp",
+      "sha256": "d3dc852b56fcd477dc1eddb9ec4a794b12a280de871bb6a47ed2abfb42c089ab"
+    },
+    {
+      "path": "include/graphics/Shader.hpp",
+      "sha256": "a8568d729efea023d11f2852fa4bdb26d3f430152bb538014450146f32f22643"
+    },
+    {
+      "path": "include/graphics/Pipeline.hpp",
+      "sha256": "3f036387d9ae65f465f38c092a7c0726ffa49679c7f1d657a9d9542d5cc30cac"
+    },
+    {
+      "path": "src/backends/d3d12/D3D12.cpp",
+      "sha256": "c54910e3784a8741c5bdd2f778ac033709c0f1559bff287e5e6112159e0caac9"
+    },
+    {
+      "path": "src/backends/vulkan/Vulkan.cpp",
+      "sha256": "71dcd279a3ac5bcff73e410333f5d52680620bc4f82f0b120ec00caeed44e107"
+    },
+    {
+      "path": "src/backends/vulkan/Presentation.hpp",
+      "sha256": "4fe8cc7067db3622e53488d302465587ec5e1a882a7826e467e706ab7c302a2f"
+    },
+    {
+      "path": "src/backends/vulkan/Spirv.hpp",
+      "sha256": "3a302edb3a59f9bdde09085033023819242c799573e9b532fc8b8aa619ed99f1"
+    },
+    {
+      "path": "src/backends/vulkan/Timestamp.hpp",
+      "sha256": "f68693d9d213123b314a384cf7da7cffb731d72d2425b189ddb6795740cd8bdc"
+    },
+    {
+      "path": "src/backends/vulkan/VulkanValidation.hpp",
+      "sha256": "44465bed7347812efdfa5e50d7909fb6fd8a690df0dab887dae19b50234a7a22"
+    },
+    {
+      "path": "src/shader/Shader.cpp",
+      "sha256": "6626d4a2445e5058e136b587bbd228551703f06a34812da96fc606e17027d0f3"
+    },
+    {
+      "path": "tests/VulkanTests.cpp",
+      "sha256": "36a592ecda400263923509174e159f709cea681db1fbd210515fd70ce142bf88"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "sha256": "377a40c3fc4ff428f226002fe33200cd3535a1a97940bb5cb9225f47a8181874"
+    },
+    {
+      "path": "CMakePresets.json",
+      "sha256": "cb5604ef84df1d118c899be4f3893cbf69198cd2164e5dc594d884ca492863e4"
+    },
+    {
+      "path": ".github/workflows/build.yml",
+      "sha256": "0024c9904b0de9f4b08519d8ad594e78fb60fa28e3ce226d4849a6234956ffbf"
+    }
+  ],
+  "required_gap": {
+    "task": "P3-CAP-01",
+    "prior_gate": "conditional",
+    "gate": "required",
+    "reason": "Original RHI requirements explicitly include Debug Marker; Vulkan remains unimplemented."
+  },
+  "conditional_initial_dispositions": {
+    "P3-CAP-02": "Unsupported; loss preservation/native-use rejection/retirement remain required",
+    "P3-CAP-03": "Unsupported; do not count synthetic fault injection as unexpected native loss",
+    "P3-CAP-04": "Unsupported; do not substitute capacity/SDK ownership for OS process budget",
+    "P3-CAP-07": "Additional GPU-assisted path not selected; core/synchronization validation remains required",
+    "P3-CAP-05": "Unchanged; decision belongs to P3-SCP-02",
+    "P3-CAP-06": "Unchanged; decision belongs to P3-SCP-02"
+  },
+  "followup_acceptance": [
+    "P3-GATE-01",
+    "P3-GATE-03"
+  ],
+  "limitations": [
+    "No child implementation/runtime task completed by this review.",
+    "Historical execution reports retain their original source fingerprints and device scopes.",
+    "Linux native build/runtime/WSI, final product regression and fresh competitor measurements remain pending.",
+    "Deferred long-memory acceptance and historical Intel crash investigation unchanged."
+  ],
+  "verification": {
+    "method": "read-only static consistency checks; no native execution",
+    "result": "pass",
+    "checks": [
+      "Only P3-SCP-01 status changed to done; dependencies were already complete",
+      "Required marker remains todo and blocks the final regression gate",
+      "Other conditional tasks remain todo; GPU support and deferred tasks unchanged",
+      "15 DeviceCaps fields covered; 17 reviewed source/config hashes verified",
+      "SDK fingerprint and deferred memory policy unchanged",
+      "111 relative documentation links and all mentioned roadmap IDs resolved",
+      "55 CTest name/pattern references resolved to CMake registrations (not executed)",
+      "140-task roadmap graph, completion evidence, historical text and generated document checked",
+      "Phase 3 totals 19 done / 48 required todo / 9 conditional todo; next remains P3-LNX-01"
+    ]
+  }
+}

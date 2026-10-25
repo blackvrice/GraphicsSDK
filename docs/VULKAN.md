@@ -7,6 +7,10 @@ queue fences, graphics pipelines/vertex/index drawing, resource bindings, D32 de
 backend remains the default. `backendCompiled(Vulkan)` reports this limited
 backend when enabled; Win32 presentation requires the completion-fence capabilities below.
 
+The [D3D12/Vulkan support matrix](PHASE3_SCOPE.md) separates current capability/API
+contracts, required gaps and conditional features. Vulkan debug markers remain a
+required Phase 3 task; Linux native execution and WSI acceptance remain pending.
+
 ## Upload CPU diagnostics
 
 The [upload memory study](PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) adds a standalone

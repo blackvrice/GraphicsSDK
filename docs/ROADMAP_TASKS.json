@@ -156,6 +156,7 @@
     "P3-LNX-01",
     "P3-SCP-01",
     "P3-SCP-02",
+    "P3-CAP-01",
     "P3-LNX-02",
     "P3-LNX-03",
     "P3-LNX-04",
@@ -789,14 +790,17 @@
       "phase": 3,
       "group": "P3-SCP",
       "title": "D3D12/Vulkan 기능·미지원 표",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-WIN-11"
       ],
-      "work": "현재 caps/API/포맷/동기화 계약과 초기 Phase 3 지원 경계를 대조한다.",
+      "work": "현재 caps/API/포맷/동기화 계약을 대조하고 D3D12/Vulkan 지원·미지원·조건부 이유와 검사 ID를 연결했다.",
       "done_when": "기능별 지원/미지원·필수/조건부 이유와 검사 ID가 연결된 표. 원래 필수 요구를 임의 제거하지 않음.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE3_SCOPE.md",
+        "benchmarks/reports/2026-10-25-phase3-scope/summary.json"
+      ]
     },
     {
       "id": "P3-SCP-02",
@@ -1136,15 +1140,16 @@
       "group": "P3-CAP",
       "title": "Vulkan debug marker",
       "status": "todo",
-      "gate": "conditional",
+      "gate": "required",
       "depends_on": [
         "P3-SCP-01"
       ],
-      "work": "선택 시 debug-utils label을 공통 marker API에 연결한다.",
+      "work": "원래 RHI Debug Marker 필수 요구에 따라 debug-utils label을 공통 marker API에 연결한다. 현재 Vulkan은 Unsupported이며 미완료다.",
       "done_when": "실제 label 관측과 미지원/수명·thread 계약 검사.",
-      "evidence": [],
-      "requires": "선택한 기능의 native GPU/driver/runtime 환경",
-      "scope_from": "P3-SCP-01"
+      "evidence": [
+        "docs/PHASE3_SCOPE.md"
+      ],
+      "requires": "debug-utils label 관측이 가능한 native GPU/driver/runtime 환경"
     },
     {
       "id": "P3-CAP-02",
@@ -1156,9 +1161,11 @@
       "depends_on": [
         "P3-SCP-01"
       ],
-      "work": "선택 시 새 장치 generation·기존 handle/fence 거부·자원 재구축 구현.",
+      "work": "초기 subset은 caps=false/Unsupported를 유지하고 손실 보존·차단·퇴역 계약은 필수로 검사한다. 선택 시 새 generation·기존 handle/fence 거부·자원 재구축을 구현한다.",
       "done_when": "통제된 손실/퇴역·재시도·재구축 GPU 참조. 실제 TDR 수용과 구분.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_SCOPE.md"
+      ],
       "requires": "선택한 기능의 native GPU/driver/runtime 환경",
       "scope_from": "P3-SCP-01"
     },
@@ -1172,9 +1179,11 @@
       "depends_on": [
         "P3-CAP-02"
       ],
-      "work": "선택 시 재현 가능한 손실 시험 계약을 설계한다.",
+      "work": "초기 subset의 Vulkan loss injection은 미지원 유지. 선택 시 재현 가능한 시험 계약과 실제 native/합성 경계를 설계하며 예상 밖 TDR 수용과 구분한다.",
       "done_when": "선택 방식·실제 native/합성 경계와 error coverage 확인.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_SCOPE.md"
+      ],
       "requires": "선택한 기능의 native GPU/driver/runtime 환경",
       "scope_from": "P3-SCP-01"
     },
@@ -1188,9 +1197,11 @@
       "depends_on": [
         "P3-SCP-01"
       ],
-      "work": "동일 의미의 OS process budget을 제공할 수 있는지 검토·구현한다.",
+      "work": "공개 OS process budget과 같은 의미의 값을 제공할 근거가 없어 Unsupported를 유지한다. 별도 검토·구현 작업은 미완료이며 heap capacity로 대체하지 않는다.",
       "done_when": "정확한 의미·field mapping 또는 명시적 Unsupported 유지 근거. heap capacity로 대체 금지.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_SCOPE.md"
+      ],
       "requires": "선택한 기능의 native GPU/driver/runtime 환경",
       "scope_from": "P3-SCP-01"
     },
@@ -1236,9 +1247,11 @@
       "depends_on": [
         "P3-SCP-01"
       ],
-      "work": "선택 시 별도 설정·capability·오류 검출 controls를 추가한다.",
+      "work": "초기 subset은 core/sync validation을 필수로 유지한다. GPU-assisted는 별도 선택 기능이며 선택 시 설정·capability·오류 검출 controls와 실제 실행을 추가한다.",
       "done_when": "실제 GPU-assisted 실행 증거. 기존 sync validation과 구분.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_SCOPE.md"
+      ],
       "requires": "선택한 기능의 native GPU/driver/runtime 환경",
       "scope_from": "P3-SCP-01"
     },
@@ -1648,9 +1661,10 @@
         "P3-SCP-02",
         "P3-LNX-12",
         "P3-LNX-13",
-        "P3-WSI-08"
+        "P3-WSI-08",
+        "P3-CAP-01"
       ],
-      "work": "Windows/Linux 지원표·headless/WSI·공통 RHI/미지원 응답을 현재 source로 묶는다.",
+      "work": "Windows/Linux 지원표·headless/WSI·공통 RHI·필수 debug marker·미지원 응답과 조건부 제외 이유를 현재 source로 검증한다.",
       "done_when": "필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거.",
       "evidence": []
     },
