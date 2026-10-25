@@ -1,0 +1,585 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-08",
+  "completion_scope": "Native Linux software-ICD vertex/index/instance and resource binding arrays/samplers/snapshots/lifetime contracts; physical GPU remains required P3-LNX-15",
+  "source_commit": "4e3d525d92c8e38e35170571d43b172be0d249b8",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "Windows_SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "workflow_run": {
+    "id": 40178114363,
+    "job_id": 121123118694,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40178114363",
+    "conclusion": "success"
+  },
+  "platform": {
+    "os_release": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 24.04.5 LTS",
+      "VERSION_ID": "24.04",
+      "VERSION": "24.04.5 LTS (Noble Numbat)",
+      "VERSION_CODENAME": "noble",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "noble",
+      "LOGO": "ubuntu-logo"
+    },
+    "kernel": "6.17.0-1022-azure",
+    "machine": "x86_64"
+  },
+  "packages": "libvulkan1 1.3.275.0-1build1\nmesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.4\nvulkan-tools 1.3.275.0+dfsg1-1\n",
+  "adapters": [
+    {
+      "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "id": "5892941257450743403",
+      "vendor_id": 65541,
+      "device_id": 0,
+      "device_type": 4,
+      "api_version_raw": 4211006,
+      "driver_version_raw": 104865800,
+      "device_uuid": "6d65736132352e322e382d3075627500",
+      "driver_uuid": "6c6c766d706970655555494400000000"
+    }
+  ],
+  "workload": {
+    "formats_bytes_per_texel": {
+      "RGBA8UNorm": 4,
+      "RGBA16Float": 8
+    },
+    "vertex_components": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "color_attributes": [
+      "Float4",
+      "UNorm8x4"
+    ],
+    "memory_paths": [
+      "Upload",
+      "Device"
+    ],
+    "index_formats": [
+      "UInt16",
+      "UInt32"
+    ],
+    "base_vertices": [
+      -1,
+      0,
+      1
+    ],
+    "vertex_extent": [
+      65,
+      37
+    ],
+    "large_indexed_extents": [
+      [
+        1920,
+        1080
+      ],
+      [
+        3840,
+        2160
+      ]
+    ],
+    "binding_sources": [
+      "RGBA8UNorm",
+      "RGBA16Float"
+    ],
+    "binding_targets": [
+      "RGBA8UNorm",
+      "RGBA16Float"
+    ],
+    "binding_filters": [
+      "Point",
+      "Linear"
+    ],
+    "binding_address_modes": [
+      "Clamp",
+      "Repeat"
+    ],
+    "binding_small_extent": [
+      68,
+      36
+    ],
+    "binding_large_extents": [
+      [
+        1920,
+        1080
+      ],
+      [
+        3840,
+        2160
+      ]
+    ],
+    "binding_small_cross_product_cases": 32
+  },
+  "color_tolerance": {
+    "vertex": {
+      "RGBA8UNorm": "1.01/255",
+      "RGBA16Float": 0.002
+    },
+    "binding": {
+      "RGBA8UNorm": "2.1/255",
+      "RGBA16Float": 0.004
+    }
+  },
+  "padding_sentinels": {
+    "vertex": "0xb3",
+    "binding": "0xb3"
+  },
+  "results": [
+    {
+      "suite": "vertex",
+      "kind": "in-tree-ctest",
+      "assertions": 386,
+      "draws": 75,
+      "indexed_draws": 39,
+      "images": 73,
+      "verified_texel_bytes": 125406860,
+      "padded_images": 69,
+      "adapters": 1
+    },
+    {
+      "suite": "vertex",
+      "kind": "installed-consumer",
+      "assertions": 386,
+      "draws": 75,
+      "indexed_draws": 39,
+      "images": 73,
+      "verified_texel_bytes": 125406860,
+      "padded_images": 69,
+      "adapters": 1
+    },
+    {
+      "suite": "binding",
+      "kind": "in-tree-ctest",
+      "assertions": 287,
+      "draws": 78,
+      "snapshots": 129,
+      "images": 40,
+      "verified_texel_bytes": 124944768,
+      "padded_images": 36,
+      "adapters": 1
+    },
+    {
+      "suite": "binding",
+      "kind": "installed-consumer",
+      "assertions": 287,
+      "draws": 78,
+      "snapshots": 129,
+      "images": 40,
+      "verified_texel_bytes": 124944768,
+      "padded_images": 36,
+      "adapters": 1
+    }
+  ],
+  "total_assertions": 1346,
+  "total_draws": 306,
+  "total_indexed_draws": 78,
+  "total_snapshots": 258,
+  "total_images": 226,
+  "total_verified_texel_bytes": 500703256,
+  "total_padded_images": 210,
+  "CLI_rejections": 8,
+  "missing_layer_rejections": 4,
+  "software_graphics_contracts_accepted": true,
+  "hardware_GPU_accepted": false,
+  "validation_layer_success_accepted": false,
+  "WSI_accepted": false,
+  "long_memory_accepted": false,
+  "shader_scope": "Existing embedded SPIR-V fixtures; no fresh assembly/semantic validation or HLSL compilation in this run",
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "common_CXX_suites_or_fixtures_modified": false,
+  "native_receipt": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/receipt.json",
+    "bytes": 22299,
+    "sha256": "71f3f07a419f90910093cc1b2401db5a554599604d601cdf832a015a00acf9cd"
+  },
+  "artifact": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/artifact.zip",
+    "bytes": 34808,
+    "sha256": "29a985fa5e4df8953831bfab3c5d9f831617c5173e2bb09f996685780bf0206b"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/artifact-metadata.json",
+      "bytes": 866,
+      "sha256": "61e04edb5bb9fd4a3f04a5ecc37eb26954bd2503c1a0d35d2f02220373d440ef"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/artifact.zip",
+      "bytes": 34808,
+      "sha256": "29a985fa5e4df8953831bfab3c5d9f831617c5173e2bb09f996685780bf0206b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/common-jobs-snapshot.json",
+      "bytes": 3758,
+      "sha256": "30553c429b6e6bb99b153e95abc9d64efd749259720152479d17812e2aaaced7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/common-portable-job.log",
+      "bytes": 314972,
+      "sha256": "8b3d2b20f0b9242a5f9dad2551cb440bf16a5b2f4bfd4ecf8e382032db053b9c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/job-status.json",
+      "bytes": 1675,
+      "sha256": "73a54dedc9eb542c7c50cccd29424676efbcbacec44c3418c2651fc8ce16bd4f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/job.log",
+      "bytes": 49925,
+      "sha256": "09c390d82f0d82182d72e84fd8668ed8ec747dcf5bf57028824deaa6201fcfbb"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-ctest.xml",
+      "bytes": 624,
+      "sha256": "586fd8386550f2df4086a1eec2de869ce23e3460de2c61664b516b463227e848"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-in-tree-extra.stderr",
+      "bytes": 53,
+      "sha256": "43ec3532410b5d1ca80060f869bc1380e7f367ce32b9e718b2024f52f00988d5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-in-tree-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-in-tree-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-in-tree-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-in-tree-unknown.stderr",
+      "bytes": 53,
+      "sha256": "43ec3532410b5d1ca80060f869bc1380e7f367ce32b9e718b2024f52f00988d5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-in-tree-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-installed-extra.stderr",
+      "bytes": 53,
+      "sha256": "43ec3532410b5d1ca80060f869bc1380e7f367ce32b9e718b2024f52f00988d5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-installed-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-installed-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-installed-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-installed-unknown.stderr",
+      "bytes": 53,
+      "sha256": "43ec3532410b5d1ca80060f869bc1380e7f367ce32b9e718b2024f52f00988d5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/binding-installed-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/build-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/build-consumer.stdout",
+      "bytes": 1991,
+      "sha256": "a10a4c87148e968b91adee23314cc452ddfc9cdd38acb0b17b6697d36e2c6805"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/build-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/build-identity.stdout",
+      "bytes": 5326,
+      "sha256": "09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/build-suites.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/build-suites.stdout",
+      "bytes": 103422,
+      "sha256": "92bc7e8cbe23bae4f9824cd6952cb71565548bd1388a01ff208ed323544ed3d3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/commands.json",
+      "bytes": 8617,
+      "sha256": "ccc547cdaaa4a42ec07d89c5769922c92ef889cb5685f2ac56edf3712dd22f92"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/configure-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/configure-consumer.stdout",
+      "bytes": 426,
+      "sha256": "d68323ba749c6d888b7f6aae408881e953e417e0126e3fb364e1b03f43bd193d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/configure-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/configure-identity.stdout",
+      "bytes": 426,
+      "sha256": "35db75ed39f6835f885d1a9dba9c98e21f627d8b36d118088f2eaab5f68175d1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/configure-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/configure-sdk.stdout",
+      "bytes": 780,
+      "sha256": "31857246d6a3e6b190f888973e27d2c26ae46972ab80e0e3786f012650dc6c68"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/ctest-binding.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/ctest-binding.stdout",
+      "bytes": 1244,
+      "sha256": "ce5b1c67f81e6891820c1a010b4f13a7fa291511fc54f2c1c434a576f030ca19"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/ctest-vertex.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/ctest-vertex.stdout",
+      "bytes": 1235,
+      "sha256": "b03ed7a623b1945677f2ef801271caa88a912eee8346125651fe6fb503e89284"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/identity.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/install-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/install-sdk.stdout",
+      "bytes": 2337,
+      "sha256": "f9291427808806fdbff7362fd09fe572d21a2f4f58044fcd891b357972c01c72"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/installed-binding.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/installed-binding.stdout",
+      "bytes": 269,
+      "sha256": "daf5c73c4f3ae037d1de856efd3fc4d922a9b9791195501efb642cbf3195469c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/installed-vertex.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/installed-vertex.stdout",
+      "bytes": 271,
+      "sha256": "42b5907f5bcc689961c2163e12274a82d027b355e9ae9f040d9de0ea2aabc485"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/packages.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/packages.stdout",
+      "bytes": 104,
+      "sha256": "2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/receipt.json",
+      "bytes": 22299,
+      "sha256": "71f3f07a419f90910093cc1b2401db5a554599604d601cdf832a015a00acf9cd"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/sdk-cache.txt",
+      "bytes": 16753,
+      "sha256": "5b8cd3d37162d239f1733f67cb53344cf4b60c2e26f2a2d4a18716042cc717e7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/sdk-compile-commands.json",
+      "bytes": 13913,
+      "sha256": "13788032b49e82aadcf2ca9497f339d02196b269a1a4a0b8b2643419a613087d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "81b8409bce749f8c75d86bbbe06eff794ddb1f7701744856f5161ccf6e8a5a16"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-ctest.xml",
+      "bytes": 617,
+      "sha256": "def9f334fbaa604a08ecd133702a272d1b38b780486b95d57b3e3e513e8ded4b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-in-tree-extra.stderr",
+      "bytes": 52,
+      "sha256": "915759dc6ac252a3f1756a441a1f02250aa9fdc338f87af8a45b5fc0022f4925"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-in-tree-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-in-tree-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-in-tree-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-in-tree-unknown.stderr",
+      "bytes": 52,
+      "sha256": "915759dc6ac252a3f1756a441a1f02250aa9fdc338f87af8a45b5fc0022f4925"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-in-tree-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-installed-extra.stderr",
+      "bytes": 52,
+      "sha256": "915759dc6ac252a3f1756a441a1f02250aa9fdc338f87af8a45b5fc0022f4925"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-installed-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-installed-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-installed-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-installed-unknown.stderr",
+      "bytes": 52,
+      "sha256": "915759dc6ac252a3f1756a441a1f02250aa9fdc338f87af8a45b5fc0022f4925"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vertex-installed-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vulkaninfo.stderr",
+      "bytes": 218,
+      "sha256": "df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/native/vulkaninfo.stdout",
+      "bytes": 1821,
+      "sha256": "5cfbf74d270cfda1ea5c36a079cb06ab6d19596427f4083b624570ecee90bca6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-input/run-status.json",
+      "bytes": 417,
+      "sha256": "1965a27f26245ef4589f26bc25c32f80da7c6049a991f398f7c304b4ac5b557a"
+    }
+  ],
+  "verification": {
+    "result": "pass",
+    "checks": [
+      "Successful real Linux workflow; logged receipt matches artifact",
+      "GitHub ZIP digest and every diagnostic/raw tested Git input including SPIR-V fixture header hash verified",
+      "Unchanged SDK/suites/fixtures, 27-file native SDK fingerprint and equal built/installed library bytes",
+      "Both exact suites in-tree and installed, full image references within stated tolerance and exact sentinel padding, expected CLI/layer rejection and no CTest skip",
+      "Software CPU identity recorded; physical GPU, normal VVL, WSI and long memory not accepted"
+    ]
+  }
+}

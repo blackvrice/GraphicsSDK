@@ -1,0 +1,366 @@
+[
+  {
+    "name": "source-commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.001668960999992919
+  },
+  {
+    "name": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.31323254299999803
+  },
+  {
+    "name": "headers-commit",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.0016310750000059215
+  },
+  {
+    "name": "headers-status",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "status",
+      "--porcelain"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.08124413000000175
+  },
+  {
+    "name": "packages",
+    "argv": [
+      "dpkg-query",
+      "-W",
+      "-f=${Package} ${Version}\n",
+      "libvulkan1",
+      "mesa-vulkan-drivers",
+      "vulkan-tools"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.009217298999999457
+  },
+  {
+    "name": "vulkaninfo",
+    "argv": [
+      "vulkaninfo",
+      "--summary"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 5.029717117000004
+  },
+  {
+    "name": "configure-sdk",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 4.317144162999995
+  },
+  {
+    "name": "build-suites",
+    "argv": [
+      "cmake",
+      "--build",
+      "--preset",
+      "linux-vulkan",
+      "--target",
+      "gfx_vulkan_vertex_tests",
+      "gfx_vulkan_binding_tests",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 19.340378345999994
+  },
+  {
+    "name": "install-sdk",
+    "argv": [
+      "cmake",
+      "--install",
+      "out/linux-vulkan"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.061243466999997054
+  },
+  {
+    "name": "configure-identity",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/linux_vulkan_device",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-identity",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install",
+      "-DGFX_VULKAN_HEADERS=/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.1287056299999989
+  },
+  {
+    "name": "build-identity",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-identity",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.8736805930000031
+  },
+  {
+    "name": "identity",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-identity/gfx_linux_vulkan_device",
+      "selection"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.04582267100001047
+  },
+  {
+    "name": "configure-consumer",
+    "argv": [
+      "cmake",
+      "-S",
+      "tests/vulkan_consumer",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-install"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.13572288700000001
+  },
+  {
+    "name": "build-consumer",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer",
+      "--parallel",
+      "1",
+      "--target",
+      "vulkan_vertex_consumer",
+      "vulkan_binding_consumer",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 5.575605678999992
+  },
+  {
+    "name": "ctest-vertex",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan",
+      "-R",
+      "^vulkan_vertex_input$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-evidence/vertex-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.467650355999993
+  },
+  {
+    "name": "installed-vertex",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_vertex_consumer"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.6144142099999925
+  },
+  {
+    "name": "vertex-in-tree-unknown",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_vertex_tests",
+      "--validaton"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0017960490000064055
+  },
+  {
+    "name": "vertex-in-tree-extra",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_vertex_tests",
+      "--validation",
+      "extra"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.001297880999999279
+  },
+  {
+    "name": "vertex-in-tree-missing-layer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_vertex_tests",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.015170409000006657
+  },
+  {
+    "name": "vertex-installed-unknown",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_vertex_consumer",
+      "--validaton"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0013771090000034292
+  },
+  {
+    "name": "vertex-installed-extra",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_vertex_consumer",
+      "--validation",
+      "extra"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0012159800000119958
+  },
+  {
+    "name": "vertex-installed-missing-layer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_vertex_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.014303666000003545
+  },
+  {
+    "name": "ctest-binding",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan",
+      "-R",
+      "^vulkan_resource_bindings$",
+      "--verbose",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-evidence/binding-ctest.xml"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 2.043772082000004
+  },
+  {
+    "name": "installed-binding",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_binding_consumer"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.9002408929999888
+  },
+  {
+    "name": "binding-in-tree-unknown",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_binding_tests",
+      "--validaton"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0017430409999974472
+  },
+  {
+    "name": "binding-in-tree-extra",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_binding_tests",
+      "--validation",
+      "extra"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0013545449999980974
+  },
+  {
+    "name": "binding-in-tree-missing-layer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan/gfx_vulkan_binding_tests",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.015531463000002077
+  },
+  {
+    "name": "binding-installed-unknown",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_binding_consumer",
+      "--validaton"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.001304481000005353
+  },
+  {
+    "name": "binding-installed-extra",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_binding_consumer",
+      "--validation",
+      "extra"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.0014438480000080745
+  },
+  {
+    "name": "binding-installed-missing-layer",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-input-consumer/vulkan_binding_consumer",
+      "--validation"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.014941128999993225
+  }
+]
