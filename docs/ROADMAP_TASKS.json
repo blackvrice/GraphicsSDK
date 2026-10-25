@@ -971,15 +971,18 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "D32·depth/MRT 실행",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-08"
       ],
-      "work": "Depth-only/read-only와 비교/쓰기 mask 참조 실행.",
-      "done_when": "색·깊이 전체 참조 및 pass/pipeline 호환성 검사 통과.",
-      "evidence": [],
-      "requires": "Linux Vulkan GPU"
+      "work": "기존 D32/depth/MRT suite를 실제 Linux software ICD의 in-tree CTest와 설치 SDK 소비자에서 실행했다. Depth-only/read-only·비교 8종·쓰기 mask·혼합 MRT의 색/깊이 전체 참조와 pass/pipeline 호환성·수명 계약 통과. 물리 GPU 수용은 P3-LNX-15 필수 gate에 유지한다.",
+      "done_when": "색·깊이 전체 참조 및 pass/pipeline 호환성 검사 통과. 이번 근거는 software ICD이며 물리 GPU 수용은 P3-LNX-15에서 별도 필수 검증.",
+      "evidence": [
+        "docs/PHASE3_LINUX_DEPTH_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-depth/summary.json"
+      ],
+      "requires": "Linux Vulkan runtime; 이번 수용은 software ICD, 물리 GPU는 P3-LNX-15 필수"
     },
     {
       "id": "P3-LNX-10",
