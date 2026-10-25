@@ -23,6 +23,9 @@ common software-ICD suites and their installed consumers with a pinned Linux VVL
 for nine external consumers and an exact 20-file verification SDK ZIP. The audit tool adds
 third-party notices after installation. This audit run uses driver-only software Vulkan;
 its unchanged SDK archive retains the separate required-validation evidence above.
+[Fresh Windows/Linux full Python CI](PHASE3_PYTHON_CI_REPORT.md) passed 640 tests per
+platform with zero errors, failures or skips. Historical source snapshots and actual
+checkout byte identities remain separate; the SDK C++ implementation is unchanged.
 Physical GPU and WSI acceptance remain pending.
 The [Windows GPU/driver support policy](PHASE3_WINDOWS_SUPPORT.md) records the
 tested NVIDIA presentation and Intel unsupported combinations, plus fallback decisions.

@@ -1063,19 +1063,22 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "전체 CI Python 증거 검사 정합성",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-03"
       ],
-      "work": "기존 CI의 Python 증거 검사 오류를 fresh checkout·플랫폼별 source identity와 대조해 수정한다. 과거 Windows 관측과 native Linux source를 혼합하거나 오류 테스트를 제거해 통과시키지 않는다.",
-      "done_when": "Windows/Linux fresh CI에서 전체 Python 회귀 통과와 기존 자료·검증 계약 보존. 변경 전 614 tests/errors=92 원본 및 수정 후 실제 실행 근거.",
+      "work": "고정 source ZIP으로 과거 Windows 실행 자료를 검증하고 현재 실행 source identity는 엄격히 유지했다. Windows 경로 별칭/고정 명령 비교를 수정했다. 실제 새 Windows/Linux 전체 CI에서 각 640 tests·540 subtests, 오류/실패/건너뜀 0. 기존 627개 ID와 과거 614개 baseline 로그를 보존했다.",
+      "done_when": "Windows/Linux fresh CI 전체 Python 통과 및 기존 자료·검증 계약 보존. 실제 SDK 파일 27개와 검사 입력 174개의 플랫폼별 바이트를 대조하고 과거 identity를 재할당하지 않음. 기존 614/627개 실패 원본 및 수정 후 640개 결과 보존.",
       "evidence": [
         "docs/PHASE3_LINUX_COMPILE_REPORT.md",
         "docs/PHASE3_LINUX_VALIDATION_REPORT.md",
-        "docs/PHASE3_LINUX_PACKAGE_REPORT.md"
+        "docs/PHASE3_LINUX_PACKAGE_REPORT.md",
+        "docs/PHASE3_PYTHON_CI_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-python-ci/summary.json",
+        ".github/workflows/build.yml"
       ],
-      "requires": "Windows/Linux CI와 보존된 benchmark evidence"
+      "requires": "Windows/Linux fresh CI; 고정 과거 source ZIP과 benchmark evidence. 물리 GPU 수용은 P3-LNX-15 별도"
     },
     {
       "id": "P3-LNX-15",

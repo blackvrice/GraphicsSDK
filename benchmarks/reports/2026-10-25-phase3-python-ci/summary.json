@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-14",
+  "source_commit": "35d0808259ce87bf6d3fed2649c8b79e062cb83c",
+  "workflow_run": {
+    "id": 40194816503,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40194816503",
+    "conclusion": "success"
+  },
+  "platforms": {
+    "linux": {
+      "SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+      "inputs": 174,
+      "checkout_byte_categories": {
+        "Git_blob_bytes": 174
+      },
+      "tests": 640,
+      "subtests": 540,
+      "skipped": 0
+    },
+    "windows": {
+      "SDK_source_fingerprint": "09ce93c4405f86cd69b9f6ac1484041bfe42466cb40d8f05767d987fc86a2da5",
+      "inputs": 174,
+      "checkout_byte_categories": {
+        "Windows_CRLF_checkout": 146,
+        "Git_blob_bytes": 28
+      },
+      "tests": 640,
+      "subtests": 540,
+      "skipped": 0
+    }
+  },
+  "total_Python_tests": 1280,
+  "total_subtests": 1080,
+  "errors": 0,
+  "failures": 0,
+  "skipped": 0,
+  "new_regression_tests": [
+    "test_fixed_memory.FixedMemoryContracts.test_command_paths_and_argument_order_remain_bound",
+    "test_fixed_memory.FixedMemoryContracts.test_equivalent_output_path_preserves_original_command",
+    "test_memory_campaign.CampaignReceiptsTests.test_canonical_root_alias_preserves_source_receipts",
+    "test_recorded_sources.RecordedSourceContracts.test_aggregate_fingerprint_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_archive_digest_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_churn_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_duplicate_source_path_rejected",
+    "test_recorded_sources.RecordedSourceContracts.test_empty_source_set_rejected",
+    "test_recorded_sources.RecordedSourceContracts.test_loader_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_member_digest_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_missing_archive_fails_without_skip",
+    "test_recorded_sources.RecordedSourceContracts.test_rebase_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_source_path_escape_rejected"
+  ],
+  "all_prior_627_tests_preserved": true,
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "live_source_validators_modified": false,
+  "historical_replay_sources": [
+    {
+      "name": "loader",
+      "archive": {
+        "path": "benchmarks/reports/sources/vulkan-loader-fault-2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401-744e708e6a4ae68c.zip",
+        "bytes": 1200836,
+        "sha256": "b216d99f1dbd9937af9e530375dae874e53992ec7b2e86ea2d90226780b46cd0"
+      },
+      "source_fingerprint": "5633d2982f895be2442e5bfd04e119091b7707c41e84af1dc829e2201aa802db",
+      "source_files": 8
+    },
+    {
+      "name": "churn",
+      "archive": {
+        "path": "benchmarks/reports/sources/vulkan-pool-churn-40a467f7d34faaf412ce3e0568c8f76ccc0c2cd80baf7cf4d7b402551bf8aed8-7c7cd0dca6b47354.zip",
+        "bytes": 1919323,
+        "sha256": "63b6656edf872989db5c12cb9e0469660fa852819731431e01c2f6879c1c5f30"
+      },
+      "source_fingerprint": "8ede9ef8409794e84ee653054757a2aaa0ae56a7d00287b0d4662d7f6c0da047",
+      "source_files": 13
+    },
+    {
+      "name": "rebase",
+      "archive": {
+        "path": "benchmarks/reports/sources/vulkan-pool-rebase-fault-40a467f7d34faaf412ce3e0568c8f76ccc0c2cd80baf7cf4d7b402551bf8aed8-54ee8682ccf6f512.zip",
+        "bytes": 1943995,
+        "sha256": "c33c7d72ce3517e53dad44388f0b854835e8d0de1624a98c4c4be6665233d4cc"
+      },
+      "source_fingerprint": "843539219be79a401db1162523622d3604e75da9b4defca3368aeb429a744831",
+      "source_files": 11
+    }
+  ],
+  "before": [
+    {
+      "source_commit": "051efe65d0d7a535474a10024ab3d5c99f4e4161",
+      "run_id": 40184124680,
+      "platform": "portable",
+      "tests": 614,
+      "errors": 92,
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-validation/common-portable-job.log",
+      "bytes": 314972,
+      "sha256": "960f6c565b8376b757bc98d4a46d6df0a48736b9317b34c56f7c3b8968412919"
+    },
+    {
+      "source_commit": "051efe65d0d7a535474a10024ab3d5c99f4e4161",
+      "run_id": 40184124680,
+      "platform": "windows",
+      "tests": 614,
+      "errors": 99,
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-validation/common-windows-job.log",
+      "bytes": 323089,
+      "sha256": "d855f41f1881f15ef6a0a01ec7cafdddc459e5266ff5d0d47cf6b262f1dd7776"
+    },
+    {
+      "source_commit": "199812f27a01ce6c38cead5be29551280953c850",
+      "run_id": 40187751574,
+      "platform": "portable",
+      "tests": 627,
+      "errors": 92,
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-package/common-portable-job.log",
+      "bytes": 316925,
+      "sha256": "a20a2a34a683eee77ec54c0698ae632345e3c42ee809f74e85aec828c3df8779"
+    },
+    {
+      "source_commit": "199812f27a01ce6c38cead5be29551280953c850",
+      "run_id": 40187751574,
+      "platform": "windows",
+      "tests": 627,
+      "errors": 99,
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-package/common-windows-job.log",
+      "bytes": 325432,
+      "sha256": "16a6324e549f3dd08afa574419b8de107a61cfdb0417705fd11c6cebbb19e523"
+    }
+  ],
+  "native_compile_CI": {
+    "id": 40194816496,
+    "CPU_tests": 22,
+    "GPU_tests": 0,
+    "conclusion": "success"
+  },
+  "native_hardware_GPU_accepted": false,
+  "memory_or_Intel_investigation_resumed": false,
+  "verification": {
+    "result": "pass",
+    "checks": [
+      "Successful fresh Windows/Linux full CI, logged/native receipts and artifact SHA-256 verified",
+      "640 test methods and 540 subtests on each platform, zero exclusions/skips/errors/failures",
+      "All 627 prior test IDs retained, 13 targeted regression tests added",
+      "174 checked inputs on each platform match exact Git bytes or explicit Windows checkout line endings",
+      "Per-platform SDK fingerprints reconstructed from 27 actual file hashes without changing historical identity",
+      "Three pinned historical source ZIPs and 32 exact source entries verified",
+      "614/627 baseline logs unchanged, SDK source/old benchmark data/runtime validators preserved",
+      "Windows CTest 37, Linux portable CTest 11, native Vulkan compile CPU 22 passed"
+    ]
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/artifact-linux.zip",
+      "bytes": 28920,
+      "sha256": "0f4d135f06504652fa30331ef8a0f08cf0c48e30cea9173d16dbb2ce0cbf68ef"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/artifact-metadata.json",
+      "bytes": 1717,
+      "sha256": "074fb5fe62f2659914b2f95d31c510c0a40cafc50e59c4b0027ed228cb178826"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/artifact-windows.zip",
+      "bytes": 28987,
+      "sha256": "13823c95ca85c68aaa9b481772b78d2be30bb5d77871b2271b266fab975fe6c2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/before-evidence.json",
+      "bytes": 1747,
+      "sha256": "4029603dfb76f3f8d2ed4c6c0a38562aa994c9edd2b873f70ab9f352889dd0e0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/compile-job-status.json",
+      "bytes": 1669,
+      "sha256": "fa56796410f12300a49a4c9b67a5fcef4493fcf7e1344173b7abd974b5b7b1f8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/compile-job.log",
+      "bytes": 37950,
+      "sha256": "f74427f9a6f37a4a0d22447ccdb2e1cb8b8e955312a5319a33fded861123879e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/job-status.json",
+      "bytes": 4359,
+      "sha256": "a687f784c72c3bbd682dd9b2ec88e4456eb6e80ace71f65119e3e1b22048cf08"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/linux-job.log",
+      "bytes": 213414,
+      "sha256": "5e34117a53ce4ebc5e268face493096c42f058cf060d599e486723d91d8eb31a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/local/receipt.json",
+      "bytes": 88657,
+      "sha256": "33fa0af61f0e60ec836e3f87eb02707c5c1b16dccf5fec1d2b111664a67989b7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/local/unittest.log",
+      "bytes": 79692,
+      "sha256": "b914ab9b45b17107cffd1a6382701f25f5362714ee6080d6cbd669df3ea8d73c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/local-before.log",
+      "bytes": 80119,
+      "sha256": "ed3f3a8b2556ceb6f5b6b46b64ba96b513bdedc3e1201bfad6c32e2d9dacbab2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/native/linux/receipt.json",
+      "bytes": 86164,
+      "sha256": "ee92630260d0f537cea6a200e7e862fde504716ca31e912dc7826de4120cfda1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/native/linux/unittest.log",
+      "bytes": 79691,
+      "sha256": "d27bd35bc12594d75a248f45394847903616caac4ef56d63acdcaace8ea8663c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/native/windows/receipt.json",
+      "bytes": 87740,
+      "sha256": "43754c271d595a04121c6fcbc93b9ef409b2a426105843201f718437f35089c5"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/native/windows/unittest.log",
+      "bytes": 79691,
+      "sha256": "a0937c161aa15ee5fbd89929ff8ad1863aef316d20d9584d4561d4abbaa6a5ab"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/run-status.json",
+      "bytes": 266,
+      "sha256": "b8acb5bd1dc4306088a9b9791d8bc777b71c978d0c815adf532fe2ad06a64513"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/verify_evidence.py",
+      "bytes": 10165,
+      "sha256": "8d62a531ea782e16e8a0c176ab1097e1c0310bb6ea1e5e4bdcb28db7ae2f4686"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-python-ci/windows-job.log",
+      "bytes": 216189,
+      "sha256": "458ff09de9e6e70d396317f02a2f4b63818b07eb2a739c03c6e38aa9f32b479f"
+    }
+  ]
+}
