@@ -1,0 +1,392 @@
+﻿2026-10-25T08:31:50.1964809Z Current runner version: '2.338.0'
+2026-10-25T08:31:50.1989908Z ##[group]Runner Image Provisioner
+2026-10-25T08:31:50.1990764Z Hosted Compute Agent
+2026-10-25T08:31:50.1991732Z Version: 20261021.618
+2026-10-25T08:31:50.1992383Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T08:31:50.1993162Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T08:31:50.1993927Z Worker ID: {561ee06f-b0aa-4521-92f4-ab3c20a5e746}
+2026-10-25T08:31:50.1994618Z Region: westus2
+2026-10-25T08:31:50.1995228Z Cloud: Azure
+2026-10-25T08:31:50.1995770Z ##[endgroup]
+2026-10-25T08:31:50.1997314Z ##[group]Operating System
+2026-10-25T08:31:50.1998007Z Ubuntu
+2026-10-25T08:31:50.1998531Z 24.04.5
+2026-10-25T08:31:50.1999102Z LTS
+2026-10-25T08:31:50.1999618Z ##[endgroup]
+2026-10-25T08:31:50.2000158Z ##[group]Runner Image
+2026-10-25T08:31:50.2000902Z Image: ubuntu-24.04
+2026-10-25T08:31:50.2001681Z Version: 20261012.334.1
+2026-10-25T08:31:50.2003356Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T08:31:50.2004945Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T08:31:50.2005956Z ##[endgroup]
+2026-10-25T08:31:50.2007023Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T08:31:50.2009304Z Contents: read
+2026-10-25T08:31:50.2009920Z Metadata: read
+2026-10-25T08:31:50.2010604Z ##[endgroup]
+2026-10-25T08:31:50.2013213Z Secret source: Actions
+2026-10-25T08:31:50.2014269Z Cache mode: write
+2026-10-25T08:31:50.2014957Z Prepare workflow directory
+2026-10-25T08:31:50.2355938Z Prepare all required actions
+2026-10-25T08:31:50.2405265Z Getting action download info
+2026-10-25T08:31:50.5955482Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-25T08:31:50.6984973Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-25T08:31:50.9166274Z Complete job name: software-graphics
+2026-10-25T08:31:51.0079412Z ##[group]Run actions/checkout@v4
+2026-10-25T08:31:51.0080345Z with:
+2026-10-25T08:31:51.0080804Z   persist-credentials: false
+2026-10-25T08:31:51.0081588Z   repository: blackvrice/GraphicsSDK
+2026-10-25T08:31:51.0085518Z   token: ***
+2026-10-25T08:31:51.0085955Z   ssh-strict: true
+2026-10-25T08:31:51.0086397Z   ssh-user: git
+2026-10-25T08:31:51.0086835Z   clean: true
+2026-10-25T08:31:51.0087304Z   sparse-checkout-cone-mode: true
+2026-10-25T08:31:51.0087841Z   fetch-depth: 1
+2026-10-25T08:31:51.0088279Z   fetch-tags: false
+2026-10-25T08:31:51.0088731Z   show-progress: true
+2026-10-25T08:31:51.0089181Z   lfs: false
+2026-10-25T08:31:51.0089597Z   submodules: false
+2026-10-25T08:31:51.0090047Z   set-safe-directory: true
+2026-10-25T08:31:51.0090566Z   allow-unsafe-pr-checkout: false
+2026-10-25T08:31:51.0091530Z ##[endgroup]
+2026-10-25T08:31:51.1151052Z Syncing repository: blackvrice/GraphicsSDK
+2026-10-25T08:31:51.1154429Z ##[group]Getting Git version info
+2026-10-25T08:31:51.1155924Z Working directory is '/home/runner/work/GraphicsSDK/GraphicsSDK'
+2026-10-25T08:31:51.1157978Z [command]/usr/bin/git version
+2026-10-25T08:31:51.1263747Z git version 2.55.0
+2026-10-25T08:31:51.1288047Z ##[endgroup]
+2026-10-25T08:31:51.1304864Z Temporarily overriding HOME='/home/runner/work/_temp/1cb2bacd-de80-4d85-9b79-f42c9de8eadf' before making global git config changes
+2026-10-25T08:31:51.1307386Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T08:31:51.1315652Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK
+2026-10-25T08:31:51.1371573Z Deleting the contents of '/home/runner/work/GraphicsSDK/GraphicsSDK'
+2026-10-25T08:31:51.1375922Z ##[group]Initializing the repository
+2026-10-25T08:31:51.1380932Z [command]/usr/bin/git init /home/runner/work/GraphicsSDK/GraphicsSDK
+2026-10-25T08:31:51.1582918Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T08:31:51.1584918Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T08:31:51.1587091Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T08:31:51.1588491Z hint: call:
+2026-10-25T08:31:51.1589201Z hint:
+2026-10-25T08:31:51.1590120Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T08:31:51.1611582Z hint:
+2026-10-25T08:31:51.1613332Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T08:31:51.1615984Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T08:31:51.1617606Z hint:
+2026-10-25T08:31:51.1618082Z hint: 	git branch -m <name>
+2026-10-25T08:31:51.1618570Z hint:
+2026-10-25T08:31:51.1619213Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T08:31:51.1620324Z Initialized empty Git repository in /home/runner/work/GraphicsSDK/GraphicsSDK/.git/
+2026-10-25T08:31:51.1623218Z [command]/usr/bin/git remote add origin https://github.com/blackvrice/GraphicsSDK
+2026-10-25T08:31:51.1689765Z ##[endgroup]
+2026-10-25T08:31:51.1691670Z ##[group]Disabling automatic garbage collection
+2026-10-25T08:31:51.1693399Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T08:31:51.1773929Z ##[endgroup]
+2026-10-25T08:31:51.1775610Z ##[group]Setting up auth
+2026-10-25T08:31:51.1782412Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T08:31:51.1820100Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T08:31:51.2211798Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T08:31:51.2248244Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T08:31:51.2473113Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T08:31:51.2508766Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T08:31:51.2756320Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T08:31:51.2801738Z ##[endgroup]
+2026-10-25T08:31:51.2803526Z ##[group]Fetching the repository
+2026-10-25T08:31:51.2813618Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +026a91a1a82c5d7ab36c71cbad4bab789f02c963:refs/remotes/origin/main
+2026-10-25T08:31:52.6654324Z From https://github.com/blackvrice/GraphicsSDK
+2026-10-25T08:31:52.6656288Z  * [new ref]         026a91a1a82c5d7ab36c71cbad4bab789f02c963 -> origin/main
+2026-10-25T08:31:52.6662386Z ##[endgroup]
+2026-10-25T08:31:52.6664502Z ##[group]Determining the checkout info
+2026-10-25T08:31:52.6666982Z ##[endgroup]
+2026-10-25T08:31:52.6669307Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T08:31:52.6739745Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T08:31:52.6775540Z ##[group]Checking out the ref
+2026-10-25T08:31:52.6779914Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T08:31:53.5251822Z Switched to a new branch 'main'
+2026-10-25T08:31:53.5255591Z branch 'main' set up to track 'origin/main'.
+2026-10-25T08:31:53.5325353Z ##[endgroup]
+2026-10-25T08:31:53.5375059Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T08:31:53.5402126Z 026a91a1a82c5d7ab36c71cbad4bab789f02c963
+2026-10-25T08:31:53.5411587Z ##[group]Removing auth
+2026-10-25T08:31:53.5415421Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T08:31:53.5448483Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T08:31:53.5697789Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T08:31:53.5727999Z http.https://github.com/.extraheader
+2026-10-25T08:31:53.5736231Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T08:31:53.5770288Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T08:31:53.6011724Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T08:31:53.6045208Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T08:31:53.6283331Z ##[endgroup]
+2026-10-25T08:31:53.6542827Z ##[group]Run actions/checkout@v4
+2026-10-25T08:31:53.6543196Z with:
+2026-10-25T08:31:53.6543481Z   repository: KhronosGroup/Vulkan-Headers
+2026-10-25T08:31:53.6543870Z   ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T08:31:53.6544228Z   path: .deps/Vulkan-Headers
+2026-10-25T08:31:53.6544552Z   persist-credentials: false
+2026-10-25T08:31:53.6547343Z   token: ***
+2026-10-25T08:31:53.6547599Z   ssh-strict: true
+2026-10-25T08:31:53.6616936Z   ssh-user: git
+2026-10-25T08:31:53.6617446Z   clean: true
+2026-10-25T08:31:53.6618009Z   sparse-checkout-cone-mode: true
+2026-10-25T08:31:53.6618666Z   fetch-depth: 1
+2026-10-25T08:31:53.6619136Z   fetch-tags: false
+2026-10-25T08:31:53.6619616Z   show-progress: true
+2026-10-25T08:31:53.6620052Z   lfs: false
+2026-10-25T08:31:53.6620456Z   submodules: false
+2026-10-25T08:31:53.6620921Z   set-safe-directory: true
+2026-10-25T08:31:53.6621735Z   allow-unsafe-pr-checkout: false
+2026-10-25T08:31:53.6622330Z ##[endgroup]
+2026-10-25T08:31:53.7468732Z Syncing repository: KhronosGroup/Vulkan-Headers
+2026-10-25T08:31:53.7480911Z ##[group]Getting Git version info
+2026-10-25T08:31:53.7482427Z Working directory is '/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers'
+2026-10-25T08:31:53.7523837Z [command]/usr/bin/git version
+2026-10-25T08:31:53.7569163Z git version 2.55.0
+2026-10-25T08:31:53.7589607Z ##[endgroup]
+2026-10-25T08:31:53.7603999Z Temporarily overriding HOME='/home/runner/work/_temp/c9b8aed3-2ba9-42d9-8534-9673e33f2f2b' before making global git config changes
+2026-10-25T08:31:53.7605547Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T08:31:53.7608765Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers
+2026-10-25T08:31:53.7644514Z ##[group]Initializing the repository
+2026-10-25T08:31:53.7650318Z [command]/usr/bin/git init /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers
+2026-10-25T08:31:53.7695013Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T08:31:53.7696391Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T08:31:53.7697641Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T08:31:53.7698629Z hint: call:
+2026-10-25T08:31:53.7699294Z hint:
+2026-10-25T08:31:53.7700040Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T08:31:53.7700868Z hint:
+2026-10-25T08:31:53.7702648Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T08:31:53.7703903Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T08:31:53.7704864Z hint:
+2026-10-25T08:31:53.7705600Z hint: 	git branch -m <name>
+2026-10-25T08:31:53.7706292Z hint:
+2026-10-25T08:31:53.7707187Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T08:31:53.7708774Z Initialized empty Git repository in /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers/.git/
+2026-10-25T08:31:53.7711766Z [command]/usr/bin/git remote add origin https://github.com/KhronosGroup/Vulkan-Headers
+2026-10-25T08:31:53.7743284Z ##[endgroup]
+2026-10-25T08:31:53.7744154Z ##[group]Disabling automatic garbage collection
+2026-10-25T08:31:53.7748315Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T08:31:53.7781207Z ##[endgroup]
+2026-10-25T08:31:53.7782655Z ##[group]Setting up auth
+2026-10-25T08:31:53.7786877Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T08:31:53.7820869Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T08:31:53.8083780Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T08:31:53.8132381Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T08:31:53.8398035Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T08:31:53.8437755Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T08:31:53.8666323Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T08:31:53.8709808Z ##[endgroup]
+2026-10-25T08:31:53.8710447Z ##[group]Fetching the repository
+2026-10-25T08:31:53.8719336Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T08:31:55.3170107Z From https://github.com/KhronosGroup/Vulkan-Headers
+2026-10-25T08:31:55.3170878Z  * branch            b379292b2ab6df5771ba9870d53cf8b2c9295daf -> FETCH_HEAD
+2026-10-25T08:31:55.3176374Z ##[endgroup]
+2026-10-25T08:31:55.3177371Z ##[group]Determining the checkout info
+2026-10-25T08:31:55.3185138Z ##[endgroup]
+2026-10-25T08:31:55.3186094Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T08:31:55.3235225Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T08:31:55.3266873Z ##[group]Checking out the ref
+2026-10-25T08:31:55.3272277Z [command]/usr/bin/git checkout --progress --force b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T08:31:55.3892892Z Note: switching to 'b379292b2ab6df5771ba9870d53cf8b2c9295daf'.
+2026-10-25T08:31:55.3893713Z 
+2026-10-25T08:31:55.3894279Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-25T08:31:55.3895120Z changes and commit them, and you can discard any commits you make in this
+2026-10-25T08:31:55.3896108Z state without impacting any branches by switching back to a branch.
+2026-10-25T08:31:55.3896738Z 
+2026-10-25T08:31:55.3897323Z If you want to create a new branch to retain commits you create, you may
+2026-10-25T08:31:55.3898080Z do so (now or later) by using -c with the switch command. Example:
+2026-10-25T08:31:55.3898438Z 
+2026-10-25T08:31:55.3898813Z   git switch -c <new-branch-name>
+2026-10-25T08:31:55.3899294Z 
+2026-10-25T08:31:55.3899591Z Or undo this operation with:
+2026-10-25T08:31:55.3899868Z 
+2026-10-25T08:31:55.3900178Z   git switch -
+2026-10-25T08:31:55.3900611Z 
+2026-10-25T08:31:55.3900943Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-25T08:31:55.3901760Z 
+2026-10-25T08:31:55.3922305Z HEAD is now at b379292 cmake: Disable modules if clang-scan-deps is missing
+2026-10-25T08:31:55.3952488Z ##[endgroup]
+2026-10-25T08:31:55.3954392Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T08:31:55.3980782Z b379292b2ab6df5771ba9870d53cf8b2c9295daf
+2026-10-25T08:31:55.3992580Z ##[group]Removing auth
+2026-10-25T08:31:55.3998077Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T08:31:55.4035556Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T08:31:55.4259100Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T08:31:55.4284171Z http.https://github.com/.extraheader
+2026-10-25T08:31:55.4292963Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T08:31:55.4326027Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T08:31:55.4545551Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T08:31:55.4578162Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T08:31:55.4794994Z ##[endgroup]
+2026-10-25T08:31:55.4935573Z ##[group]Run sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools
+2026-10-25T08:31:55.4936503Z [36;1msudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools[0m
+2026-10-25T08:31:55.5222401Z shell: /usr/bin/bash -e {0}
+2026-10-25T08:31:55.5222812Z ##[endgroup]
+2026-10-25T08:31:55.6131984Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-25T08:31:55.6472590Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-25T08:31:55.6492652Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-25T08:31:55.6494588Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-25T08:31:55.6543645Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-25T08:31:55.6594921Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-25T08:31:55.7880735Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [598 kB]
+2026-10-25T08:31:55.8161005Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [660 kB]
+2026-10-25T08:31:55.8230214Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+2026-10-25T08:31:55.8534052Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1400 kB]
+2026-10-25T08:31:55.8636549Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [310 kB]
+2026-10-25T08:31:55.8648339Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1706 kB]
+2026-10-25T08:31:55.8754266Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+2026-10-25T08:31:55.8786582Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+2026-10-25T08:31:55.8912318Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+2026-10-25T08:31:55.9891966Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1146 kB]
+2026-10-25T08:31:55.9955887Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+2026-10-25T08:31:55.9979973Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1222 kB]
+2026-10-25T08:31:56.0042300Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+2026-10-25T08:31:56.0544498Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+2026-10-25T08:31:56.0626275Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+2026-10-25T08:31:59.4826898Z Fetched 12.6 MB in 1s (9718 kB/s)
+2026-10-25T08:32:00.4360011Z Reading package lists...
+2026-10-25T08:32:00.4664177Z Reading package lists...
+2026-10-25T08:32:00.6633795Z Building dependency tree...
+2026-10-25T08:32:00.6641162Z Reading state information...
+2026-10-25T08:32:00.8231006Z g++-14 is already the newest version (14.2.0-4ubuntu2~24.04.1).
+2026-10-25T08:32:00.8232478Z libvulkan1 is already the newest version (1.3.275.0-1build1).
+2026-10-25T08:32:00.8233158Z libvulkan1 set to manually installed.
+2026-10-25T08:32:00.8233712Z The following NEW packages will be installed:
+2026-10-25T08:32:00.8234310Z   mesa-vulkan-drivers ninja-build vulkan-tools
+2026-10-25T08:32:00.8400756Z 0 upgraded, 3 newly installed, 0 to remove and 100 not upgraded.
+2026-10-25T08:32:00.8401596Z Need to get 17.9 MB of archives.
+2026-10-25T08:32:00.8402142Z After this operation, 101 MB of additional disk space will be used.
+2026-10-25T08:32:00.8402585Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-25T08:32:00.9344548Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 mesa-vulkan-drivers amd64 25.2.8-0ubuntu0.24.04.4 [17.5 MB]
+2026-10-25T08:32:01.4610656Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ninja-build amd64 1.11.1-2 [129 kB]
+2026-10-25T08:32:01.5333478Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 vulkan-tools amd64 1.3.275.0+dfsg1-1 [298 kB]
+2026-10-25T08:32:01.7922269Z Fetched 17.9 MB in 1s (25.3 MB/s)
+2026-10-25T08:32:01.8150901Z Selecting previously unselected package mesa-vulkan-drivers:amd64.
+2026-10-25T08:32:01.8480347Z (Reading database ... 
+2026-10-25T08:32:01.8480921Z (Reading database ... 5%
+2026-10-25T08:32:01.8481669Z (Reading database ... 10%
+2026-10-25T08:32:01.8482252Z (Reading database ... 15%
+2026-10-25T08:32:01.8482819Z (Reading database ... 20%
+2026-10-25T08:32:01.8483372Z (Reading database ... 25%
+2026-10-25T08:32:01.8483752Z (Reading database ... 30%
+2026-10-25T08:32:01.8484080Z (Reading database ... 35%
+2026-10-25T08:32:01.8484397Z (Reading database ... 40%
+2026-10-25T08:32:01.8484855Z (Reading database ... 45%
+2026-10-25T08:32:01.8485180Z (Reading database ... 50%
+2026-10-25T08:32:01.8542718Z (Reading database ... 55%
+2026-10-25T08:32:01.9488215Z (Reading database ... 60%
+2026-10-25T08:32:02.1419130Z (Reading database ... 65%
+2026-10-25T08:32:02.3579482Z (Reading database ... 70%
+2026-10-25T08:32:02.8906437Z (Reading database ... 75%
+2026-10-25T08:32:03.0022082Z (Reading database ... 80%
+2026-10-25T08:32:03.1821620Z (Reading database ... 85%
+2026-10-25T08:32:03.3199732Z (Reading database ... 90%
+2026-10-25T08:32:03.4456593Z (Reading database ... 95%
+2026-10-25T08:32:03.4457046Z (Reading database ... 100%
+2026-10-25T08:32:03.4457605Z (Reading database ... 203540 files and directories currently installed.)
+2026-10-25T08:32:03.4499234Z Preparing to unpack .../mesa-vulkan-drivers_25.2.8-0ubuntu0.24.04.4_amd64.deb ...
+2026-10-25T08:32:03.4549831Z Unpacking mesa-vulkan-drivers:amd64 (25.2.8-0ubuntu0.24.04.4) ...
+2026-10-25T08:32:03.7657264Z Selecting previously unselected package ninja-build.
+2026-10-25T08:32:03.7783528Z Preparing to unpack .../ninja-build_1.11.1-2_amd64.deb ...
+2026-10-25T08:32:03.7793371Z Unpacking ninja-build (1.11.1-2) ...
+2026-10-25T08:32:03.8203414Z Selecting previously unselected package vulkan-tools.
+2026-10-25T08:32:03.8329737Z Preparing to unpack .../vulkan-tools_1.3.275.0+dfsg1-1_amd64.deb ...
+2026-10-25T08:32:03.8336901Z Unpacking vulkan-tools (1.3.275.0+dfsg1-1) ...
+2026-10-25T08:32:03.8766384Z Setting up mesa-vulkan-drivers:amd64 (25.2.8-0ubuntu0.24.04.4) ...
+2026-10-25T08:32:03.8786098Z Setting up vulkan-tools (1.3.275.0+dfsg1-1) ...
+2026-10-25T08:32:03.8804458Z Setting up ninja-build (1.11.1-2) ...
+2026-10-25T08:32:03.8824618Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-25T08:32:03.8845456Z Not building database; man-db/auto-update is not 'true'.
+2026-10-25T08:32:03.8857435Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+2026-10-25T08:32:04.5975713Z 
+2026-10-25T08:32:04.5976240Z Running kernel seems to be up-to-date.
+2026-10-25T08:32:04.5976704Z 
+2026-10-25T08:32:04.5976922Z No services need to be restarted.
+2026-10-25T08:32:04.5977299Z 
+2026-10-25T08:32:04.5977487Z No containers need to be restarted.
+2026-10-25T08:32:04.5977758Z 
+2026-10-25T08:32:04.5978051Z No user sessions are running outdated binaries.
+2026-10-25T08:32:04.5978879Z 
+2026-10-25T08:32:04.5979279Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-25T08:32:05.5005592Z ##[group]Run python3 tools/run_linux_draw.py
+2026-10-25T08:32:05.5005966Z [36;1mpython3 tools/run_linux_draw.py[0m
+2026-10-25T08:32:05.5072021Z shell: /usr/bin/bash -e {0}
+2026-10-25T08:32:05.5072316Z ##[endgroup]
+2026-10-25T08:32:05.5657538Z source-commit PASS
+2026-10-25T08:32:06.1977926Z source-status PASS
+2026-10-25T08:32:06.1999226Z headers-commit PASS
+2026-10-25T08:32:06.3487987Z headers-status PASS
+2026-10-25T08:32:06.3638151Z packages PASS
+2026-10-25T08:32:06.7374578Z vulkaninfo PASS
+2026-10-25T08:32:09.3734640Z configure-sdk PASS
+2026-10-25T08:32:33.9525123Z build-suites PASS
+2026-10-25T08:32:33.9811691Z install-sdk PASS
+2026-10-25T08:32:34.1366439Z configure-identity PASS
+2026-10-25T08:32:36.5013305Z build-identity PASS
+2026-10-25T08:32:36.5544875Z identity PASS
+2026-10-25T08:32:36.7189096Z configure-consumer PASS
+2026-10-25T08:32:43.3284486Z build-consumer PASS
+2026-10-25T08:32:45.7167012Z ctest-color-pass PASS
+2026-10-25T08:32:47.3348914Z installed-color-pass PASS
+2026-10-25T08:32:47.3376755Z color-pass-in-tree-unknown PASS
+2026-10-25T08:32:47.3395974Z color-pass-in-tree-extra PASS
+2026-10-25T08:32:47.3571794Z color-pass-in-tree-missing-layer PASS
+2026-10-25T08:32:47.3592341Z color-pass-installed-unknown PASS
+2026-10-25T08:32:47.3611602Z color-pass-installed-extra PASS
+2026-10-25T08:32:47.3781947Z color-pass-installed-missing-layer PASS
+2026-10-25T08:32:48.3337302Z ctest-draw PASS
+2026-10-25T08:32:49.0744576Z installed-draw PASS
+2026-10-25T08:32:49.0770823Z draw-in-tree-unknown PASS
+2026-10-25T08:32:49.0807355Z draw-in-tree-extra PASS
+2026-10-25T08:32:49.0988218Z draw-in-tree-missing-layer PASS
+2026-10-25T08:32:49.1010099Z draw-installed-unknown PASS
+2026-10-25T08:32:49.1030566Z draw-installed-extra PASS
+2026-10-25T08:32:49.1200150Z draw-installed-missing-layer PASS
+2026-10-25T08:32:49.1553442Z GFX_LINUX_DRAW_RECEIPT={"schema_version":1,"task":"P3-LNX-07","source_commit":"026a91a1a82c5d7ab36c71cbad4bab789f02c963","native_SDK_source_fingerprint":"ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830","github_run_id":"40176979891","github_run_attempt":"1","platform":{"os_release":{"NAME":"Ubuntu","ID":"ubuntu","PRETTY_NAME":"Ubuntu 24.04.5 LTS","VERSION_ID":"24.04","VERSION":"24.04.5 LTS (Noble Numbat)","VERSION_CODENAME":"noble","ID_LIKE":"debian","HOME_URL":"https://www.ubuntu.com/","SUPPORT_URL":"https://help.ubuntu.com/","BUG_REPORT_URL":"https://bugs.launchpad.net/ubuntu/","PRIVACY_POLICY_URL":"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy","UBUNTU_CODENAME":"noble","LOGO":"ubuntu-logo"},"kernel":"6.17.0-1022-azure","machine":"x86_64"},"packages":"libvulkan1 1.3.275.0-1build1\nmesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.4\nvulkan-tools 1.3.275.0+dfsg1-1\n","environment":{"VK_DRIVER_FILES":"/usr/share/vulkan/icd.d/lvp_icd.json","VK_ICD_FILENAMES":"/usr/share/vulkan/icd.d/lvp_icd.json","VK_LOADER_LAYERS_DISABLE":"~implicit~","VK_LAYER_PATH":"/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-draw-evidence/empty-layers","XDG_RUNTIME_DIR":"/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-draw-evidence/xdg-runtime","LP_NUM_THREADS":"2"},"identity":{"schema_version":1,"case":"selection","SDK_source_fingerprint":"ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830","assertions":32,"device_creations":3,"software_adapters":1,"hardware_adapters":0,"loader_path":"/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275","adapters":[{"name":"llvmpipe (LLVM 20.1.2, 256 bits)","id":"5892941257450743403","vendor_id":65541,"device_id":0,"device_type":4,"api_version_raw":4211006,"driver_version_raw":104865800,"device_uuid":"6d65736132352e322e382d3075627500","driver_uuid":"6c6c766d706970655555494400000000"}],"runtime_modules":["/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275","/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so"],"rejections":[{"case":"software-kind-mismatch","code":"InvalidArgument","native":0},{"case":"backend-id-mismatch","code":"InvalidArgument","native":0},{"case":"missing-exact-id-no-fallback","code":"Unsupported","native":0},{"case":"zero-id-no-fallback","code":"Unsupported","native":0},{"case":"hardware-default-never-falls-back-to-software","code":"Unsupported","native":0},{"case":"uncompiled-backend-enumeration","code":"Unsupported","native":0},{"case":"unsupported-loss-opt-in","code":"Unsupported","native":0}]},"driver_manifest":{"path":"/usr/share/vulkan/icd.d/lvp_icd.json","bytes":135,"sha256":"70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398"},"runtime_libraries":[{"path":"/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275","bytes":510592,"sha256":"e833b010f814b72c6aca0300c8b5f19b6106ffa06c24ddc95a293970c7d6058e"},{"path":"/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so","bytes":11929384,"sha256":"5a218118760fee2398cc783820a1cc052de162d8c937dafcd6045576dfd9576c"}],"SDK_library":{"path":"out/linux-vulkan/libGraphicsSDKCore.a","bytes":413918,"sha256":"c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"},"installed_library":{"path":"out/linux-vulkan-install/lib/libGraphicsSDKCore.a","bytes":413918,"sha256":"c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"},"binaries":[{"path":"out/linux-vulkan/gfx_vulkan_render_tests","bytes":389520,"sha256":"145a1f15798aa00698e555ad8532f95fa1201253c72778aa726aaa9ca31f85f7"},{"path":"out/linux-vulkan-draw-consumer/vulkan_render_consumer","bytes":389520,"sha256":"145a1f15798aa00698e555ad8532f95fa1201253c72778aa726aaa9ca31f85f7"},{"path":"out/linux-vulkan/gfx_vulkan_draw_tests","bytes":401592,"sha256":"ebe4e6a57a69c483dd004e41a2716e9b271d0dc6a4ae85b27f63843043bbba88"},{"path":"out/linux-vulkan-draw-consumer/vulkan_draw_consumer","bytes":401592,"sha256":"ebe4e6a57a69c483dd004e41a2716e9b271d0dc6a4ae85b27f63843043bbba88"}],"results":[{"suite":"color-pass","kind":"in-tree-ctest","assertions":297,"passes":64,"images":69,"verified_texel_bytes":373531756,"padded_images":57,"adapters":1},{"suite":"color-pass","kind":"installed-consumer","assertions":297,"passes":64,"images":69,"verified_texel_bytes":373531756,"padded_images":57,"adapters":1},{"suite":"draw","kind":"in-tree-ctest","assertions":319,"draws":31,"images":33,"verified_texel_bytes":124745708,"padded_images":29,"adapters":1},{"suite":"draw","kind":"installed-consumer","assertions":319,"draws":31,"images":33,"verified_texel_bytes":124745708,"padded_images":29,"adapters":1}],"workload":{"formats_bytes_per_texel":{"RGBA8UNorm":4,"RGBA16Float":8},"clear_extents":[[1,1],[3,7],[65,17],[1920,1080],[3840,2160]],"fullscreen_extents":[[1,1],[3,7],[65,37],[1920,1080],[3840,2160]],"triangle_extents":[[65,37],[129,73]],"color_pass_MRT_counts":[1,2,3,4,5,6,7,8],"draw_MRT_counts":[2,8],"instance_count_first_pairs":[[1,1],[2,0],[1,0]],"first_vertex":6},"color_tolerance":{"RGBA8UNorm":"1.01/255","RGBA16Float":0.001},"padding_sentinels":{"color_pass":"0xa7","draw":"0xb9"},"shader_scope":"Existing embedded SPIR-V fixtures; no fresh assembly/semantic validation or HLSL compilation in this run","runner":{"path":"tools/run_linux_draw.py","bytes":10911,"sha256":"2eb4b876795bbffe820c7257fb301630334b8fb6b39c1897cb2bfd6505d559bd"},"inputs":[{"path":"tests/VulkanRenderPassTests.cpp","bytes":16098,"sha256":"8de3c558e9747f6e765ab9fc35a0abc966777354b4449789418810d32fb6a9f8"},{"path":"tests/VulkanDrawTests.cpp","bytes":15781,"sha256":"2ec005ffb65134c60ea1596113bdf683f1e311dee68c6607d248ae00457de330"},{"path":"tests/fixtures/SpirvFixtures.hpp","bytes":20483,"sha256":"3001f8aecfd8c2ce4fe71d6486af4457dc02a281c81865e092b59d7b120eba4a"},{"path":"tests/vulkan_consumer/CMakeLists.txt","bytes":1382,"sha256":"29d421413847b3d4f142e333be93d5041d9a81715e881d4d8ae83c746a889bb6"},{"path":"tests/linux_vulkan_device/Device.cpp","bytes":12241,"sha256":"af4158d948fdf88fdeb81d3c8a85ae62848a5c9589ce1cf9c4354e5b7e0558b2"},{"path":"tests/linux_vulkan_device/CMakeLists.txt","bytes":878,"sha256":"4cc99ecd184aa7ff9e5db3a345ba4e19949c104713e702c865faf82407e054d8"},{"path":"tools/run_linux_device.py","bytes":8620,"sha256":"0ab9c9c74c32c65a07bab471997b453c582ffbd2991c35cc34da4e94326ac1ed"},{"path":".github/workflows/linux-vulkan-draw.yml","bytes":1949,"sha256":"a7f0c1d32659d0dfe79b4a92b32b08edf208a40a985c9c64c5c39b7a9adf7d81"},{"path":"CMakePresets.json","bytes":2735,"sha256":"b063363efa72fb23809638e21e82e85a4e144ac5eda4801e7245a8287fa2411a"}],"software_graphics_contracts_executed":true,"hardware_GPU_accepted":false,"validation_layer_success_accepted":false,"WSI_accepted":false,"long_memory_accepted":false,"installation_scope":"Installed public color-pass/draw suites executed; full multi-feature consumer/compiler-input/license audit remains P3-LNX-12","diagnostics":[{"path":"out/linux-vulkan-draw-evidence/build-consumer.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/build-consumer.stdout","bytes":1974,"sha256":"38030d5e3f5b3fe4d17944f5e96eb7a0272526c5708c0815f009c533e30c6de0"},{"path":"out/linux-vulkan-draw-evidence/build-identity.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/build-identity.stdout","bytes":5326,"sha256":"09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"},{"path":"out/linux-vulkan-draw-evidence/build-suites.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/build-suites.stdout","bytes":103406,"sha256":"6984f811adabd229d919e49e75397f79211cef49938adee7be5ee7890c435fd9"},{"path":"out/linux-vulkan-draw-evidence/color-pass-ctest.xml","bytes":589,"sha256":"d22342ac38427fb6c6a319d4516afeaf13a3796622cc012598eb4e0031816b3b"},{"path":"out/linux-vulkan-draw-evidence/color-pass-in-tree-extra.stderr","bytes":52,"sha256":"697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"},{"path":"out/linux-vulkan-draw-evidence/color-pass-in-tree-extra.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/color-pass-in-tree-missing-layer.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-draw-evidence/color-pass-in-tree-missing-layer.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-draw-evidence/color-pass-in-tree-unknown.stderr","bytes":52,"sha256":"697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"},{"path":"out/linux-vulkan-draw-evidence/color-pass-in-tree-unknown.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/color-pass-installed-extra.stderr","bytes":52,"sha256":"697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"},{"path":"out/linux-vulkan-draw-evidence/color-pass-installed-extra.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/color-pass-installed-missing-layer.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-draw-evidence/color-pass-installed-missing-layer.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-draw-evidence/color-pass-installed-unknown.stderr","bytes":52,"sha256":"697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"},{"path":"out/linux-vulkan-draw-evidence/color-pass-installed-unknown.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/commands.json","bytes":8563,"sha256":"5f01492a863f032c2e6f9119c2cc4a918fb9436531a1613b8fe32577f3410ec0"},{"path":"out/linux-vulkan-draw-evidence/configure-consumer.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/configure-consumer.stdout","bytes":425,"sha256":"991221ca09a68c32abbed6e1a750637170cab726263a98f2457724a91d5c44fe"},{"path":"out/linux-vulkan-draw-evidence/configure-identity.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/configure-identity.stdout","bytes":425,"sha256":"3adc58e863f36762a8e8fb36b3395ff7a763bbe8883846dfdebe6c40e61abc19"},{"path":"out/linux-vulkan-draw-evidence/configure-sdk.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/configure-sdk.stdout","bytes":780,"sha256":"be3b38222c4e6f07f8468c04281c295348bdf63f12e5ed6162398c92ced1b6af"},{"path":"out/linux-vulkan-draw-evidence/ctest-color-pass.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/ctest-color-pass.stdout","bytes":1208,"sha256":"672ee73dacf53c4e424152b1b4a531bcb1dad8052263de29e9b7052cecb3df18"},{"path":"out/linux-vulkan-draw-evidence/ctest-draw.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/ctest-draw.stdout","bytes":1198,"sha256":"c446aef2196269547948bc57b73e5a95c7b68b303285bad7ecbfac7188df24d9"},{"path":"out/linux-vulkan-draw-evidence/draw-ctest.xml","bytes":582,"sha256":"d972cb61f8fc5bd177a7e8fb6806c30c8daf0ccec6f1f717a7f3c4671efe3242"},{"path":"out/linux-vulkan-draw-evidence/draw-in-tree-extra.stderr","bytes":50,"sha256":"2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"},{"path":"out/linux-vulkan-draw-evidence/draw-in-tree-extra.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/draw-in-tree-missing-layer.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-draw-evidence/draw-in-tree-missing-layer.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-draw-evidence/draw-in-tree-unknown.stderr","bytes":50,"sha256":"2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"},{"path":"out/linux-vulkan-draw-evidence/draw-in-tree-unknown.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/draw-installed-extra.stderr","bytes":50,"sha256":"2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"},{"path":"out/linux-vulkan-draw-evidence/draw-installed-extra.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/draw-installed-missing-layer.stderr","bytes":60,"sha256":"361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"},{"path":"out/linux-vulkan-draw-evidence/draw-installed-missing-layer.stdout","bytes":149,"sha256":"59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"},{"path":"out/linux-vulkan-draw-evidence/draw-installed-unknown.stderr","bytes":50,"sha256":"2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"},{"path":"out/linux-vulkan-draw-evidence/draw-installed-unknown.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/headers-commit.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/headers-commit.stdout","bytes":41,"sha256":"3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"},{"path":"out/linux-vulkan-draw-evidence/headers-status.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/headers-status.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/identity.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/identity.stdout","bytes":1194,"sha256":"1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"},{"path":"out/linux-vulkan-draw-evidence/install-sdk.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/install-sdk.stdout","bytes":2337,"sha256":"f9291427808806fdbff7362fd09fe572d21a2f4f58044fcd891b357972c01c72"},{"path":"out/linux-vulkan-draw-evidence/installed-color-pass.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/installed-color-pass.stdout","bytes":248,"sha256":"ea1ba0fc492f2ee539e135d759ff360f61c555e617279073f6bdb41ccccd185b"},{"path":"out/linux-vulkan-draw-evidence/installed-draw.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/installed-draw.stdout","bytes":252,"sha256":"361f452b229e013f6b36aef99d7c9516bbe1f994e30cb1de5a026ae241d7bbeb"},{"path":"out/linux-vulkan-draw-evidence/packages.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/packages.stdout","bytes":104,"sha256":"2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"},{"path":"out/linux-vulkan-draw-evidence/sdk-cache.txt","bytes":16753,"sha256":"5b8cd3d37162d239f1733f67cb53344cf4b60c2e26f2a2d4a18716042cc717e7"},{"path":"out/linux-vulkan-draw-evidence/sdk-compile-commands.json","bytes":13913,"sha256":"13788032b49e82aadcf2ca9497f339d02196b269a1a4a0b8b2643419a613087d"},{"path":"out/linux-vulkan-draw-evidence/source-commit.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/source-commit.stdout","bytes":41,"sha256":"8c5143438483152933e0772ec1099e041dcd4d2e35895edfc5499fbb3e3bd84d"},{"path":"out/linux-vulkan-draw-evidence/source-status.stderr","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/source-status.stdout","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"path":"out/linux-vulkan-draw-evidence/vulkaninfo.stderr","bytes":218,"sha256":"df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"},{"path":"out/linux-vulkan-draw-evidence/vulkaninfo.stdout","bytes":1821,"sha256":"5cfbf74d270cfda1ea5c36a079cb06ab6d19596427f4083b624570ecee90bca6"}]}
+2026-10-25T08:32:49.1699096Z ##[group]Run actions/upload-artifact@v4
+2026-10-25T08:32:49.1699390Z with:
+2026-10-25T08:32:49.1699692Z   name: linux-vulkan-draw-026a91a1a82c5d7ab36c71cbad4bab789f02c963
+2026-10-25T08:32:49.1700082Z   path: out/linux-vulkan-draw-evidence/
+2026-10-25T08:32:49.1700358Z   if-no-files-found: error
+2026-10-25T08:32:49.1700584Z   retention-days: 14
+2026-10-25T08:32:49.1700797Z   compression-level: 6
+2026-10-25T08:32:49.1701007Z   overwrite: false
+2026-10-25T08:32:49.1701498Z   include-hidden-files: false
+2026-10-25T08:32:49.1701743Z ##[endgroup]
+2026-10-25T08:32:49.3346979Z (node:3549) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T08:32:49.3348321Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T08:32:49.3541923Z With the provided path, there will be 66 files uploaded
+2026-10-25T08:32:49.3542854Z Artifact name is valid!
+2026-10-25T08:32:49.3543376Z Root directory input is valid!
+2026-10-25T08:32:49.7331751Z Beginning upload of artifact content to blob storage
+2026-10-25T08:32:49.8126347Z (node:3549) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-25T08:32:50.1670579Z Uploaded bytes 34476
+2026-10-25T08:32:50.2475574Z Finished uploading artifact content to blob storage!
+2026-10-25T08:32:50.2476578Z SHA256 digest of uploaded artifact zip is ec95d8b83f41ad255ef331c3de19bdb6a0d74bc7c8299b667d7429c175169c34
+2026-10-25T08:32:50.2478477Z Finalizing artifact upload
+2026-10-25T08:32:50.7133646Z Artifact linux-vulkan-draw-026a91a1a82c5d7ab36c71cbad4bab789f02c963.zip successfully finalized. Artifact ID 12593210885
+2026-10-25T08:32:50.7136538Z Artifact linux-vulkan-draw-026a91a1a82c5d7ab36c71cbad4bab789f02c963 has been successfully uploaded! Final size is 34476 bytes. Artifact ID is 12593210885
+2026-10-25T08:32:50.7141047Z Artifact download URL: https://github.com/blackvrice/GraphicsSDK/actions/runs/40176979891/artifacts/12593210885
+2026-10-25T08:32:50.7335508Z Post job cleanup.
+2026-10-25T08:32:50.8170615Z [command]/usr/bin/git version
+2026-10-25T08:32:50.8211508Z git version 2.55.0
+2026-10-25T08:32:50.8283487Z Temporarily overriding HOME='/home/runner/work/_temp/72c999d2-1c9a-486e-b62a-2c9103005b11' before making global git config changes
+2026-10-25T08:32:50.8284921Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T08:32:50.8290771Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers
+2026-10-25T08:32:50.8330216Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T08:32:50.8368277Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T08:32:50.8627373Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T08:32:50.8671854Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T08:32:50.8924626Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T08:32:50.8967574Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T08:32:50.9439216Z Post job cleanup.
+2026-10-25T08:32:51.0351788Z [command]/usr/bin/git version
+2026-10-25T08:32:51.0383274Z git version 2.55.0
+2026-10-25T08:32:51.0423463Z Temporarily overriding HOME='/home/runner/work/_temp/791d11a3-6c36-4154-bc4a-db96992463af' before making global git config changes
+2026-10-25T08:32:51.0425026Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T08:32:51.0430150Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/GraphicsSDK/GraphicsSDK
+2026-10-25T08:32:51.0468971Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T08:32:51.0507734Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T08:32:51.0789348Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T08:32:51.0828371Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T08:32:51.1135704Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T08:32:51.1177634Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T08:32:51.1569286Z Cleaning up orphan processes
+2026-10-25T08:32:51.2003284Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

@@ -1,0 +1,589 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-07",
+  "completion_scope": "Native Linux software-ICD color-pass/triangle/blend/scissor/instancing/MRT and lifetime contracts; physical GPU remains required P3-LNX-15",
+  "source_commit": "026a91a1a82c5d7ab36c71cbad4bab789f02c963",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "Windows_SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "workflow_run": {
+    "id": 40176979891,
+    "job_id": 121119661414,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40176979891",
+    "conclusion": "success"
+  },
+  "platform": {
+    "os_release": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 24.04.5 LTS",
+      "VERSION_ID": "24.04",
+      "VERSION": "24.04.5 LTS (Noble Numbat)",
+      "VERSION_CODENAME": "noble",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "noble",
+      "LOGO": "ubuntu-logo"
+    },
+    "kernel": "6.17.0-1022-azure",
+    "machine": "x86_64"
+  },
+  "packages": "libvulkan1 1.3.275.0-1build1\nmesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.4\nvulkan-tools 1.3.275.0+dfsg1-1\n",
+  "adapters": [
+    {
+      "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "id": "5892941257450743403",
+      "vendor_id": 65541,
+      "device_id": 0,
+      "device_type": 4,
+      "api_version_raw": 4211006,
+      "driver_version_raw": 104865800,
+      "device_uuid": "6d65736132352e322e382d3075627500",
+      "driver_uuid": "6c6c766d706970655555494400000000"
+    }
+  ],
+  "workload": {
+    "formats_bytes_per_texel": {
+      "RGBA8UNorm": 4,
+      "RGBA16Float": 8
+    },
+    "clear_extents": [
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        65,
+        17
+      ],
+      [
+        1920,
+        1080
+      ],
+      [
+        3840,
+        2160
+      ]
+    ],
+    "fullscreen_extents": [
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        65,
+        37
+      ],
+      [
+        1920,
+        1080
+      ],
+      [
+        3840,
+        2160
+      ]
+    ],
+    "triangle_extents": [
+      [
+        65,
+        37
+      ],
+      [
+        129,
+        73
+      ]
+    ],
+    "color_pass_MRT_counts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "draw_MRT_counts": [
+      2,
+      8
+    ],
+    "instance_count_first_pairs": [
+      [
+        1,
+        1
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "first_vertex": 6
+  },
+  "color_tolerance": {
+    "RGBA8UNorm": "1.01/255",
+    "RGBA16Float": 0.001
+  },
+  "padding_sentinels": {
+    "color_pass": "0xa7",
+    "draw": "0xb9"
+  },
+  "results": [
+    {
+      "suite": "color-pass",
+      "kind": "in-tree-ctest",
+      "assertions": 297,
+      "passes": 64,
+      "images": 69,
+      "verified_texel_bytes": 373531756,
+      "padded_images": 57,
+      "adapters": 1
+    },
+    {
+      "suite": "color-pass",
+      "kind": "installed-consumer",
+      "assertions": 297,
+      "passes": 64,
+      "images": 69,
+      "verified_texel_bytes": 373531756,
+      "padded_images": 57,
+      "adapters": 1
+    },
+    {
+      "suite": "draw",
+      "kind": "in-tree-ctest",
+      "assertions": 319,
+      "draws": 31,
+      "images": 33,
+      "verified_texel_bytes": 124745708,
+      "padded_images": 29,
+      "adapters": 1
+    },
+    {
+      "suite": "draw",
+      "kind": "installed-consumer",
+      "assertions": 319,
+      "draws": 31,
+      "images": 33,
+      "verified_texel_bytes": 124745708,
+      "padded_images": 29,
+      "adapters": 1
+    }
+  ],
+  "total_assertions": 1232,
+  "total_color_passes": 128,
+  "total_draws": 62,
+  "total_images": 204,
+  "total_verified_texel_bytes": 996554928,
+  "total_padded_images": 172,
+  "CLI_rejections": 8,
+  "missing_layer_rejections": 4,
+  "software_graphics_contracts_accepted": true,
+  "hardware_GPU_accepted": false,
+  "validation_layer_success_accepted": false,
+  "WSI_accepted": false,
+  "long_memory_accepted": false,
+  "shader_scope": "Existing embedded SPIR-V fixtures; no fresh assembly/semantic validation or HLSL compilation in this run",
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "common_CXX_suites_or_fixtures_modified": false,
+  "native_receipt": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/receipt.json",
+    "bytes": 21442,
+    "sha256": "b7c1bfbf9f4cacc40da7f0f623fe69fe66fc63c616b8cc47f03b24b794bb16bf"
+  },
+  "artifact": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/artifact.zip",
+    "bytes": 34476,
+    "sha256": "ec95d8b83f41ad255ef331c3de19bdb6a0d74bc7c8299b667d7429c175169c34"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/artifact-metadata.json",
+      "bytes": 865,
+      "sha256": "cb14d2006ada4957d5b10b70bcf54658167a5d580cc85b0e597630a9e435e15e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/artifact.zip",
+      "bytes": 34476,
+      "sha256": "ec95d8b83f41ad255ef331c3de19bdb6a0d74bc7c8299b667d7429c175169c34"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/common-jobs-snapshot.json",
+      "bytes": 3758,
+      "sha256": "354dc36b3e81c919c71de7994c768e7d41beeb327bb11bdb8f895ec393893bc1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/common-portable-job.log",
+      "bytes": 314972,
+      "sha256": "76b134c4e9d7829fbebd34decc586feaaaca378613021032dc6ae150f26474d1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/job-status.json",
+      "bytes": 1683,
+      "sha256": "4dc9a8b99305ea0a787f705992828363e01736643faf654f02869beb5de71b9a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/job.log",
+      "bytes": 49078,
+      "sha256": "f1f3debc23106d820ef95f3d58cd6645ee8a9f3d99bf4bf6b223440806d17cde"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/build-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/build-consumer.stdout",
+      "bytes": 1974,
+      "sha256": "38030d5e3f5b3fe4d17944f5e96eb7a0272526c5708c0815f009c533e30c6de0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/build-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/build-identity.stdout",
+      "bytes": 5326,
+      "sha256": "09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/build-suites.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/build-suites.stdout",
+      "bytes": 103406,
+      "sha256": "6984f811adabd229d919e49e75397f79211cef49938adee7be5ee7890c435fd9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-ctest.xml",
+      "bytes": 589,
+      "sha256": "d22342ac38427fb6c6a319d4516afeaf13a3796622cc012598eb4e0031816b3b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-in-tree-extra.stderr",
+      "bytes": 52,
+      "sha256": "697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-in-tree-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-in-tree-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-in-tree-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-in-tree-unknown.stderr",
+      "bytes": 52,
+      "sha256": "697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-in-tree-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-installed-extra.stderr",
+      "bytes": 52,
+      "sha256": "697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-installed-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-installed-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-installed-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-installed-unknown.stderr",
+      "bytes": 52,
+      "sha256": "697980cc7e5da454d4ab95b74bb34f904a5b8b2879511d68239d8ed2c6ce732e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/color-pass-installed-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/commands.json",
+      "bytes": 8563,
+      "sha256": "5f01492a863f032c2e6f9119c2cc4a918fb9436531a1613b8fe32577f3410ec0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/configure-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/configure-consumer.stdout",
+      "bytes": 425,
+      "sha256": "991221ca09a68c32abbed6e1a750637170cab726263a98f2457724a91d5c44fe"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/configure-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/configure-identity.stdout",
+      "bytes": 425,
+      "sha256": "3adc58e863f36762a8e8fb36b3395ff7a763bbe8883846dfdebe6c40e61abc19"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/configure-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/configure-sdk.stdout",
+      "bytes": 780,
+      "sha256": "be3b38222c4e6f07f8468c04281c295348bdf63f12e5ed6162398c92ced1b6af"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/ctest-color-pass.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/ctest-color-pass.stdout",
+      "bytes": 1208,
+      "sha256": "672ee73dacf53c4e424152b1b4a531bcb1dad8052263de29e9b7052cecb3df18"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/ctest-draw.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/ctest-draw.stdout",
+      "bytes": 1198,
+      "sha256": "c446aef2196269547948bc57b73e5a95c7b68b303285bad7ecbfac7188df24d9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-ctest.xml",
+      "bytes": 582,
+      "sha256": "d972cb61f8fc5bd177a7e8fb6806c30c8daf0ccec6f1f717a7f3c4671efe3242"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-in-tree-extra.stderr",
+      "bytes": 50,
+      "sha256": "2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-in-tree-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-in-tree-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-in-tree-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-in-tree-unknown.stderr",
+      "bytes": 50,
+      "sha256": "2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-in-tree-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-installed-extra.stderr",
+      "bytes": 50,
+      "sha256": "2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-installed-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-installed-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-installed-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-installed-unknown.stderr",
+      "bytes": 50,
+      "sha256": "2b2b1edd2d562ab4598cff7cf3977ffcee41ee498abdf55531611604ef698740"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/draw-installed-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/identity.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/install-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/install-sdk.stdout",
+      "bytes": 2337,
+      "sha256": "f9291427808806fdbff7362fd09fe572d21a2f4f58044fcd891b357972c01c72"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/installed-color-pass.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/installed-color-pass.stdout",
+      "bytes": 248,
+      "sha256": "ea1ba0fc492f2ee539e135d759ff360f61c555e617279073f6bdb41ccccd185b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/installed-draw.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/installed-draw.stdout",
+      "bytes": 252,
+      "sha256": "361f452b229e013f6b36aef99d7c9516bbe1f994e30cb1de5a026ae241d7bbeb"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/packages.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/packages.stdout",
+      "bytes": 104,
+      "sha256": "2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/receipt.json",
+      "bytes": 21442,
+      "sha256": "b7c1bfbf9f4cacc40da7f0f623fe69fe66fc63c616b8cc47f03b24b794bb16bf"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/sdk-cache.txt",
+      "bytes": 16753,
+      "sha256": "5b8cd3d37162d239f1733f67cb53344cf4b60c2e26f2a2d4a18716042cc717e7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/sdk-compile-commands.json",
+      "bytes": 13913,
+      "sha256": "13788032b49e82aadcf2ca9497f339d02196b269a1a4a0b8b2643419a613087d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "8c5143438483152933e0772ec1099e041dcd4d2e35895edfc5499fbb3e3bd84d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/vulkaninfo.stderr",
+      "bytes": 218,
+      "sha256": "df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/native/vulkaninfo.stdout",
+      "bytes": 1821,
+      "sha256": "5cfbf74d270cfda1ea5c36a079cb06ab6d19596427f4083b624570ecee90bca6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-draw/run-status.json",
+      "bytes": 410,
+      "sha256": "a21036e01b9ced7d02c7f2c3b6faa6aa6b0c86b4f6dc9ecf66e983134ae1e6d6"
+    }
+  ],
+  "verification": {
+    "result": "pass",
+    "checks": [
+      "Successful real Linux workflow; logged receipt matches artifact",
+      "GitHub ZIP digest and every diagnostic/raw tested Git input including SPIR-V fixture header hash verified",
+      "Unchanged SDK/suites/fixtures, 27-file native SDK fingerprint and equal built/installed library bytes",
+      "Both exact suites in-tree and installed, full image references within stated tolerance and exact sentinel padding, expected CLI/layer rejection and no CTest skip",
+      "Software CPU identity recorded; physical GPU, normal VVL, WSI and long memory not accepted"
+    ]
+  }
+}

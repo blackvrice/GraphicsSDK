@@ -81,10 +81,10 @@
 | Windows D3D12 | 기본 그래픽스·통제된 recovery·memory budget 구현과 기존 보고서. 장시간/실제 표시·물리 사건 수용은 별도 | `P2-ACC-03`~`05`; 보류 `P2-ACC-01`~`02` 유지 |
 | Windows Vulkan offscreen | 기존 NVIDIA/Intel 기본 GPU suite 보고서. 모든 장치·driver·현재 source의 새 측정은 아님 | `P3-SCP-02`, `P3-GATE-01` |
 | Windows Vulkan WSI | 기존 NVIDIA 실제 present 경로, 해당 Intel driver의 caps=false/Unsupported | `P3-SCP-02`, 조건 선택 시 `P3-CAP-05`~`06`; 사람의 표시 확인과 구분 |
-| Linux Vulkan headless | [Native compile/CPU CI](PHASE3_LINUX_COMPILE_REPORT.md), [software ICD loader/device 선택](PHASE3_LINUX_DEVICE_REPORT.md), [버퍼·queue/fence·수명](PHASE3_LINUX_TRANSFER_REPORT.md), [텍스처 전송·texel/padding](PHASE3_LINUX_TEXTURE_REPORT.md) 성공. 물리 GPU·그리기·정상 layer 실행 미검증 | `P3-LNX-07`~`12`, 물리 GPU 수용 `P3-LNX-15` 잔여. software 성공을 hardware 수용으로 합산하지 않음 |
+| Linux Vulkan headless | [Native compile/CPU CI](PHASE3_LINUX_COMPILE_REPORT.md), [software ICD loader/device 선택](PHASE3_LINUX_DEVICE_REPORT.md), [버퍼·queue/fence·수명](PHASE3_LINUX_TRANSFER_REPORT.md), [텍스처 전송·texel/padding](PHASE3_LINUX_TEXTURE_REPORT.md), [컬러 pass·기본 draw](PHASE3_LINUX_DRAW_REPORT.md) 성공. 물리 GPU·입력/binding·depth·timestamp·정상 layer 미검증 | `P3-LNX-08`~`12`, 물리 GPU 수용 `P3-LNX-15` 잔여. software 성공을 hardware 수용으로 합산하지 않음 |
 | Linux Vulkan WSI | 공개 `SurfaceKind`는 Win32만 존재, Linux surface/swapchain 미구현 | `P3-WSI-01`~`08` 필수. API·X11/Wayland 선택, 완료/resize/loss·표시 검증까지 필요 |
 | Vulkan validation | `validation=true`는 Khronos layer와 debug-utils/validation-features/layer-settings 필요. core+sync/submit-time 요청, delivered ERROR 집계. 외부 설정 override와 zero-count 한계 존재 | `vulkan_*_validation`, `vulkan_validation_controls`; `P3-LNX-11`, `P3-GATE-01`; [기존 검증](PHASE3_VULKAN_VALIDATION_REPORT.md) |
-| CI·installed consumer | native compile/CPU 및 software device/버퍼/텍스처 소비자 CI 성공. portable-core 자체는 Vulkan 실행 근거 아님. 전체 CI Python 오류는 `P3-LNX-14` 잔여 | 전체 설치 감사 `P3-LNX-12`, CI 정비 `P3-LNX-14`, `P3-GATE-01`; 전체 다중 플랫폼 배포는 Phase 7 |
+| CI·installed consumer | native compile/CPU 및 software device/버퍼/텍스처/컬러 pass/draw 소비자 CI 성공. portable-core 자체는 Vulkan 실행 근거 아님. 전체 CI Python 오류는 `P3-LNX-14` 잔여 | 전체 설치 감사 `P3-LNX-12`, CI 정비 `P3-LNX-14`, `P3-GATE-01`; 전체 다중 플랫폼 배포는 Phase 7 |
 | 동등 결과·경쟁 성능 | 기존 D3D12/SDL/Vulkan 보고서는 당시 workload/fingerprint. API bytes·통계·native 동기화 차이를 보존 | `P3-BEN-01`~`08`, `P3-CMP-01`~`10`, `P3-LBEN-01`~`04`, `P3-GATE-02`. 추가 경쟁 SDK 선택은 `P3-CMP-01`에서 결정 |
 
 `P3-SCP-01`의 완료는 이 지원표·필수/조건부 이유·후속 검사 연결의 완료다. `P3-SCP-02`, marker 구현, Linux 실행, 새 성능 측정이나 Phase 3 최종 수용을 대신 완료하지 않는다. 다음 자동 권장 작업은 로드맵의 선행 조건과 `next_order`로 결정한다.

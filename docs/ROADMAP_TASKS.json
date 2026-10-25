@@ -935,15 +935,18 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "컬러 pass·기본 draw 실행",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-06"
       ],
-      "work": "Clear/Load/Store와 SPIR-V graphics 참조를 Linux에서 실행한다.",
-      "done_when": "삼각형·blend/scissor/instancing와 MRT 컬러 참조 일치.",
-      "evidence": [],
-      "requires": "Linux Vulkan GPU"
+      "work": "기존 컬러 pass·SPIR-V draw suite를 실제 Linux software ICD의 in-tree CTest와 설치 SDK 소비자에서 실행했다. Clear/Load/Store·삼각형·blend/scissor·instancing·MRT 전체 참조와 상태/수명 계약 통과. 물리 GPU 수용은 P3-LNX-15 필수 gate에 유지한다.",
+      "done_when": "삼각형·blend/scissor/instancing와 MRT 컬러 참조 일치. 이번 근거는 software ICD이며 물리 GPU 수용은 P3-LNX-15에서 별도 필수 검증.",
+      "evidence": [
+        "docs/PHASE3_LINUX_DRAW_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-draw/summary.json"
+      ],
+      "requires": "Linux Vulkan runtime; 이번 수용은 software ICD, 물리 GPU는 P3-LNX-15 필수"
     },
     {
       "id": "P3-LNX-08",

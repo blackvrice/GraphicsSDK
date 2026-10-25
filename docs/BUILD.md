@@ -28,7 +28,8 @@ Linux software ICD의 loader·장치·선택 오류 실행은 [P3-LNX-04](PHASE3
 기록한다. [P3-LNX-05](PHASE3_LINUX_TRANSFER_REPORT.md)에서는 같은 software ICD의 버퍼·queue/fence·수명 suite를
 in-tree와 설치 소비자에서 통과했다. [P3-LNX-06](PHASE3_LINUX_TEXTURE_REPORT.md)에서는 software ICD의
 RGBA8/RGBA16F 텍스처 전송·전체 texel/padding·수명 검사도 두 경로에서 통과했다.
-물리 GPU(P3-LNX-15), 그리기·정상 layer·전체 설치 감사 수용은 별도 잔여다.
+[P3-LNX-07](PHASE3_LINUX_DRAW_REPORT.md)에서는 컬러 pass·기본 draw·blend/scissor·instancing·MRT 참조도
+software ICD의 두 경로에서 통과했다. 물리 GPU(P3-LNX-15), 입력/binding·depth·timestamp·정상 layer·전체 설치 감사 수용은 별도 잔여다.
 
 현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).
@@ -45,7 +46,7 @@ portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CT
 구성은 7개, 두 backend OFF 구성은 6개 CTest를 Windows에서 검증한다.
 새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-transfer.zip`이며, 공개 헤더와
 static library/CMake package, MIT/Apache-2.0 고지로 구성된다. Vulkan 헤더·loader·driver는
-묶지 않는다. Linux 물리 GPU 실행은 미검증이며 software ICD 장치/버퍼/텍스처와 native compile/CPU 근거는 위 CI 보고서를 따른다.
+묶지 않는다. Linux 물리 GPU 실행은 미검증이며 software ICD 장치/전송/기본 draw와 native compile/CPU 근거는 위 CI 보고서를 따른다.
 Vulkan core/synchronization layer 실행은 새 [고정 로컬 레이어 검증](PHASE3_VULKAN_VALIDATION_REPORT.md)에
 기록한다. `GFX_VULKAN_VALIDATION_TESTS=ON`은 필요한 레이어가 없으면 실패하며 skip하지 않는다.
 이 검증 구성의 별도 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-validation.zip`이다.
