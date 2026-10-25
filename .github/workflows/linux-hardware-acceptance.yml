@@ -1,0 +1,53 @@
+name: Linux physical GPU acceptance (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      icd:
+        description: Absolute path of the installed physical GPU ICD JSON on the runner
+        required: true
+        type: string
+      device_uuids:
+        description: Comma-separated exact lowercase device UUIDs visible through this ICD
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  physical-gpu:
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, Linux, X64, graphicssdk-gpu]
+    timeout-minutes: 90
+    env:
+      GFX_GPU_ICD: ${{ inputs.icd }}
+      GFX_GPU_UUIDS: ${{ inputs.device_uuids }}
+    defaults:
+      run:
+        working-directory: gpu-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: gpu-${{ github.run_id }}-${{ github.run_attempt }}
+          clean: false
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: gpu-${{ github.run_id }}-${{ github.run_attempt }}/.deps/Vulkan-Headers
+          clean: false
+          persist-credentials: false
+      - name: Require exact physical devices before preparing the validation runtime
+        run: python3 tools/linux_hardware.py preflight --icd "$GFX_GPU_ICD" --device-uuids "$GFX_GPU_UUIDS"
+      - name: Build isolated pinned Linux validation runtime
+        run: python3 tools/prepare_linux_validation.py
+      - name: Run actual physical common suites and required validation
+        run: python3 tools/linux_hardware.py accept --icd "$GFX_GPU_ICD" --device-uuids "$GFX_GPU_UUIDS"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-physical-gpu-${{ github.sha }}-${{ github.run_id }}
+          path: |
+            gpu-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-hardware-evidence/
+            gpu-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-vulkan-validation-evidence/runtime/
+          if-no-files-found: error
+          retention-days: 14

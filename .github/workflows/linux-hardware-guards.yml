@@ -1,0 +1,48 @@
+name: Linux physical GPU gate rejects software
+on:
+  push:
+    paths: ['tools/linux_hardware.py', 'tests/test_linux_hardware.py', '.github/workflows/linux-hardware-guards.yml', 'tests/linux_vulkan_device/**']
+  pull_request:
+    paths: ['tools/linux_hardware.py', 'tests/test_linux_hardware.py', '.github/workflows/linux-hardware-guards.yml', 'tests/linux_vulkan_device/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reject-software:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools
+      - run: python3 -m unittest discover -s tests -p test_linux_hardware.py -v
+      - name: Require a real software-device rejection, never hardware acceptance
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          drivers=list(pathlib.Path('/usr/share/vulkan/icd.d').glob('lvp_icd*.json'))
+          assert len(drivers)==1
+          p=subprocess.run(['python3','tools/linux_hardware.py','preflight','--icd',str(drivers[0]),'--device-uuids','0123456789abcdef0123456789abcdef'])
+          assert p.returncode==1
+          root=pathlib.Path('out/linux-hardware-evidence')
+          r=json.loads((root/'preflight.json').read_text())
+          assert not r['physical_preflight_passed'] and not r['hardware_GPU_accepted']
+          assert r['identity']['software_adapters']==1 and r['identity']['hardware_adapters']==0
+          assert r['rejection'].startswith('Physical GPU required;')
+          assert not (root/'receipt.json').exists()
+          print('PASS actual software ICD rejected; physical GPU acceptance remains pending')
+          PY
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-hardware-rejection-${{ github.sha }}
+          path: out/linux-hardware-evidence/
+          if-no-files-found: error
+          retention-days: 14
