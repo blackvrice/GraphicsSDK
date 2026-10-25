@@ -1,0 +1,52 @@
+name: Linux Vulkan compile
+on:
+  push:
+    paths:
+      - '.github/workflows/linux-vulkan-compile.yml'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - 'include/**'
+      - 'src/**'
+      - 'cmake/**'
+      - 'tests/**'
+      - 'tools/run_linux_compile.py'
+  pull_request:
+    paths:
+      - '.github/workflows/linux-vulkan-compile.yml'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - 'include/**'
+      - 'src/**'
+      - 'cmake/**'
+      - 'tests/**'
+      - 'tools/run_linux_compile.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check out reviewed Vulkan-Headers
+        uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - name: Prepare native compiler
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build
+      - name: Compile both Vulkan presets and run CPU contracts
+        run: python3 tools/run_linux_compile.py --compiler g++-14
+      - name: Preserve compile evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-vulkan-compile-${{ github.sha }}
+          path: out/linux-vulkan-compile-evidence/
+          if-no-files-found: error
+          retention-days: 14
