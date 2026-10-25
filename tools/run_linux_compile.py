@@ -79,9 +79,14 @@ def main():
         library_commands = [row for row in compile_commands if 'GraphicsSDKCore.dir/' in row['command']]
         require(library_commands and all(native_fingerprint in row['command'] for row in library_commands), 'Compiled SDK fingerprint differs')
         cache = (build/'CMakeCache.txt').read_text()
+        for source,label in ((build/'compile_commands.json','compile_commands'),(build/'CMakeCache.txt','cache')):
+            shutil.copyfile(source,output/(name+'-'+label+'.txt'))
         for value in ('GFX_ENABLE_D3D12:BOOL=OFF','GFX_ENABLE_VULKAN:BOOL=ON','GFX_BUILD_TESTS:BOOL=ON',
-                      'CMAKE_BUILD_TYPE:STRING=Release','CMAKE_CXX_COMPILER:FILEPATH='):
+                      'CMAKE_BUILD_TYPE:STRING=Release'):
             require(value in cache, 'Native preset cache differs: '+value)
+        compiler_entries = re.findall(r'^CMAKE_CXX_COMPILER:[^=]+=(.+)$', cache, re.M)
+        require(len(compiler_entries)==1 and pathlib.Path(compiler_entries[0]).resolve()==pathlib.Path(shutil.which(args.compiler)).resolve(),
+                'Configured compiler does not resolve to the requested native compiler')
         expected_validation = 'ON' if name.endswith('-validation') else 'OFF'
         require('GFX_VULKAN_VALIDATION_TESTS:BOOL='+expected_validation in cache, 'Validation profile differs')
         junit = output/(name+'-cpu.xml')
@@ -89,8 +94,6 @@ def main():
         cases=ET.parse(junit).getroot().findall('.//testcase')
         require(len(cases)==len(CPU_TESTS) and {c.attrib['name'] for c in cases}==set(CPU_TESTS), 'CPU test set differs')
         require(all(not any(c.find(tag) is not None for tag in ('failure','error','skipped')) for c in cases), 'CPU failures/skips')
-        for source,label in ((build/'compile_commands.json','compile_commands'),(build/'CMakeCache.txt','cache')):
-            shutil.copyfile(source,output/(name+'-'+label+'.txt'))
         library = build/'libGraphicsSDKCore.a'
         require(library.is_file(), 'Real native static library missing')
         profiles.append(dict(preset=name, library=record(library), SDK_compile_units=len(library_commands),
