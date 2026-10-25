@@ -1,0 +1,73 @@
+name: Linux installed SDK input and payload audit
+on:
+  push:
+    paths:
+      - '.github/workflows/linux-vulkan-package.yml'
+      - 'tools/linux_package.py'
+      - 'tools/linux_build_capture.py'
+      - 'tools/audit_linux_package.py'
+      - 'tools/run_linux_*.py'
+      - 'tools/audit_licenses.py'
+      - 'licenses/linux-vulkan-policy.json'
+      - 'tests/linux_package_consumer/**'
+      - 'tests/test_linux_package_audit.py'
+      - 'tests/Vulkan*'
+      - 'tests/fixtures/**'
+      - 'tests/consumer/main.cpp'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - 'cmake/**'
+      - 'LICENSE'
+  pull_request:
+    paths:
+      - '.github/workflows/linux-vulkan-package.yml'
+      - 'tools/linux_package.py'
+      - 'tools/linux_build_capture.py'
+      - 'tools/audit_linux_package.py'
+      - 'tools/run_linux_*.py'
+      - 'tools/audit_licenses.py'
+      - 'licenses/linux-vulkan-policy.json'
+      - 'tests/linux_package_consumer/**'
+      - 'tests/test_linux_package_audit.py'
+      - 'tests/Vulkan*'
+      - 'tests/fixtures/**'
+      - 'tests/consumer/main.cpp'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - 'cmake/**'
+      - 'LICENSE'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  installed-input-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - name: Prepare GNU and software Vulkan runtime
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools
+      - name: Test fail-closed audit controls
+        run: python3 -m unittest discover -s tests -p test_linux_package_audit.py -v
+      - name: Audit native installed SDK and external consumers
+        run: python3 tools/linux_package.py
+      - name: Preserve actual inputs, notices, payload and runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-vulkan-package-${{ github.sha }}
+          path: out/linux-package-evidence/
+          if-no-files-found: error
+          retention-days: 14
