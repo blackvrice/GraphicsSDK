@@ -34,6 +34,10 @@ target_link_libraries(MyApplication PRIVATE GraphicsSDK::Core)
 See [build and benchmark commands](docs/BUILD.md), [actual measurements and limitations](docs/BENCHMARK_REPORT.md),
 [API](docs/PUBLIC_API.md), [architecture](docs/ARCHITECTURE.md), [competitor analysis](docs/COMPETITOR_ANALYSIS.md),
 [testing](docs/TESTING.md), [optimization log](docs/OPTIMIZATION_LOG.md), and [remaining roadmap](docs/ROADMAP.md).
+The roadmap tracks individual task IDs, dependencies, acceptance criteria and evidence.
+Use `python tools/roadmap.py --next` or request a task such as `P3-LNX-01`.
+Edit [the task status source](docs/ROADMAP_TASKS.json), regenerate with `--write`, and
+check consistency with `python tools/roadmap.py --check`; historical roadmap notes stay preserved.
 All raw measurement files are actual observations; unavailable GPU measurements are null.
 No general performance superiority claim is made.
 The [Diligent comparison](docs/DILIGENT_BENCHMARK_REPORT.md) adds all eight existing scenarios
