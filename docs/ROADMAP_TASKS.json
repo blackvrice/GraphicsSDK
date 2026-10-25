@@ -169,6 +169,7 @@
     "P3-LNX-11",
     "P3-LNX-12",
     "P3-LNX-13",
+    "P3-LNX-14",
     "P3-WSI-01",
     "P3-WSI-02",
     "P3-WSI-03",
@@ -860,14 +861,18 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "Linux SDK 실제 컴파일",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-02"
       ],
-      "work": "실제 Linux configure·compiler 오류와 플랫폼 의존성을 수정하고 별도 build root에 SDK를 빌드한다. Windows 설정 fixture로 대체하지 않는다.",
+      "work": "GitHub-hosted Ubuntu x86_64에서 두 Vulkan preset의 실제 GCC configure/compile/link와 CPU 11개씩을 완료했다. Linux native fingerprint와 Git commit·compile commands를 대조했으며 GPU runtime은 미검증이다.",
       "done_when": "현재 source fingerprint의 native build 성공 로그. Windows 빌드로 대체하지 않음.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_LINUX_COMPILE_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-compile/summary.json",
+        ".github/workflows/linux-vulkan-compile.yml"
+      ],
       "requires": "Linux native build 환경"
     },
     {
@@ -1011,15 +1016,36 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "Linux Vulkan compile CI",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P3-LNX-03"
+      ],
+      "work": "portable-core와 분리된 Vulkan ON native Linux CI를 추가하고 두 preset의 compile/CPU 22개를 수용했다. GPU/layer/WSI 실행 및 기존 전체 CI Python 오류는 별도 잔여다.",
+      "done_when": "실제 CI compile/CPU smoke 결과와 GPU 미실행 경계 기록. Software ICD 성공을 hardware 수용으로 표기하지 않음.",
+      "evidence": [
+        "docs/PHASE3_LINUX_COMPILE_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-compile/summary.json",
+        ".github/workflows/linux-vulkan-compile.yml"
+      ],
+      "requires": "Linux CI runner"
+    },
+    {
+      "id": "P3-LNX-14",
+      "phase": 3,
+      "group": "P3-LNX",
+      "title": "전체 CI Python 증거 검사 정합성",
       "status": "todo",
       "gate": "required",
       "depends_on": [
         "P3-LNX-03"
       ],
-      "work": "현재 portable-core CI와 별도로 Vulkan ON 구성을 추가한다.",
-      "done_when": "실제 CI compile/CPU smoke 결과와 GPU 미실행 경계 기록. Software ICD 성공을 hardware 수용으로 표기하지 않음.",
-      "evidence": [],
-      "requires": "Linux CI runner"
+      "work": "기존 CI의 Python 증거 검사 오류를 fresh checkout·플랫폼별 source identity와 대조해 수정한다. 과거 Windows 관측과 native Linux source를 혼합하거나 오류 테스트를 제거해 통과시키지 않는다.",
+      "done_when": "Windows/Linux fresh CI에서 전체 Python 회귀 통과와 기존 자료·검증 계약 보존. 변경 전 614 tests/errors=92 원본 및 수정 후 실제 실행 근거.",
+      "evidence": [
+        "docs/PHASE3_LINUX_COMPILE_REPORT.md"
+      ],
+      "requires": "Windows/Linux CI와 보존된 benchmark evidence"
     },
     {
       "id": "P3-WSI-01",
@@ -1676,7 +1702,8 @@
         "P3-LNX-12",
         "P3-LNX-13",
         "P3-WSI-08",
-        "P3-CAP-01"
+        "P3-CAP-01",
+        "P3-LNX-14"
       ],
       "work": "Windows/Linux 지원표·headless/WSI·공통 RHI·필수 debug marker·미지원 응답과 조건부 제외 이유를 현재 source로 검증한다.",
       "done_when": "필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거.",

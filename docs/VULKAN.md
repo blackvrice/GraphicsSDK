@@ -9,7 +9,7 @@ backend when enabled; Win32 presentation requires the completion-fence capabilit
 
 The [D3D12/Vulkan support matrix](PHASE3_SCOPE.md) separates current capability/API
 contracts, required gaps and conditional features. Vulkan debug markers remain a
-required Phase 3 task; Linux native execution and WSI acceptance remain pending.
+required Phase 3 task; Linux Vulkan GPU execution and WSI acceptance remain pending.
 The [Windows GPU/driver support policy](PHASE3_WINDOWS_SUPPORT.md) records the
 tested NVIDIA presentation and Intel unsupported combinations, plus fallback decisions.
 
@@ -43,7 +43,8 @@ new compiler-input/license audit before distribution. Public/installed SDK heade
 do not include Vulkan headers, and consumers need no Vulkan SDK or import library.
 Windows loads the system `vulkan-1.dll`; Linux code loads `libvulkan.so.1` and links
 `${CMAKE_DL_LIBS}`. The loader, ICD, driver and validation layer are external
-prerequisites and are never bundled. Linux native compilation/runtime is still pending.
+prerequisites and are never bundled. [Native Linux compilation and CPU contracts](PHASE3_LINUX_COMPILE_REPORT.md)
+passed on Ubuntu CI; Linux Vulkan device/GPU/validation runtime acceptance is still pending.
 The [Linux environment inventory](PHASE3_LINUX_ENVIRONMENT.md) records the current
 Windows host's unavailable WSL path and the prerequisites for a native receipt.
 Native Linux preset definitions and external-header commands are in the

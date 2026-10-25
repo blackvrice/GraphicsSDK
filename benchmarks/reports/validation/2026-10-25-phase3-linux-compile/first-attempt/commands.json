@@ -1,0 +1,98 @@
+[
+  {
+    "name": "source-commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "seconds": 0.0011829199999908724
+  },
+  {
+    "name": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "returncode": 0,
+    "seconds": 0.7560572320000034
+  },
+  {
+    "name": "headers-commit",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "seconds": 0.0014049179999915395
+  },
+  {
+    "name": "headers-status",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "status",
+      "--porcelain"
+    ],
+    "returncode": 0,
+    "seconds": 0.11464796200000649
+  },
+  {
+    "name": "compiler-version",
+    "argv": [
+      "g++-14",
+      "--version"
+    ],
+    "returncode": 0,
+    "seconds": 0.18485056199999406
+  },
+  {
+    "name": "cmake-version",
+    "argv": [
+      "cmake",
+      "--version"
+    ],
+    "returncode": 0,
+    "seconds": 1.040923706000001
+  },
+  {
+    "name": "ninja-version",
+    "argv": [
+      "ninja",
+      "--version"
+    ],
+    "returncode": 0,
+    "seconds": 0.028616073000009123
+  },
+  {
+    "name": "configure-linux-vulkan",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "returncode": 0,
+    "seconds": 2.771235840000003
+  },
+  {
+    "name": "build-linux-vulkan",
+    "argv": [
+      "cmake",
+      "--build",
+      "--preset",
+      "linux-vulkan",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "seconds": 59.837253262999994
+  }
+]

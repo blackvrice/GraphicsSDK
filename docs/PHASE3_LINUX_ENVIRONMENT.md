@@ -2,6 +2,8 @@
 
 2026-10-25 · 작업 `P3-LNX-01` · 기준 커밋 `b18505d`.
 
+후속 상태: 로컬 WSL 미설치 관측은 유지한다. [P3-LNX-03](PHASE3_LINUX_COMPILE_REPORT.md)에서 별도의 GitHub-hosted Ubuntu VM을 확보해 native compile·CPU 실행을 완료했으며, Linux GPU/layer/WSI 수용은 미완료다. 아래는 당시 로컬 환경 조사 기록이다.
+
 **환경 조사는 완료했으며, 현재 조사 범위에서는 사용할 Linux 실행 환경을 확인하지 못했다.** WSL 상태 조회는 설치되지 않았다는 오류를 반환했다. Linux OS·compiler·Vulkan loader/ICD·GPU·validation layer는 관측하지 못했으므로 “미관측”으로 기록한다. 해당 Linux 구성요소가 실제로 설치되지 않았다고 추정하거나 Linux 빌드·런타임을 통과 처리하지 않는다.
 
 제품 SDK fingerprint `2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401`는 그대로다. 배포판/VM/컨테이너 설치·시작, Windows 기능·드라이버·시스템 설정 변경, SSH 접속, GPU 작업은 수행하지 않았다. 조사 결과 파일만 추가했다.

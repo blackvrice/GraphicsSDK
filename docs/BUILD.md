@@ -16,13 +16,14 @@ cmake --build out/consumer --config Release
 ```
 
 SDK 자체에는 다운로드가 없다. D3D12와 Vulkan을 모두 끈 빌드는 GPU backend를 제공하지 않으며
-Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux/macOS 실기기 빌드는
-현재 미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
+Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux Vulkan의 native compile·CPU 검사는
+[Ubuntu CI에서 검증](PHASE3_LINUX_COMPILE_REPORT.md)했다. Linux GPU/WSI와 macOS native build/runtime은
+미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 현재 host의 Linux 환경 가용성은 [P3-LNX-01 조사](PHASE3_LINUX_ENVIRONMENT.md)에
-기록한다. WSL 미설치 관측을 보존했으며 Linux native build/runtime 통과 근거는 없다.
+기록한다. 로컬 WSL 미설치 관측은 보존하며, 후속 실제 Linux compile 근거는 별도 CI 보고서에 연결한다.
 Linux 전용 `linux-vulkan` / `linux-vulkan-validation` preset의 backend flag·외부 헤더·
 분리된 build/install 경로와 재현 명령은 [P3-LNX-02 설정](PHASE3_LINUX_PRESETS.md)을 따른다.
-실제 Linux configure/compile 수용은 `P3-LNX-03`에서 검사한다.
+실제 Linux configure/compile과 두 preset의 CPU 22개 검사는 `P3-LNX-03`에서 완료했다.
 
 현재 core CTest는 34개다. GPU validation과 WARP를 포함하고, vertex/binding/render-pass/adapter/budget의
 portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CTest).
@@ -39,7 +40,7 @@ portable 구조 검증은 D3D12 OFF 빌드에서도 실행된다(총 6개 CPU CT
 구성은 7개, 두 backend OFF 구성은 6개 CTest를 Windows에서 검증한다.
 새 SDK는 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-transfer.zip`이며, 공개 헤더와
 static library/CMake package, MIT/Apache-2.0 고지로 구성된다. Vulkan 헤더·loader·driver는
-묶지 않는다. Vulkan-only/portable의 Linux 실행은 미검증이다.
+묶지 않는다. Linux의 Vulkan GPU 실행은 미검증이며 native compile/CPU 근거는 후속 CI 보고서에 기록한다.
 Vulkan core/synchronization layer 실행은 새 [고정 로컬 레이어 검증](PHASE3_VULKAN_VALIDATION_REPORT.md)에
 기록한다. `GFX_VULKAN_VALIDATION_TESTS=ON`은 필요한 레이어가 없으면 실패하며 skip하지 않는다.
 이 검증 구성의 별도 SDK ZIP은 `out/GraphicsSDK-0.0.1-dev-windows-x64-vulkan-validation.zip`이다.

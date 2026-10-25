@@ -2,6 +2,8 @@
 
 2026-10-25 · 작업 `P3-LNX-02` · 기준 커밋 `8172b4f`.
 
+후속 상태: [P3-LNX-03 native compile 보고서](PHASE3_LINUX_COMPILE_REPORT.md)에서 두 preset의 실제 Ubuntu configure/compile·CPU 실행을 완료했다. 아래 fixture 결과는 최초 preset 정의 검증 snapshot이며 GPU/layer/WSI 실행 근거는 아니다.
+
 `CMakePresets.json`에 Linux Vulkan configure/build/test preset 두 조합을 추가했다. 기존 Windows·portable-core preset은 그대로 유지했다. **preset 정의와 Windows에서 수행한 CMake 설정 검사를 완료했으며, 실제 Linux configure·SDK compile·GPU 실행은 아직 수행하지 않았다.** [환경 조사](PHASE3_LINUX_ENVIRONMENT.md)의 WSL 미설치 관측은 그대로 유효하다. Linux native configure/compile 성공은 `P3-LNX-03`의 별도 완료 조건이다.
 
 SDK `include/`, `src/`, `CMakeLists.txt`는 바꾸지 않았고 제품 fingerprint는 `2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401`로 유지된다. 이번 preset 파일 변경은 그 SDK fingerprint의 입력 범위 밖이므로 [preset 자체의 별도 해시](../benchmarks/reports/2026-10-25-phase3-linux-presets/summary.json)를 기록했다.

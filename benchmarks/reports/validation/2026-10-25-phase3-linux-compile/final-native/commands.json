@@ -1,0 +1,150 @@
+[
+  {
+    "name": "source-commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "seconds": 0.0017817699999937986
+  },
+  {
+    "name": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "returncode": 0,
+    "seconds": 0.949016469
+  },
+  {
+    "name": "headers-commit",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "returncode": 0,
+    "seconds": 0.0018908659999965494
+  },
+  {
+    "name": "headers-status",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "status",
+      "--porcelain"
+    ],
+    "returncode": 0,
+    "seconds": 0.016300826000005486
+  },
+  {
+    "name": "compiler-version",
+    "argv": [
+      "g++-14",
+      "--version"
+    ],
+    "returncode": 0,
+    "seconds": 0.21196959600000298
+  },
+  {
+    "name": "cmake-version",
+    "argv": [
+      "cmake",
+      "--version"
+    ],
+    "returncode": 0,
+    "seconds": 0.030406182000000115
+  },
+  {
+    "name": "ninja-version",
+    "argv": [
+      "ninja",
+      "--version"
+    ],
+    "returncode": 0,
+    "seconds": 0.002449024999997107
+  },
+  {
+    "name": "configure-linux-vulkan",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "returncode": 0,
+    "seconds": 4.3068862610000025
+  },
+  {
+    "name": "build-linux-vulkan",
+    "argv": [
+      "cmake",
+      "--build",
+      "--preset",
+      "linux-vulkan",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "seconds": 65.030594601
+  },
+  {
+    "name": "cpu-linux-vulkan",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan",
+      "-R",
+      "^(core_contracts|adapter_contracts|memory_budget_contracts|vertex_layout_contracts|binding_layout_contracts|render_pass_contracts|spirv_interface_contracts|spirv_vertex_contracts|spirv_binding_contracts|vulkan_timestamp_math|vulkan_creation_ownership)$",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-compile-evidence/linux-vulkan-cpu.xml"
+    ],
+    "returncode": 0,
+    "seconds": 1.493638335
+  },
+  {
+    "name": "configure-linux-vulkan-validation",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan-validation",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "returncode": 0,
+    "seconds": 0.18438837999998725
+  },
+  {
+    "name": "build-linux-vulkan-validation",
+    "argv": [
+      "cmake",
+      "--build",
+      "--preset",
+      "linux-vulkan-validation",
+      "--verbose"
+    ],
+    "returncode": 0,
+    "seconds": 64.804726634
+  },
+  {
+    "name": "cpu-linux-vulkan-validation",
+    "argv": [
+      "ctest",
+      "--preset",
+      "linux-vulkan-validation",
+      "-R",
+      "^(core_contracts|adapter_contracts|memory_budget_contracts|vertex_layout_contracts|binding_layout_contracts|render_pass_contracts|spirv_interface_contracts|spirv_vertex_contracts|spirv_binding_contracts|vulkan_timestamp_math|vulkan_creation_ownership)$",
+      "--output-junit",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vulkan-compile-evidence/linux-vulkan-validation-cpu.xml"
+    ],
+    "returncode": 0,
+    "seconds": 0.020722825000007106
+  }
+]

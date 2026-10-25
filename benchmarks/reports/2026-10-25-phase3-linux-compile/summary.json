@@ -1,0 +1,422 @@
+{
+  "schema_version": 1,
+  "tasks_completed": [
+    "P3-LNX-03",
+    "P3-LNX-13"
+  ],
+  "source_commit": "592a7b3cb6efed209da92865349aa26642c0be11",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "Windows_SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "source_identity": "Native LF checkout matches all 27 SDK Git blobs at tested commit; historical Windows raw-byte identity preserved separately",
+  "workflow_run": {
+    "id": 40161823073,
+    "job_id": 121074808016,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40161823073",
+    "conclusion": "success"
+  },
+  "platform": {
+    "os_release": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 24.04.5 LTS",
+      "VERSION_ID": "24.04",
+      "VERSION": "24.04.5 LTS (Noble Numbat)",
+      "VERSION_CODENAME": "noble",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "noble",
+      "LOGO": "ubuntu-logo"
+    },
+    "kernel": "6.17.0-1022-azure",
+    "machine": "x86_64",
+    "compiler": "g++-14 (Ubuntu 14.2.0-4ubuntu2~24.04.1) 14.2.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+    "cmake": "cmake version 3.31.6\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+    "ninja": "1.13.2"
+  },
+  "profiles": [
+    {
+      "preset": "linux-vulkan",
+      "library": {
+        "path": "out/linux-vulkan/libGraphicsSDKCore.a",
+        "bytes": 413918,
+        "sha256": "c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"
+      },
+      "SDK_compile_units": 6,
+      "CPU_tests": 11,
+      "GPU_tests": 0,
+      "validation_tests_executed": false
+    },
+    {
+      "preset": "linux-vulkan-validation",
+      "library": {
+        "path": "out/linux-vulkan-validation/libGraphicsSDKCore.a",
+        "bytes": 413918,
+        "sha256": "c6870603fd53a581c3ac6a4fcb70e6a58220d0ff0433f17f51f2e8a045e38b32"
+      },
+      "SDK_compile_units": 6,
+      "CPU_tests": 11,
+      "GPU_tests": 0,
+      "validation_tests_executed": false
+    }
+  ],
+  "CPU_tests_passed": 22,
+  "CPU_tests_skipped": 0,
+  "GPU_runtime_accepted": false,
+  "validation_layer_execution_accepted": false,
+  "WSI_accepted": false,
+  "installed_consumer_accepted": false,
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "local_WSL_installed": false,
+  "device_driver_changed": false,
+  "native_receipt": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/receipt.json",
+    "bytes": 9632,
+    "sha256": "75a04245356b49ef482c3a5f75a2eae4dd71011c5cd42dbccefbe5c9c02df288"
+  },
+  "artifacts": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt.zip",
+      "bytes": 13390,
+      "sha256": "9ba1813606d0ba2bc4ed51d0f6688efb3c818b569910b3919fa58c415fb41248"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-artifact.zip",
+      "bytes": 39133,
+      "sha256": "41ed03f27d2e4314244da1bd09bf765d1c25de52374cbb9bd44838f9d72b9a69"
+    }
+  ],
+  "prior_failed_run": {
+    "id": 40161563022,
+    "source_commit": "2cb9dd21547166a940194885365b0f3c082bfed2",
+    "reason": "Native SDK build succeeded; runner assumed compiler cache FILEPATH instead of validating resolved compiler path"
+  },
+  "baseline_CI_failure": {
+    "run_id": 40161105666,
+    "job_id": 121072662202,
+    "source_commit": "d3f07d8c8980535a5c3bb700b2557da0c5f0de12",
+    "Python_tests": 614,
+    "errors": 92,
+    "followup": "P3-LNX-14"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/baseline-python-failures-excerpt.log",
+      "bytes": 16813,
+      "sha256": "e268188c12bb7a41d8d8477f150a1ac91465f1e36895ac386f6b3ce031f891f3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/baseline-run-status.json",
+      "bytes": 282,
+      "sha256": "c065dd33cc93b5af66af4340f5d0221838e37e4dde871fc8df5d2cdc04f3a403"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-artifact.zip",
+      "bytes": 39133,
+      "sha256": "41ed03f27d2e4314244da1bd09bf765d1c25de52374cbb9bd44838f9d72b9a69"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-job-status.json",
+      "bytes": 1668,
+      "sha256": "7b2d26e8714d5d0d9f0da2d5883b00ce811726d1296791f43c173805edf54588"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-job.log",
+      "bytes": 37950,
+      "sha256": "a40b8b04d1d4532e047a60f10b599532bd8eefa9f49281b1b399d5b9f06c2b7a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/build-linux-vulkan-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/build-linux-vulkan-validation.stdout",
+      "bytes": 123348,
+      "sha256": "7cf6a59520ea7d36390a5c99fef715b82980c326351828890f0dc8e2bf27c698"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/build-linux-vulkan.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/build-linux-vulkan.stdout",
+      "bytes": 122499,
+      "sha256": "c632a70c059bafe94030396cb0993e8ee4f3ff5b517540454e33497acfec0119"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/cmake-version.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/cmake-version.stdout",
+      "bytes": 91,
+      "sha256": "f6e81c2559f3ce00c5fdad01d7b226c301f5d6b07ee04f65db6dbfdc1cc5970b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/commands.json",
+      "bytes": 3443,
+      "sha256": "c51a075cfc11359e73fb3ffd5f689eb26410ecc9aa1943f4c64989063ed60975"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/compiler-version.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/compiler-version.stdout",
+      "bytes": 249,
+      "sha256": "7588fd551e53fea9fa7cd40881cba582e2a26da1da6d4f8324c45153793cef9e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/configure-linux-vulkan-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/configure-linux-vulkan-validation.stdout",
+      "bytes": 801,
+      "sha256": "b69b93e7e8f129685ab094b9c4cdbc12bff343877c3e9074b6fea116ccef413b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/configure-linux-vulkan.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/configure-linux-vulkan.stdout",
+      "bytes": 780,
+      "sha256": "407bc67c93d7d2f05c70dc4f3a56475bdc58fed8f06a00d14a17cd18dbd72fd8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/cpu-linux-vulkan-validation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/cpu-linux-vulkan-validation.stdout",
+      "bytes": 1382,
+      "sha256": "961baaa289c8a58b230ac393d89298167a689968b3a63051656d36654b3b16cb"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/cpu-linux-vulkan.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/cpu-linux-vulkan.stdout",
+      "bytes": 1371,
+      "sha256": "5db50c9b6f242665218699580247a078d36dd259a6c9db022b6eeac15e653dcf"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/linux-vulkan-cache.txt",
+      "bytes": 16753,
+      "sha256": "5b8cd3d37162d239f1733f67cb53344cf4b60c2e26f2a2d4a18716042cc717e7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/linux-vulkan-compile_commands.txt",
+      "bytes": 13913,
+      "sha256": "13788032b49e82aadcf2ca9497f339d02196b269a1a4a0b8b2643419a613087d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/linux-vulkan-cpu.xml",
+      "bytes": 2474,
+      "sha256": "99b4006217717ebb8a7cf21c94ada9329bba7000a86e7e3f938944d79a4c739e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/linux-vulkan-validation-cache.txt",
+      "bytes": 16818,
+      "sha256": "697cb2830c6031d1ebf89f91e956c00e72b4bc85b2aa680203313e1709454146"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/linux-vulkan-validation-compile_commands.txt",
+      "bytes": 14870,
+      "sha256": "f4920f9e7e9ecd55511690863d3277dfffd940fbdc8e5a6dac785074de09ccf8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/linux-vulkan-validation-cpu.xml",
+      "bytes": 2474,
+      "sha256": "7e5092aae41ad74b02de892765b63eaba61b8a1f0de214e29390d3351fd2af2d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/ninja-version.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/ninja-version.stdout",
+      "bytes": 7,
+      "sha256": "810ab97f4b3fccb9adf1db7959945b479635931ccc4a0243c34a41b739eae25a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/receipt.json",
+      "bytes": 9632,
+      "sha256": "75a04245356b49ef482c3a5f75a2eae4dd71011c5cd42dbccefbe5c9c02df288"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "cbe252cd00560e06492405a8e898afc6b8281d7716a2a40798419be9c685daf0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-native/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/final-run-status.json",
+      "bytes": 363,
+      "sha256": "9c14f7743a9a6976cf6d2cacaca3469993bdb4e09b3661e6161ae54280c0f755"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/build-linux-vulkan.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/build-linux-vulkan.stdout",
+      "bytes": 122499,
+      "sha256": "c632a70c059bafe94030396cb0993e8ee4f3ff5b517540454e33497acfec0119"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/cmake-version.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/cmake-version.stdout",
+      "bytes": 91,
+      "sha256": "f6e81c2559f3ce00c5fdad01d7b226c301f5d6b07ee04f65db6dbfdc1cc5970b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/commands.json",
+      "bytes": 1767,
+      "sha256": "e61cd79f27d1bad84d58611fedc1d016d736e83f1e197678b3c3cb3946a2b445"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/compiler-version.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/compiler-version.stdout",
+      "bytes": 249,
+      "sha256": "7588fd551e53fea9fa7cd40881cba582e2a26da1da6d4f8324c45153793cef9e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/configure-linux-vulkan.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/configure-linux-vulkan.stdout",
+      "bytes": 780,
+      "sha256": "705f7728359b6acec5b9cd9dcc553e32430a10dc807594cf17661fc39b974fae"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/ninja-version.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/ninja-version.stdout",
+      "bytes": 7,
+      "sha256": "810ab97f4b3fccb9adf1db7959945b479635931ccc4a0243c34a41b739eae25a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "0c72245543aafab24366550447c05b588033060a42a506ccde4b04eb45e2ba44"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-attempt.zip",
+      "bytes": 13390,
+      "sha256": "9ba1813606d0ba2bc4ed51d0f6688efb3c818b569910b3919fa58c415fb41248"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-compile/first-job.log",
+      "bytes": 30504,
+      "sha256": "7a860ff65d852a57c292aef6791c87db63b956c1813175add1cdcd9bd7d126dd"
+    }
+  ],
+  "static_verification": {
+    "result": "pass",
+    "checks": [
+      "Successful GitHub run/job and logged receipt match downloaded artifact receipt",
+      "ZIP digest, all native diagnostic hashes, exact tested Git inputs and compile command source identity verified",
+      "Only native compile/compile CI completed; a required existing Python CI remediation task added",
+      "Linux GPU/layer/WSI/install and deferred investigations remain unaccepted",
+      "184 relative links and mentioned IDs resolve; 141-task roadmap graph and historical text checked",
+      "Phase 3: 24 done / 44 required todo / 9 conditional todo"
+    ]
+  }
+}
