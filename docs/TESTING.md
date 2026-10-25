@@ -656,3 +656,9 @@ NVIDIA/Intel validation OFF/ON processes. New CPU model assertions are 172; Pyth
 tests are 581. The rebased candidate passes the 55 selected product CTests with the
 three deferred memory tests excluded at initial selection. Sparse survivor sets are
 defined by native blocks and are not matched performance workloads.
+
+The [rebased allocation-fault tests](VULKAN_POOL_REBASE_FAULT_REPORT.md) cover 88
+clean processes/264 cycles with 324 synthetic errors, 1,200 full readbacks and 14
+fail-closed controls. CPU plan tests rerun 914 assertions; Python tests are 614.
+The candidate's 55 selected CTests remain prior evidence for unchanged bytes. No
+deferred memory test, real heap exhaustion or historical Intel AV investigation is run.

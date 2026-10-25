@@ -1,0 +1,77 @@
+[
+  {
+    "name": "regression-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "experiments/vulkan_buffer_pool_fault",
+      "-B",
+      "out/vulkan-pool-rebase-fault-regression",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-pool-churn-install"
+    ],
+    "returncode": 0,
+    "seconds": 3.625
+  },
+  {
+    "name": "regression-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-pool-rebase-fault-regression",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 10.469000000000051
+  },
+  {
+    "name": "fault-plan",
+    "argv": [
+      "ctest",
+      "--test-dir",
+      "out/vulkan-pool-rebase-fault-regression",
+      "-C",
+      "Release",
+      "--output-on-failure"
+    ],
+    "returncode": 0,
+    "seconds": 0.1089999999999236
+  },
+  {
+    "name": "mixed-configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "experiments/vulkan_pool_rebase_fault",
+      "-B",
+      "out/vulkan-pool-rebase-fault-mixed",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\vulkan-pool-churn-install"
+    ],
+    "returncode": 0,
+    "seconds": 2.9220000000000255
+  },
+  {
+    "name": "mixed-build",
+    "argv": [
+      "cmake",
+      "--build",
+      "out/vulkan-pool-rebase-fault-mixed",
+      "--config",
+      "Release",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 8.577999999999975
+  }
+]

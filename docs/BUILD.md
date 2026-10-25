@@ -511,3 +511,9 @@ The [rebased pool experiment](VULKAN_POOL_CHURN_REPORT.md) uses new
 consumer roots. `prepare_vulkan_pool_churn.py` verifies the current product and
 historical candidate before patching only the new copy. SDK and consumers build
 serially with MSVC Release; the original product and old artifacts stay preserved.
+
+The [rebased fault profile](VULKAN_POOL_REBASE_FAULT_REPORT.md) freshly builds the
+unchanged historical fault project and a separate mixed-context consumer against
+`out/vulkan-pool-churn-install`. Product/candidate SDKs are not rebuilt in this stage.
+MSVC Release uses new roots and serial compilation; actual installed-library hashes
+and linker reads distinguish these fresh runs from old candidate evidence.

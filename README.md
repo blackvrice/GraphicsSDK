@@ -179,3 +179,9 @@ candidate onto the hardened product and tests mixed churn, sparse occupancy and
 retained recordings on both GPUs. It passes 224 injected bind errors and 35,392
 full readbacks. Sparse reservation reaches 6.2x live native requirements; pooling
 remains experimental and the production dedicated policy is unchanged.
+
+The [rebased allocation-failure stage](docs/VULKAN_POOL_REBASE_FAULT_REPORT.md)
+freshly reruns the full fault matrix and adds mixed-context fallback/recording cases.
+It passes 88 processes, 324 injected errors and 1,200 full readbacks on the unchanged
+candidate. Exact fallback and rollback are verified; the sparse reservation policy
+and fresh performance acceptance remain before any product promotion.

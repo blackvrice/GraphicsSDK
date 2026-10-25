@@ -533,3 +533,9 @@ records 996 conservative inputs/21 components and 34 compiler/33 linker read log
 from the new candidate SDK and product/candidate consumers, preserving the prior
 closure. Read-only binding metadata reuses the own guarded layer and pinned Vulkan
 declarations. No new dependency/vendor modification or binary redistribution is introduced.
+
+The [rebased allocation-fault inventory](../licenses/generated/windows-vulkan-pool-rebase-fault-release/inventory.json)
+records 998 conservative inputs/21 components and five new compiler/five new linker
+read logs, preserving the reviewed SDK/candidate closure. New own test code reuses
+the existing guarded layer and binding observer. No new third-party dependency,
+vendor modification or binary redistribution is introduced.

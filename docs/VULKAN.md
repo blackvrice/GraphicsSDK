@@ -522,3 +522,9 @@ creation guards and adds one for block allocation in an isolated candidate. Pool
 policy headers retain their reviewed bytes. Mixed churn and retained recordings
 pass exact binding/data checks, but one survivor per block retains 6.2x the live
 native requirements in the recorded sparse case. No product promotion is made.
+
+The [mixed-context exact fallback contracts](VULKAN_POOL_REBASE_FAULT_REPORT.md)
+verify that free-slot reuse leaves an allocation fault pending, the next expansion
+consumes it, and successful fallback binds exactly 4KiB of new memory. Repeated
+OOM, unknown errors and fallback bind failure preserve existing bindings/data and
+growth retry. No allocator source or product policy changes in this stage.

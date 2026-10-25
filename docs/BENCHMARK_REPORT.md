@@ -182,3 +182,8 @@ instrumented correctness observations, without new timings. Mixed/held logical
 sequences match across product/candidate; block-based sparse survivor sets differ.
 The 6.2x sparse reservation is native requested bytes, not OS residency. Prior
 timings are not attributed to the rebased fingerprint, and pooling is not adopted.
+
+The [fresh candidate OOM/fallback checks](VULKAN_POOL_REBASE_FAULT_REPORT.md)
+validate correctness on the current candidate fingerprint. They add no timing data
+and do not remove the earlier 6.2x sparse-reservation observation. Both SDK source
+identities and prior measured results remain unchanged; pooling is still experimental.

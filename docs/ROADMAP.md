@@ -220,3 +220,10 @@ ended/pending recordings and 224 bind-error rollback cycles. The isolated candid
 passes 55 selected CTests; Python tests are 581. Product adoption still needs full
 allocation-OOM/fallback retesting for the new fingerprint, reservation policy and
 fresh matched performance acceptance. Long-memory/Intel AV investigations remain deferred.
+
+The [current candidate allocation-fault matrix](VULKAN_POOL_REBASE_FAULT_REPORT.md)
+now has fresh evidence for all 15 historical cases plus seven mixed-context cases:
+264 cycles, exact fallback, repeated errors, reuse-before-pending-OOM and held-recording
+rollback. Python tests are 614. Candidate sources remain unchanged and unadopted;
+reservation policy and matched performance acceptance remain open. The long-memory
+criterion and historical Intel AV investigation remain deferred.
