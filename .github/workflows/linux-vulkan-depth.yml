@@ -1,0 +1,59 @@
+name: Linux Vulkan D32 depth and MRT (software ICD)
+on:
+  push:
+    paths:
+      - '.github/workflows/linux-vulkan-depth.yml'
+      - 'tools/run_linux_depth.py'
+      - 'tools/run_linux_device.py'
+      - 'tests/VulkanDepthTests.cpp'
+      - 'tests/VulkanDepthSupport.hpp'
+      - 'tests/fixtures/DepthFixtures.hpp'
+      - 'tests/vulkan_consumer/**'
+      - 'tests/linux_vulkan_device/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+  pull_request:
+    paths:
+      - '.github/workflows/linux-vulkan-depth.yml'
+      - 'tools/run_linux_depth.py'
+      - 'tools/run_linux_device.py'
+      - 'tests/VulkanDepthTests.cpp'
+      - 'tests/VulkanDepthSupport.hpp'
+      - 'tests/fixtures/DepthFixtures.hpp'
+      - 'tests/vulkan_consumer/**'
+      - 'tests/linux_vulkan_device/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  software-depth:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - name: Prepare native software Vulkan runtime
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools
+      - name: Run D32, depth-only, read-only, comparison, write mask and MRT contracts
+        run: python3 tools/run_linux_depth.py
+      - name: Preserve runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-vulkan-depth-${{ github.sha }}
+          path: out/linux-vulkan-depth-evidence/
+          if-no-files-found: error
+          retention-days: 14
