@@ -103,8 +103,8 @@ def main():
     (OUT/(args.stage+'-pci.json')).write_text(json.dumps(pci,indent=2)+'\n')
     if args.stage=='preflight':
         run('vulkaninfo',['vulkaninfo','--summary'])
-        run('configure-sdk',['cmake','--preset','linux-vulkan-validation','-B',BUILD,'-DCMAKE_INSTALL_PREFIX='+str(INSTALL),'-DCMAKE_CXX_COMPILER=g++-14','-DGFX_BUILD_TESTS=OFF','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
-        run('build-sdk',['cmake','--build',BUILD,'--parallel','1'])
+        run('configure-sdk',['cmake','--preset','linux-vulkan-validation','-B',BUILD,'-DCMAKE_INSTALL_PREFIX='+str(INSTALL),'-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'])
+        run('build-sdk',['cmake','--build',BUILD,'--parallel','1','--target','GraphicsSDKCore'])
         run('install-sdk',['cmake','--install',BUILD])
         run('configure-probe',['cmake','-S','tests/linux_vulkan_device','-B',PROBE,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_PREFIX_PATH='+str(INSTALL),'-DGFX_VULKAN_HEADERS='+str(headers)])
         run('build-probe',['cmake','--build',PROBE,'--parallel','1'])
