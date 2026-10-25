@@ -1,0 +1,65 @@
+name: Linux Vulkan input and resource binding (software ICD)
+on:
+  push:
+    paths:
+      - '.github/workflows/linux-vulkan-input.yml'
+      - 'tools/run_linux_input.py'
+      - 'tools/run_linux_device.py'
+      - 'tests/VulkanVertexTests.cpp'
+      - 'tests/VulkanBindingTests.cpp'
+      - 'tests/VulkanVertexSupport.hpp'
+      - 'tests/VulkanBindingSupport.hpp'
+      - 'tests/fixtures/VertexFixtures.hpp'
+      - 'tests/fixtures/BindingFixtures.hpp'
+      - 'tests/vulkan_consumer/**'
+      - 'tests/linux_vulkan_device/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+  pull_request:
+    paths:
+      - '.github/workflows/linux-vulkan-input.yml'
+      - 'tools/run_linux_input.py'
+      - 'tools/run_linux_device.py'
+      - 'tests/VulkanVertexTests.cpp'
+      - 'tests/VulkanBindingTests.cpp'
+      - 'tests/VulkanVertexSupport.hpp'
+      - 'tests/VulkanBindingSupport.hpp'
+      - 'tests/fixtures/VertexFixtures.hpp'
+      - 'tests/fixtures/BindingFixtures.hpp'
+      - 'tests/vulkan_consumer/**'
+      - 'tests/linux_vulkan_device/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  software-inputs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - name: Prepare native software Vulkan runtime
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-tools
+      - name: Run vertex, index, instance, binding and snapshot contracts
+        run: python3 tools/run_linux_input.py
+      - name: Preserve runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-vulkan-input-${{ github.sha }}
+          path: out/linux-vulkan-input-evidence/
+          if-no-files-found: error
+          retention-days: 14
