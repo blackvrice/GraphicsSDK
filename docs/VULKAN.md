@@ -44,6 +44,8 @@ do not include Vulkan headers, and consumers need no Vulkan SDK or import librar
 Windows loads the system `vulkan-1.dll`; Linux code loads `libvulkan.so.1` and links
 `${CMAKE_DL_LIBS}`. The loader, ICD, driver and validation layer are external
 prerequisites and are never bundled. Linux native compilation/runtime is still pending.
+The [Linux environment inventory](PHASE3_LINUX_ENVIRONMENT.md) records the current
+Windows host's unavailable WSL path and the prerequisites for a native receipt.
 
 ## Contract
 

@@ -36,7 +36,7 @@ python tools/roadmap.py --write
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
 | 2 — D3D12 core·잔여 수용 | 9 | 3 | 0 | 0 | 2 | 구현·자동 회귀는 완료 근거를 유지. 장시간 메모리/Intel AV는 보류, 실제 표시·물리 손실 수용은 별도 미완료. |
-| 3 — Vulkan | 20 | 47 | 9 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
+| 3 — Vulkan | 21 | 46 | 9 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 6 | 0 | 0 | 11 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
@@ -44,11 +44,13 @@ python tools/roadmap.py --write
 
 ## 다음 권장 작업
 
-**`P3-LNX-01` — 실행 환경 확인**
+**`P3-CAP-01` — Vulkan debug marker**
 
-Linux 후보 환경의 OS/compiler/loader/ICD/GPU/VVL 가용성을 읽기 전용으로 조사한다.
+원래 RHI Debug Marker 필수 요구에 따라 debug-utils label을 공통 marker API에 연결한다. 현재 Vulkan은 Unsupported이며 미완료다.
 
-**완료 기준:** 실제 관측한 환경 receipt와 가능한 build/runtime 범위. 환경 부재는 명시하고 런타임 작업을 완료로 만들지 않음.
+**완료 기준:** 실제 label 관측과 미지원/수명·thread 계약 검사.
+
+**환경 조건:** debug-utils label 관측이 가능한 native GPU/driver/runtime 환경
 
 ## 변경하지 않는 경계
 
@@ -156,7 +158,7 @@ Linux 후보 환경의 OS/compiler/loader/ICD/GPU/VVL 가용성을 읽기 전용
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P3-LNX-01`<br>미완료 · 필수 | **실행 환경 확인**<br>Linux 후보 환경의 OS/compiler/loader/ICD/GPU/VVL 가용성을 읽기 전용으로 조사한다.<br>완료: 실제 관측한 환경 receipt와 가능한 build/runtime 범위. 환경 부재는 명시하고 런타임 작업을 완료로 만들지 않음. | 선행: `P3-WIN-01` |
+| [x] `P3-LNX-01`<br>완료 · 필수 | **실행 환경 확인**<br>Windows host의 WSL/컨테이너/VM CLI·선택 서비스와 원격 대상 가용성을 읽기 전용으로 조사했다. WSL 미설치로 Linux OS/compiler/loader/ICD/GPU/VVL은 미관측이며 runtime 작업은 미완료 유지한다.<br>완료: 실제 관측한 환경 receipt와 가능한 build/runtime 범위. 환경 부재는 명시하고 런타임 작업을 완료로 만들지 않음. | 선행: `P3-WIN-01`<br>근거: [PHASE3_LINUX_ENVIRONMENT](PHASE3_LINUX_ENVIRONMENT.md), [summary.json](../benchmarks/reports/2026-10-25-phase3-linux-environment/summary.json) |
 | [ ] `P3-LNX-02`<br>미완료 · 필수 | **Vulkan 활성 Linux build preset**<br>D3D12 OFF/Vulkan ON의 전용 CMake preset과 외부 헤더 경로를 구성한다.<br>완료: portable-core와 구분된 재현 configure 명령·플랫폼 의존성 명시. | 선행: `P3-LNX-01`<br>환경: Linux compiler/CMake 환경 |
 | [ ] `P3-LNX-03`<br>미완료 · 필수 | **Linux SDK 실제 컴파일**<br>실제 compiler 오류와 플랫폼 의존성을 수정하고 별도 build root에 빌드한다.<br>완료: 현재 source fingerprint의 native build 성공 로그. Windows 빌드로 대체하지 않음. | 선행: `P3-LNX-02`<br>환경: Linux native build 환경 |
 | [ ] `P3-LNX-04`<br>미완료 · 필수 | **로더·adapter·장치 실행**<br>libvulkan 로딩, 정확한 native ID 선택, 미지원/잘못된 선택 검사.<br>완료: 실제 Linux GPU 장치 생성·정확한 선택과 negative controls. | 선행: `P3-LNX-03`<br>환경: Linux Vulkan runtime/GPU |

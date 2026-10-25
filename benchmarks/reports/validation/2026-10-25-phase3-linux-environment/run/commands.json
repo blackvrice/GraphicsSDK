@@ -1,0 +1,42 @@
+[
+  {
+    "name": "host-inventory",
+    "argv": [
+      "powershell",
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      "\n[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)\n$linuxProbeOs = Get-CimInstance Win32_OperatingSystem\n$linuxProbeNames = 'wsl.exe','docker.exe','podman.exe','ssh.exe','VBoxManage.exe','vmrun.exe','multipass.exe','qemu-system-x86_64.exe','cmake.exe','ninja.exe','clang++.exe','g++.exe','vulkaninfo.exe'\n$linuxProbeTools = @($linuxProbeNames | ForEach-Object {\n    $linuxProbeToolName = $_\n    $linuxProbePaths = @(Get-Command $linuxProbeToolName -CommandType Application -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)\n    [pscustomobject]@{name=$linuxProbeToolName;paths=$linuxProbePaths}\n})\n$linuxProbeSshConfig = Join-Path $env:USERPROFILE '.ssh\\config'\n$linuxProbeServices = @(Get-Service -Name WslService,LxssManager,vmms,com.docker.service -ErrorAction SilentlyContinue | ForEach-Object {[pscustomobject]@{name=$_.Name;status=$_.Status.ToString()}})\n[pscustomobject]@{\n    host_os=[pscustomobject]@{version=$linuxProbeOs.Version;build=$linuxProbeOs.BuildNumber;architecture=$linuxProbeOs.OSArchitecture}\n    tools=$linuxProbeTools;services=$linuxProbeServices\n    ssh_config_exists=(Test-Path -LiteralPath $linuxProbeSshConfig)\n    candidate_environment_keys=@(Get-ChildItem Env: | Where-Object Name -match '^WSL|^DOCKER_HOST$|^CONTAINER_HOST$' | Select-Object -ExpandProperty Name)\n} | ConvertTo-Json -Depth 5\n"
+    ],
+    "returncode": 0,
+    "timed_out": false,
+    "seconds": 2.2650000000001,
+    "stdout": "{\r\n    \"host_os\":  {\r\n                    \"version\":  \"10.0.26220\",\r\n                    \"build\":  \"26220\",\r\n                    \"architecture\":  \"64-bit\"\r\n                },\r\n    \"tools\":  [\r\n                  {\r\n                      \"name\":  \"wsl.exe\",\r\n                      \"paths\":  [\r\n                                    \"C:\\\\WINDOWS\\\\system32\\\\wsl.exe\"\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"docker.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"podman.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"ssh.exe\",\r\n                      \"paths\":  [\r\n                                    \"C:\\\\WINDOWS\\\\System32\\\\OpenSSH\\\\ssh.exe\"\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"VBoxManage.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"vmrun.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"multipass.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"qemu-system-x86_64.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"cmake.exe\",\r\n                      \"paths\":  [\r\n                                    \"C:\\\\Users\\\\black\\\\AppData\\\\Local\\\\Programs\\\\CLion\\\\bin\\\\cmake\\\\win\\\\x64\\\\bin\\\\cmake.exe\"\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"ninja.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"clang++.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"g++.exe\",\r\n                      \"paths\":  [\r\n\r\n                                ]\r\n                  },\r\n                  {\r\n                      \"name\":  \"vulkaninfo.exe\",\r\n                      \"paths\":  [\r\n                                    \"C:\\\\WINDOWS\\\\system32\\\\vulkaninfo.exe\"\r\n                                ]\r\n                  }\r\n              ],\r\n    \"services\":  [\r\n\r\n                 ],\r\n    \"ssh_config_exists\":  false,\r\n    \"candidate_environment_keys\":  [\r\n\r\n                                   ]\r\n}\r\n",
+    "stderr": ""
+  },
+  {
+    "name": "wsl-list",
+    "argv": [
+      "C:\\WINDOWS\\system32\\wsl.exe",
+      "--list",
+      "--verbose"
+    ],
+    "returncode": 1,
+    "timed_out": false,
+    "seconds": 0.03199999999992542,
+    "stdout": "",
+    "stderr": "Linux용 Windows 하위 시스템 설치되어 있지 않습니다. 'wsl.exe --install'을 실행하여 설치할 수 있습니다.\r\r\n자세한 내용은 https://aka.ms/wslinstall\r\r\n 참조하세요."
+  },
+  {
+    "name": "wsl-status",
+    "argv": [
+      "C:\\WINDOWS\\system32\\wsl.exe",
+      "--status"
+    ],
+    "returncode": 50,
+    "timed_out": false,
+    "seconds": 0.03099999999994907,
+    "stdout": "",
+    "stderr": "Linux용 Windows 하위 시스템 설치되어 있지 않습니다. 'wsl.exe --install'을 실행하여 설치할 수 있습니다.\r\r\n자세한 내용은 https://aka.ms/wslinstall\r\r\n 참조하세요."
+  }
+]

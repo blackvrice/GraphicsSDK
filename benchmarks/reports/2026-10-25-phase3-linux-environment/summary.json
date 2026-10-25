@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-01",
+  "observed_at": "2026-10-25",
+  "baseline_commit": "b18505dd9fd4052feef33e446eee6c887b4ae628",
+  "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "SDK_modified": false,
+  "inventory_complete": true,
+  "native_Linux_observed": false,
+  "Linux_build_attempted": false,
+  "Linux_runtime_executed": false,
+  "Linux_GPU_accepted": false,
+  "Linux_WSI_accepted": false,
+  "host_inventory": {
+    "host_os": {
+      "version": "10.0.26220",
+      "build": "26220",
+      "architecture": "64-bit"
+    },
+    "tools": [
+      {
+        "name": "wsl.exe",
+        "paths": [
+          "C:\\WINDOWS\\system32\\wsl.exe"
+        ]
+      },
+      {
+        "name": "docker.exe",
+        "paths": []
+      },
+      {
+        "name": "podman.exe",
+        "paths": []
+      },
+      {
+        "name": "ssh.exe",
+        "paths": [
+          "C:\\WINDOWS\\System32\\OpenSSH\\ssh.exe"
+        ]
+      },
+      {
+        "name": "VBoxManage.exe",
+        "paths": []
+      },
+      {
+        "name": "vmrun.exe",
+        "paths": []
+      },
+      {
+        "name": "multipass.exe",
+        "paths": []
+      },
+      {
+        "name": "qemu-system-x86_64.exe",
+        "paths": []
+      },
+      {
+        "name": "cmake.exe",
+        "paths": [
+          "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe"
+        ]
+      },
+      {
+        "name": "ninja.exe",
+        "paths": []
+      },
+      {
+        "name": "clang++.exe",
+        "paths": []
+      },
+      {
+        "name": "g++.exe",
+        "paths": []
+      },
+      {
+        "name": "vulkaninfo.exe",
+        "paths": [
+          "C:\\WINDOWS\\system32\\vulkaninfo.exe"
+        ]
+      }
+    ],
+    "services": [],
+    "ssh_config_exists": false,
+    "candidate_environment_keys": []
+  },
+  "wsl_queries": [
+    {
+      "name": "wsl-list",
+      "returncode": 1,
+      "timed_out": false
+    },
+    {
+      "name": "wsl-status",
+      "returncode": 50,
+      "timed_out": false
+    }
+  ],
+  "discovery_scope": "Windows host command PATH, selected service names, SSH config existence only, WSL list/status; no network/SSH scan or credential reads",
+  "Linux_capabilities": {
+    "OS": "not observed: no accessible Linux execution environment established",
+    "CXX_compiler": "not observed: no accessible Linux execution environment established",
+    "CMake": "not observed: no accessible Linux execution environment established",
+    "Ninja": "not observed: no accessible Linux execution environment established",
+    "Vulkan_loader": "not observed: no accessible Linux execution environment established",
+    "ICD": "not observed: no accessible Linux execution environment established",
+    "GPU": "not observed: no accessible Linux execution environment established",
+    "validation_layer": "not observed: no accessible Linux execution environment established",
+    "display_server": "not observed: no accessible Linux execution environment established"
+  },
+  "actions_not_performed": [
+    "WSL/container/VM install or start",
+    "system feature or driver changes",
+    "remote login",
+    "native SDK build",
+    "GPU work",
+    "deferred memory/Intel investigation"
+  ],
+  "runner": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run.py",
+    "bytes": 5827,
+    "sha256": "9cea0d1087c29f34a25515bd63d1718dea49b5eccc3561566497ff57ee8304fe"
+  },
+  "raw_files": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run/commands.json",
+      "bytes": 5728,
+      "sha256": "7f82d074bc92cee3a6b66b8a5d5c0b38d49159b86504cc899254c49bdd320b58"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run/host-inventory.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run/host-inventory.stdout",
+      "bytes": 2818,
+      "sha256": "ca7af6bf245dec405c3ed947ae1f339c06be83895d51a66a46dd5492d90924a2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run/wsl-list.stderr",
+      "bytes": 238,
+      "sha256": "0aa0daaf03f7c5da220c854dbf0ccfc152512f78315481d6f39e8559be52cefc"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run/wsl-list.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run/wsl-status.stderr",
+      "bytes": 238,
+      "sha256": "0aa0daaf03f7c5da220c854dbf0ccfc152512f78315481d6f39e8559be52cefc"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-environment/run/wsl-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "repository_inputs": [
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 15821,
+      "sha256": "377a40c3fc4ff428f226002fe33200cd3535a1a97940bb5cb9225f47a8181874"
+    },
+    {
+      "path": "CMakePresets.json",
+      "bytes": 975,
+      "sha256": "cb5604ef84df1d118c899be4f3893cbf69198cd2164e5dc594d884ca492863e4"
+    },
+    {
+      "path": ".github/workflows/build.yml",
+      "bytes": 1460,
+      "sha256": "0024c9904b0de9f4b08519d8ad594e78fb60fa28e3ce226d4849a6234956ffbf"
+    },
+    {
+      "path": "tools/memory_stress_policy.json",
+      "bytes": 897,
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    }
+  ],
+  "environment_report": "docs/PHASE3_LINUX_ENVIRONMENT.md",
+  "observed_result": "No accessible Linux execution environment established in the explicitly queried Windows host scope; WSL list/status report not installed",
+  "available_work": "Repository preset preparation on Windows; actual Linux configure/build/runtime require a separately observed Linux environment",
+  "next_recommended_task": "P3-CAP-01",
+  "verification": {
+    "result": "pass",
+    "checks": [
+      "Three bounded read-only inventory commands recorded; nonzero WSL exits preserved as observations",
+      "13 tool lookups, selected services and SSH-config existence checked without remote login",
+      "Only P3-LNX-01 changed; later Linux/WSI acceptance and deferred investigations untouched",
+      "132 relative links and mentioned task IDs resolved",
+      "Runner/raw/config hashes, SDK fingerprint and deferred policy unchanged",
+      "Phase 3: 21 done / 46 required todo / 9 conditional todo"
+    ]
+  }
+}
