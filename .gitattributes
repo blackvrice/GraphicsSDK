@@ -283,3 +283,6 @@
 # Preserve software-ICD runtime evidence without normalizing recorded bytes.
 /benchmarks/reports/2026-10-25-phase3-linux-device/** -text whitespace=cr-at-eol
 /benchmarks/reports/validation/2026-10-25-phase3-linux-device/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+# Keep the native Linux transfer runner reproducible.
+/tools/run_linux_transfer.py text eol=lf
