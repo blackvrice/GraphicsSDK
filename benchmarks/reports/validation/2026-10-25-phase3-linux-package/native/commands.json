@@ -1,0 +1,447 @@
+[
+  {
+    "name": "source-commit",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.001962883999993892,
+    "environment": {}
+  },
+  {
+    "name": "source-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain",
+      "--untracked-files=no"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.6996364269999944,
+    "environment": {}
+  },
+  {
+    "name": "headers-commit",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.0019571340000013038,
+    "environment": {}
+  },
+  {
+    "name": "headers-status",
+    "argv": [
+      "git",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers",
+      "status",
+      "--porcelain"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.14424373599999996,
+    "environment": {}
+  },
+  {
+    "name": "compiler-version",
+    "argv": [
+      "g++-14",
+      "--version"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.40963011399999516,
+    "environment": {}
+  },
+  {
+    "name": "linker-version",
+    "argv": [
+      "ld",
+      "--version"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.054469653999994705,
+    "environment": {}
+  },
+  {
+    "name": "packages",
+    "argv": [
+      "dpkg-query",
+      "-W",
+      "-f=${Package} ${Version}\n",
+      "g++-14",
+      "binutils",
+      "libvulkan1",
+      "mesa-vulkan-drivers",
+      "vulkan-tools"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.01152911099999443,
+    "environment": {}
+  },
+  {
+    "name": "vulkaninfo",
+    "argv": [
+      "vulkaninfo",
+      "--summary"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 4.111269266999997,
+    "environment": {}
+  },
+  {
+    "name": "configure-sdk",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-sdk",
+      "-DCMAKE_INSTALL_PREFIX=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-install",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DGFX_BUILD_TESTS=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 3.339804169000004,
+    "environment": {}
+  },
+  {
+    "name": "configure-sdk-capture",
+    "argv": [
+      "cmake",
+      "--preset",
+      "linux-vulkan",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-sdk",
+      "-DCMAKE_INSTALL_PREFIX=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-install",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DGFX_BUILD_TESTS=OFF",
+      "-DGFX_BUILD_EXAMPLES=OFF",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+      "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/python3;/home/runner/work/GraphicsSDK/GraphicsSDK/tools/linux_build_capture.py;compile;/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-evidence/sdk-capture",
+      "-DCMAKE_CXX_LINKER_LAUNCHER=/usr/bin/python3;/home/runner/work/GraphicsSDK/GraphicsSDK/tools/linux_build_capture.py;link;/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-evidence/sdk-capture"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.02427935600000808,
+    "environment": {}
+  },
+  {
+    "name": "build-sdk",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-sdk",
+      "--parallel",
+      "1",
+      "--verbose"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 24.448638277,
+    "environment": {}
+  },
+  {
+    "name": "archive-members",
+    "argv": [
+      "ar",
+      "t",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-sdk/libGraphicsSDKCore.a"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.0021574490000091373,
+    "environment": {}
+  },
+  {
+    "name": "install-sdk",
+    "argv": [
+      "cmake",
+      "--install",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-sdk"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.017182968999989612,
+    "environment": {}
+  },
+  {
+    "name": "configure-consumer",
+    "argv": [
+      "cmake",
+      "-S",
+      "/tmp/graphics-sdk-consumer-aj1px3rg",
+      "-B",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-relocated",
+      "-DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF",
+      "-DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.1717988979999916,
+    "environment": {}
+  },
+  {
+    "name": "configure-consumer-capture",
+    "argv": [
+      "cmake",
+      "-S",
+      "/tmp/graphics-sdk-consumer-aj1px3rg",
+      "-B",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_PREFIX_PATH=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-relocated",
+      "-DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF",
+      "-DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+      "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/python3;/home/runner/work/GraphicsSDK/GraphicsSDK/tools/linux_build_capture.py;compile;/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-evidence/consumer-capture",
+      "-DCMAKE_CXX_LINKER_LAUNCHER=/usr/bin/python3;/home/runner/work/GraphicsSDK/GraphicsSDK/tools/linux_build_capture.py;link;/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-package-evidence/consumer-capture"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.023323934999993412,
+    "environment": {}
+  },
+  {
+    "name": "build-consumer",
+    "argv": [
+      "cmake",
+      "--build",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build",
+      "--parallel",
+      "1",
+      "--verbose"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 27.634294514999993,
+    "environment": {}
+  },
+  {
+    "name": "installed-cpu",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/cpu_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.001907461000001831,
+    "environment": {}
+  },
+  {
+    "name": "installed-buffer",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/buffer_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.14834839600001715,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-buffer",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/buffer_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.13741286699999478,
+    "environment": {}
+  },
+  {
+    "name": "installed-texture",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/texture_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 1.163080717999975,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-texture",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/texture_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.0017183630000090488,
+    "environment": {}
+  },
+  {
+    "name": "installed-color-pass",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/render_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 1.6260028490000025,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-color-pass",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/render_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.0017660910000074637,
+    "environment": {}
+  },
+  {
+    "name": "installed-draw",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/draw_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 1.1550980119999963,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-draw",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/draw_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.0016028370000071845,
+    "environment": {}
+  },
+  {
+    "name": "installed-vertex",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/vertex_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.9152892930000007,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-vertex",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/vertex_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.0015879389999895466,
+    "environment": {}
+  },
+  {
+    "name": "installed-binding",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/binding_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 2.5335149830000034,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-binding",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/binding_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.001616085000023304,
+    "environment": {}
+  },
+  {
+    "name": "installed-depth",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/depth_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 1.1621891940000069,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-depth",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/depth_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.001706534999982523,
+    "environment": {}
+  },
+  {
+    "name": "installed-timestamp",
+    "argv": [
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/timestamp_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 1.0415921259999834,
+    "environment": {
+      "LD_DEBUG": "libs"
+    }
+  },
+  {
+    "name": "elf-timestamp",
+    "argv": [
+      "readelf",
+      "-d",
+      "/tmp/graphics-sdk-consumer-aj1px3rg/build/timestamp_consumer"
+    ],
+    "cwd": "/home/runner/work/GraphicsSDK/GraphicsSDK",
+    "returncode": 0,
+    "seconds": 0.0016419389999953182,
+    "environment": {}
+  }
+]

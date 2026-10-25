@@ -19,6 +19,10 @@ required Phase 3 task. Linux software-ICD execution is verified for
 [timestamp query/availability/lifetime execution and CPU wrap conversion](PHASE3_LINUX_TIMESTAMP_REPORT.md).
 [Required core/sync validation](PHASE3_LINUX_VALIDATION_REPORT.md) also passed for all eight
 common software-ICD suites and their installed consumers with a pinned Linux VVL runtime.
+[Relocated Linux package and actual GNU input audit](PHASE3_LINUX_PACKAGE_REPORT.md) passed
+for nine external consumers and an exact 20-file verification SDK ZIP. The audit tool adds
+third-party notices after installation. This audit run uses driver-only software Vulkan;
+its unchanged SDK archive retains the separate required-validation evidence above.
 Physical GPU and WSI acceptance remain pending.
 The [Windows GPU/driver support policy](PHASE3_WINDOWS_SUPPORT.md) records the
 tested NVIDIA presentation and Intel unsupported combinations, plus fallback decisions.

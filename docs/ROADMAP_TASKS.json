@@ -1026,15 +1026,18 @@
       "phase": 3,
       "group": "P3-LNX",
       "title": "Linux 설치 소비자·입력 감사",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-LNX-11"
       ],
-      "work": "Linux 설치 library/header를 외부 프로젝트가 find_package로 사용한다.",
-      "done_when": "설치 소비자 실행, 실제 compiler/linker 입력·notice 및 설치 payload 검사.",
-      "evidence": [],
-      "requires": "Linux build/runtime 환경"
+      "work": "실제 Linux에서 설치본 경로를 옮기고 저장소 밖 find_package 소비자 9개를 실행했다. GNU compiler/linker 실제 입력, object/archive, 설치 후 고지와 20개 파일의 검증용 SDK ZIP을 감사했다. software Vulkan 8개 suite/2666 assertions 및 감사 대조 13개 통과.",
+      "done_when": "설치 소비자 실행과 실제 compiler/linker 입력·notice·payload 검사 통과. 고지는 전용 도구의 설치 후 패키징 단계에서 추가. 물리 GPU는 P3-LNX-15, 전체 CI는 P3-LNX-14, 정식 다중 플랫폼 배포는 Phase 7 별도.",
+      "evidence": [
+        "docs/PHASE3_LINUX_PACKAGE_REPORT.md",
+        "benchmarks/reports/2026-10-25-phase3-linux-package/summary.json"
+      ],
+      "requires": "Linux GNU/CMake/Ninja 및 Vulkan runtime; 이번 실행은 software ICD"
     },
     {
       "id": "P3-LNX-13",
@@ -1069,7 +1072,8 @@
       "done_when": "Windows/Linux fresh CI에서 전체 Python 회귀 통과와 기존 자료·검증 계약 보존. 변경 전 614 tests/errors=92 원본 및 수정 후 실제 실행 근거.",
       "evidence": [
         "docs/PHASE3_LINUX_COMPILE_REPORT.md",
-        "docs/PHASE3_LINUX_VALIDATION_REPORT.md"
+        "docs/PHASE3_LINUX_VALIDATION_REPORT.md",
+        "docs/PHASE3_LINUX_PACKAGE_REPORT.md"
       ],
       "requires": "Windows/Linux CI와 보존된 benchmark evidence"
     },
