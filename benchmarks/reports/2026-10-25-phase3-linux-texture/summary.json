@@ -1,0 +1,429 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-06",
+  "completion_scope": "Native Linux software-ICD texture transfer/texel/padding/transition/lifetime contracts; physical GPU remains required P3-LNX-15",
+  "source_commit": "fc30a6b1dfb3cfa9c7dfd1ac10ce16237f1b119c",
+  "native_SDK_source_fingerprint": "ca69fbe86eb5fb231503e070927322b95a80fbde10a1a951133f640b0dec2830",
+  "Windows_SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "workflow_run": {
+    "id": 40175221677,
+    "job_id": 121114319706,
+    "url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40175221677",
+    "conclusion": "success"
+  },
+  "platform": {
+    "os_release": {
+      "NAME": "Ubuntu",
+      "ID": "ubuntu",
+      "PRETTY_NAME": "Ubuntu 24.04.5 LTS",
+      "VERSION_ID": "24.04",
+      "VERSION": "24.04.5 LTS (Noble Numbat)",
+      "VERSION_CODENAME": "noble",
+      "ID_LIKE": "debian",
+      "HOME_URL": "https://www.ubuntu.com/",
+      "SUPPORT_URL": "https://help.ubuntu.com/",
+      "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+      "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+      "UBUNTU_CODENAME": "noble",
+      "LOGO": "ubuntu-logo"
+    },
+    "kernel": "6.17.0-1022-azure",
+    "machine": "x86_64"
+  },
+  "packages": "libvulkan1 1.3.275.0-1build1\nmesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.4\nvulkan-tools 1.3.275.0+dfsg1-1\n",
+  "adapters": [
+    {
+      "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "id": "5892941257450743403",
+      "vendor_id": 65541,
+      "device_id": 0,
+      "device_type": 4,
+      "api_version_raw": 4211006,
+      "driver_version_raw": 104865800,
+      "device_uuid": "6d65736132352e322e382d3075627500",
+      "driver_uuid": "6c6c766d706970655555494400000000"
+    }
+  ],
+  "workload": {
+    "extents": [
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        63,
+        5
+      ],
+      [
+        64,
+        1
+      ],
+      [
+        65,
+        17
+      ],
+      [
+        257,
+        129
+      ],
+      [
+        1920,
+        1080
+      ],
+      [
+        3840,
+        2160
+      ]
+    ],
+    "formats_bytes_per_texel": {
+      "RGBA8UNorm": 4,
+      "RGBA16Float": 8
+    },
+    "payloads_per_format_extent": 2,
+    "reuse_extent": [
+      65,
+      17
+    ],
+    "reuse_format": "RGBA8UNorm",
+    "reuse_payloads": 5
+  },
+  "results": [
+    {
+      "kind": "in-tree-ctest",
+      "assertions": 418,
+      "roundtrips": 37,
+      "verified_texel_bytes": 249685916,
+      "padded_roundtrips": 20,
+      "adapters": 1
+    },
+    {
+      "kind": "installed-consumer",
+      "assertions": 418,
+      "roundtrips": 37,
+      "verified_texel_bytes": 249685916,
+      "padded_roundtrips": 20,
+      "adapters": 1
+    }
+  ],
+  "total_assertions": 836,
+  "total_roundtrips": 74,
+  "total_verified_texel_bytes": 499371832,
+  "total_padded_roundtrips": 40,
+  "CLI_rejections": 4,
+  "missing_layer_rejections": 2,
+  "software_texture_contracts_accepted": true,
+  "hardware_GPU_accepted": false,
+  "validation_layer_success_accepted": false,
+  "WSI_accepted": false,
+  "long_memory_accepted": false,
+  "zero_poll_actual_timeout_observation": "not counted; unchanged suite accepts completed or Timeout and retries with finite wait",
+  "padding_scope": "Every padding byte of all 32 two-image roundtrips checked against 0xd3 sentinel; padded_roundtrips counts nonempty padding only; five reuse cases verify texels",
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "common_CXX_suite_modified": false,
+  "native_receipt": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/receipt.json",
+    "bytes": 16598,
+    "sha256": "2b81876dff9e9cdacde6f3ad8edd357310a9d7f00d5b076909156988fd92ec3e"
+  },
+  "artifact": {
+    "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/artifact.zip",
+    "bytes": 29152,
+    "sha256": "b95b352cafe7426b1e40bd1d6c579a89de6cfe49fdc08f3d30f5707d8f163fad"
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/artifact-metadata.json",
+      "bytes": 868,
+      "sha256": "29abe4875d6e435db90a87e0150764010f65a8010fe9b0ab3cd9ab7a604fc380"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/artifact.zip",
+      "bytes": 29152,
+      "sha256": "b95b352cafe7426b1e40bd1d6c579a89de6cfe49fdc08f3d30f5707d8f163fad"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/common-jobs-snapshot.json",
+      "bytes": 3758,
+      "sha256": "1fa2e5433ca5eb92c22c8e941d270b5b3bda7b9fc93f9e4012eb01292304f5e9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/common-portable-job.log",
+      "bytes": 314969,
+      "sha256": "3e84d042bb6a2c67cd0fe5b0251827da45c7921e3263b692ffd3df5e2d9e4e15"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/job-status.json",
+      "bytes": 1671,
+      "sha256": "f418480d4776f28cc89e78c17c1fc90a6384f3c17d864576d8de42647f750d07"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/job.log",
+      "bytes": 44986,
+      "sha256": "2b144cde83784aad446e536907c2ea7854f2ee5e95c8f444d3d7e7864dc323f0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/build-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/build-consumer.stdout",
+      "bytes": 1074,
+      "sha256": "0989d14802c6b8cdff88990c4fb60f000c64d7a4167687b9262f434895fb2c66"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/build-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/build-identity.stdout",
+      "bytes": 5326,
+      "sha256": "09b19345fd6172228fb14abed3ef15c6b751836ca197b946d9e53a502412c4c9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/build-texture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/build-texture.stdout",
+      "bytes": 102759,
+      "sha256": "0fa30c7f9c9934ff0163829908b2d98c2819f1d203b3fc25f5697c4f708f8cb2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/commands.json",
+      "bytes": 6286,
+      "sha256": "dc3cf84aa9dd9ee9ce758fe244eab225543286cded3f245b3879c9c86b68fee0"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/configure-consumer.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/configure-consumer.stdout",
+      "bytes": 428,
+      "sha256": "6b6a79e91932b59261659221b8e2a369988fddb18958aef595d129e623adc25a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/configure-identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/configure-identity.stdout",
+      "bytes": 428,
+      "sha256": "7503e7353d515a9f12a15f4dc18b2fc12190d972c9f9f3a755b16e636bec748f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/configure-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/configure-sdk.stdout",
+      "bytes": 780,
+      "sha256": "705f7728359b6acec5b9cd9dcc553e32430a10dc807594cf17661fc39b974fae"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/ctest-texture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/ctest-texture.stdout",
+      "bytes": 1219,
+      "sha256": "7f68b003915d4c907cb4406564477593d2d3e81d7da0452894fc1510a9dad89e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/headers-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/headers-commit.stdout",
+      "bytes": 41,
+      "sha256": "3a0d292ab4c138c0d4ec4444c570748a3a74ef3ec46da6c9e765f57a5ad16b46"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/headers-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/headers-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/identity.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/identity.stdout",
+      "bytes": 1194,
+      "sha256": "1c4d4b20a28225596a5d48e7b4676a9b5a4eca523559c79ff68857b21260aad9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/in-tree-extra.stderr",
+      "bytes": 53,
+      "sha256": "85d86988160e9ca955b125612c23bde439e6488aa9332f019e6166382406f2d6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/in-tree-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/in-tree-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/in-tree-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/in-tree-unknown.stderr",
+      "bytes": 53,
+      "sha256": "85d86988160e9ca955b125612c23bde439e6488aa9332f019e6166382406f2d6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/in-tree-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/install-sdk.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/install-sdk.stdout",
+      "bytes": 2337,
+      "sha256": "f9291427808806fdbff7362fd09fe572d21a2f4f58044fcd891b357972c01c72"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-extra.stderr",
+      "bytes": 53,
+      "sha256": "85d86988160e9ca955b125612c23bde439e6488aa9332f019e6166382406f2d6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-extra.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-missing-layer.stderr",
+      "bytes": 60,
+      "sha256": "361da5108bdf99b254bfc1ea9a40d6af2634ae7551cdfbbcfc4e7e72b4ac0cb4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-missing-layer.stdout",
+      "bytes": 149,
+      "sha256": "59361918e55d2ecc9a1b1bdfe06c3a51817c2d12d38b3f7146bfd594107b6fce"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-texture.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-texture.stdout",
+      "bytes": 246,
+      "sha256": "5bee20d56f641ca0056d122fd91388e22789317cec1ab5b5d7480bbd644d0180"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-unknown.stderr",
+      "bytes": 53,
+      "sha256": "85d86988160e9ca955b125612c23bde439e6488aa9332f019e6166382406f2d6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/installed-unknown.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/packages.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/packages.stdout",
+      "bytes": 104,
+      "sha256": "2c8b5b600baf0c1dd2892623a90f922a8d658a4a1aa1e54cce2b4419190537e2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/receipt.json",
+      "bytes": 16598,
+      "sha256": "2b81876dff9e9cdacde6f3ad8edd357310a9d7f00d5b076909156988fd92ec3e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/sdk-cache.txt",
+      "bytes": 16753,
+      "sha256": "5b8cd3d37162d239f1733f67cb53344cf4b60c2e26f2a2d4a18716042cc717e7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/sdk-compile-commands.json",
+      "bytes": 13913,
+      "sha256": "13788032b49e82aadcf2ca9497f339d02196b269a1a4a0b8b2643419a613087d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/source-commit.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/source-commit.stdout",
+      "bytes": 41,
+      "sha256": "15a3523a83c51b094a94c31321fd26c37cf019fe06ab240d72df45c750abb124"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/source-status.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/source-status.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/texture-ctest.xml",
+      "bytes": 599,
+      "sha256": "d32b082964dbabe909f03544a2babafd3dc13e34ebdf6beae4d22fb07a4c7fc1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/vulkaninfo.stderr",
+      "bytes": 218,
+      "sha256": "df7ed93b829da45dfb0e2b8692d3e30f4043a32223ef72cdb02304072362245a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/native/vulkaninfo.stdout",
+      "bytes": 1821,
+      "sha256": "5cfbf74d270cfda1ea5c36a079cb06ab6d19596427f4083b624570ecee90bca6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase3-linux-texture/run-status.json",
+      "bytes": 408,
+      "sha256": "316ecc5a925f3ac9ca77e65e405cc81311499761dd1eeeb03878c307d0c0a456"
+    }
+  ],
+  "verification": {
+    "result": "pass",
+    "checks": [
+      "Successful real Linux workflow; logged receipt matches artifact",
+      "GitHub ZIP digest and every diagnostic/raw tested Git input hash verified",
+      "Unchanged SDK/suite, 27-file native SDK fingerprint and equal built/installed library bytes",
+      "Both exact suites with complete texel and nonempty padding comparisons, expected CLI/layer rejection and no CTest skip",
+      "Software CPU identity explicitly recorded; physical GPU, normal VVL, WSI and long memory not accepted"
+    ]
+  }
+}
