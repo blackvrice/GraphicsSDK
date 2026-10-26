@@ -47,7 +47,7 @@ Result<AdapterInfo> adapterInfo(IDXGIAdapter1& adapter) {
                        info.VendorId,info.DeviceId,info.DedicatedVideoMemory,info.SharedSystemMemory};
 }
 DXGI_FORMAT native(Format format) {
-    switch(format){case Format::RGBA8UNorm:return DXGI_FORMAT_R8G8B8A8_UNORM;case Format::RGBA16Float:return DXGI_FORMAT_R16G16B16A16_FLOAT;case Format::D32Float:return DXGI_FORMAT_D32_FLOAT;}
+    switch(format){case Format::RGBA8UNorm:return DXGI_FORMAT_R8G8B8A8_UNORM;case Format::RGBA16Float:return DXGI_FORMAT_R16G16B16A16_FLOAT;case Format::D32Float:return DXGI_FORMAT_D32_FLOAT;case Format::BGRA8UNorm:return DXGI_FORMAT_B8G8R8A8_UNORM;}
     return DXGI_FORMAT_UNKNOWN;
 }
 DXGI_FORMAT native(VertexFormat format) {

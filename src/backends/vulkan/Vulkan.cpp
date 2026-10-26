@@ -295,6 +295,9 @@ struct NativeSurface {
     std::shared_ptr<NativeDevice> native;
     VkSurfaceKHR handle{};
     void* window{};
+#ifdef GFX_HAS_VULKAN_XCB
+    void* connection{}; std::uint32_t windowId{};
+#endif
     ~NativeSurface() { if (handle) native->instance->DestroySurfaceKHR(native->instance->handle, handle, nullptr); }
 };
 struct NativeSwapchain {
@@ -561,7 +564,15 @@ VkAccessFlags access(ResourceState state) {
     if (state == ResourceState::VertexAndIndexBuffer) return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
     return VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 }
-VkFormat textureFormat(Format f) { return f == Format::D32Float ? VK_FORMAT_D32_SFLOAT : f == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT; }
+VkFormat textureFormat(Format f) {
+    switch (f) {
+    case Format::RGBA8UNorm: return VK_FORMAT_R8G8B8A8_UNORM;
+    case Format::BGRA8UNorm: return VK_FORMAT_B8G8R8A8_UNORM;
+    case Format::RGBA16Float: return VK_FORMAT_R16G16B16A16_SFLOAT;
+    case Format::D32Float: return VK_FORMAT_D32_SFLOAT;
+    }
+    return VK_FORMAT_UNDEFINED;
+}
 unsigned texelBytes(Format f) { return f == Format::RGBA16Float ? 8u : 4u; }
 VkImageAspectFlags imageAspect(const Allocation& a) { return a.textureDesc.depthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT; }
 std::array<VkSubpassDependency, 2> passDependencies() {
@@ -796,7 +807,7 @@ struct VulkanCommands final : CommandList {
             colors.push_back(*a); views.push_back((*a)->view);
             formats.push_back((*a)->textureDesc.format);
             VkAttachmentDescription attachment{};
-            attachment.format = (*a)->textureDesc.format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT;
+            attachment.format = textureFormat((*a)->textureDesc.format);
             attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             attachment.loadOp = color.load == LoadOp::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -898,7 +909,7 @@ struct VulkanCommands final : CommandList {
             if (!(use ? use->contentsInitialized : (*a)->contentsInitialized)) return fail(ErrorCode::InvalidState, "Sampled texture must have initialized contents");
             if (p->linear) {
                 VkFormatProperties properties{};
-                owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, (*a)->textureDesc.format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT, &properties);
+                owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, textureFormat((*a)->textureDesc.format), &properties);
                 if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) return fail(ErrorCode::Unsupported, "Texture lacks linear filtering support");
             }
             snapshot->resources[*at] = *a;
@@ -1263,7 +1274,7 @@ struct VulkanDevice final : Device {
         for (auto format : targets.colors) {
             VkFormatProperties properties{};
             owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical,
-                format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT, &properties);
+                textureFormat(format), &properties);
             const VkFormatFeatureFlags required = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | (desc.alphaBlend ? VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT : 0);
             if ((properties.optimalTilingFeatures & required) != required) return fail(ErrorCode::Unsupported, "Adapter format lacks attachment/blending support");
         }
@@ -1340,7 +1351,7 @@ struct VulkanDevice final : Device {
         std::vector<VkAttachmentDescription> attachments;
         std::vector<VkAttachmentReference> references;
         for (auto format : targets.colors) {
-            VkAttachmentDescription a{}; a.format = format == Format::RGBA8UNorm ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R16G16B16A16_SFLOAT;
+            VkAttachmentDescription a{}; a.format = textureFormat(format);
             a.samples = VK_SAMPLE_COUNT_1_BIT; a.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; a.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             a.initialLayout = a.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             references.push_back({static_cast<std::uint32_t>(attachments.size()), a.initialLayout}); attachments.push_back(a);
@@ -1480,7 +1491,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.multipleRenderTargets = selected->maxColorAttachments >= 2;
     device->capabilities.vertexInput = device->capabilities.indexedDrawing = true;
     device->capabilities.timestampQueries = vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod);
-#ifdef _WIN32
+#if defined(_WIN32) || defined(GFX_HAS_VULKAN_XCB)
     device->capabilities.swapChain = native->presentation;
 #endif
     device->capabilities.resourceBinding = device->capabilities.bindingLayouts = true;

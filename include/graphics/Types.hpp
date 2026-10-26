@@ -20,7 +20,7 @@ struct AdapterInfo {
     std::uint32_t vendorId{}, deviceId{};
     std::uint64_t dedicatedVideoMemory{}, sharedSystemMemory{};
 };
-enum class Format { RGBA8UNorm, RGBA16Float, D32Float };
+enum class Format { RGBA8UNorm, RGBA16Float, D32Float, BGRA8UNorm };
 enum class Memory { Device, Upload, Readback };
 enum class MemorySegment { Local, NonLocal };
 // OS process/adapter snapshot, not SDK allocation accounting or total/free VRAM.

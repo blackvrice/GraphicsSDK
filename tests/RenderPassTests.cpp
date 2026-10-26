@@ -17,6 +17,7 @@ template<class T>void reject(gfx::Result<T> r,gfx::ErrorCode code,const char* me
 using F=gfx::Format;using S=gfx::ResourceState;using L=gfx::LoadOp;using C=gfx::CompareOp;using Pixel=std::array<float,4>;
 struct Stub final:gfx::Texture {gfx::TextureDesc d;explicit Stub(gfx::TextureDesc value):d(value){}gfx::TextureDesc description()const override{return d;}gfx::TextureFootprint footprint()const override{return {};}};
 void cpu(){
+    take(gfx::validateTextureDescription({3,7,F::BGRA8UNorm,true}));take(gfx::validateRenderTargets({{F::BGRA8UNorm,F::RGBA8UNorm},{}},{}));
     take(gfx::validateTextureDescription({3,7,F::D32Float,false,true}));take(gfx::validateRenderTargets({{},F::D32Float},{true,true,C::Less}));
     for(auto d:{gfx::TextureDesc{0,1},gfx::TextureDesc{1,16385},gfx::TextureDesc{1,1,F::D32Float},gfx::TextureDesc{1,1,F::D32Float,true,true},gfx::TextureDesc{1,1,F::RGBA8UNorm,false,true},gfx::TextureDesc{1,1,static_cast<F>(99)}})
         reject(gfx::validateTextureDescription(d),gfx::ErrorCode::InvalidArgument,"Malformed texture descriptor");

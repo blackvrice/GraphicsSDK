@@ -11,7 +11,7 @@ def rows(mode=0,disabled=False,headless=False):
     return [dict(event='adapter',id=123,software=True),dict(event='result',source=FP,mode=mode,disabled=disabled,headless=headless,adapters=1,
         instances=2,destroyed_instances=2,xcb_enabled_instances=0 if disabled or mode==1 else 2,surfaces=2 if created else 0,destroyed_surfaces=2 if created else 0,
         surface_queries=2 if created else 0,visual_queries=2 if created else 0,supported_surfaces=1 if mode==0 and not disabled and not headless else 0,
-        native_surface_true=2 if created and mode!=5 else 0,native_visual_true=2 if created else 0,buffer_bytes=514,assertions=1,family=0,swapchain_implemented=False,presented=False)]
+        native_surface_true=2 if created and mode!=5 else 0,native_visual_true=2 if created else 0,buffer_bytes=514,assertions=1,family=0,swapchain_implemented=not disabled,presented=mode==0 and not disabled and not headless)]
 
 
 class XcbContracts(unittest.TestCase):
@@ -44,7 +44,7 @@ class XcbContracts(unittest.TestCase):
 
     def test_no_presentation_or_missing_result(self):
         for k in ('presented','swapchain_implemented'):
-            r=rows();r[-1][k]=True
+            r=rows();r[-1][k]=not r[-1][k]
             with self.assertRaises(ValueError):validate_rows(r,FP,0)
         with self.assertRaises(ValueError):validate_rows(rows()[:-1],FP,0)
 

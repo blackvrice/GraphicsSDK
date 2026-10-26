@@ -40,7 +40,7 @@ int main(int argc,char** argv)try{
     const auto adapters=take(gfx::enumerateAdapters(gfx::Backend::Vulkan));check(!adapters.empty(),"Actual adapters required");
     for(auto& adapter:adapters){
         gfx::DeviceDesc desc;desc.backend=gfx::Backend::Vulkan;desc.adapter=adapter.id;desc.softwareAdapter=adapter.softwareAdapter;
-        auto device=take(gfx::createDevice(desc));check(!device->caps().swapChain,"Linux swapchain capability stays false");copy(*device);
+        auto device=take(gfx::createDevice(desc));check(device->caps().swapChain==(!disabled&&mode!=1&&mode!=4),"Linux swapchain capability follows compiled path and runtime support");copy(*device);
         const auto before=snapshot();auto r=device->checkSurfaceSupport(window.surface());
         if(disabled||mode==1||mode==2||mode==3||mode==4)reject(std::move(r),gfx::ErrorCode::Unsupported);
         else if(mode==5){check(!r&&r.error().code==gfx::ErrorCode::BackendFailure&&r.error().nativeCode==VK_SURFACE_LOST_VALUE,"SurfaceLost reason preserved");}
@@ -62,11 +62,14 @@ int main(int argc,char** argv)try{
             const auto rejected=snapshot();check(rejected.surfaces==after.surfaces,"Invalid native windows never reach Vulkan creation");
         }
         bool threadRejected{};std::thread worker([&]{auto result=device->checkSurfaceSupport(window.surface());threadRejected=!result&&result.error().code==gfx::ErrorCode::InvalidState;});worker.join();check(threadRejected,"Creating thread required");
-        if(!headless)reject(device->createSwapChain(window.surface(),{65,49}),mode==5?gfx::ErrorCode::BackendFailure:gfx::ErrorCode::Unsupported);
+        if(!headless){
+            if(mode==0&&!disabled){auto swap=take(device->createSwapChain(window.surface(),{65,49}));auto image=take(swap->acquire());image.reset();take(swap->present());}
+            else reject(device->createSwapChain(window.surface(),{65,49}),mode==5?gfx::ErrorCode::BackendFailure:gfx::ErrorCode::Unsupported);
+        }
         take(device->checkStatus());copy(*device);take(device->queue().waitIdle());auto resources=take(device->resourceStatistics());check(!resources.uniqueResources&&!resources.trackedObjects&&!resources.pendingSubmissions,"No resource retention");
         device.reset();if(!headless){auto geometry=xcb_get_geometry_reply(window.connection,xcb_get_geometry(window.connection,window.window),nullptr);check(geometry&&geometry->width==65,"Caller window/connection remain owned by caller");std::free(geometry);}
         std::cout<<"{\"event\":\"adapter\",\"id\":"<<adapter.id.value<<",\"software\":"<<std::boolalpha<<adapter.softwareAdapter<<",\"name\":"<<std::quoted(adapter.name)<<"}\n";
     }
     const auto s=snapshot();check(s.instances==s.destroyedInstances&&s.surfaces==s.destroyedSurfaces,"Native instance/surface closure");
-    std::cout<<"{\"event\":\"result\",\"source\":"<<std::quoted(gfx::buildFingerprint())<<",\"mode\":"<<mode<<",\"disabled\":"<<std::boolalpha<<disabled<<",\"headless\":"<<headless<<",\"adapters\":"<<adapters.size()<<",\"supported_surfaces\":"<<checked<<",\"instances\":"<<s.instances<<",\"destroyed_instances\":"<<s.destroyedInstances<<",\"xcb_enabled_instances\":"<<s.xcbEnabled<<",\"surfaces\":"<<s.surfaces<<",\"destroyed_surfaces\":"<<s.destroyedSurfaces<<",\"surface_queries\":"<<s.surfaceQueries<<",\"visual_queries\":"<<s.visualQueries<<",\"native_surface_true\":"<<s.nativeSurfaceTrue<<",\"native_visual_true\":"<<s.nativeVisualTrue<<",\"family\":"<<s.family<<",\"buffer_bytes\":"<<bytes<<",\"assertions\":"<<assertions<<",\"swapchain_implemented\":false,\"presented\":false}\n";dlclose(module);return 0;
+    std::cout<<"{\"event\":\"result\",\"source\":"<<std::quoted(gfx::buildFingerprint())<<",\"mode\":"<<mode<<",\"disabled\":"<<std::boolalpha<<disabled<<",\"headless\":"<<headless<<",\"adapters\":"<<adapters.size()<<",\"supported_surfaces\":"<<checked<<",\"instances\":"<<s.instances<<",\"destroyed_instances\":"<<s.destroyedInstances<<",\"xcb_enabled_instances\":"<<s.xcbEnabled<<",\"surfaces\":"<<s.surfaces<<",\"destroyed_surfaces\":"<<s.destroyedSurfaces<<",\"surface_queries\":"<<s.surfaceQueries<<",\"visual_queries\":"<<s.visualQueries<<",\"native_surface_true\":"<<s.nativeSurfaceTrue<<",\"native_visual_true\":"<<s.nativeVisualTrue<<",\"family\":"<<s.family<<",\"buffer_bytes\":"<<bytes<<",\"assertions\":"<<assertions<<",\"swapchain_implemented\":"<<(!disabled)<<",\"presented\":"<<(mode==0&&!disabled&&!headless)<<"}\n";dlclose(module);return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}

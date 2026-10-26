@@ -19,7 +19,7 @@ def validate_rows(rows,fp,mode,disabled=False,headless=False):
     r=rows[-1];adapters=[x for x in rows if x.get('event')=='adapter'];n=len(adapters)
     require(n>0 and r['adapters']==n and len({a['id'] for a in adapters})==n and all(a['software'] is True for a in adapters),'Wrong software adapter set')
     require(r['source']==fp and r['mode']==mode and r['disabled'] is disabled and r['headless'] is headless,'Wrong source/configuration/control')
-    require(r['swapchain_implemented'] is False and r['presented'] is False,'Surface support is not swapchain acceptance')
+    require(r['swapchain_implemented'] is (not disabled) and r['presented'] is (mode==0 and not disabled and not headless),'Wrong compiled/present scope')
     created=not disabled and not headless and mode not in (1,4)
     require(r['instances']==r['destroyed_instances']==n+1,'Instance closure failure')
     require(r['surfaces']==r['destroyed_surfaces']==r['surface_queries']==r['visual_queries']==(2*n if created else 0),'Surface/queue closure failure')

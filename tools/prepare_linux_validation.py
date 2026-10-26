@@ -1,5 +1,6 @@
 """Build pinned VVL 1.3.290 for headless Linux; never install to the system."""
 import hashlib
+import argparse
 import json
 import os
 import pathlib
@@ -11,11 +12,12 @@ import time
 from run_linux_device import ROOT, record, require
 
 def main():
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--xcb',action='store_true');args=parser.parse_args()
     require(platform.system()=='Linux','Actual Linux host required')
-    output=ROOT/'out/linux-vulkan-validation-evidence/runtime'
-    build_root=ROOT/'out/linux-vvl-runtime-build'
+    output=ROOT/('out/linux-xcb-validation-evidence/runtime' if args.xcb else 'out/linux-vulkan-validation-evidence/runtime')
+    build_root=ROOT/('out/linux-xcb-vvl-runtime-build' if args.xcb else 'out/linux-vvl-runtime-build')
     require(not output.parent.exists() and not build_root.exists(),'Fresh runtime/evidence roots required')
-    profile_path=ROOT/'tools/linux-vulkan-validation.json'
+    profile_path=ROOT/('tools/linux-xcb-validation.json' if args.xcb else 'tools/linux-vulkan-validation.json')
     profile=json.loads(profile_path.read_text())
     lock_path=ROOT/profile['source_lock'];lock=json.loads(lock_path.read_text())
     require(len(lock['components'])==6 and lock['components'][0]['commit']=='79f4759c2c492c1be37e18c0318330f2959327cb','Reviewed VVL pins required')
@@ -55,7 +57,7 @@ def main():
         run(name+'-configure',['cmake','-S',sources[name],'-B',build,*common,*options])
         run(name+'-build',['cmake','--build',build,'--target','install','--parallel',str(profile['prerequisite_parallel'])])
     build=build_root/'Vulkan-ValidationLayers'
-    run('layer-configure',['cmake','-S',sources['Vulkan-ValidationLayers'],'-B',build,*common,'-DUPDATE_DEPS=OFF','-DBUILD_TESTS=OFF','-DUSE_MIMALLOC=OFF','-DBUILD_WERROR=OFF','-DBUILD_WSI_XCB_SUPPORT=OFF','-DBUILD_WSI_XLIB_SUPPORT=OFF','-DBUILD_WSI_WAYLAND_SUPPORT=OFF'])
+    run('layer-configure',['cmake','-S',sources['Vulkan-ValidationLayers'],'-B',build,*common,'-DUPDATE_DEPS=OFF','-DBUILD_TESTS=OFF','-DUSE_MIMALLOC=OFF','-DBUILD_WERROR=OFF','-DBUILD_WSI_XCB_SUPPORT='+('ON' if args.xcb else 'OFF'),'-DBUILD_WSI_XLIB_SUPPORT=OFF','-DBUILD_WSI_WAYLAND_SUPPORT=OFF'])
     run('layer-build',['cmake','--build',build,'--parallel',str(profile['layer_parallel'])])
     manifests=list(build.rglob('VkLayer_khronos_validation.json'));libraries=list(build.rglob('libVkLayer_khronos_validation.so'))
     require(len(manifests)==len(libraries)==1,'One layer binary/manifest required')

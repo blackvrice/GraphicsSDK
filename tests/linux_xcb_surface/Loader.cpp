@@ -12,6 +12,7 @@
 #include <vector>
 namespace {
 surfaceprobe::Snapshot totals;std::mutex mutex;std::map<VkPhysicalDevice,VkInstance> parents;
+std::map<VkDevice,VkInstance> devices;std::map<VkQueue,VkDevice> queues;std::map<VkFence,VkDevice> presentFences;
 int mode(){auto p=std::getenv("GFX_SURFACE_CONTROL");return p?std::atoi(p):0;}
 PFN_vkGetInstanceProcAddr original(){
     static void* library=dlopen(std::getenv("GFX_SURFACE_REAL_LOADER"),RTLD_NOW|RTLD_LOCAL);
@@ -20,6 +21,27 @@ PFN_vkGetInstanceProcAddr original(){
 }
 template<class T>T next(VkInstance i,const char* name){return reinterpret_cast<T>(original()(i,name));}
 VkInstance parent(VkPhysicalDevice p){std::lock_guard lock(mutex);return parents.at(p);}
+template<class T>T deviceNext(VkDevice d,const char* name){VkInstance i;{std::lock_guard lock(mutex);i=devices.at(d);}return reinterpret_cast<T>(next<PFN_vkGetDeviceProcAddr>(i,"vkGetDeviceProcAddr")(d,name));}
+VKAPI_ATTR VkResult VKAPI_CALL createDevice(VkPhysicalDevice p,const VkDeviceCreateInfo* info,const VkAllocationCallbacks* a,VkDevice* out){auto i=parent(p);auto r=next<PFN_vkCreateDevice>(i,"vkCreateDevice")(p,info,a,out);if(r==VK_SUCCESS){std::lock_guard lock(mutex);devices[*out]=i;++totals.devices;}return r;}
+VKAPI_ATTR void VKAPI_CALL destroyDevice(VkDevice d,const VkAllocationCallbacks* a){deviceNext<PFN_vkDestroyDevice>(d,"vkDestroyDevice")(d,a);std::lock_guard lock(mutex);devices.erase(d);std::erase_if(queues,[&](auto& q){return q.second==d;});++totals.destroyedDevices;}
+VKAPI_ATTR void VKAPI_CALL getQueue(VkDevice d,uint32_t family,uint32_t index,VkQueue* out){deviceNext<PFN_vkGetDeviceQueue>(d,"vkGetDeviceQueue")(d,family,index,out);std::lock_guard lock(mutex);queues[*out]=d;}
+VKAPI_ATTR VkResult VKAPI_CALL createChain(VkDevice d,const VkSwapchainCreateInfoKHR* info,const VkAllocationCallbacks* a,VkSwapchainKHR* out){auto r=deviceNext<PFN_vkCreateSwapchainKHR>(d,"vkCreateSwapchainKHR")(d,info,a,out);if(r==VK_SUCCESS){std::lock_guard lock(mutex);++totals.chains;totals.format=info->imageFormat;totals.presentMode=info->presentMode;totals.minImages=info->minImageCount;}return r;}
+VKAPI_ATTR void VKAPI_CALL destroyChain(VkDevice d,VkSwapchainKHR s,const VkAllocationCallbacks* a){deviceNext<PFN_vkDestroySwapchainKHR>(d,"vkDestroySwapchainKHR")(d,s,a);std::lock_guard lock(mutex);++totals.destroyedChains;}
+VKAPI_ATTR VkResult VKAPI_CALL chainImages(VkDevice d,VkSwapchainKHR s,uint32_t* count,VkImage* images){auto r=deviceNext<PFN_vkGetSwapchainImagesKHR>(d,"vkGetSwapchainImagesKHR")(d,s,count,images);if(r==VK_SUCCESS&&images){std::lock_guard lock(mutex);totals.actualImages=*count;}return r;}
+VKAPI_ATTR VkResult VKAPI_CALL acquire(VkDevice d,VkSwapchainKHR s,uint64_t timeout,VkSemaphore semaphore,VkFence fence,uint32_t* index){auto r=deviceNext<PFN_vkAcquireNextImageKHR>(d,"vkAcquireNextImageKHR")(d,s,timeout,semaphore,fence,index);if(r==VK_SUCCESS||r==VK_SUBOPTIMAL_KHR){std::lock_guard lock(mutex);++totals.acquires;}return r;}
+VKAPI_ATTR VkResult VKAPI_CALL present(VkQueue q,const VkPresentInfoKHR* info){VkDevice d;{std::lock_guard lock(mutex);d=queues.at(q);}auto r=deviceNext<PFN_vkQueuePresentKHR>(d,"vkQueuePresentKHR")(q,info);
+    if(r==VK_SUCCESS||r==VK_SUBOPTIMAL_KHR){std::lock_guard lock(mutex);++totals.presents;auto p=static_cast<const VkBaseInStructure*>(info->pNext);while(p){if(p->sType==VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT){auto f=reinterpret_cast<const VkSwapchainPresentFenceInfoEXT*>(p);if(f->swapchainCount==1&&f->pFences&&f->pFences[0]){++totals.fencedPresents;presentFences[f->pFences[0]]=d;}}p=p->pNext;}}return r;}
+VKAPI_ATTR VkResult VKAPI_CALL wait(VkDevice d,uint32_t count,const VkFence* fences,VkBool32 all,uint64_t timeout){auto r=deviceNext<PFN_vkWaitForFences>(d,"vkWaitForFences")(d,count,fences,all,timeout);if(r==VK_SUCCESS){std::lock_guard lock(mutex);for(unsigned i=0;i<count;++i)if(presentFences.erase(fences[i]))++totals.waitedPresents;}return r;}
+VKAPI_ATTR VkResult VKAPI_CALL formats(VkPhysicalDevice p,VkSurfaceKHR s,uint32_t* count,VkSurfaceFormatKHR* out){auto call=next<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(parent(p),"vkGetPhysicalDeviceSurfaceFormatsKHR");if(mode()!=6)return call(p,s,count,out);if(!out){*count=1;return VK_SUCCESS;}if(!*count)return VK_INCOMPLETE;*count=1;out[0]={VK_FORMAT_B8G8R8A8_SRGB,VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};return VK_SUCCESS;}
+VKAPI_ATTR VkResult VKAPI_CALL modes(VkPhysicalDevice p,VkSurfaceKHR s,uint32_t* count,VkPresentModeKHR* out){auto call=next<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(parent(p),"vkGetPhysicalDeviceSurfacePresentModesKHR");if(mode()!=7&&mode()!=8)return call(p,s,count,out);uint32_t n{};auto r=call(p,s,&n,nullptr);if(r!=VK_SUCCESS)return r;std::vector<VkPresentModeKHR> values(n);r=call(p,s,&n,values.data());if(r!=VK_SUCCESS)return r;values.resize(n);std::erase_if(values,[](auto m){return mode()==7?m!=VK_PRESENT_MODE_FIFO_KHR:m==VK_PRESENT_MODE_IMMEDIATE_KHR;});if(!out){*count=values.size();return VK_SUCCESS;}auto size=std::min<std::size_t>(*count,values.size());std::copy_n(values.data(),size,out);*count=size;return size<values.size()?VK_INCOMPLETE:VK_SUCCESS;}
+VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL deviceGet(VkDevice,const char*);
+PFN_vkVoidFunction deviceHook(const char* name){
+#define H(n,f) if(!std::strcmp(name,"vk" #n))return reinterpret_cast<PFN_vkVoidFunction>(f);
+    H(GetDeviceProcAddr,deviceGet) H(DestroyDevice,destroyDevice) H(GetDeviceQueue,getQueue) H(CreateSwapchainKHR,createChain) H(DestroySwapchainKHR,destroyChain) H(GetSwapchainImagesKHR,chainImages) H(AcquireNextImageKHR,acquire) H(QueuePresentKHR,present) H(WaitForFences,wait)
+#undef H
+    return nullptr;
+}
+VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL deviceGet(VkDevice d,const char* name){if(auto h=deviceHook(name))return h;return deviceNext<PFN_vkVoidFunction>(d,name);}
 VKAPI_ATTR VkResult VKAPI_CALL extensions(const char* layer,uint32_t* count,VkExtensionProperties* out){
     auto call=next<PFN_vkEnumerateInstanceExtensionProperties>({},"vkEnumerateInstanceExtensionProperties");
     if(mode()!=1||layer)return call(layer,count,out);
@@ -57,10 +79,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL visualSupport(VkPhysicalDevice p,uint32_t family,
 }
 extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance i,const char* name){
     if(!original())return nullptr;
+    if(auto h=deviceHook(name))return h;
     if(mode()==4&&!std::strcmp(name,"vkCreateXcbSurfaceKHR"))return nullptr;
 #define H(n,f) if(!std::strcmp(name,"vk" #n))return reinterpret_cast<PFN_vkVoidFunction>(f);
     H(GetInstanceProcAddr,vkGetInstanceProcAddr) H(EnumerateInstanceExtensionProperties,extensions) H(CreateInstance,createInstance) H(DestroyInstance,destroyInstance)
     H(EnumeratePhysicalDevices,physicalDevices) H(CreateXcbSurfaceKHR,createSurface) H(DestroySurfaceKHR,destroySurface) H(GetPhysicalDeviceSurfaceSupportKHR,surfaceSupport) H(GetPhysicalDeviceXcbPresentationSupportKHR,visualSupport)
+    H(CreateDevice,createDevice) H(GetPhysicalDeviceSurfaceFormatsKHR,formats) H(GetPhysicalDeviceSurfacePresentModesKHR,modes)
 #undef H
     return original()(i,name);
 }

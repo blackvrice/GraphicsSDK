@@ -5,7 +5,7 @@
 namespace gfx {
 namespace {
 auto bad(const char* message){return std::unexpected(Error{ErrorCode::InvalidArgument,message});}
-bool colorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float;}
+bool colorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float || f==Format::BGRA8UNorm;}
 bool loadOp(LoadOp op){return op==LoadOp::Clear || op==LoadOp::Load;}
 }
 Result<void> validateTextureDescription(TextureDesc d) {
