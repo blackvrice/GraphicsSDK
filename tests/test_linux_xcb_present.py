@@ -1,8 +1,10 @@
 import pathlib
 import sys
 import unittest
+import subprocess
+import tempfile
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'tools'))
-from run_linux_xcb_present import validate_rows
+from run_linux_xcb_present import validate_rows,DIAGNOSTIC_WRAPPER
 FP='a'*64
 
 
@@ -14,6 +16,13 @@ def rows(control=0,validation=False):
 
 
 class PresentContracts(unittest.TestCase):
+    def test_native_stderr_survives_outer_stderr_stdout_merge(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=pathlib.Path(folder)/'native.stderr'
+            result=subprocess.run([sys.executable,'-c',DIAGNOSTIC_WRAPPER,str(path),sys.executable,'-c',"import sys;print('native-out');print('native-err',file=sys.stderr)"],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,check=True)
+            self.assertEqual(result.stdout.decode().strip(),'native-out')
+            self.assertIn('native-err',path.read_text())
+
     def test_all_declared_controls(self):
         for mode in (0,6,7,8):
             for validation in (False,True):validate_rows(rows(mode,validation),FP,mode,validation)

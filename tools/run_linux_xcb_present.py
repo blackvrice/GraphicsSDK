@@ -9,6 +9,12 @@ import subprocess
 import sys
 from audit_licenses import ROOT,sdk_fingerprint
 
+DIAGNOSTIC_WRAPPER="""import os, subprocess, sys
+with open(sys.argv[1], 'wb') as stream:
+    result = subprocess.run(sys.argv[2:], stderr=stream, env={**os.environ, 'LD_DEBUG': 'libs'}, timeout=160)
+sys.exit(result.returncode)
+"""
+
 
 def require(ok,message):
     if not ok:raise ValueError(message)
@@ -53,14 +59,18 @@ def main():
         validation=bool(args.validation_dir)
         for mode in (0,6,7,8):
             name='control-'+str(mode);child_env={**env,'GFX_SURFACE_CONTROL':str(mode)}
-            native=(['env','LD_DEBUG=libs'] if validation else [])+[str(args.binary.resolve()),'--proxy',str(args.proxy.resolve())]+(['--validation'] if validation else [])
+            native=[str(args.binary.resolve()),'--proxy',str(args.proxy.resolve())]+(['--validation'] if validation else [])
+            native_stderr=args.output/(name+'.stderr')
+            if validation:native=[sys.executable,'-c',DIAGNOSTIC_WRAPPER,str(native_stderr.resolve()),*native]
             command=['xvfb-run','-a','-s','-screen 0 800x600x24',*native]
             child=subprocess.run(command,cwd=ROOT,env=child_env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=180)
-            (args.output/(name+'.stdout')).write_bytes(child.stdout);(args.output/(name+'.stderr')).write_bytes(child.stderr)
+            (args.output/(name+'.stdout')).write_bytes(child.stdout)
+            if validation:(args.output/(name+'.wrapper.stderr')).write_bytes(child.stderr)
+            else:native_stderr.write_bytes(child.stderr)
             row=dict(name=name,control=mode,command=command,returncode=child.returncode,environment={k:v for k,v in child_env.items() if k.startswith(('VK_','GFX_SURFACE_','LD_'))});receipt['cases'].append(row);save();require(child.returncode==0,'Native presentation failed: '+name)
             row['result']=validate_rows([json.loads(l) for l in child.stdout.decode().splitlines()],fp,mode,validation)
             if validation:
-                loaded={pathlib.Path(s.strip()).resolve() for s in re.findall(r'calling init:\s+([^\n]*libVkLayer_khronos_validation\.so)\s*$',child.stderr.decode(),re.M)}
+                loaded={pathlib.Path(s.strip()).resolve() for s in re.findall(r'calling init:\s+([^\n]*libVkLayer_khronos_validation\.so)\s*$',native_stderr.read_text(),re.M)}
                 require(loaded=={(args.validation_dir/'libVkLayer_khronos_validation.so').resolve()},'Actual validation runtime was not observed');row['loaded_layers']=[str(x) for x in loaded]
             save()
         receipt['status']='passed'
