@@ -10,7 +10,7 @@ FP='a'*64
 
 def rows(control=0,validation=False):
     configurations=[(n,s) for n in (2,3,4) for s in (False,True)] if control==0 else [] if control==6 else [(2,control==7)]
-    chains=[dict(event='chain',requested_buffers=n,vsync=s,width=17 if s else 65,height=9 if s else 7,native_format=44,native_mode=2 if s else 1 if control==8 else 0,native_min_images=max(n,3),native_images=max(n,3)) for n,s in configurations]
+    chains=[dict(event='chain',requested_buffers=n,vsync=s,width=17 if s else 65,height=9 if s else 7,native_format=44,native_mode=2 if s else 1 if control==8 else 0,native_min_images=max(n,4 if control==8 else 3),native_images=max(n,4 if control==8 else 3),mode_min_images=4 if control==8 else 3,mode_max_images=0) for n,s in configurations]
     count=len(chains)
     return [dict(event='adapter',id=123,software=True),*chains,dict(event='present_result',source=FP,control=control,validation=validation,human_display_accepted=False,adapters=1,cases=count,rejected=int(control in (6,7)),chains=count,destroyed_chains=count,acquires=3*count,presents=3*count,fenced_presents=3*count,waited_presents=3*count,instances=2,destroyed_instances=2,devices=1,destroyed_devices=1,surfaces=3*count,destroyed_surfaces=3*count,images=6+3*count,pixel_bytes=10920+sum(c['width']*c['height']*12 for c in chains),transfers=2,transfer_bytes=3640,padding_rows=42+sum(c['height']*3 for c in chains),validation_errors=0)]
 
@@ -40,6 +40,11 @@ class PresentContracts(unittest.TestCase):
         for key,value in [('native_format',50),('native_mode',2),('width',64),('native_images',1)]:
             r=rows();r[1][key]=value
             with self.assertRaises(ValueError):validate_rows(r,FP,0,False)
+
+    def test_mailbox_has_stricter_native_image_count(self):
+        for key,value in [('native_min_images',3),('mode_max_images',3)]:
+            r=rows(8,True);r[1][key]=value
+            with self.assertRaises(ValueError):validate_rows(r,FP,8,True)
 
     def test_full_images_transfers_and_padding_required(self):
         for key in ('images','pixel_bytes','transfers','transfer_bytes','padding_rows'):

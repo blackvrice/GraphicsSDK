@@ -19,11 +19,11 @@ unsigned cases{},rejected{};
 void scene(gfx::Device& d,unsigned buffers,bool vsync,unsigned mode,surfaceprobe::Query query){
     const auto width=vsync?17u:65u,height=vsync?9u:7u;Window w(width,height);take(d.checkSurfaceSupport(w.surface()));
     auto chain=take(d.createSwapChain(w.surface(),{width,height,buffers,vsync}));surfaceprobe::Snapshot s{};check(query(&s,sizeof(s))==1,"Native configuration snapshot");
-    check(s.format==44&&s.minImages>=buffers&&s.actualImages>=s.minImages,"Actual BGRA8 UNORM fallback and native image count");check(s.presentMode==(vsync?2u:mode==8?1u:0u),"Actual native FIFO/IMMEDIATE/MAILBOX selection");
+    check(s.format==44&&s.minImages>=buffers&&s.actualImages>=s.minImages&&s.minImages>=s.modeMinImages&&(!s.modeMaxImages||s.minImages<=s.modeMaxImages),"Actual BGRA8 UNORM fallback and selected-mode image count");check(s.presentMode==(vsync?2u:mode==8?1u:0u),"Actual native FIFO/IMMEDIATE/MAILBOX selection");
     auto wrong=d.createSwapChain(w.surface(),{width+1,height,buffers,vsync});check(!wrong&&wrong.error().code==gfx::ErrorCode::InvalidArgument,"Native extent mismatch rejected");
     for(unsigned draw=0;draw<3;++draw){auto t=take(chain->acquire());check(t->description().width==width&&t->description().height==height&&t->description().format==F::BGRA8UNorm,"Actual native backbuffer description");frame(d,t,draw,chain.get());}
     chain.reset();empty(d);++cases;
-    std::cout<<"{\"event\":\"chain\",\"requested_buffers\":"<<buffers<<",\"vsync\":"<<std::boolalpha<<vsync<<",\"width\":"<<width<<",\"height\":"<<height<<",\"native_format\":"<<s.format<<",\"native_mode\":"<<s.presentMode<<",\"native_min_images\":"<<s.minImages<<",\"native_images\":"<<s.actualImages<<"}\n";
+    std::cout<<"{\"event\":\"chain\",\"requested_buffers\":"<<buffers<<",\"vsync\":"<<std::boolalpha<<vsync<<",\"width\":"<<width<<",\"height\":"<<height<<",\"native_format\":"<<s.format<<",\"native_mode\":"<<s.presentMode<<",\"native_min_images\":"<<s.minImages<<",\"native_images\":"<<s.actualImages<<",\"mode_min_images\":"<<s.modeMinImages<<",\"mode_max_images\":"<<s.modeMaxImages<<"}\n";
 }
 }
 int main(int argc,char** argv)try{

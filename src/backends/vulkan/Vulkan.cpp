@@ -85,6 +85,7 @@ struct Instance {
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR{};
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR{};
     PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR GetPhysicalDeviceSurfaceCapabilitiesKHR{};
+    PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR GetPhysicalDeviceSurfaceCapabilities2KHR{};
     PFN_vkGetPhysicalDeviceSurfaceFormatsKHR GetPhysicalDeviceSurfaceFormatsKHR{};
     PFN_vkGetPhysicalDeviceSurfacePresentModesKHR GetPhysicalDeviceSurfacePresentModesKHR{};
 #ifdef _WIN32
@@ -190,7 +191,7 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
 #define LOAD_WSI(name) instance->name = reinterpret_cast<PFN_vk##name>(get(instance->handle, "vk" #name)); if (!instance->name) return fail(ErrorCode::Unsupported, "Vulkan surface entry point missing: vk" #name);
 #endif
         LOAD_WSI(DestroySurfaceKHR) LOAD_WSI(GetPhysicalDeviceSurfaceSupportKHR) LOAD_WSI(GetPhysicalDeviceSurfaceCapabilitiesKHR)
-        LOAD_WSI(GetPhysicalDeviceSurfaceFormatsKHR) LOAD_WSI(GetPhysicalDeviceSurfacePresentModesKHR)
+        LOAD_WSI(GetPhysicalDeviceSurfaceFormatsKHR) LOAD_WSI(GetPhysicalDeviceSurfacePresentModesKHR) LOAD_WSI(GetPhysicalDeviceSurfaceCapabilities2KHR)
 #ifdef _WIN32
         LOAD_WSI(CreateWin32SurfaceKHR)
 #elif defined(GFX_HAS_VULKAN_XCB)

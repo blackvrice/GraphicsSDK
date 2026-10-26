@@ -103,6 +103,14 @@ struct VulkanSwapchain final : SwapChain {
             else if (std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != modes.end()) mode = VK_PRESENT_MODE_MAILBOX_KHR;
             else return fail(ErrorCode::Unsupported, "Surface has no unthrottled present mode");
         }
+        // Maintenance1 image-count limits can depend on the selected present mode.
+        VkSurfacePresentModeEXT selectedMode{VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_EXT}; selectedMode.presentMode = mode;
+        VkPhysicalDeviceSurfaceInfo2KHR query{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR}; query.surface = surface->handle; query.pNext = &selectedMode;
+        VkSurfaceCapabilities2KHR selectedCaps{VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR};
+        if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceCapabilities2KHR(owner->physical, &query, &selectedCaps), "Query selected present-mode capabilities"); !ok) return std::unexpected(ok.error());
+        caps.minImageCount = std::max(caps.minImageCount, selectedCaps.surfaceCapabilities.minImageCount);
+        const auto selectedMax = selectedCaps.surfaceCapabilities.maxImageCount;
+        if (selectedMax) caps.maxImageCount = caps.maxImageCount ? std::min(caps.maxImageCount, selectedMax) : selectedMax;
         VkSwapchainCreateInfoKHR info{VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR};
         info.surface = surface->handle; info.minImageCount = std::max(desc.buffers, caps.minImageCount);
         if (caps.maxImageCount && info.minImageCount > caps.maxImageCount) return fail(ErrorCode::Unsupported, "Requested image count exceeds surface maximum");
@@ -116,6 +124,8 @@ struct VulkanSwapchain final : SwapChain {
     Result<void> rebuild(const VkSwapchainCreateInfoKHR& configuration) {
         auto next = std::make_shared<NativeSwapchain>(); next->surface = surface;
         auto info = configuration; info.oldSwapchain = native ? native->handle : VkSwapchainKHR{};
+        VkSwapchainPresentModesCreateInfoEXT modes{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT};
+        modes.presentModeCount = 1; modes.pPresentModes = &info.presentMode; info.pNext = &modes;
         // Calling native recreation retires oldSwapchain even when creation fails.
         if (native) native->alive = false;
         buffers.clear();

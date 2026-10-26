@@ -29,6 +29,7 @@ def validate_rows(rows,fp,control,validation):
     require(r['cases']==len(chains)==count and r['rejected']==(n if control in (6,7) else 0),'Wrong coverage')
     for c in chains:
         require(c['native_format']==44 and c['native_images']>=c['native_min_images']>=c['requested_buffers'],'False native format/image count')
+        require(c['native_min_images']>=c['mode_min_images']>0 and (not c['mode_max_images'] or c['native_min_images']<=c['mode_max_images']),'Selected-mode image-count limits ignored')
         require(c['native_mode']==(2 if c['vsync'] else 1 if control==8 else 0),'Wrong native present mode')
         require((c['width'],c['height'])==((17,9) if c['vsync'] else (65,7)),'Wrong native extent')
     if control==0:
