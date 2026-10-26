@@ -1,0 +1,192 @@
+{
+  "task": "P3-CAP-02",
+  "status": "done",
+  "implementation_commit": "5d8af5c5632edbffa93bd8ab3c93ef4474c108e9",
+  "scope_selected_by_user": true,
+  "windows": {
+    "SDK_source_fingerprint": "763ad9630c74b011da5dba07c90495b908c543ae432d2b0b25a5c90e0022c5a8",
+    "cases": [
+      {
+        "name": "normal",
+        "command": [
+          "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release\\gfx_recovery_observe.exe",
+          "--observe",
+          "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release\\VkLayer_gfx_recovery.dll"
+        ],
+        "returncode": 0,
+        "environment": {
+          "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+          "VK_INSTANCE_LAYERS": "VK_LAYER_GFX_recovery",
+          "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observed\\empty-layer-settings",
+          "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release;D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release"
+        },
+        "result": {
+          "event": "result",
+          "source": "763ad9630c74b011da5dba07c90495b908c543ae432d2b0b25a5c90e0022c5a8",
+          "validation": false,
+          "synthetic_loss": true,
+          "actual_TDR": false,
+          "adapters": 2,
+          "cycles": 7,
+          "images": 18,
+          "window_images": 4,
+          "verified_bytes": 40392,
+          "verified_buffer_bytes": 57358,
+          "created": 14,
+          "destroyed": 14,
+          "failed_creates": 14,
+          "drains": 7,
+          "reversed_enumerations": 3,
+          "errors": 0,
+          "premature_creations": 0,
+          "live_instances": 0,
+          "live_devices": 0,
+          "assertions": 629
+        }
+      },
+      {
+        "name": "validation",
+        "command": [
+          "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release\\gfx_recovery_observe.exe",
+          "--observe",
+          "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release\\VkLayer_gfx_recovery.dll",
+          "--validation"
+        ],
+        "returncode": 0,
+        "environment": {
+          "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+          "VK_INSTANCE_LAYERS": "VK_LAYER_GFX_recovery",
+          "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observed\\empty-layer-settings",
+          "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release;D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release"
+        },
+        "result": {
+          "event": "result",
+          "source": "763ad9630c74b011da5dba07c90495b908c543ae432d2b0b25a5c90e0022c5a8",
+          "validation": true,
+          "synthetic_loss": true,
+          "actual_TDR": false,
+          "adapters": 2,
+          "cycles": 7,
+          "images": 18,
+          "window_images": 4,
+          "verified_bytes": 40392,
+          "verified_buffer_bytes": 57358,
+          "created": 14,
+          "destroyed": 14,
+          "failed_creates": 14,
+          "drains": 7,
+          "reversed_enumerations": 3,
+          "errors": 0,
+          "premature_creations": 0,
+          "live_instances": 0,
+          "live_devices": 0,
+          "assertions": 629
+        }
+      }
+    ],
+    "status": "passed",
+    "serialized": true,
+    "require_software": false,
+    "source_base_commit": "290e68efbdb6346e178cc17b2bcce5d44a93a467",
+    "frozen_inputs": {
+      "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release\\gfx_recovery_observe.exe": "72c48772879b04a42bbd040ed8e3b17ecd8799ef454f8539284ae7d8374237b4",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release\\VkLayer_gfx_recovery.dll": "718f07bf10d31f01be396173b1080d8f1f035814f833f9c09f74e1b7e32ca9c4",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-install\\lib\\GraphicsSDKCore.lib": "2eb1eb2af7688acb64e783082120d75308276fe403f39da28ee3e504da30c828",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-observer\\Release\\VkLayer_gfx_recovery.json": "eeb5b956423ff5475a494fb7fafd6aff5e598e2f85c470ee050ac99b0c3947ed",
+      "D:\\source\\GraphicsSDK\\tools\\run_vulkan_recovery.py": "82d61e3e945d94964df1e961c0a36ee83d5979b68fb78757467e2bbd4bf30d0b",
+      "D:\\source\\GraphicsSDK\\tests\\VulkanRecoveryTests.cpp": "e5fd0edeef69e626a00ea51b13159f0b751e40b731990fe45b7602287ce1b1db",
+      "D:\\source\\GraphicsSDK\\tests\\fixtures\\SpirvFixtures.hpp": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+      "D:\\source\\GraphicsSDK\\tests\\vulkan_recovery\\CMakeLists.txt": "508105798174f58cbb1ae872eaa46301f8ddd2321d9d8379dc6907a784ad9e39",
+      "D:\\source\\GraphicsSDK\\tests\\vulkan_recovery\\Control.hpp": "e6a179d06db6a64fd6a094b8b497b7f303be90787f8e2f3e16afe0794c18d531",
+      "D:\\source\\GraphicsSDK\\tests\\vulkan_recovery\\Layer.cpp": "bdab852a774988cc36703223e11b70c6194bab3fb12c299d3483e8ce7dfe7fe6",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll": "39fb7e8398408c9bdecb4400ea7217350610c48ebbbfca908922ea805654b0aa",
+      "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.json": "df2884286cea8583ad9fbd0bb0fe3a1132ef40b83a9c22a3dfeb2a23134fe3d7"
+    },
+    "inputs_unchanged": true
+  },
+  "linux": {
+    "SDK_source_fingerprint": "ca2f63fadcfdf373bde663c747e0bed626d071f737131d6e2d6daee2ff7c0f9e",
+    "cases": [
+      {
+        "name": "normal",
+        "command": [
+          "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-observer/gfx_recovery_observe",
+          "--observe",
+          "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-observer/libVkLayer_gfx_recovery.so"
+        ],
+        "returncode": 0,
+        "environment": {
+          "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+          "VK_INSTANCE_LAYERS": "VK_LAYER_GFX_recovery",
+          "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-evidence/empty-layer-settings",
+          "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-observer/Release",
+          "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json"
+        },
+        "result": {
+          "event": "result",
+          "source": "ca2f63fadcfdf373bde663c747e0bed626d071f737131d6e2d6daee2ff7c0f9e",
+          "validation": false,
+          "synthetic_loss": true,
+          "actual_TDR": false,
+          "adapters": 1,
+          "cycles": 4,
+          "images": 8,
+          "window_images": 0,
+          "verified_bytes": 17952,
+          "verified_buffer_bytes": 32776,
+          "created": 8,
+          "destroyed": 8,
+          "failed_creates": 8,
+          "drains": 4,
+          "reversed_enumerations": 0,
+          "errors": 0,
+          "premature_creations": 0,
+          "live_instances": 0,
+          "live_devices": 0,
+          "assertions": 325
+        }
+      }
+    ],
+    "status": "passed",
+    "serialized": true,
+    "require_software": true,
+    "source_base_commit": "5d8af5c5632edbffa93bd8ab3c93ef4474c108e9",
+    "frozen_inputs": {
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-observer/gfx_recovery_observe": "58e300dcbfd0ec988f7ebe57e207a58f5cf75e5a27a445b019e0a6f545e4f1f6",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-observer/libVkLayer_gfx_recovery.so": "fc36503d65021e5a1afed95844dd58d7ba51ecc1f3544f8cbff1c970b8df929a",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-install/lib/libGraphicsSDKCore.a": "bec4b8caded1e05b84dbff500e4cf20e49106a3824ff9c019064cb2dd80835dc",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/recovery-observer/Release/VkLayer_gfx_recovery.json": "fed6697100cccf6d06466bb8306b15d256e54b7a6fdb0bf74242660b2fe7397f",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/tools/run_vulkan_recovery.py": "82d61e3e945d94964df1e961c0a36ee83d5979b68fb78757467e2bbd4bf30d0b",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/VulkanRecoveryTests.cpp": "e5fd0edeef69e626a00ea51b13159f0b751e40b731990fe45b7602287ce1b1db",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/fixtures/SpirvFixtures.hpp": "3001f8aecfd8c2ce4fe71d6486af4457dc02a281c81865e092b59d7b120eba4a",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/vulkan_recovery/CMakeLists.txt": "508105798174f58cbb1ae872eaa46301f8ddd2321d9d8379dc6907a784ad9e39",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/vulkan_recovery/Control.hpp": "e6a179d06db6a64fd6a094b8b497b7f303be90787f8e2f3e16afe0794c18d531",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/vulkan_recovery/Layer.cpp": "bdab852a774988cc36703223e11b70c6194bab3fb12c299d3483e8ce7dfe7fe6",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/vulkan_recovery/README.md": "e3559e4464812f4a0c29e4cf52d2d89719f204eca48c52c1f31e44adaf6b7c07",
+      "/usr/share/vulkan/icd.d/lvp_icd.json": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398"
+    },
+    "inputs_unchanged": true
+  },
+  "native_tests": 60,
+  "python_tests_per_platform": 673,
+  "actual_TDR": false,
+  "public_loss_injection": false,
+  "physical_Linux_GPU_acceptance": false,
+  "source_manifests": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-26-phase3-vulkan-recovery/source-manifest-windows.json",
+      "bytes": 7486,
+      "sha256": "c15ee71bdd9fd7f23930b1561a6d2b7354acb9e7c8a57dd7207e4d868109c75a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-26-phase3-vulkan-recovery/source-manifest-linux-git.json",
+      "bytes": 7489,
+      "sha256": "c3224ebe96c11a3155232b59378a537e6e263dccac87fa485b92a09398de8b94"
+    }
+  ],
+  "inventory": {
+    "path": "benchmarks/reports/validation/2026-10-26-phase3-vulkan-recovery/inventory.json",
+    "bytes": 31234,
+    "sha256": "0a303cebef79b16467d116e7bc238f31ae1457e1c183ca61c0ad79251220c6a0"
+  }
+}

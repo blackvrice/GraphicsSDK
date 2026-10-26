@@ -382,3 +382,8 @@
 /tools/run_vulkan_markers.py text eol=lf
 /tests/test_vulkan_markers.py text eol=lf
 /.github/workflows/vulkan-markers.yml text eol=lf
+
+# Recovery source snapshots and native/CI evidence retain execution bytes.
+/benchmarks/reports/2026-10-26-phase3-vulkan-recovery/** -text whitespace=cr-at-eol
+/benchmarks/reports/validation/2026-10-26-phase3-vulkan-recovery/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/sources/vulkan-recovery-*.zip -text

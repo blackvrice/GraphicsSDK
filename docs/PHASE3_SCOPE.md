@@ -2,7 +2,7 @@
 
 2026-10-25 · 작업 `P3-SCP-01` · 검토 기준 커밋 `3bffac0`.
 
-이 문서는 현재 공개 API와 구현을 대조한 **지원 계약 검토**다. SDK 코드·ABI를 변경하거나 새 GPU 실행을 수행한 결과가 아니다. 검토한 제품 SDK fingerprint는 `2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401`이다. 아래 기존 실행 근거는 각 보고서의 당시 fingerprint·장치·구성 범위이며, 현재 코드 전체에 대한 새 회귀 통과로 재해석하지 않는다.
+이 문서는 현재 공개 API와 구현을 대조한 **지원 계약 검토**다. 최초 검토 제품 SDK fingerprint는 `2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401`이며 그 검토 자체는 새 GPU 실행 근거가 아니다. 이후 marker와 사용자 지정 recovery의 구현·실행 근거는 아래 별도 보고서로 연결한다. 기존 실행 근거는 각 보고서의 당시 fingerprint·장치·구성 범위이며, 현재 코드 전체에 대한 새 회귀 통과로 재해석하지 않는다.
 
 초기 Phase 3의 필수 범위는 Windows/Linux Vulkan, 기존 기본 그래픽스 RHI의 결과 비교, 명시적 동기화·수명·오류 계약, 동일 Vulkan 환경의 경쟁 비교다. 원래 RHI 요구의 필수 Debug Marker는 [2026-10-26 구현·실제 관측](PHASE3_VULKAN_MARKER_REPORT.md)으로 완료했다. 미지원 응답을 올바르게 반환하는 것과 해당 기능을 구현한 것은 별개다. 전체 잔여 상태와 완료 기준은 [로드맵](ROADMAP.md), 원래 검토 입력 해시는 [검토 receipt](../benchmarks/reports/2026-10-25-phase3-scope/summary.json)에 연결한다.
 
@@ -21,7 +21,7 @@
 | `vertexInput`, `indexedDrawing` | true | true. UInt32 전체 index 범위는 추가 native feature가 필요하며 없으면 UInt32 bind는 Unsupported | `vertex_layout_contracts`, `vertex_input_*`, `vulkan_vertex_input`; `P3-WIN-07`, `P3-LNX-08` |
 | `depthAttachment` | true; D32 계약 | D32 optimal image의 depth-attachment+transfer usage와 sample 1 조합 지원 시 true | `render_pass_contracts`, `render_pass_*`, `vulkan_depth`; `P3-WIN-09`, `P3-LNX-09` |
 | `multipleRenderTargets` | true; 공통 최대 8개 | adapter의 `maxColorAttachments >= 2`일 때 true. 실제 수는 min(8, native limit) | `vulkan_color_pass`, `vulkan_draw`, `vulkan_depth`; `P3-WIN-05`, `P3-LNX-09` |
-| `deviceRecovery` | true; 손실 generation 퇴역 후 새 device 반환 | false; 살아 있는 정상 generation의 `recover()`는 Unsupported | `device_recovery_*`, `vulkan_transfer`; `P3-CAP-02` |
+| `deviceRecovery` | true; 손실 generation 퇴역 후 새 device 반환 | true; 관찰된 손실 퇴역 후 동일 UUID adapter의 새 generation 반환. 정상 상태 InvalidState | `device_recovery_*`, `vulkan_recovery_contracts*`; [P3-CAP-02 검증](PHASE3_VULKAN_RECOVERY_REPORT.md) |
 | `deviceLossInjection` | `ID3D12Device5` 조회 성공 여부. 실제 제거에는 desc opt-in도 필요 | false; `enableDeviceLossTesting=true` 생성과 정상 device의 `removeForTesting()`는 Unsupported | `device_recovery_*`, `vulkan_transfer`; `P3-CAP-03` |
 
 `DeviceCaps`에는 **debug marker, OS memory budget, validation, 일반 shader reflection 지원 필드가 없다**. 존재하지 않는 bool을 false로 설명하지 않는다. 해당 API/생성 요청의 Result와 아래 계약으로 구분한다. 손실·퇴역·잘못된 thread/state가 먼저 적용되면 아래 정상 상태의 Unsupported 대신 그 오류가 반환될 수 있다.
@@ -66,7 +66,7 @@
 | 작업 | 현재 상태 / 초기 Phase 3 처리 | 이유·남겨 둘 검사 |
 |---|---|---|
 | `P3-CAP-01` Debug Marker | **필수, 구현·관측 완료** | 원래 RHI §11 요구를 실제 label·함수 부재·상태/수명 검사로 충족했다. 범위·source identity는 [marker 보고서](PHASE3_VULKAN_MARKER_REPORT.md), 현재 구성 통합은 final gate에서 재확인 |
-| `P3-CAP-02` generation recovery | 조건부, 초기 subset에서는 미지원 유지 | 원래 안정성의 Device Loss 처리는 손실 보존·native 사용 차단·안전한 퇴역이 필수다. 모든 backend의 자동/동일 API recovery 성공은 별도 확대 범위로 둔다. D3D12 recover와의 차이를 공개하며 Vulkan caps=false/정상 상태 Unsupported를 최종 회귀에서 확인 |
+| `P3-CAP-02` generation recovery | **사용자 지정으로 범위 선택, 구현·통제 검증 완료** | 초기 미지원 결정을 확대했다. 새 generation·최초 UUID 유지·실패 후 재시도·자원 재구축·이전 handle/fence 거부를 [Windows/Linux 보고서](PHASE3_VULKAN_RECOVERY_REPORT.md)에 기록. 합성 layer 제어는 실제 TDR 수용이나 public loss injection 구현이 아님 |
 | `P3-CAP-03` loss injection | 조건부, 초기 subset에서는 미지원 유지 | D3D12의 opt-in native 제거 시험을 Vulkan에 동일 기능으로 주장하지 않는다. 선택 시 시험 방식과 native/합성 차이를 구현·검증. 원래 loss 처리 요구와 실제 TDR 수용을 제거하지 않음 |
 | `P3-CAP-04` OS memory budget | 조건부, 공개 API의 Unsupported 유지 | 공개 계약은 정확한 adapter/process의 usage·budget·예약 필드다. heap capacity나 SDK 소유 bytes로 성공을 합성할 수 없다. 같은 의미를 제공할 근거가 확보되면 별도 구현 검토. 검토 작업 자체는 미완료 유지 |
 | `P3-CAP-07` GPU-assisted validation | 조건부, 초기 subset에서는 추가하지 않음 | 필수 검증은 실제 core+sync validation과 오류 검출 controls다. GPU-assisted는 별도 계측/오류 control 경로가 필요하고 기존 sync validation 결과로 대체할 수 없음 |

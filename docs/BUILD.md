@@ -1,5 +1,10 @@
 # Build
 
+Vulkan generation recovery의 설치 SDK 소비자·합성 손실 제어·Windows/Linux 결과는
+[P3-CAP-02 보고서](PHASE3_VULKAN_RECOVERY_REPORT.md)와
+[실행 절차](../tests/vulkan_recovery/README.md)를 따른다. 정상 generation은 InvalidState,
+관찰된 손실은 동일 adapter의 새 generation으로 복구한다. public loss injection은 미지원이다.
+
 Windows 검증 환경은 Visual Studio 2022 17.14, MSVC 19.44, Windows SDK
 10.0.26100.0, x64, CMake 3.25 이상이다. C++23 `std::expected` 지원이 필요하다.
 

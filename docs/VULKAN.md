@@ -102,8 +102,8 @@ do not establish Linux SDK compilation or runtime acceptance.
 - Native operations require the creating thread. Destroying the public device
   drains and retires its native generation, including still-held children. Child
   descriptions remain available; native operations return `DeviceLost`.
-  Observed native device loss is cached, but recovery and loss injection are not
-  implemented. This is not unexpected-device-loss acceptance.
+  Observed native device loss is cached. Generation recovery is implemented as
+  described below; public loss injection remains unsupported.
 - `DeviceDesc.validation=true` requires `VK_LAYER_KHRONOS_validation` and
   `VK_EXT_debug_utils`, `VK_EXT_validation_features`, `VK_EXT_layer_settings`.
   It requests synchronization validation (including submit-time checking), a zero
@@ -123,6 +123,32 @@ HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
 General shader compilation/reflection, Linux WSI/physical-device acceptance and
 matching Vulkan competitor measurements remain separate follow-up tasks.
 Earlier transfer evidence stays in the [implementation report](PHASE3_VULKAN_TRANSFER_REPORT.md).
+
+## Generation recovery
+
+`caps.deviceRecovery` is true. On the creating thread, `recover()` requires an
+observed native `VK_ERROR_DEVICE_LOST`, retires that native device before any new
+creation, and returns a separate device with a new resource/fence generation.
+Recovery pins the originally selected UUID-based adapter ID, including devices
+initially selected automatically; software and validation settings are preserved.
+It never silently switches GPUs. A missing adapter or failed native creation is
+reported to the caller. Failed recreation leaves the old generation lost and
+retired, with its original loss reason, and permits another explicit attempt.
+Healthy, wrong-thread and already-successfully-recovered calls return `InvalidState`.
+
+Old wrappers retain CPU descriptions, stay `DeviceLost` for native operations and
+are rejected by the new device as `WrongDevice`, including old fences. Applications
+must rebuild buffers, textures, pipelines and swapchains from CPU inputs; resource
+contents are not migrated. Native children are retired before the old VkDevice;
+cleanup parents such as the instance/surface can remain until wrapper release.
+
+The [recovery report](PHASE3_VULKAN_RECOVERY_REPORT.md) records Windows NVIDIA/Intel
+and Linux software-ICD controlled loss, failed retries, rebuilt full GPU references
+and supported Win32 swapchain rebuilding. The process-local test layer drains real
+work before returning synthetic loss. It does not establish real TDR, physical
+device-loss or physical Linux GPU acceptance. `caps.deviceLossInjection` remains
+false and the public testing opt-in/removal APIs remain `Unsupported` on healthy
+Vulkan devices; `P3-CAP-03` is separate.
 
 ## Color-texture transfers
 

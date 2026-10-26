@@ -94,8 +94,9 @@ Device의 GetAdapterLuid 결과에서 만든 식별자이며 선택된 DXGI 어�
 
 D3D12 ID는 LUID의 비트 표현이다. 열거 index 또는 재부팅을 넘어 영속적인 하드웨어 serial이
 아니다. topology 변경·재부팅 뒤 목록을 새로 조회한다. 명시적 ID가 있는 recover는 같은 ID만
-재시도하며, 없어졌다고 다른 GPU를 선택하지 않는다. ID가 없는 recover는 기존 선택 정책을
-다시 적용한다. 외부 native owner가 제거된 singleton을 보유하는 동안에는 복구가 DeviceLost로
+재시도하며, 없어졌다고 다른 GPU를 선택하지 않는다. ID가 없는 D3D12 recover는 기존 선택 정책을
+다시 적용한다. Vulkan recover는 최초 자동 선택도 실제 선택한 UUID 기반 ID로 고정한다.
+외부 native owner가 제거된 D3D12 singleton을 보유하는 동안에는 복구가 DeviceLost로
 실패할 수 있고 owner 해제 뒤 같은 ID로 재시도한다.
 
 공개 구조체가 확장되었으므로 정적 SDK 소비자를 새 헤더·라이브러리로 함께 재빌드한다.
@@ -297,10 +298,13 @@ if (!status && status.error().code == gfx::ErrorCode::DeviceLost) {
 }
 ```
 
-`recover()`는 손실된 native 세대를 퇴역시키고 같은 DeviceDesc 선택 정책으로 새 Device를 반환한다.
+`recover()`는 손실된 native 세대를 퇴역시키고 새 Device를 반환한다. D3D12는 같은 DeviceDesc
+선택 정책을, Vulkan은 최초 실제 선택한 adapter ID와 software/validation 설정을 유지한다.
 이전 CPU wrapper를 보관해도 native 자원·descriptor·PSO/root·명령·swapchain과 pending batch를
 해제한다. 약한 참조 등록은 wrapper를 영구 소유하지 않으며, 퇴역 중에는 전체 snapshot을 먼저
-강하게 고정해 다른 자원의 해제로 인한 수명 문제를 막는다. lost device에서는 GPU 완료를 기다리지 않는다.
+강하게 고정해 다른 자원의 해제로 인한 수명 문제를 막는다. D3D12 lost device에서는 GPU 완료를
+기다리지 않는다. Vulkan은 native device-idle 종료 후 child를 정리하며, 손실 장치의 wait는
+손실 결과로 종료될 수 있다. instance/surface 등 정리 부모는 이전 wrapper 해제까지 남을 수 있다.
 새 장치는 새 resource/fence identity를 사용한다. 예전 wrapper의 description/footprint/caps는 읽을
 수 있지만 조작은 계속 DeviceLost이고 새 장치에서 사용하면 WrongDevice다.
 shader bytecode와 애플리케이션 CPU asset data는 재사용할 수 있다. 자원 내용은 자동 복원하지 않는다.
@@ -324,6 +328,13 @@ interface 가용성으로 opt-in 여부와 별개다. RemoveDevice 검증 환경
 `tests/consumer/recovery.cpp`는 설치된 SDK만으로 제거 전후 전체 이미지와 stale buffer 거부를 검증한다.
 Native RemoveDevice와 hidden-window 재표시는 예상치 못한 driver TDR/물리 hot-unplug,
 장시간 leak stress 또는 interactive presentation 검증을 대체하지 않는다.
+
+Vulkan도 `caps.deviceRecovery=true`이며 관찰된 native 손실에서만 복구한다. 실제 선택한 ID가
+사라지면 다른 GPU로 fallback하지 않는다. public `deviceLossInjection`은 false이고 정상
+Vulkan device의 testing opt-in 생성·`removeForTesting()`는 Unsupported다. 설치 SDK의
+`tests/vulkan_recovery` 소비자는 별도 합성 layer로 submit/poll/fence 손실과 OOM/손실 재생성 실패,
+재시도, 이전 handle/fence 거부 및 CPU 입력 기반 전체 이미지·버퍼 재구축을 검증한다.
+[Vulkan 복구 보고서](PHASE3_VULKAN_RECOVERY_REPORT.md)의 합성 제어와 실제 TDR 수용을 구분한다.
 
 ## 자원 보유 진단
 

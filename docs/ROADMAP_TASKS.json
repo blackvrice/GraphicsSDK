@@ -1252,15 +1252,16 @@
       "phase": 3,
       "group": "P3-CAP",
       "title": "Vulkan generation recovery",
-      "status": "todo",
+      "status": "done",
       "gate": "conditional",
       "depends_on": [
         "P3-SCP-01"
       ],
-      "work": "초기 subset은 caps=false/Unsupported를 유지하고 손실 보존·차단·퇴역 계약은 필수로 검사한다. 선택 시 새 generation·기존 handle/fence 거부·자원 재구축을 구현한다.",
-      "done_when": "통제된 손실/퇴역·재시도·재구축 GPU 참조. 실제 TDR 수용과 구분.",
+      "work": "사용자 지정으로 조건부 기능 선택. Vulkan 손실 generation 퇴역 후 최초 UUID adapter의 새 generation·실패 재시도·기존 handle/fence 거부·CPU 자원 재구축 구현.",
+      "done_when": "Windows NVIDIA/Intel 일반·필수 validation 및 Linux software ICD에서 submit/poll/fence 합성 손실·OOM/손실 재생성 실패·재시도·GPU 전체 참조 통과. 실제 TDR·물리 Linux GPU 수용과 구분.",
       "evidence": [
-        "docs/PHASE3_SCOPE.md"
+        "docs/PHASE3_SCOPE.md",
+        "docs/PHASE3_VULKAN_RECOVERY_REPORT.md"
       ],
       "requires": "선택한 기능의 native GPU/driver/runtime 환경",
       "scope_from": "P3-SCP-01"

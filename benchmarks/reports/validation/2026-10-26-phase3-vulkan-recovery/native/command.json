@@ -1,0 +1,18 @@
+{
+  "command": [
+    "ctest",
+    "--test-dir",
+    "out/vulkan-recovery-sdk",
+    "-C",
+    "Release",
+    "--output-on-failure",
+    "--exclude-regex",
+    "^memory_reclamation_(gpu|validation)$"
+  ],
+  "returncode": 0,
+  "environment": {
+    "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+    "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+    "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-recovery-ctest\\empty-settings"
+  }
+}
