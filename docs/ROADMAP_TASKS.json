@@ -1128,15 +1128,18 @@
       "phase": 3,
       "group": "P3-WSI",
       "title": "표면·instance extension 연결",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-WSI-01",
         "P3-LNX-04"
       ],
-      "work": "공통 Surface와 선택한 Linux native surface 생성/해제 연결.",
-      "done_when": "실제 surface와 present queue 확인, 누락 extension·잘못된 표면 거부.",
-      "evidence": [],
+      "work": "공통 Xcb connection/32-bit XID와 checkSurfaceSupport를 추가하고 선택 XCB 빌드의 실제 native surface 생성·해제·선택 queue/visual 확인을 연결했다.",
+      "done_when": "설치 ON/OFF 소비자의 실제 Linux XCB surface·queue·누락 extension/procedure·잘못된 창·thread·surface 소실·headless 대조와 입력/고지 감사 통과. Linux swapchain/present는 미구현 유지. 로컬 기존 fence 예외는 별도 보존.",
+      "evidence": [
+        "docs/PHASE3_LINUX_XCB_SURFACE_REPORT.md",
+        "benchmarks/reports/2026-10-26-phase3-linux-xcb-surface/summary.json"
+      ],
       "requires": "선택한 Linux window system·GPU·표시 환경"
     },
     {

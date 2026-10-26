@@ -1,0 +1,65 @@
+name: Linux SDK XCB surfaces
+on:
+  push:
+    paths: ['include/**', 'src/**', 'CMakeLists.txt', 'tests/linux_xcb_surface/**', 'tools/run_linux_xcb_surface.py', 'tools/audit_xcb_surface_inputs.py', 'tests/test_linux_xcb_surface.py', '.github/workflows/linux-xcb-surface.yml']
+  pull_request:
+    paths: ['include/**', 'src/**', 'CMakeLists.txt', 'tests/linux_xcb_surface/**', 'tools/run_linux_xcb_surface.py', 'tools/audit_xcb_surface_inputs.py', 'tests/test_linux_xcb_surface.py', '.github/workflows/linux-xcb-surface.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  surface:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build pkg-config libxcb1-dev libvulkan1 mesa-vulkan-drivers xvfb xauth
+      - name: Build and install XCB ON and OFF SDKs and external consumers
+        shell: bash
+        run: |
+          for policy in on off; do
+            flag=OFF; if test "$policy" = on; then flag=ON; fi
+            cmake -S . -B "out/xcb-sdk-$policy" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DGFX_ENABLE_D3D12=OFF -DGFX_ENABLE_VULKAN=ON -DGFX_VULKAN_XCB="$flag" -DGFX_BUILD_TESTS=OFF -DGFX_BUILD_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX="$PWD/out/xcb-install-$policy"
+            cmake --build "out/xcb-sdk-$policy" --parallel 1
+            cmake --install "out/xcb-sdk-$policy"
+            cmake -S tests/linux_xcb_surface -B "out/xcb-consumer-$policy" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_PREFIX_PATH="$PWD/out/xcb-install-$policy"
+            cmake --build "out/xcb-consumer-$policy" --parallel 1
+          done
+      - name: Observe actual SDK surfaces, failures and headless operation
+        shell: bash
+        run: |
+          mapfile -t icds < <(find /usr/share/vulkan/icd.d -maxdepth 1 -name 'lvp_icd*.json')
+          test "${#icds[@]}" -eq 1
+          python3 tools/run_linux_xcb_surface.py --binary out/xcb-consumer-on/gfx_xcb_surface --disabled-binary out/xcb-consumer-off/gfx_xcb_surface --sdk-library out/xcb-install-on/lib/libGraphicsSDKCore.a --disabled-library out/xcb-install-off/lib/libGraphicsSDKCore.a --proxy out/xcb-consumer-on/proxy/libvulkan.so.1 --real-loader /usr/lib/x86_64-linux-gnu/libvulkan.so.1 --icd "${icds[0]}" --output out/xcb-surface-evidence
+      - name: Preserve actual compiler, dynamic dependency and notice inputs
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p out/xcb-surface-evidence/setup
+          for policy in on off; do
+            cp "out/xcb-sdk-$policy/compile_commands.json" "out/xcb-surface-evidence/setup/compile-$policy.json"
+            cp "out/xcb-sdk-$policy/CMakeCache.txt" "out/xcb-surface-evidence/setup/cache-$policy.txt"
+            ninja -C "out/xcb-sdk-$policy" -t deps > "out/xcb-surface-evidence/setup/deps-$policy.txt"
+            ninja -C "out/xcb-consumer-$policy" -t commands > "out/xcb-surface-evidence/setup/consumer-commands-$policy.txt"
+            nm -u "out/xcb-install-$policy/lib/libGraphicsSDKCore.a" > "out/xcb-surface-evidence/setup/undefined-$policy.txt"
+            ! grep -E '\bU xcb_' "out/xcb-surface-evidence/setup/undefined-$policy.txt"
+            cp "out/xcb-install-$policy/lib/cmake/GraphicsSDK/GraphicsSDKTargets.cmake" "out/xcb-surface-evidence/setup/export-$policy.txt"
+            ! grep -i xcb "out/xcb-surface-evidence/setup/export-$policy.txt"
+          done
+          dpkg-query -W -f='${Package} ${Version}\n' libvulkan1 mesa-vulkan-drivers libxcb1 libxcb1-dev xvfb xauth > out/xcb-surface-evidence/setup/packages.txt
+          cp /usr/share/doc/libxcb1/copyright out/xcb-surface-evidence/setup/libxcb-copyright.txt
+          python3 tools/audit_xcb_surface_inputs.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-xcb-surface-evidence
+          path: out/xcb-surface-evidence
+          if-no-files-found: warn

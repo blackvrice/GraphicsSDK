@@ -396,3 +396,13 @@
 /tests/test_linux_wsi_scope.py text eol=lf
 /tests/linux_wsi_scope/** text eol=lf
 /.github/workflows/linux-wsi-scope.yml text eol=lf
+
+# Preserve Linux SDK XCB surface source and native/audit/failure evidence.
+/benchmarks/reports/2026-10-26-phase3-linux-xcb-surface/** -text whitespace=cr-at-eol
+/benchmarks/reports/validation/2026-10-26-phase3-linux-xcb-surface/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/sources/linux-xcb-surface-*.zip -text
+/tools/run_linux_xcb_surface.py text eol=lf
+/tools/audit_xcb_surface_inputs.py text eol=lf
+/tests/test_linux_xcb_surface.py text eol=lf
+/tests/linux_xcb_surface/** text eol=lf
+/.github/workflows/linux-xcb-surface.yml text eol=lf

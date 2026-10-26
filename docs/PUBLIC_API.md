@@ -412,6 +412,36 @@ creating thread 전용이다. query는 GPU 완료 대기, fence signal, SDK 객�
 정확한 ID로 복구한 새 device에서 다시 조회한다. 새 virtual API이므로 개발 버전 소비자는
 재빌드한다. 이 API의 기능 검증은 장시간 메모리 plateau 합격을 뜻하지 않는다.
 
+## Native surface 지원 확인
+
+`SurfaceKind`는 `Win32`와 `Xcb`다. 기존 `Surface{Win32, hwnd}` 초기화를 유지하며 XCB는
+`Surface{Xcb, nullptr, connection, windowId}`로 불투명 `xcb_connection_t*`와 32비트 XID를
+전달한다. HWND 필드와 XCB 필드를 혼합하지 않는다. 공개 헤더에 platform header는 없다.
+struct 확장과 새 virtual 함수 때문에 정적 SDK 소비자는 헤더·라이브러리를 함께 재빌드한다.
+
+`Device::checkSurfaceSupport(surface)`는 생성 thread에서 임시 native surface를 만들고
+현재 선택된 graphics queue의 실제 surface 지원을 확인한 뒤 해제한다. Vulkan XCB는 창의
+geometry/InputOutput 종류·visual 지원도 확인한다. D3D12는 같은 process·생성 thread의 live
+Win32 HWND를 확인한다. 이 함수는 swapchain을 만들거나 format·present·모니터 표시를 보장하지 않는다.
+
+Linux는 `GFX_ENABLE_VULKAN=ON`, `GFX_VULKAN_XCB=ON` 빌드가 필요하다. 기본 OFF는
+headless SDK를 유지한다. ON에서도 Linux `caps.swapChain=false`와 swapchain 생성 Unsupported는
+유지하며, [surface 연결 보고서](PHASE3_LINUX_XCB_SURFACE_REPORT.md)의 실제 query 성공과
+후속 swapchain 구현을 구분한다. Native Wayland·Xlib·XWayland 수용을 추론하지 않는다.
+
+```cpp
+gfx::Surface surface{gfx::SurfaceKind::Xcb, nullptr, connection, windowId};
+auto supported = device->checkSurfaceSupport(surface);
+// Keep connection/window alive. Successful surface checks do not enable Linux present yet.
+```
+
+호출자가 native connection/window를 소유한다. 연결 pointer는 유효한 XCB 객체여야 하며 SDK가
+임의·해제된 pointer의 안전성을 보장하지 않는다. null·0 ID·혼합 필드·없어진 창·InputOnly는
+InvalidArgument, 연결 오류·다른 thread는 InvalidState다. 지원하지 않는 플랫폼/빌드/extension/
+함수/queue는 Unsupported, Vulkan surface 소실은 nativeCode를 보존한 BackendFailure다.
+관찰된 DeviceLost는 기존 세대 차단 계약이 우선한다. SDK는 native 창을 생성·닫거나 이벤트 loop를
+소유하지 않는다. 이 함수의 임시 surface는 반환 전 해제되고 caller의 창·연결은 유지된다.
+
 ## Win32 창 루프에서 SwapChain 사용
 
 [`examples/presentation`](../examples/presentation/README.md)는 설치된 SDK로 빌드하는 실제

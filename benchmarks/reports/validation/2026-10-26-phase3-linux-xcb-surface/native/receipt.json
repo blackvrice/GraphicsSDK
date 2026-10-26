@@ -1,0 +1,28 @@
+{
+  "command": [
+    "ctest",
+    "--test-dir",
+    "out/xcb-surface-windows",
+    "-C",
+    "Release",
+    "--output-on-failure",
+    "--exclude-regex",
+    "^memory_reclamation_(gpu|validation)$",
+    "-j",
+    "1"
+  ],
+  "returncode": 8,
+  "SDK_source_fingerprint": "b83edc2832404cb5d116a586148d773dbf8e7a92923b66da7020abd79301e79c",
+  "environment": {
+    "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+    "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+    "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\xcb-surface-windows-ctest\\empty-settings"
+  },
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\tests\\CoreTests.cpp": "ca3fe66ec0347b53f52220a8c2bc2496e5558f3994a83b6902ab22d794d0ae90",
+    "D:\\source\\GraphicsSDK\\tests\\SwapChainTests.cpp": "2d298f81ac282c73ae94533608211b25d580203748368e5f70d7dc2db7d94ba9",
+    "D:\\source\\GraphicsSDK\\tests\\VulkanPresentationTests.cpp": "45269ff4cd4c34d13bf9128348dec41c7e1ee456f3645b439e645c418230ee9b",
+    "D:\\source\\GraphicsSDK\\out\\xcb-surface-windows\\Release\\GraphicsSDKCore.lib": "023308c253666340cd28ee8d6de02daeacc81afc8aa0a5e598bc698b3c9b21e3"
+  },
+  "inputs_unchanged": true
+}

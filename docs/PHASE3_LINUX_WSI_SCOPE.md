@@ -1,5 +1,9 @@
 # P3-WSI-01 — Linux 창 시스템·동기화 범위
 
+후속 구현: [P3-WSI-02](PHASE3_LINUX_XCB_SURFACE_REPORT.md)에서 공통 Surface 확장과
+선택 XCB 경로의 native surface/queue 확인을 구현했다. 아래는 최초 범위 결정 당시 기록이며
+Linux swapchain/present·BGRA8 구현은 아직 별도 후속 작업이다.
+
 2026-10-26. 첫 Linux 표시 경로는 **X11/XCB**로 결정한다. Native Wayland는 초기 구현에서
 미지원으로 명시한다. XWayland는 XCB 경로로 연결 가능하더라도 별도 검증 전에는 지원 조합에
 넣지 않는다. 이 결정은 Linux 표시 요구를 제외하지 않는다. 아래 필수 XCB 구현·표시 수용

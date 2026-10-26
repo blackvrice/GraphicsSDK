@@ -1,5 +1,10 @@
 # Build
 
+Linux XCB native surface 연결은 `-DGFX_ENABLE_VULKAN=ON -DGFX_VULKAN_XCB=ON`으로 켠다.
+pkg-config와 `libxcb1-dev`가 private compile 입력이며 Core는 필요한 호출에서만 libxcb를 동적 로드한다.
+기본 OFF는 headless 구성을 유지한다. 설치 소비자·입력/고지 감사·정확한 결과와 제한은
+[P3-WSI-02 보고서](PHASE3_LINUX_XCB_SURFACE_REPORT.md)를 따른다. Linux swapchain/present는 다음 작업이다.
+
 Linux 표시의 첫 구현 경로·미지원 조합·XCB 창 서버 사전 조사 재현은
 [P3-WSI-01 범위 결정](PHASE3_LINUX_WSI_SCOPE.md)을 따른다. 이 probe는 설치 SDK에 연결하지만
 SDK의 Linux swapchain/present 구현이나 물리 표시 수용을 완료한 것은 아니다.

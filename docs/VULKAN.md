@@ -30,12 +30,38 @@ checkout byte identities remain separate; the SDK C++ implementation is unchange
 Physical GPU and WSI acceptance remain pending.
 The [Linux WSI scope decision](PHASE3_LINUX_WSI_SCOPE.md) selects X11/XCB first,
 records real XCB/software-ICD surface prerequisites and the need for explicit BGRA8
-support. The public Linux surface/swapchain implementation remains pending.
+support. [Optional installed-SDK XCB surface checks](PHASE3_LINUX_XCB_SURFACE_REPORT.md)
+are now implemented; Linux swapchain/present implementation remains pending.
 The [physical Linux GPU runner and manual CI](PHASE3_LINUX_HARDWARE_READINESS.md)
 are prepared; actual software-device rejection is verified. The physical positive
 path remains unexecuted because no reachable Linux GPU target has been identified.
 The [Windows GPU/driver support policy](PHASE3_WINDOWS_SUPPORT.md) records the
 tested NVIDIA presentation and Intel unsupported combinations, plus fallback decisions.
+
+## Optional Linux XCB surfaces
+
+Configure Linux with `GFX_ENABLE_VULKAN=ON` and `GFX_VULKAN_XCB=ON` to enable
+`Device::checkSurfaceSupport({SurfaceKind::Xcb, nullptr, connection, windowId})`.
+The caller supplies a live `xcb_connection_t*` and 32-bit XID on the device's
+creating thread. The SDK queries geometry/InputOutput/visual, creates a temporary
+VkSurface, checks its selected graphics queue and destroys it before returning.
+It owns neither connection/window nor the event loop. Native Wayland and Xlib
+handles are not accepted as XCB handles. Arbitrary/dangling pointers are outside
+the caller's lifetime contract.
+
+The option defaults OFF and requires Linux, Vulkan, pkg-config and XCB development
+headers. These headers are private. Core dynamically loads `libxcb.so.1` only when
+checking an XCB surface; the installed Core target has no hard XCB link or include
+dependency. A missing extension/procedure leaves headless device creation usable.
+The new function and extended Surface layout require rebuilding static consumers.
+Successful surface/queue checks do not guarantee swapchain format or presentation.
+Linux `caps.swapChain` stays false and `createSwapChain` stays Unsupported after
+surface checking. BGRA8 and actual acquire/submit/present remain `P3-WSI-03` work.
+
+The [surface report](PHASE3_LINUX_XCB_SURFACE_REPORT.md) records XCB ON/OFF installed
+consumers, process-local native observation/negative controls, full buffer copies,
+actual compiler inputs and notice/payload audit. This is software-ICD surface
+execution, not physical Linux GPU, full Linux WSI validation or human display acceptance.
 
 ## Upload CPU diagnostics
 
