@@ -42,7 +42,10 @@ void frame(gfx::Device& d,gfx::SwapChain& swap,gfx::Color color,std::unique_ptr<
     const auto f=take(d.queue().submit(*c));take(swap.present());take(d.queue().wait(f));verify(readback,layout,desc.width,desc.height,color);
 }
 void ring(gfx::Device& d,unsigned buffers){
-    Window window;auto swap=take(d.createSwapChain({gfx::SurfaceKind::Win32,window.handle},{63,7,buffers,false}));
+    Window window;take(d.checkSurfaceSupport({gfx::SurfaceKind::Win32,window.handle}));
+    auto unsupported=d.checkSurfaceSupport({gfx::SurfaceKind::Xcb});check(!unsupported&&unsupported.error().code==gfx::ErrorCode::Unsupported,"XCB surface rejected on D3D12");
+    auto invalid=d.checkSurfaceSupport({});check(!invalid&&invalid.error().code==gfx::ErrorCode::InvalidArgument,"Null surface rejected");
+    auto swap=take(d.createSwapChain({gfx::SurfaceKind::Win32,window.handle},{63,7,buffers,false}));
     auto held=take(swap->acquire());frame(d,*swap,{1,0,0,1});
     auto current=take(swap->acquire());check(held!=current,"Present advances to another backbuffer");
     reject(swap->resize(65,9),gfx::ErrorCode::InvalidState,"Held backbuffer still blocks resize");

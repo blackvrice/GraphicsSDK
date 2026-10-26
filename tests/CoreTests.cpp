@@ -4,6 +4,9 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
+static_assert(static_cast<int>(gfx::SurfaceKind::Win32) == 0);
+static_assert(gfx::Surface{gfx::SurfaceKind::Win32, nullptr}.connection == nullptr);
+static_assert(gfx::Surface{gfx::SurfaceKind::Xcb, nullptr, nullptr, UINT32_MAX}.windowId == UINT32_MAX);
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX

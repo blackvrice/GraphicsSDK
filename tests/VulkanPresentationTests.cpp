@@ -88,6 +88,11 @@ void uploadFrame(gfx::Device& d, gfx::SwapChain& s, unsigned seed) {
 void contracts(gfx::Device& d) {
     Window w(321,197); check(d.caps().swapChain, "Actual Win32 extension capability advertised");
     reject(d.createSwapChain({}, {321,197}), gfx::ErrorCode::InvalidArgument, "Null window");
+    take(d.checkSurfaceSupport({gfx::SurfaceKind::Win32,w.handle}));
+    reject(d.checkSurfaceSupport({}), gfx::ErrorCode::InvalidArgument, "Null surface preflight");
+    reject(d.checkSurfaceSupport({gfx::SurfaceKind::Xcb,nullptr,nullptr,1}), gfx::ErrorCode::Unsupported, "XCB is platform specific");
+    reject(d.checkSurfaceSupport({gfx::SurfaceKind::Win32,w.handle,nullptr,1}), gfx::ErrorCode::InvalidArgument, "Mixed native kinds rejected");
+    bool supportWrongThread{}; std::thread supportThread([&]{ auto r=d.checkSurfaceSupport({gfx::SurfaceKind::Win32,w.handle});supportWrongThread=!r&&r.error().code==gfx::ErrorCode::InvalidState; }); supportThread.join();check(supportWrongThread,"Surface preflight thread affinity");
     reject(d.createSwapChain({gfx::SurfaceKind::Win32,w.handle}, {0,197}), gfx::ErrorCode::InvalidArgument, "Zero extent");
     reject(d.createSwapChain({gfx::SurfaceKind::Win32,w.handle}, {322,197}), gfx::ErrorCode::InvalidArgument, "No silent native window mutation");
     for (unsigned n : {0u,1u,5u,UINT32_MAX}) reject(d.createSwapChain({gfx::SurfaceKind::Win32,w.handle}, {321,197,n}), gfx::ErrorCode::InvalidArgument, "Invalid requested buffer count");

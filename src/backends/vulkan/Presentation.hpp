@@ -1,5 +1,53 @@
 // Private implementation included inside Vulkan.cpp's anonymous namespace.
 // Win32 WSI deliberately uses host-fenced acquisition; no throughput claim.
+#include "Xcb.hpp"
+Result<std::shared_ptr<NativeSurface>> makeSurface(const std::shared_ptr<State>& owner, Surface surface) {
+    auto& in = *owner->native->instance;
+#ifdef _WIN32
+    if (surface.kind == SurfaceKind::Xcb) return fail(ErrorCode::Unsupported, "XCB surfaces require Linux XCB support");
+    DWORD process{}; const auto thread = GetWindowThreadProcessId(static_cast<HWND>(surface.window), &process);
+    if (surface.kind != SurfaceKind::Win32 || !surface.window || surface.connection || surface.windowId ||
+        !IsWindow(static_cast<HWND>(surface.window)) || thread != GetCurrentThreadId() || process != GetCurrentProcessId())
+        return fail(ErrorCode::InvalidArgument, "Surface requires a live Win32 window on the creating thread");
+    if (!in.presentation) return fail(ErrorCode::Unsupported, "Win32 Vulkan surface extensions unavailable");
+    auto value = std::make_shared<NativeSurface>(); value->native = owner->native; value->window = surface.window;
+    VkWin32SurfaceCreateInfoKHR info{VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR}; info.hinstance = GetModuleHandleW(nullptr); info.hwnd = static_cast<HWND>(surface.window);
+    if (auto ok = owner->accept(vulkan::acquireOutput(value->handle, in.CreateWin32SurfaceKHR, in.handle, &info, nullptr), "Create Win32 surface"); !ok) return std::unexpected(ok.error());
+#elif defined(GFX_HAS_VULKAN_XCB)
+    if (surface.kind == SurfaceKind::Win32) return fail(ErrorCode::Unsupported, "Win32 surfaces require Windows");
+    if (surface.kind != SurfaceKind::Xcb || surface.window || !surface.connection || !surface.windowId)
+        return fail(ErrorCode::InvalidArgument, "XCB surface requires connection and 32-bit window ID only");
+    if (!in.presentation) return fail(ErrorCode::Unsupported, "Linux XCB Vulkan surface extensions or procedures unavailable");
+    XcbApi xcb;
+    if (!xcb.available()) return fail(ErrorCode::Unsupported, "libxcb native window queries unavailable");
+    auto connection = static_cast<xcb_connection_t*>(surface.connection);
+    if (xcb.connection_has_error(connection)) return fail(ErrorCode::InvalidState, "XCB connection is not connected");
+    xcb_generic_error_t* error{};
+    std::unique_ptr<xcb_get_geometry_reply_t, decltype(&std::free)> geometry(xcb.get_geometry_reply(connection, xcb.get_geometry(connection, surface.windowId), &error), &std::free);
+    std::free(error); error = nullptr;
+    if (!geometry || !geometry->width || !geometry->height) return fail(ErrorCode::InvalidArgument, "XCB window geometry unavailable");
+    std::unique_ptr<xcb_get_window_attributes_reply_t, decltype(&std::free)> attributes(xcb.get_window_attributes_reply(connection, xcb.get_window_attributes(connection, surface.windowId), &error), &std::free);
+    std::free(error);
+    if (!attributes || attributes->_class != XCB_WINDOW_CLASS_INPUT_OUTPUT) return fail(ErrorCode::InvalidArgument, "XCB surface requires a live InputOutput window");
+    auto value = std::make_shared<NativeSurface>(); value->native = owner->native;
+    VkXcbSurfaceCreateInfoKHR info{VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR}; info.connection = connection; info.window = surface.windowId;
+    if (auto ok = owner->accept(vulkan::acquireOutput(value->handle, in.CreateXcbSurfaceKHR, in.handle, &info, nullptr), "Create XCB surface"); !ok) return std::unexpected(ok.error());
+    const auto visualSupported = in.GetPhysicalDeviceXcbPresentationSupportKHR(owner->physical, owner->family, connection, attributes->visual);
+#else
+    (void)owner; (void)surface; (void)in;
+    return fail(ErrorCode::Unsupported, "Native surface support requires Win32 or GFX_VULKAN_XCB");
+#endif
+#if defined(_WIN32) || defined(GFX_HAS_VULKAN_XCB)
+    VkBool32 supported{};
+    if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceSupportKHR(owner->physical, owner->family, value->handle, &supported), "Query surface queue support"); !ok) return std::unexpected(ok.error());
+#ifdef GFX_HAS_VULKAN_XCB
+    if (!visualSupported) return fail(ErrorCode::Unsupported, "Selected graphics queue cannot present to the XCB visual");
+#endif
+    if (!supported) return fail(ErrorCode::Unsupported, "Selected graphics queue cannot present to this surface");
+    return value;
+#endif
+}
+
 struct VulkanSwapchain final : SwapChain {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeSurface> surface;
@@ -185,21 +233,16 @@ struct VulkanSwapchain final : SwapChain {
 Result<std::unique_ptr<SwapChain>> makeSwapchain(const std::shared_ptr<State>& owner, Surface surface, SwapChainDesc desc) {
 #ifdef _WIN32
     if (!owner->native->presentation) return fail(ErrorCode::Unsupported, "Win32 Vulkan presentation requires swapchainMaintenance1 completion fences");
-    DWORD process{}; const auto thread = GetWindowThreadProcessId(static_cast<HWND>(surface.window), &process);
-    if (surface.kind != SurfaceKind::Win32 || !surface.window || !IsWindow(static_cast<HWND>(surface.window)) ||
-        thread != GetCurrentThreadId() || process != GetCurrentProcessId())
-        return fail(ErrorCode::InvalidArgument, "Surface requires a live Win32 window on the creating thread");
+    auto prepared = makeSurface(owner, surface); if (!prepared) return std::unexpected(prepared.error());
     auto value = std::make_unique<VulkanSwapchain>(); value->owner = owner; value->desc = desc; value->token = std::make_shared<int>();
-    value->surface = std::make_shared<NativeSurface>(); value->surface->native = owner->native; value->surface->window = surface.window;
-    VkWin32SurfaceCreateInfoKHR info{VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR}; info.hinstance = GetModuleHandleW(nullptr); info.hwnd = static_cast<HWND>(surface.window);
-    auto& in = *owner->native->instance;
-    if (auto ok = owner->accept(vulkan::acquireOutput(value->surface->handle, in.CreateWin32SurfaceKHR, in.handle, &info, nullptr), "Create Win32 surface"); !ok) return std::unexpected(ok.error());
-    VkBool32 supported{};
-    if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceSupportKHR(owner->physical, owner->family, value->surface->handle, &supported), "Query surface queue support"); !ok) return std::unexpected(ok.error());
-    if (!supported) return fail(ErrorCode::Unsupported, "Selected graphics queue cannot present to this surface");
+    value->surface = std::move(*prepared);
     auto config = value->configuration(desc.width, desc.height); if (!config) return std::unexpected(config.error());
     if (auto ok = value->rebuild(*config); !ok) return std::unexpected(ok.error());
     owner->objects.push_back(value->token); return std::unique_ptr<SwapChain>(std::move(value));
+#elif defined(GFX_HAS_VULKAN_XCB)
+    (void)desc;
+    auto prepared = makeSurface(owner, surface); if (!prepared) return std::unexpected(prepared.error());
+    return fail(ErrorCode::Unsupported, "XCB surface and queue supported; Linux swapchains are not implemented");
 #else
     (void)owner; (void)surface; (void)desc;
     return fail(ErrorCode::Unsupported, "Vulkan presentation currently requires Win32");

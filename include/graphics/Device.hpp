@@ -23,6 +23,9 @@ public:
     [[nodiscard]] virtual Result<TexturePtr> createTexture(TextureDesc) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) = 0;
     [[nodiscard]] virtual Result<std::unique_ptr<CommandList>> createCommandList() = 0;
+    // Creating thread only. Validate a live native surface and selected queue;
+    // does not create a swapchain or guarantee format/present support.
+    [[nodiscard]] virtual Result<void> checkSurfaceSupport(Surface) = 0;
     [[nodiscard]] virtual Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) = 0;
     [[nodiscard]] virtual CommandQueue& queue() = 0;
     // Cumulative ERROR/CORRUPTION count since callback registration, independent of

@@ -20,6 +20,11 @@
 #include <vulkan/vulkan_win32.h>
 #else
 #include <dlfcn.h>
+#ifdef GFX_HAS_VULKAN_XCB
+#include <xcb/xcb.h>
+#include <vulkan/vulkan_xcb.h>
+#include <cstdlib>
+#endif
 #endif
 
 namespace gfx {
@@ -84,6 +89,9 @@ struct Instance {
     PFN_vkGetPhysicalDeviceSurfacePresentModesKHR GetPhysicalDeviceSurfacePresentModesKHR{};
 #ifdef _WIN32
     PFN_vkCreateWin32SurfaceKHR CreateWin32SurfaceKHR{};
+#elif defined(GFX_HAS_VULKAN_XCB)
+    PFN_vkCreateXcbSurfaceKHR CreateXcbSurfaceKHR{};
+    PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR GetPhysicalDeviceXcbPresentationSupportKHR{};
 #endif
 #define DECLARE(name) PFN_vk##name name{};
     INSTANCE_FUNCTIONS(DECLARE)
@@ -121,6 +129,11 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
         instance->presentation = has(VK_KHR_SURFACE_EXTENSION_NAME) && has(VK_KHR_WIN32_SURFACE_EXTENSION_NAME) &&
             has(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME) && has(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME);
         if (instance->presentation) enabledExtensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+            VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME};
+#elif defined(GFX_HAS_VULKAN_XCB)
+        instance->presentation = has(VK_KHR_SURFACE_EXTENSION_NAME) && has(VK_KHR_XCB_SURFACE_EXTENSION_NAME) &&
+            has(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME) && has(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME);
+        if (instance->presentation) enabledExtensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_EXTENSION_NAME,
             VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME};
 #endif
     }
@@ -171,11 +184,17 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     INSTANCE_FUNCTIONS(LOAD)
 #undef LOAD
     if (instance->presentation) {
+#ifdef GFX_HAS_VULKAN_XCB
+#define LOAD_WSI(name) instance->name = reinterpret_cast<PFN_vk##name>(get(instance->handle, "vk" #name)); if (!instance->name) instance->presentation = false;
+#else
 #define LOAD_WSI(name) instance->name = reinterpret_cast<PFN_vk##name>(get(instance->handle, "vk" #name)); if (!instance->name) return fail(ErrorCode::Unsupported, "Vulkan surface entry point missing: vk" #name);
+#endif
         LOAD_WSI(DestroySurfaceKHR) LOAD_WSI(GetPhysicalDeviceSurfaceSupportKHR) LOAD_WSI(GetPhysicalDeviceSurfaceCapabilitiesKHR)
         LOAD_WSI(GetPhysicalDeviceSurfaceFormatsKHR) LOAD_WSI(GetPhysicalDeviceSurfacePresentModesKHR)
 #ifdef _WIN32
         LOAD_WSI(CreateWin32SurfaceKHR)
+#elif defined(GFX_HAS_VULKAN_XCB)
+        LOAD_WSI(CreateXcbSurfaceKHR) LOAD_WSI(GetPhysicalDeviceXcbPresentationSupportKHR)
 #endif
 #undef LOAD_WSI
     }
@@ -1378,6 +1397,12 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->objects.push_back(value->token); return std::unique_ptr<CommandList>(std::move(value));
     }
+    Result<void> checkSurfaceSupport(Surface surface) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        auto checked = makeSurface(owner, surface);
+        if (!checked) return std::unexpected(checked.error());
+        return {};
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         return makeSwapchain(owner, surface, desc);
@@ -1455,7 +1480,9 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.multipleRenderTargets = selected->maxColorAttachments >= 2;
     device->capabilities.vertexInput = device->capabilities.indexedDrawing = true;
     device->capabilities.timestampQueries = vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod);
+#ifdef _WIN32
     device->capabilities.swapChain = native->presentation;
+#endif
     device->capabilities.resourceBinding = device->capabilities.bindingLayouts = true;
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,

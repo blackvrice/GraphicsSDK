@@ -998,6 +998,15 @@ public:
         // Storage/retrieval filters and the bounded native text queue cannot hide errors.
         return state->validationErrors.load(std::memory_order_relaxed);
     }
+    Result<void> checkSurfaceSupport(Surface surface) override {
+        auto status = state->check(); if (!status) return status;
+        if (surface.kind == SurfaceKind::Xcb) return invalid("XCB surfaces require Linux", ErrorCode::Unsupported);
+        DWORD process{}; auto thread = GetWindowThreadProcessId(static_cast<HWND>(surface.window), &process);
+        if (surface.kind != SurfaceKind::Win32 || surface.connection || surface.windowId || !IsWindow(static_cast<HWND>(surface.window)) ||
+            thread != GetCurrentThreadId() || process != GetCurrentProcessId())
+            return invalid("Surface requires a live Win32 window on the creating thread", ErrorCode::InvalidArgument);
+        return {};
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (surface.kind != SurfaceKind::Win32 || !IsWindow(static_cast<HWND>(surface.window)) || !desc.width || !desc.height || desc.width > 16384 || desc.height > 16384 || desc.buffers < 2 || desc.buffers > 4)
