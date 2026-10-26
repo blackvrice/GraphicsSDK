@@ -17,6 +17,20 @@ def fixture(denied=False):
 
 
 class VulkanMarkerReceiptTests(unittest.TestCase):
+    def test_single_adapter_native_count_and_multi_adapter_minimum(self):
+        rows=fixture();rows[-1]['assertions']=29
+        validate_rows(rows,'source',False,False)
+        rows[-1]['assertions']=28
+        with self.assertRaises(ValueError):validate_rows(rows,'source',False,False)
+        rows=fixture();labels=[r for r in rows if r.get('event')=='native_label']
+        rows.insert(1,dict(event='adapter',adapter_id=43,software=True))
+        rows[-1].update(adapters=2,assertions=50,accepted_markers=12,native_calls=12,forwarded=12)
+        next(r for r in rows if r.get('event')=='observer').update(calls=12,forwarded=12)
+        rows[-1:-1]=[{**r,'index':r['index']+6} for r in labels]
+        validate_rows(rows,'source',False,False)
+        rows[-1]['assertions']=49
+        with self.assertRaises(ValueError):validate_rows(rows,'source',False,False)
+
     def test_supported_and_missing_proc_are_separate_complete_contracts(self):
         for denied in (False,True):validate_rows(fixture(denied),'source',False,denied,True)
 

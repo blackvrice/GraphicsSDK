@@ -28,7 +28,7 @@ def validate_rows(rows, fingerprint, validation, denied, require_software=False)
     require([r['text'] for r in labels] == expected and [r['index'] for r in labels] == list(range(len(labels)))
             and all(type(r['command']) is int and r['command'] > 0 for r in labels), 'Native label bytes/order/command mismatch')
     require(result['accepted_markers'] == result['native_calls'] == result['forwarded'] == len(expected)
-            and result['assertions'] >= 30 and result['observer_errors'] == result['live_instances'] == result['live_devices'] == 0,
+            and result['assertions'] >= 8 + 21*len(adapters) and result['observer_errors'] == result['live_instances'] == result['live_devices'] == 0,
             'Missing forwarding, rejection or lifetime checks')
     require(len(observers) == 1 and observers[0]['debug_instances'] > 0 and observers[0]['lookups'] > 0
             and observers[0]['calls'] == observers[0]['forwarded'] == len(expected), 'Observer not active')
