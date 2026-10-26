@@ -52,13 +52,16 @@ def main():
     save()
     try:
         validation=bool(args.validation_dir)
+        failed=[]
         for name in SUITES:
             build=args.consumer_root/name;command=[sys.executable,str(ROOT/f'tools/run_linux_xcb_{name}.py'),'--binary',str(build/f'gfx_xcb_{name}'),'--proxy',str(build/'proxy/libvulkan.so.1'),'--sdk-library',str(args.sdk_library),'--icd',str(args.icd),'--output',str(args.output/name)]
             if validation:command+=['--validation-dir',str(args.validation_dir)]
             child=subprocess.run(command,cwd=ROOT,capture_output=True,timeout=800);(args.output/(name+'.runner.stdout')).write_bytes(child.stdout);(args.output/(name+'.runner.stderr')).write_bytes(child.stderr)
-            receipt['suites'][name]=dict(returncode=child.returncode,command=command);save();require(child.returncode==0,'Integrated suite failed: '+name)
+            receipt['suites'][name]=dict(returncode=child.returncode,command=command);save()
+            if child.returncode!=0:failed.append(name);continue
             # Inspect native stderr all the way through teardown, including old suites.
             for stderr in (args.output/name).glob('*.stderr'):require(not re.search(rb'^validation:',stderr.read_bytes(),re.M),'Native delivered error in '+str(stderr))
+        require(not failed,'Integrated suites failed: '+', '.join(failed))
         controls=None
         if validation:
             layer=str((args.validation_dir/'libVkLayer_khronos_validation.so').resolve());empty=args.output/'controls-empty-settings';empty.mkdir()

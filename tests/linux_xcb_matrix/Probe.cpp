@@ -37,7 +37,9 @@ auto create(gfx::Device& d,xcbPresentation::Window& w,unsigned buffers,bool vsyn
     std::cout<<"{\"event\":\"configuration\",\"pair\":"<<pairs<<",\"buffers\":"<<buffers<<",\"vsync\":"<<std::boolalpha<<vsync<<",\"mode\":"<<n.presentMode<<",\"format\":"<<n.format<<",\"images\":"<<n.actualImages<<",\"minimum\":"<<n.minImages<<",\"mode_minimum\":"<<n.modeMinImages<<",\"mode_maximum\":"<<n.modeMaxImages<<"}"<<std::endl;return c;
 }
 void scene(gfx::Device& d,unsigned buffers,bool vsync){
-    xcbPresentation::Window wa(17,9),wb(65,7);wa.map();wb.map();
+    xcbPresentation::Window wa(17,9),wb(65,7);auto end=std::chrono::steady_clock::now()+std::chrono::seconds(8);
+    while(!wa.managed()&&std::chrono::steady_clock::now()<end)std::this_thread::sleep_for(std::chrono::milliseconds(5));check(wa.managed(),"Actual WM ready for multi-window matrix");wa.map();wb.map();
+    while((wa.managerState()!=1||wb.managerState()!=1)&&std::chrono::steady_clock::now()<end)std::this_thread::sleep_for(std::chrono::milliseconds(5));check(wa.managerState()==1&&wb.managerState()==1,"Both real windows mapped by WM");
     auto a=create(d,wa,buffers,vsync),b=create(d,wb,buffers,!vsync);both(d,*a,*b);
     auto held=take(a->acquire());auto commands=record(d,held);resize(wa,83,11);reject(a->resize(83,11));image(d,*b,1,1);
     resize(wb,129,13);take(b->resize(129,13));image(d,*b,1,2);
