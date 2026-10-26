@@ -1,0 +1,34 @@
+name: Vulkan generation recovery (Linux software ICD)
+on:
+  push:
+    paths: ['src/**', 'include/**', 'CMakeLists.txt', 'tests/VulkanRecoveryTests.cpp', 'tests/vulkan_recovery/**', 'tools/run_vulkan_recovery.py', 'tests/test_vulkan_recovery.py', '.github/workflows/vulkan-recovery.yml']
+  pull_request:
+    paths: ['src/**', 'include/**', 'CMakeLists.txt', 'tests/VulkanRecoveryTests.cpp', 'tests/vulkan_recovery/**', 'tools/run_vulkan_recovery.py', 'tests/test_vulkan_recovery.py', '.github/workflows/vulkan-recovery.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  recovery:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+      - run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers
+      - run: cmake -S . -B out/recovery-sdk -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-14 -DGFX_ENABLE_D3D12=OFF -DGFX_ENABLE_VULKAN=ON -DGFX_BUILD_TESTS=OFF -DGFX_BUILD_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX="$PWD/out/recovery-install"
+      - run: cmake --build out/recovery-sdk --parallel 1 && cmake --install out/recovery-sdk
+      - run: cmake -S tests/vulkan_recovery -B out/recovery-observer -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_PREFIX_PATH="$PWD/out/recovery-install" && cmake --build out/recovery-observer --parallel 1
+      - name: Controlled loss, failed retries and rebuilt GPU references
+        shell: bash
+        run: |
+          mapfile -t icds < <(find /usr/share/vulkan/icd.d -maxdepth 1 -name 'lvp_icd*.json')
+          test "${#icds[@]}" -eq 1
+          python3 tools/run_vulkan_recovery.py --binary out/recovery-observer/gfx_recovery_observe --layer out/recovery-observer/libVkLayer_gfx_recovery.so --manifest-dir out/recovery-observer/Release --sdk-library out/recovery-install/lib/libGraphicsSDKCore.a --icd "${icds[0]}" --require-software --output out/recovery-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-recovery-evidence
+          path: out/recovery-evidence

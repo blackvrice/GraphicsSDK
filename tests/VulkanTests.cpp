@@ -56,13 +56,13 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation)
     const auto& caps = d.caps();
     check(caps.backend == gfx::Backend::Vulkan && caps.adapterId == adapter.id && caps.adapterName == adapter.name, "Exact Vulkan selection");
     check(!caps.compute && caps.timestampQueries && caps.resourceBinding && caps.vertexInput && caps.indexedDrawing &&
-        caps.bindingLayouts && caps.depthAttachment && caps.multipleRenderTargets && !caps.deviceRecovery && !caps.deviceLossInjection, "Partial capabilities are honest");
+        caps.bindingLayouts && caps.depthAttachment && caps.multipleRenderTargets && caps.deviceRecovery && !caps.deviceLossInjection, "Partial capabilities are honest");
     reject(d.createBuffer({0}), gfx::ErrorCode::InvalidArgument, "Empty buffer");
     reject(d.createBuffer({64, static_cast<gfx::Memory>(99)}), gfx::ErrorCode::InvalidArgument, "Unknown memory kind");
     reject(d.createTexture({1, 1, gfx::Format::D32Float, true, true}), gfx::ErrorCode::InvalidArgument, "Depth cannot also be a color target");
     reject(d.createGraphicsPipeline({}), gfx::ErrorCode::Unsupported, "Pipeline not implemented");
     reject(d.queryMemoryBudget(gfx::MemorySegment::Local), gfx::ErrorCode::Unsupported, "No synthesized OS budget");
-    reject(d.recover(), gfx::ErrorCode::Unsupported, "Recovery not implemented");
+    reject(d.recover(), gfx::ErrorCode::InvalidState, "Healthy recovery must preserve the generation");
     reject(d.removeForTesting(), gfx::ErrorCode::Unsupported, "Loss injection not implemented");
     auto other = take(gfx::createDevice(description(adapter, validation)));
     auto up = take(d.createBuffer({257, gfx::Memory::Upload}));

@@ -1055,7 +1055,11 @@ struct VulkanQueue final : CommandQueue {
         auto& pending = owner->pending.emplace_back(Pending{{}, owner->last + 1, record});
         VkFenceCreateInfo fence{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
         auto r = vulkan::acquireOutput(pending.fence, owner->native->CreateFence, owner->native->handle, &fence, nullptr);
-        if (r != VK_SUCCESS) { owner->pending.pop_back(); return nativeError(r, "vkCreateFence"); }
+        if (r != VK_SUCCESS) {
+            owner->pending.pop_back();
+            auto status = owner->accept(r, "vkCreateFence");
+            return std::unexpected(status.error());
+        }
         VkSubmitInfo info{VK_STRUCTURE_TYPE_SUBMIT_INFO}; info.commandBufferCount = 1; info.pCommandBuffers = &record->command;
         const auto submittedAt = std::chrono::steady_clock::now();
         r = owner->native->QueueSubmit(owner->native->queue, 1, &info, pending.fence);
@@ -1099,6 +1103,8 @@ struct VulkanQueue final : CommandQueue {
 struct VulkanDevice final : Device {
     std::shared_ptr<State> owner;
     DeviceCaps capabilities;
+    DeviceDesc description;
+    bool recoverySucceeded{};
     VulkanQueue commands;
     ~VulkanDevice() override { owner->retire(); }
     const DeviceCaps& caps() const override { return capabilities; }
@@ -1121,8 +1127,19 @@ struct VulkanDevice final : Device {
         return fail(ErrorCode::Unsupported, "Vulkan heap sizes do not provide the OS process budget contract");
     }
     Result<std::unique_ptr<Device>> recover() override {
-        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        return fail(ErrorCode::Unsupported, "Vulkan recovery unsupported");
+        if (std::this_thread::get_id() != owner->thread) return fail(ErrorCode::InvalidState, "Recovery requires the creating thread");
+        if (recoverySucceeded) return fail(ErrorCode::InvalidState, "This generation has already been recovered");
+        auto status = owner->poll();
+        if (status || status.error().code != ErrorCode::DeviceLost || !owner->lost)
+            return fail(ErrorCode::InvalidState, "Recovery requires an observed device loss");
+        // Retire once, before any new native creation. A failed attempt stays retryable;
+        // old public children keep only inert descriptions, never the new generation.
+        owner->retire();
+        try {
+            auto fresh = gfx::createDevice(description);
+            if (fresh) recoverySucceeded = true;
+            return fresh;
+        } catch (const std::bad_alloc&) { return fail(ErrorCode::OutOfMemory, "Recovery allocation failed"); }
     }
     Result<void> removeForTesting() override {
         if (auto ok = owner->check(); !ok) return ok;
@@ -1431,8 +1448,10 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
     owner->limits = selected->limits; owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
     auto device = std::make_unique<VulkanDevice>(); device->owner = owner; device->commands.owner = owner;
+    device->description = desc; device->description.adapter = selected->info.id;
     device->capabilities.backend = Backend::Vulkan; device->capabilities.adapterName = selected->info.name;
     device->capabilities.softwareAdapter = selected->info.softwareAdapter; device->capabilities.adapterId = selected->info.id;
+    device->capabilities.deviceRecovery = true;
     device->capabilities.multipleRenderTargets = selected->maxColorAttachments >= 2;
     device->capabilities.vertexInput = device->capabilities.indexedDrawing = true;
     device->capabilities.timestampQueries = vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod);
