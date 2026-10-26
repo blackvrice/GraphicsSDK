@@ -374,3 +374,11 @@
 /benchmarks/reports/sources/manual-presentation-*.zip -text
 /tools/manual_presentation_evidence.py text eol=lf
 /tests/test_manual_presentation_evidence.py text eol=lf
+
+# Native marker observations and platform-specific source snapshots retain exact bytes.
+/benchmarks/reports/2026-10-26-phase3-vulkan-markers/** -text whitespace=cr-at-eol
+/benchmarks/reports/validation/2026-10-26-phase3-vulkan-markers/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/sources/vulkan-markers-*.zip -text
+/tools/run_vulkan_markers.py text eol=lf
+/tests/test_vulkan_markers.py text eol=lf
+/.github/workflows/vulkan-markers.yml text eol=lf

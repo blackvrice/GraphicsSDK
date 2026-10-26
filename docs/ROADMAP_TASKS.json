@@ -1232,15 +1232,18 @@
       "phase": 3,
       "group": "P3-CAP",
       "title": "Vulkan debug marker",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-SCP-01"
       ],
-      "work": "원래 RHI Debug Marker 필수 요구에 따라 debug-utils label을 공통 marker API에 연결한다. 현재 Vulkan은 Unsupported이며 미완료다.",
+      "work": "공통 debugMarker를 optional debug-utils label에 연결했다. Windows NVIDIA/Intel 일반·required validation에서 실제 label 24개, Linux software에서 6개를 관측·전달했다. 함수 부재·UTF-8·thread/recording·퇴역을 검증했고 native 58개 및 로컬/Windows/Linux Python 667개가 통과했다. 초기 관측·CI 검증기·로컬 예외 실패를 보존했으며 Linux 물리 GPU 수용은 별도다.",
       "done_when": "실제 label 관측과 미지원/수명·thread 계약 검사.",
       "evidence": [
-        "docs/PHASE3_SCOPE.md"
+        "docs/PHASE3_SCOPE.md",
+        "docs/PHASE3_VULKAN_MARKER_REPORT.md",
+        "benchmarks/reports/2026-10-26-phase3-vulkan-markers/summary.json",
+        ".github/workflows/vulkan-markers.yml"
       ],
       "requires": "debug-utils label 관측이 가능한 native GPU/driver/runtime 환경"
     },

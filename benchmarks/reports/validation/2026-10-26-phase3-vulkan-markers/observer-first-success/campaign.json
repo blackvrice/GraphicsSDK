@@ -1,0 +1,84 @@
+{
+  "SDK_source_fingerprint": "e4afbc3b39066425ce144e8b0171c4e4ac8ba893fc71419bfba2b9804d459634",
+  "serialized": true,
+  "cases": [
+    {
+      "name": "normal",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\gfx_marker_observe.exe",
+        "--observe",
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\VkLayer_gfx_marker.dll"
+      ],
+      "returncode": 0,
+      "wall_seconds": 0.5309999999999491,
+      "environment": {
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release;D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_GFX_marker"
+      }
+    },
+    {
+      "name": "validation",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\gfx_marker_observe.exe",
+        "--observe",
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\VkLayer_gfx_marker.dll",
+        "--validation"
+      ],
+      "returncode": 0,
+      "wall_seconds": 0.5309999999999491,
+      "environment": {
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release;D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_GFX_marker"
+      }
+    },
+    {
+      "name": "missing-proc",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\gfx_marker_observe.exe",
+        "--observe",
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\VkLayer_gfx_marker.dll",
+        "--deny-proc"
+      ],
+      "returncode": 0,
+      "wall_seconds": 0.46900000000005093,
+      "environment": {
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release;D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_GFX_marker"
+      }
+    },
+    {
+      "name": "validation-missing-proc",
+      "command": [
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\gfx_marker_observe.exe",
+        "--observe",
+        "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\VkLayer_gfx_marker.dll",
+        "--validation",
+        "--deny-proc"
+      ],
+      "returncode": 0,
+      "wall_seconds": 0.5470000000000255,
+      "environment": {
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release;D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_GFX_marker"
+      }
+    }
+  ],
+  "status": "passed",
+  "frozen_inputs": {
+    "D:\\source\\GraphicsSDK\\out\\run_vulkan_markers.py": "17e140d86b96cedadcd2a4bf8b77db8793837257a6c94351a8124aac4eb76532",
+    "D:\\source\\GraphicsSDK\\CMakeLists.txt": "2b9e0d9c5e85dcc792e33cd7d9c68feeb399a733ae4287c6f567c671f22e9c9a",
+    "D:\\source\\GraphicsSDK\\src\\backends\\vulkan\\Vulkan.cpp": "8267e973b46567fc8868f1fef91a3a7cc848e0946fd2dbfa545db345c4c6a0bc",
+    "D:\\source\\GraphicsSDK\\tests\\VulkanMarkerTests.cpp": "4d4f0ddcc09632e20e95d27c1012aced96446f2d975211e03dea7ce259a95f18",
+    "D:\\source\\GraphicsSDK\\tests\\vulkan_marker\\CMakeLists.txt": "046ef9cdf795088da327e363ed80de8b9706f8d260d894e21de1587518b1a54c",
+    "D:\\source\\GraphicsSDK\\tests\\vulkan_marker\\Layer.cpp": "10a64d7a42df64e83caf188cfc73f93568435b87ce8522dbfd498f2845552fea",
+    "D:\\source\\GraphicsSDK\\tests\\vulkan_marker\\Observer.hpp": "615a41c86226f877c3da62cfb253f870cd85475fca290c26fc080940d5266bc2",
+    "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\gfx_marker_observe.exe": "ac54eaee8d31b375801521b0df0f4e69ee9ba8d208d867271108ec0d1d21a17f",
+    "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\VkLayer_gfx_marker.dll": "84bfe3c9d02e6ecaca69949fa57f32409de89a03703b67a521bec887b4a0b4cc",
+    "D:\\source\\GraphicsSDK\\out\\vulkan-marker-observer\\Release\\VkLayer_gfx_marker.json": "64504535b920535e22cf1425549063321e45df3144c300a788d40a2c769d60f7",
+    "D:\\source\\GraphicsSDK\\out\\vulkan-marker-sdk\\Release\\GraphicsSDKCore.lib": "60c1e351ba16638a705b02217bb1987356e9c42880c1c9c1509b815db7f34e18",
+    "D:\\source\\GraphicsSDK\\out\\vulkan-marker-install\\lib\\GraphicsSDKCore.lib": "60c1e351ba16638a705b02217bb1987356e9c42880c1c9c1509b815db7f34e18",
+    "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll": "39fb7e8398408c9bdecb4400ea7217350610c48ebbbfca908922ea805654b0aa",
+    "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.json": "df2884286cea8583ad9fbd0bb0fe3a1132ef40b83a9c22a3dfeb2a23134fe3d7"
+  },
+  "inputs_unchanged": true
+}

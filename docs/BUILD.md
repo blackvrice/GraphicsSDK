@@ -3,13 +3,16 @@
 Windows 검증 환경은 Visual Studio 2022 17.14, MSVC 19.44, Windows SDK
 10.0.26100.0, x64, CMake 3.25 이상이다. C++23 `std::expected` 지원이 필요하다.
 
-장시간 메모리 `P2-ACC-01`은 2026-10-25 사용자 지시로 재개했다. 현재 SDK의 NVIDIA GPU 15분과
+장시간 메모리 `P2-ACC-01`은 2026-10-25 사용자 지시로 재개했다. 재개 당시 SDK의 NVIDIA GPU 15분과
 WARP 5분은 통과했지만 full GBV는 warmup 중 기존 512MiB 증가 guard로 중단돼 전체 수용은 미완료다.
 [재개 실행·원래 기준·원본 근거](PHASE2_MEMORY_RESUMPTION_REPORT.md)를 따른다. Intel AV 조사 `P2-ACC-02`도
 사용자 지시로 [별도 재개](PHASE2_INTEL_CRASH_RESUMPTION_REPORT.md)했으며 원인은 아직 미확정이다.
 
 `P2-ACC-03`은 [NVIDIA 기본 표시의 실제 사용자 조작·화면 확인](PHASE2_MANUAL_PRESENTATION_REPORT.md)을 완료했다.
 실제 DPI·다중 모니터와 물리 손실 수용은 별도 미완료다.
+
+`P3-CAP-01`의 [Vulkan debug marker 구현·실제 관측](PHASE3_VULKAN_MARKER_REPORT.md)을 완료했다.
+Windows 두 GPU·Linux software 검사는 Linux 물리 GPU 수용이나 최종 통합 gate와 구분한다.
 
 ```powershell
 cmake --preset windows

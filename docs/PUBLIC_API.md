@@ -37,6 +37,12 @@ CommandList는 transition, copy, color/depth render pass, pipeline, resource/ver
 scissor, draw/indexed draw/instancing, debug marker, 2개 timestamp 슬롯을 지원한다.
 GPU timestamp read는 resolve 후 submit fence 완료 시에만 가능하다.
 
+Vulkan `debugMarker(text)`는 debug-utils 확장과 함수가 있을 때 실제 label을 넣는다.
+정상 recording에서 함수가 없으면 Unsupported이며 creating thread·recording·퇴역 검사를 먼저 한다.
+지원 시 빈 문자열은 허용하고, NUL-free UTF-8과 UINT32_MAX 이하 길이를 요구한다. Substring·임시
+문자열은 native 호출 동안 null-terminated 복사본으로 유지한다. Render pass 안팎에서 호출할 수 있다.
+[실제 label·미지원·상태/수명 근거](PHASE3_VULKAN_MARKER_REPORT.md)를 따른다.
+
 Vulkan도 두 slot을 지원한다. Slot 0은 TOP_OF_PIPE, 1은 BOTTOM_OF_PIPE이며 각 한 번 기록하고
 pass 밖에서 resolve한다. 완료된 fence와 두 query availability를 확인한 후 native GPU 값을
 valid-bit modular 차이와 timestampPeriod로 변환한다. Begin은 이전 결과를 비우고 성공한

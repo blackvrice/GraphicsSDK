@@ -8,8 +8,9 @@ backend remains the default. `backendCompiled(Vulkan)` reports this limited
 backend when enabled; Win32 presentation requires the completion-fence capabilities below.
 
 The [D3D12/Vulkan support matrix](PHASE3_SCOPE.md) separates current capability/API
-contracts, required gaps and conditional features. Vulkan debug markers remain a
-required Phase 3 task. Linux software-ICD execution is verified for
+contracts, required gaps and conditional features. Required debug markers now have
+[native label observation and lifetime/thread tests](PHASE3_VULKAN_MARKER_REPORT.md).
+Linux software-ICD execution is verified for
 [loader/device selection](PHASE3_LINUX_DEVICE_REPORT.md),
 [buffer/queue/fence/lifetime contracts](PHASE3_LINUX_TRANSFER_REPORT.md),
 [texture transfer/texel/padding contracts](PHASE3_LINUX_TEXTURE_REPORT.md) and
@@ -111,11 +112,17 @@ do not establish Linux SDK compilation or runtime acceptance.
   files can override layer API settings; controlled acceptance clears those inputs.
   A zero count without a validation device is not validation-layer acceptance.
 
-Compute pipelines,
-debug markers return `Unsupported`; their capability flags are
-false. HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
-These APIs, Linux execution and matching Vulkan competitor measurements remain
-ordered follow-up work. See the [implementation report](PHASE3_VULKAN_TRANSFER_REPORT.md).
+Compute remains outside the public pipeline API and `caps.compute` is false.
+`debugMarker` inserts a native debug-utils label when the instance extension and
+procedure are available, including validation-off devices. Otherwise it returns
+`Unsupported`; there is no marker capability flag. Markers require creating thread
+and active recording (inside or outside a render pass). Empty strings are allowed;
+embedded NUL, invalid UTF-8 and sizes above UINT32_MAX are rejected on supported devices.
+Substring/temporary text is copied to a null-terminated string for the native call.
+HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
+General shader compilation/reflection, Linux WSI/physical-device acceptance and
+matching Vulkan competitor measurements remain separate follow-up tasks.
+Earlier transfer evidence stays in the [implementation report](PHASE3_VULKAN_TRANSFER_REPORT.md).
 
 ## Color-texture transfers
 
