@@ -77,6 +77,14 @@ adapter/display/DPI configuration and observations. No human visual acceptance o
 physical DPI transition is claimed by the automatic checks. Unexpected driver
 TDR/hot-unplug and the original GBV memory plateau remain separate open gates.
 
+Normal sessions also flush `normal_session` and `window_state` checkpoints, recording
+client extent, frame count, actual minimize/restore/maximize transitions and close
+reason. These events and `interactive_exit` always retain `interactive_acceptance=false`.
+Only a separate human observation tied to the exact native-log hash can establish
+visual acceptance; `tools/manual_presentation_evidence.py` checks that observation
+against effective resize, paused/resumed frames and safe close. The native program
+cannot determine whether a person or automation generated an input message.
+
 See the [measured report](../../docs/PHASE2_PRESENTATION_REPORT.md).
 The [small-window and pacing report](../../docs/PHASE2_PRESENTATION_PACING_REPORT.md)
 records the reproduced failure and current verification.

@@ -94,6 +94,9 @@ struct Window {
     HWND handle{};
     HINSTANCE instance{GetModuleHandleW(nullptr)};
     unsigned width{}, height{}, sizeEvents{}, dpiEvents{};
+    unsigned minimizeTransitions{}, restoreTransitions{}, maximizeTransitions{};
+    bool maximized{};
+    const char* closeReason="none";
     bool minimized{}, closing{};
     DWORD eventError{};
     static LRESULT CALLBACK procedure(HWND hwnd, UINT message, WPARAM wp, LPARAM lp) noexcept {
@@ -108,7 +111,12 @@ struct Window {
             // Read the full client rectangle instead of WM_SIZE's packed 16-bit extent.
             RECT r{};
             if (!GetClientRect(hwnd,&r)) self->eventError=GetLastError();
+            const bool wasMinimized=self->minimized;
             self->minimized=wp==SIZE_MINIMIZED;
+            if (!wasMinimized && self->minimized) ++self->minimizeTransitions;
+            if (wasMinimized && !self->minimized) ++self->restoreTransitions;
+            if (!self->maximized && wp==SIZE_MAXIMIZED) ++self->maximizeTransitions;
+            self->maximized=wp==SIZE_MAXIMIZED;
             self->width=self->minimized ? 0u : static_cast<unsigned>(r.right-r.left);
             self->height=self->minimized ? 0u : static_cast<unsigned>(r.bottom-r.top);
             ++self->sizeEvents;
@@ -124,9 +132,9 @@ struct Window {
         case WM_ERASEBKGND: return 1;
         case WM_PAINT: { PAINTSTRUCT p{}; BeginPaint(hwnd,&p); EndPaint(hwnd,&p); return 0; }
         // Keep HWND alive until the application has drained and released GPU objects.
-        case WM_CLOSE: self->closing=true; return 0;
-        case WM_KEYDOWN: if (wp==VK_ESCAPE) { self->closing=true; return 0; } break;
-        case WM_DESTROY: self->closing=true; return 0;
+        case WM_CLOSE: self->closeReason="wm_close"; self->closing=true; return 0;
+        case WM_KEYDOWN: if (wp==VK_ESCAPE) { self->closeReason="escape"; self->closing=true; return 0; } break;
+        case WM_DESTROY: self->closeReason="wm_destroy"; self->closing=true; return 0;
         }
         return DefWindowProcW(hwnd,message,wp,lp);
     }
@@ -373,8 +381,23 @@ int main(int argc, char** argv) try {
         const auto loopStart=Clock::now();
         presentation::FramePacer pacer(options.fps,loopStart);
         unsigned timedWaits{},suspendedWaits{};
+        unsigned observedSizes=~0u;
+        log << "{\"event\":\"normal_session\",\"sdk_fingerprint\":" << std::quoted(gfx::buildFingerprint())
+            << ",\"adapter_id\":" << application.device->caps().adapterId.value
+            << ",\"loss_injection\":false,\"interactive_acceptance\":false}\n" << std::flush;
         while (!window.closing && (!options.frames || application.frames<options.frames)) {
             window.pump();
+            if (observedSizes!=window.sizeEvents || window.closing) {
+                observedSizes=window.sizeEvents;
+                log << "{\"event\":\"window_state\",\"elapsed_ns\":"
+                    << std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now()-loopStart).count()
+                    << ",\"frames\":" << application.frames << ",\"width\":" << window.width << ",\"height\":" << window.height
+                    << ",\"minimized\":" << window.minimized << ",\"maximized\":" << window.maximized
+                    << ",\"size_events\":" << window.sizeEvents << ",\"minimize_transitions\":" << window.minimizeTransitions
+                    << ",\"restore_transitions\":" << window.restoreTransitions << ",\"maximize_transitions\":" << window.maximizeTransitions
+                    << ",\"dpi_events\":" << window.dpiEvents << ",\"closing\":" << window.closing
+                    << ",\"close_reason\":" << std::quoted(window.closeReason) << "}\n" << std::flush;
+            }
             if (window.closing) break;
             if (window.suspended()) {
                 ++suspendedWaits; MessageWaiter::suspended();
@@ -396,6 +419,9 @@ int main(int argc, char** argv) try {
         log << "{\"event\":\"interactive_exit\",\"frames\":" << application.frames
             << ",\"target_fps\":" << options.fps << ",\"loop_elapsed_ns\":" << elapsed
             << ",\"timed_waits\":" << timedWaits << ",\"suspended_waits\":" << suspendedWaits
+            << ",\"resizes\":" << application.resizes << ",\"minimize_transitions\":" << window.minimizeTransitions
+            << ",\"restore_transitions\":" << window.restoreTransitions << ",\"maximize_transitions\":" << window.maximizeTransitions
+            << ",\"close_reason\":" << std::quoted(window.closeReason)
             << ",\"high_resolution_timer\":true,\"interactive_acceptance\":false}\n";
     }
     log.flush(); check(log.good(),"Output write failed");

@@ -78,7 +78,7 @@
 
 | 범위 | 현재 코드/기존 근거 | 필수 잔여 검사 |
 |---|---|---|
-| Windows D3D12 | 기본 그래픽스·통제된 recovery·memory budget 구현과 기존 보고서. 장시간/실제 표시·물리 사건 수용은 별도 | 재개 `P2-ACC-01`·`02`, 실제 수용 `P2-ACC-03`~`05` 미완료 |
+| Windows D3D12 | 기본 그래픽스·통제된 recovery·memory budget 구현. [NVIDIA 기본 표시의 사용자 창 조작 수용](PHASE2_MANUAL_PRESENTATION_REPORT.md) 완료 | 재개 `P2-ACC-01`·`02`, 실제 DPI·물리 손실 `P2-ACC-04`~`05` 미완료 |
 | Windows Vulkan offscreen | 기존 NVIDIA/Intel 기본 GPU suite 보고서. 모든 장치·driver·현재 source의 새 측정은 아님 | `P3-SCP-02`, `P3-GATE-01` |
 | Windows Vulkan WSI | 기존 NVIDIA 실제 present 경로, 해당 Intel driver의 caps=false/Unsupported | `P3-SCP-02`, 조건 선택 시 `P3-CAP-05`~`06`; 사람의 표시 확인과 구분 |
 | Linux Vulkan headless | [Native compile/CPU CI](PHASE3_LINUX_COMPILE_REPORT.md), [software ICD loader/device 선택](PHASE3_LINUX_DEVICE_REPORT.md), [버퍼·queue/fence·수명](PHASE3_LINUX_TRANSFER_REPORT.md), [텍스처 전송·texel/padding](PHASE3_LINUX_TEXTURE_REPORT.md), [컬러 pass·기본 draw](PHASE3_LINUX_DRAW_REPORT.md), [입력·바인딩](PHASE3_LINUX_INPUT_REPORT.md), [D32·depth/MRT](PHASE3_LINUX_DEPTH_REPORT.md), [timestamp](PHASE3_LINUX_TIMESTAMP_REPORT.md), [고정 core/sync validation·controls](PHASE3_LINUX_VALIDATION_REPORT.md), [설치 경로 이동·실제 GNU 입력/고지/payload 감사](PHASE3_LINUX_PACKAGE_REPORT.md), [전체 Python CI 정합성](PHASE3_PYTHON_CI_REPORT.md) 성공. [물리 GPU 실행 도구와 software 거부 검증](PHASE3_LINUX_HARDWARE_READINESS.md) 준비. 물리 GPU 미검증; 실제 counter wrap은 미재현 | 실제 Linux GPU 대상 필요, 물리 GPU 수용 `P3-LNX-15` 미완료. software/CPU 성공을 hardware 수용으로 합산하지 않음 |

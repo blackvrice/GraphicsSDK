@@ -367,3 +367,10 @@
 /benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
 /benchmarks/reports/sources/intel-crash-resumed-*.zip -text
 /tests/test_capture_memory_failure.py text eol=lf
+
+# Human-confirmed window acceptance keeps native and source bytes unchanged.
+/benchmarks/reports/2026-10-26-phase2-manual-presentation/** -text whitespace=cr-at-eol
+/benchmarks/reports/validation/2026-10-26-phase2-manual-presentation/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/sources/manual-presentation-*.zip -text
+/tools/manual_presentation_evidence.py text eol=lf
+/tests/test_manual_presentation_evidence.py text eol=lf

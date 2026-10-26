@@ -35,7 +35,7 @@ python tools/roadmap.py --write
 |---|---:|---:|---:|---:|---:|---|
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
-| 2 — D3D12 core·잔여 수용 | 9 | 5 | 0 | 0 | 0 | 구현·자동 회귀는 완료 근거를 유지. 장시간 메모리와 Intel AV 조사는 사용자 지시로 각각 재개했으며 필수 미완료다. 실제 표시·물리 사건 수용도 별도 미완료. |
+| 2 — D3D12 core·잔여 수용 | 10 | 4 | 0 | 0 | 0 | 구현·자동 회귀와 NVIDIA 기본 표시의 사용자 창 조작 수용 완료. 장시간 메모리·Intel AV 원인, 실제 DPI·다중 모니터와 물리 손실은 필수 미완료다. |
 | 3 — Vulkan | 34 | 35 | 9 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
@@ -89,7 +89,7 @@ python tools/roadmap.py --write
 
 ## Phase 2 — D3D12 core·잔여 수용
 
-구현·자동 회귀는 완료 근거를 유지. 장시간 메모리와 Intel AV 조사는 사용자 지시로 각각 재개했으며 필수 미완료다. 실제 표시·물리 사건 수용도 별도 미완료.
+구현·자동 회귀와 NVIDIA 기본 표시의 사용자 창 조작 수용 완료. 장시간 메모리·Intel AV 원인, 실제 DPI·다중 모니터와 물리 손실은 필수 미완료다.
 
 ### P2-CORE — D3D12 구현·자동 검증 완료
 
@@ -111,7 +111,7 @@ python tools/roadmap.py --write
 |---|---|---|
 | [ ] `P2-ACC-01`<br>미완료 · 필수 | **장시간 메모리 수용**<br>2026-10-25 사용자 명시 재개. 현재 SDK의 NVIDIA GPU 900초와 WARP 300초는 원래 기준 통과. Full GBV는 warmup 9.398초/608 frames에서 baseline 대비 516.719MiB 증가로 512MiB guard 중단. 정책·입력·관측 환경을 보존했고 전체 세 모드 수용은 실패해 필수 미완료다. 별도 재개한 Intel AV 조사는 P2-ACC-02를 따른다.<br>완료: 원래 정책의 GPU 900초·full GBV 300초·WARP 300초, 각 30초 warmup·참조·정상 오류 0·메모리 plateau·동일 입력과 장치·환경의 실제 수용 증거. 기준 완화나 짧은 진단으로 대체하지 않음. | 선행: 없음<br>근거: [PHASE2_MEMORY_CAMPAIGN_REPORT](PHASE2_MEMORY_CAMPAIGN_REPORT.md), [PHASE2_MEMORY_RESUMPTION_REPORT](PHASE2_MEMORY_RESUMPTION_REPORT.md), [summary.json](../benchmarks/reports/2026-10-25-phase2-memory-resumed/summary.json) |
 | [ ] `P2-ACC-02`<br>미완료 · 필수 | **과거 Intel AV 원인 조사**<br>2026-10-25 사용자 지시로 재개. 별도 최적화 SDK 심볼 2,429개 해석과 수집기 9개 제어 검증 완료. 현재 Intel 일반/계측 실행 각각 300초+30초 정상 종료했으나 미처리 AV는 비재현, private 메모리 기준은 별도 실패다. 실제 원인·수정은 미확정으로 필수 미완료이며 과거 자료를 보존한다.<br>완료: 실제 AV 재현 조건과 예외·스택·자원 수명 등 원인 근거, 수정 또는 통제된 환경 비교, 수정 전후 회귀 검증. 비재현만으로 완료하지 않는다. | 선행: 없음<br>근거: [PHASE2_FAULT_INVESTIGATION_REPORT](PHASE2_FAULT_INVESTIGATION_REPORT.md), [PHASE2_INTEL_CRASH_RESUMPTION_REPORT](PHASE2_INTEL_CRASH_RESUMPTION_REPORT.md) |
-| [ ] `P2-ACC-03`<br>미완료 · 필수 | **실제 사용자 창 조작·표시 확인**<br>최소화/복원/resize/닫기와 monitor 출력 확인.<br>완료: 사람이 확인한 표시 및 창 동작 기록. 자동 readback만으로 체크하지 않음. | 선행: `P2-CORE-09`<br>환경: Windows 실제 표시·사용자 조작 환경 |
+| [x] `P2-ACC-03`<br>완료 · 필수 | **실제 사용자 창 조작·표시 확인**<br>2026-10-26 사용자의 실제 monitor·입력 확인과 native 기록을 결합했다. 첫 최소화 누락을 보존하고 두 번째 1,302-frame 실행에서 실제 최소화/복원·resize·최대화·X 닫기와 자원 해제를 대조했다. NVIDIA 기본 표시(VSync on, 60fps cap, GBV off) 범위 수용이며 DPI·다른 adapter·물리 손실은 별도다.<br>완료: 사람이 확인한 표시 및 창 동작 기록. 자동 readback만으로 체크하지 않음. | 선행: `P2-CORE-09`<br>환경: Windows 실제 표시·사용자 조작 환경<br>근거: [PHASE2_MANUAL_PRESENTATION_REPORT](PHASE2_MANUAL_PRESENTATION_REPORT.md), [summary.json](../benchmarks/reports/2026-10-26-phase2-manual-presentation/summary.json) |
 | [ ] `P2-ACC-04`<br>미완료 · 필수 | **실제 DPI·다중 모니터 출력 수용**<br>물리 모니터 이동과 DPI 변화의 지원 범위 검사.<br>완료: 지원 조합별 관측과 재현 가능한 수용 기록. | 선행: `P2-ACC-03`<br>환경: DPI가 다른 실제 다중 모니터 |
 | [ ] `P2-ACC-05`<br>미완료 · 필수 | **예상하지 않은 TDR/hot-unplug 복구 수용**<br>통제된 RemoveDevice와 별도로 실제 손실 수용 범위 확인.<br>완료: 지원 환경에서 실제 사건·옛 generation 거부·복구 출력 확인. | 선행: `P2-CORE-05`<br>환경: 해당 사건을 안전하게 관측할 수 있는 실제 환경 |
 

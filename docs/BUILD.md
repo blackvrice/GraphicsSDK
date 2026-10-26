@@ -8,6 +8,9 @@ WARP 5분은 통과했지만 full GBV는 warmup 중 기존 512MiB 증가 guard�
 [재개 실행·원래 기준·원본 근거](PHASE2_MEMORY_RESUMPTION_REPORT.md)를 따른다. Intel AV 조사 `P2-ACC-02`도
 사용자 지시로 [별도 재개](PHASE2_INTEL_CRASH_RESUMPTION_REPORT.md)했으며 원인은 아직 미확정이다.
 
+`P2-ACC-03`은 [NVIDIA 기본 표시의 실제 사용자 조작·화면 확인](PHASE2_MANUAL_PRESENTATION_REPORT.md)을 완료했다.
+실제 DPI·다중 모니터와 물리 손실 수용은 별도 미완료다.
+
 ```powershell
 cmake --preset windows
 cmake --build --preset windows-release

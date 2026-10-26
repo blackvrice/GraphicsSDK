@@ -22,7 +22,7 @@
     {
       "id": 2,
       "title": "D3D12 core·잔여 수용",
-      "scope": "구현·자동 회귀는 완료 근거를 유지. 장시간 메모리와 Intel AV 조사는 사용자 지시로 각각 재개했으며 필수 미완료다. 실제 표시·물리 사건 수용도 별도 미완료."
+      "scope": "구현·자동 회귀와 NVIDIA 기본 표시의 사용자 창 조작 수용 완료. 장시간 메모리·Intel AV 원인, 실제 DPI·다중 모니터와 물리 손실은 필수 미완료다."
     },
     {
       "id": 3,
@@ -496,14 +496,17 @@
       "phase": 2,
       "group": "P2-ACC",
       "title": "실제 사용자 창 조작·표시 확인",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P2-CORE-09"
       ],
-      "work": "최소화/복원/resize/닫기와 monitor 출력 확인.",
+      "work": "2026-10-26 사용자의 실제 monitor·입력 확인과 native 기록을 결합했다. 첫 최소화 누락을 보존하고 두 번째 1,302-frame 실행에서 실제 최소화/복원·resize·최대화·X 닫기와 자원 해제를 대조했다. NVIDIA 기본 표시(VSync on, 60fps cap, GBV off) 범위 수용이며 DPI·다른 adapter·물리 손실은 별도다.",
       "done_when": "사람이 확인한 표시 및 창 동작 기록. 자동 readback만으로 체크하지 않음.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE2_MANUAL_PRESENTATION_REPORT.md",
+        "benchmarks/reports/2026-10-26-phase2-manual-presentation/summary.json"
+      ],
       "requires": "Windows 실제 표시·사용자 조작 환경"
     },
     {
