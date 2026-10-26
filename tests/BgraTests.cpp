@@ -8,7 +8,10 @@ int main(int argc,char** argv)try{
     auto adapters=bgraTest::take(gfx::enumerateAdapters(backend));unsigned count{};
     if(backend==gfx::Backend::D3D12&&!warp&&!std::any_of(adapters.begin(),adapters.end(),[](auto& a){return !a.softwareAdapter;})){std::cout<<"SKIP no hardware D3D12 BGRA adapter\n";return 77;}
     for(auto& a:adapters){if(backend==gfx::Backend::D3D12&&a.softwareAdapter!=warp)continue;gfx::DeviceDesc desc;desc.backend=backend;desc.validation=validation;desc.softwareAdapter=a.softwareAdapter;desc.adapter=a.id;
-        auto d=bgraTest::take(gfx::createDevice(desc));bgraTest::offscreen(*d);bgraTest::empty(*d);++count;
+        auto d=bgraTest::take(gfx::createDevice(desc));bgraTest::offscreen(*d);
+        if(backend==gfx::Backend::Vulkan||validation)bgraTest::empty(*d);
+        else{bgraTest::take(d->queue().waitIdle());auto s=bgraTest::take(d->resourceStatistics());bgraTest::check(!s.trackedObjects&&!s.uniqueResources&&!s.pendingSubmissions&&!s.pendingObjectReferences,"No retained D3D12 BGRA resources");auto absent=d->validationErrorCount();bgraTest::check(!absent&&absent.error().code==gfx::ErrorCode::Unsupported,"Validation-off D3D12 does not synthesize a zero count");}
+        ++count;
     }
     bgraTest::check(count>0,"Actual adapter required");std::cout<<"{\"event\":\"bgra\",\"source\":"<<std::quoted(gfx::buildFingerprint())<<",\"adapters\":"<<count<<",\"validation\":"<<std::boolalpha<<validation<<",\"images\":"<<bgraTest::images<<",\"transfers\":"<<bgraTest::transfers<<",\"pixel_bytes\":"<<bgraTest::pixelBytes<<",\"transfer_bytes\":"<<bgraTest::transferBytes<<",\"padding_rows\":"<<bgraTest::paddedRows<<",\"errors\":0}\n";return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
