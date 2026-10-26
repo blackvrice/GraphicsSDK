@@ -16,7 +16,7 @@
 | `softwareAdapter` | 선택한 hardware/WARP 종류 | native CPU device 종류. 현재 Windows 증거는 두 hardware GPU이며 software 실행 증거 아님 | `adapter_contracts`, `vulkan_transfer`; `P3-LNX-01`, `P3-SCP-02` |
 | `timestampQueries` | true; queue timestamp frequency 기반 | 선택 graphics queue의 유효 비트·period 조건을 만족할 때 true | `vulkan_timestamp_math`, `vulkan_timestamps`; `P3-WIN-10`, `P3-LNX-10` |
 | `compute` | false | false. 공개 compute pipeline/dispatch API도 없음 | [CommandList](../include/graphics/CommandList.hpp), [Pipeline](../include/graphics/Pipeline.hpp); 후속 compute 확장 |
-| `swapChain` | true; Win32 surface 생성은 별도 검사 | Win32 instance/device 확장과 `swapchainMaintenance1` feature 충족 시 true. 선택 queue의 surface 지원은 생성 시 검사 | `swapchain_guards_*`, `vulkan_presentation`; `P3-WIN-11`, `P3-SCP-02`, `P3-WSI-01`~`08` |
+| `swapChain` | true; Win32 surface 생성은 별도 검사 | Win32 또는 선택 Linux XCB의 instance/device 확장과 `swapchainMaintenance1` feature 충족 시 true. 선택 queue의 surface 지원은 생성 시 검사 | `swapchain_guards_*`, `vulkan_presentation`; `P3-WIN-11`, `P3-SCP-02`, `P3-WSI-01`~`08` |
 | `resourceBinding`, `bindingLayouts` | true; texture/constant와 immutable sampler layout | true; 지원 SPIR-V interface와 adapter descriptor 한도 내에서 사용 | `binding_layout_contracts`, `resource_bindings_*`, `vulkan_resource_bindings`; `P3-WIN-08`, `P3-LNX-08` |
 | `vertexInput`, `indexedDrawing` | true | true. UInt32 전체 index 범위는 추가 native feature가 필요하며 없으면 UInt32 bind는 Unsupported | `vertex_layout_contracts`, `vertex_input_*`, `vulkan_vertex_input`; `P3-WIN-07`, `P3-LNX-08` |
 | `depthAttachment` | true; D32 계약 | D32 optimal image의 depth-attachment+transfer usage와 sample 1 조합 지원 시 true | `render_pass_contracts`, `render_pass_*`, `vulkan_depth`; `P3-WIN-09`, `P3-LNX-09` |
@@ -43,7 +43,7 @@
 | Resource binding / 필수 | texture/constant 배열, layout·static sampler·immutable snapshot | 지원 float Texture2D/float4 uniform block subset, VS/FS visibility, descriptor 한도 내 동일 계약 | `spirv_binding_contracts`, `vulkan_resource_bindings`; `P3-LNX-08`; [bindings](PHASE3_VULKAN_BINDINGS_REPORT.md) |
 | GPU timestamp / 필수 | 2-slot 구간, queue frequency | 2-slot query, availability/fence·wrap·period 계약. CPU 시간으로 대체하지 않음 | `vulkan_timestamp_math`, `vulkan_timestamps`; `P3-LNX-10`; [timestamp](PHASE3_VULKAN_TIMESTAMP_REPORT.md) |
 | Debug Marker / **필수·완료 범위 있음** | `SetMarker` 구현 | 확장·함수가 있으면 실제 debug-utils label. 없으면 Unsupported. NUL-free UTF-8, creating thread·recording·retirement 계약 | `P3-CAP-01` 완료. Windows 두 GPU 일반/validation·Linux software 실제 관측. [근거](PHASE3_VULKAN_MARKER_REPORT.md); final gate에서 현재 구성 재확인 |
-| SwapChain / 필수, 지원 조합 제한 | Win32 RGBA8 | Win32 RGBA8와 present 완료 보장 조건. Linux WSI 미구현 | `vulkan_presentation`, `P3-SCP-02`, `P3-WSI-01`~`08`; [출력](PHASE3_VULKAN_PRESENTATION_REPORT.md) |
+| SwapChain / 필수, 지원 조합 제한 | Win32 RGBA8 | Win32 RGBA8와 선택 Linux XCB RGBA8/BGRA8, present 완료 보장 조건 | `vulkan_presentation`, `P3-SCP-02`, `P3-WSI-01`~`08`; [Windows 출력](PHASE3_VULKAN_PRESENTATION_REPORT.md), [XCB 출력](PHASE3_LINUX_XCB_PRESENT_REPORT.md) |
 | Shader compiler/reflection / 후속 단계 | Windows D3D bootstrap DXBC compile/reflection | `compileHlsl`은 SPIR-V 생성 안 함. `reflectShader(SPIRV)`는 Unsupported. 내부 bounded interface 검사는 일반 reflection/semantic validator가 아님 | `P5-SHD-01`~`08`; [Shader](../include/graphics/Shader.hpp), [구현](../src/shader/Shader.cpp) |
 | Compute·RenderGraph·추가 포맷·stencil/MSAA/mip/array / 후속 확장 | 초기 공통 API 밖 | 초기 공통 API 밖 | 원래 단계별 shader/최적화 및 후속 릴리스 범위 유지. compute benchmark는 SDK compute 지원 이후 실행 |
 
@@ -78,7 +78,8 @@
 
 [P3-WSI-01 범위 결정](PHASE3_LINUX_WSI_SCOPE.md)은 X11/XCB를 첫 필수 Linux 표시 경로로
 정하고 실제 XCB surface/queue·completion feature와 BGRA8 필요성을 관측했다. native Wayland와
-XWayland는 별도 검증 전까지 미지원 조합이다. Linux SDK 표시 구현 `P3-WSI-02`~`08`은 남아 있다.
+XWayland는 별도 검증 전까지 미지원 조합이다. XCB surface/queue와 acquire/submit/present는 구현했으며
+Linux SDK 출력 수명·변경·표시 수용 `P3-WSI-04`~`08`은 남아 있다.
 
 | 범위 | 현재 코드/기존 근거 | 필수 잔여 검사 |
 |---|---|---|
@@ -86,7 +87,7 @@ XWayland는 별도 검증 전까지 미지원 조합이다. Linux SDK 표시 구
 | Windows Vulkan offscreen | 기존 NVIDIA/Intel 기본 GPU suite 보고서. 모든 장치·driver·현재 source의 새 측정은 아님 | `P3-SCP-02`, `P3-GATE-01` |
 | Windows Vulkan WSI | 기존 NVIDIA 실제 present 경로, 해당 Intel driver의 caps=false/Unsupported | `P3-SCP-02`, 조건 선택 시 `P3-CAP-05`~`06`; 사람의 표시 확인과 구분 |
 | Linux Vulkan headless | [Native compile/CPU CI](PHASE3_LINUX_COMPILE_REPORT.md), [software ICD loader/device 선택](PHASE3_LINUX_DEVICE_REPORT.md), [버퍼·queue/fence·수명](PHASE3_LINUX_TRANSFER_REPORT.md), [텍스처 전송·texel/padding](PHASE3_LINUX_TEXTURE_REPORT.md), [컬러 pass·기본 draw](PHASE3_LINUX_DRAW_REPORT.md), [입력·바인딩](PHASE3_LINUX_INPUT_REPORT.md), [D32·depth/MRT](PHASE3_LINUX_DEPTH_REPORT.md), [timestamp](PHASE3_LINUX_TIMESTAMP_REPORT.md), [고정 core/sync validation·controls](PHASE3_LINUX_VALIDATION_REPORT.md), [설치 경로 이동·실제 GNU 입력/고지/payload 감사](PHASE3_LINUX_PACKAGE_REPORT.md), [전체 Python CI 정합성](PHASE3_PYTHON_CI_REPORT.md) 성공. [물리 GPU 실행 도구와 software 거부 검증](PHASE3_LINUX_HARDWARE_READINESS.md) 준비. 물리 GPU 미검증; 실제 counter wrap은 미재현 | 실제 Linux GPU 대상 필요, 물리 GPU 수용 `P3-LNX-15` 미완료. software/CPU 성공을 hardware 수용으로 합산하지 않음 |
-| Linux Vulkan WSI | `SurfaceKind::Xcb`와 선택 빌드의 실제 surface/queue 확인 구현. [P3-WSI-02](PHASE3_LINUX_XCB_SURFACE_REPORT.md). Linux caps.swapChain=false; swapchain/present 미구현 | `P3-WSI-03`~`08` 필수. BGRA8·표시·완료/resize/loss·자동 validation·사람의 표시 검증 필요 |
+| Linux Vulkan WSI | 선택 XCB 빌드의 실제 surface/queue와 BGRA8 acquire/submit/present 구현. [P3-WSI-02](PHASE3_LINUX_XCB_SURFACE_REPORT.md), [P3-WSI-03](PHASE3_LINUX_XCB_PRESENT_REPORT.md). caps.swapChain은 native 완료 feature에 따름 | `P3-WSI-04`~`08` 필수. 보유·실패 수명, resize/loss, 전체 자동 validation matrix·사람의 표시 검증 필요 |
 | Vulkan validation | `validation=true`는 Khronos layer와 debug-utils/validation-features/layer-settings 필요. core+sync/submit-time 요청, delivered ERROR 집계. 외부 설정 override와 zero-count 한계 존재 | `vulkan_*_validation`, `vulkan_validation_controls`; `P3-LNX-11`, `P3-GATE-01`; [기존 검증](PHASE3_VULKAN_VALIDATION_REPORT.md) |
 | CI·installed consumer | native compile/CPU 및 software 공통 suite·설치 소비자의 required validation 성공. 별도 저장소 밖 소비자 9개와 실제 입력·설치 고지·20개 파일 ZIP 감사 완료. 고지는 도구의 설치 후 패키징 단계에서 추가. Marker 변경 후 전체 CI Python은 Windows/Linux 각각 667개·오류/실패/건너뜀 0. 실제 software의 hardware gate 거부도 검증. 과거 자료와 현재 checkout identity 구분. portable-core 자체는 Vulkan 실행 근거 아님 | 물리 GPU `P3-LNX-15` 미완료, `P3-GATE-01`; 전체 다중 플랫폼 배포는 Phase 7 |
 | 동등 결과·경쟁 성능 | 기존 D3D12/SDL/Vulkan 보고서는 당시 workload/fingerprint. API bytes·통계·native 동기화 차이를 보존 | `P3-BEN-01`~`08`, `P3-CMP-01`~`10`, `P3-LBEN-01`~`04`, `P3-GATE-02`. 추가 경쟁 SDK 선택은 `P3-CMP-01`에서 결정 |

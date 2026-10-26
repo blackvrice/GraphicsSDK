@@ -1147,14 +1147,17 @@
       "phase": 3,
       "group": "P3-WSI",
       "title": "Swapchain acquire/present",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-WSI-02"
       ],
-      "work": "선택 포맷/extent/image count/present mode와 실제 제출을 연결한다.",
-      "done_when": "실제 창에 clear/draw 프레임을 acquire→submit→present.",
-      "evidence": [],
+      "work": "선택 XCB swapchain의 native format/extent/image count/present mode와 acquire→submit→present를 연결하고 BGRA8 형식 및 모드별 최소/최대 이미지 한도를 구현했다.",
+      "done_when": "실제 Xvfb/XCB·software ICD의 일반/고정 core+sync validation에서 각 24회 present·48개 전체 프레임 참조와 형식/모드 거부 controls 통과. Windows BGRA 5/5, Python 697 통과. 기존 Windows fence 예외 2개와 물리 GPU·사람의 표시·WSI-04~08은 별도 유지.",
+      "evidence": [
+        "docs/PHASE3_LINUX_XCB_PRESENT_REPORT.md",
+        "benchmarks/reports/2026-10-26-phase3-linux-xcb-present/summary.json"
+      ],
       "requires": "선택한 Linux window system·GPU·표시 환경"
     },
     {

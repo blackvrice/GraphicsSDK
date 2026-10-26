@@ -1,0 +1,38 @@
+{
+  "source_commit": "1a378fcb88d0c093d3e84ea01e4a2194de565d25",
+  "SDK_source_fingerprint": "e2e5c0d39f8a53262f193979f5eb533ea385337f0e3969c28649c7615d197446",
+  "status": "failed",
+  "frozen_inputs": {
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/out/present-consumer/gfx_xcb_present": "d3543f147da83f3b314f2840876809920d0f6cda45f134db085725f258edc628",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/out/present-consumer/proxy/libvulkan.so.1": "638f5e83acd4deaf0dd48745a5750ef940408fbde99db5de71afc9bb54cc82fa",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/out/present-install/lib/libGraphicsSDKCore.a": "1d82d2f7c54b6e7d8097a60d96f13d838579d2a8f726dd6660582f04f2b363c4",
+    "/usr/share/vulkan/icd.d/lvp_icd.json": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/BgraSupport.hpp": "7995852fe16a9f887600c0568057f40e7ce82a16a533912b4d5d6d78793e1473",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/fixtures/SpirvFixtures.hpp": "3001f8aecfd8c2ce4fe71d6486af4457dc02a281c81865e092b59d7b120eba4a",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_xcb_present/CMakeLists.txt": "43cc91646b27bb3c8786c3878f7d39b9c09683b9d861c3529b4b489d2944b4b3",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_xcb_present/Probe.cpp": "f2bb60423d4c5dfdb918c826abf2b176bbdf5b65898c2026bd1d746778a96b22",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_xcb_surface/CMakeLists.txt": "ed4ff3dae60778a3cc5e1180a7a5b189a9c6000d2f4103ecbd868bac6c72da6b",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_xcb_surface/Control.hpp": "a2e309add21177f8ef5316d10421900e0ff13617ff214c256926f56c17121e7b",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_xcb_surface/Loader.cpp": "42c55e5f92dd11b33e2926c1c5a3da09ec0bd38e90cb95b4934d6ff750aefbe1",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_xcb_surface/Probe.cpp": "62925d761f45f53a0b472ffa1ca8936e389efa94195d2b09cb43fe328bbcda7c",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tools/run_linux_xcb_present.py": "83562960aaaa342f5ebbed69aa11ba2d74ae7845a2c862acfae311897d071e3d"
+  },
+  "cases": [
+    {
+      "name": "control-0",
+      "control": 0,
+      "command": [
+        "xvfb-run",
+        "-a",
+        "-s",
+        "-screen 0 800x600x24",
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/present-consumer/gfx_xcb_present",
+        "--proxy",
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/present-consumer/proxy/libvulkan.so.1"
+      ],
+      "returncode": 1
+    }
+  ],
+  "error": "Native presentation failed: control-0",
+  "inputs_unchanged": true
+}

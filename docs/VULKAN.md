@@ -31,7 +31,7 @@ Physical GPU and WSI acceptance remain pending.
 The [Linux WSI scope decision](PHASE3_LINUX_WSI_SCOPE.md) selects X11/XCB first,
 records real XCB/software-ICD surface prerequisites and the need for explicit BGRA8
 support. [Optional installed-SDK XCB surface checks](PHASE3_LINUX_XCB_SURFACE_REPORT.md)
-are now implemented; Linux swapchain/present implementation remains pending.
+are implemented, followed by [actual XCB swapchain/present and BGRA references](PHASE3_LINUX_XCB_PRESENT_REPORT.md).
 The [physical Linux GPU runner and manual CI](PHASE3_LINUX_HARDWARE_READINESS.md)
 are prepared; actual software-device rejection is verified. The physical positive
 path remains unexecuted because no reachable Linux GPU target has been identified.
@@ -55,13 +55,26 @@ checking an XCB surface; the installed Core target has no hard XCB link or inclu
 dependency. A missing extension/procedure leaves headless device creation usable.
 The new function and extended Surface layout require rebuilding static consumers.
 Successful surface/queue checks do not guarantee swapchain format or presentation.
-Linux `caps.swapChain` stays false and `createSwapChain` stays Unsupported after
-surface checking. BGRA8 and actual acquire/submit/present remain `P3-WSI-03` work.
+Linux `caps.swapChain` reports the compiled path and native surface/maintenance1
+prerequisites. XCB ON now supports actual acquire/submit/present. Format, extent,
+image count and present mode are checked for each caller-owned window. RGBA8 UNORM
+is preferred; XCB falls back to explicit BGRA8 UNORM with SRGB nonlinear color space.
+There is no implicit SRGB-format conversion. Win32 keeps its existing RGBA8 policy.
 
 The [surface report](PHASE3_LINUX_XCB_SURFACE_REPORT.md) records XCB ON/OFF installed
 consumers, process-local native observation/negative controls, full buffer copies,
 actual compiler inputs and notice/payload audit. This is software-ICD surface
-execution, not physical Linux GPU, full Linux WSI validation or human display acceptance.
+execution. [The present report](PHASE3_LINUX_XCB_PRESENT_REPORT.md) records actual
+presentation plus full byte references and the pinned XCB validation runtime;
+physical Linux GPU and human display acceptance remain separate.
+
+`Format::BGRA8UNorm` uses four bytes per texel in B,G,R,A memory order. Clear and
+shader output channels remain R,G,B,A. Vulkan texture allocation/views, render-pass
+attachments, graphics pipelines and format-property queries use the same native
+`VK_FORMAT_B8G8R8A8_UNORM`. This avoids the former two-format selection falling
+through to RGBA16F for a new enum. Transfer, clear, scissored draw and alpha blending
+have full references; existing format enum values remain unchanged. The blend alpha
+channel replaces destination alpha with source alpha.
 
 ## Upload CPU diagnostics
 

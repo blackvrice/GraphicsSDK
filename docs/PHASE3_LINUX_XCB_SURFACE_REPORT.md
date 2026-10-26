@@ -1,5 +1,8 @@
 # P3-WSI-02 — 공통 Surface·Linux XCB 연결
 
+후속 [P3-WSI-03](PHASE3_LINUX_XCB_PRESENT_REPORT.md)에서 XCB swapchain/present와 BGRA8을 구현했다.
+아래 caps=false/미구현 설명은 이 surface 연결 단계 당시의 기록이며 새 표시 구현의 상태와 구분한다.
+
 2026-10-26. 공통 Surface 확장과 선택 Linux XCB 경로의 실제 native surface 생성·해제,
 선택 queue·visual 지원 확인을 구현했다. 제품 구현은 `bac184b147b9bf6a8ce616b25caef8d4854896fd`,
 입력/고지 감사까지 성공한 기준은 `6aa29b1bd009af009c28e0ceedebd4db1ff0d2ce`다.

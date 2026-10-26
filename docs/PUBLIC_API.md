@@ -412,6 +412,17 @@ creating thread 전용이다. query는 GPU 완료 대기, fence signal, SDK 객�
 정확한 ID로 복구한 새 device에서 다시 조회한다. 새 virtual API이므로 개발 버전 소비자는
 재빌드한다. 이 API의 기능 검증은 장시간 메모리 plateau 합격을 뜻하지 않는다.
 
+## BGRA8 색 텍스처
+
+`Format::BGRA8UNorm`은 기존 RGBA8/RGBA16F/D32의 enum 값을 유지한 채 추가됐다. CPU upload와
+readback의 메모리 순서는 **B,G,R,A**이고 texel은 4 bytes다. clear color와 shader 출력은 기존처럼
+R,G,B,A 의미를 유지하며 native format이 저장 순서를 결정한다. CPU swizzle이나 SRGB 변환은 하지 않는다.
+Vulkan/D3D12 texture·attachment·pipeline·transfer에 같은 형식이 연결되며 UNORM8 blending을 사용한다.
+기존 alpha blend 계약은 RGB에 src-alpha/one-minus-src-alpha, alpha에는 source alpha 대입이다.
+Vulkan staging footprint는 마지막 행 padding까지 포함하고 D3D12는 마지막 행의 유효 bytes까지만
+포함할 수 있으므로 `footprint().size` 범위 안에서만 padding을 접근한다. 정적 소비자는 새 헤더와
+라이브러리를 함께 재빌드한다.
+
 ## Native surface 지원 확인
 
 `SurfaceKind`는 `Win32`와 `Xcb`다. 기존 `Surface{Win32, hwnd}` 초기화를 유지하며 XCB는
@@ -425,14 +436,15 @@ geometry/InputOutput 종류·visual 지원도 확인한다. D3D12는 같은 proc
 Win32 HWND를 확인한다. 이 함수는 swapchain을 만들거나 format·present·모니터 표시를 보장하지 않는다.
 
 Linux는 `GFX_ENABLE_VULKAN=ON`, `GFX_VULKAN_XCB=ON` 빌드가 필요하다. 기본 OFF는
-headless SDK를 유지한다. ON에서도 Linux `caps.swapChain=false`와 swapchain 생성 Unsupported는
-유지하며, [surface 연결 보고서](PHASE3_LINUX_XCB_SURFACE_REPORT.md)의 실제 query 성공과
-후속 swapchain 구현을 구분한다. Native Wayland·Xlib·XWayland 수용을 추론하지 않는다.
+headless SDK를 유지한다. ON에서 surface/maintenance1 extension·feature가 충족되면
+`caps.swapChain=true`이며 실제 XCB acquire/submit/present를 지원한다.
+[surface 연결](PHASE3_LINUX_XCB_SURFACE_REPORT.md)과 [swapchain 표시 검증](PHASE3_LINUX_XCB_PRESENT_REPORT.md)의
+범위를 구분한다. Native Wayland·Xlib·XWayland 수용을 추론하지 않는다.
 
 ```cpp
 gfx::Surface surface{gfx::SurfaceKind::Xcb, nullptr, connection, windowId};
 auto supported = device->checkSurfaceSupport(surface);
-// Keep connection/window alive. Successful surface checks do not enable Linux present yet.
+// Keep connection/window alive. Check format/extent/present support when creating a swapchain.
 ```
 
 호출자가 native connection/window를 소유한다. 연결 pointer는 유효한 XCB 객체여야 하며 SDK가

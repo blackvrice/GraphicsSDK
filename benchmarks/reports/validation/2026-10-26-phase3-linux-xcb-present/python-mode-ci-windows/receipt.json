@@ -1,0 +1,1695 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-14",
+  "source_commit": "abd3e361c89f36fef35e7902d9801ac667217ffd",
+  "github_run_id": "40309705771",
+  "platform": {
+    "system": "Windows",
+    "release": "2022Server",
+    "machine": "AMD64",
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
+  },
+  "execution": "complete unittest discovery, no test exclusion or source/fixture rewriting",
+  "SDK_source_fingerprint": "a6844790ebf2bc4454b4746755a14b12e2f9b5866b33f128189d2d3bc0f4df94",
+  "inputs": [
+    {
+      "path": ".gitattributes",
+      "bytes": 29417,
+      "sha256": "24d9d6c4d52fc8db22ec285e9964391d1fe1227e5e7a06a66cacce9a19755a44"
+    },
+    {
+      "path": ".github/workflows/build.yml",
+      "bytes": 2106,
+      "sha256": "6b05a953ea917ece2315806254e4edb526326a8cccfafc00f354290f10edfbe4"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 18463,
+      "sha256": "137a2a1bc4499717426d0cb8ac65174dd25e54107608e687ed2eb6adb17de682"
+    },
+    {
+      "path": "include/graphics/Backend.hpp",
+      "bytes": 546,
+      "sha256": "6e13c8dcca46bba9eef438cd7b61473ecba81f6d4509695bdea308c3f516b6c5"
+    },
+    {
+      "path": "include/graphics/Bindings.hpp",
+      "bytes": 1504,
+      "sha256": "de4f5896b55e65cf31f27b2122ca4307f7a1f7bffee7ee316a881a72a2866762"
+    },
+    {
+      "path": "include/graphics/CommandList.hpp",
+      "bytes": 2840,
+      "sha256": "5ce778322e916ab5e15d6832aef5f7d1cc166fbeb2744237a45e0e20eea56f16"
+    },
+    {
+      "path": "include/graphics/CommandQueue.hpp",
+      "bytes": 725,
+      "sha256": "c6d978c5db58d90fd236436233dac460cd781c35276bd9ad3a1e677b03644045"
+    },
+    {
+      "path": "include/graphics/Device.hpp",
+      "bytes": 2470,
+      "sha256": "3049da402abbd901ef412ac108bad2c3fdfb0aceb264e13ea7ef9b7cfb359f8f"
+    },
+    {
+      "path": "include/graphics/Graphics.hpp",
+      "bytes": 61,
+      "sha256": "29d66498c133f2f23182fa4a288ddd0f1c45c5ac258b5315a6c584573072625b"
+    },
+    {
+      "path": "include/graphics/Pipeline.hpp",
+      "bytes": 1262,
+      "sha256": "3f036387d9ae65f465f38c092a7c0726ffa49679c7f1d657a9d9542d5cc30cac"
+    },
+    {
+      "path": "include/graphics/RenderPass.hpp",
+      "bytes": 1043,
+      "sha256": "f51ee3fdc21c5c269d0d30ea436b8c69c7d88154384030b89401f41a5b43baf8"
+    },
+    {
+      "path": "include/graphics/Resources.hpp",
+      "bytes": 742,
+      "sha256": "e6616d4819017553cc1363b02c7cb7839e202ee164854abfa97698d12c3cacb5"
+    },
+    {
+      "path": "include/graphics/Shader.hpp",
+      "bytes": 1013,
+      "sha256": "a8568d729efea023d11f2852fa4bdb26d3f430152bb538014450146f32f22643"
+    },
+    {
+      "path": "include/graphics/Surface.hpp",
+      "bytes": 559,
+      "sha256": "7aa36e348366b704bb280519348a14b600d375b443987b97edf654eeedcef8d5"
+    },
+    {
+      "path": "include/graphics/SwapChain.hpp",
+      "bytes": 604,
+      "sha256": "a0a8a171c818ac9f9f6ed7c0b8b74a3e5ae537bde8ee3345860f54705cc3f6a5"
+    },
+    {
+      "path": "include/graphics/Types.hpp",
+      "bytes": 3144,
+      "sha256": "73af056eeb95659d84ee2454b056b03fa806257f3c24189cf3a81c2bb60b07d0"
+    },
+    {
+      "path": "src/backends/d3d12/D3D12.cpp",
+      "bytes": 83706,
+      "sha256": "f13ad0cd41839ebd0e5f8a94909cebc80366d9e08fcad5f8d56e8cc4dd2985d3"
+    },
+    {
+      "path": "src/backends/d3d12/FenceWait.hpp",
+      "bytes": 2958,
+      "sha256": "1aee58bc9765885a62e79e4fd0e3665e9fed3ed44ba497c61c80fa9815b293b4"
+    },
+    {
+      "path": "src/backends/vulkan/Creation.hpp",
+      "bytes": 567,
+      "sha256": "4beec8947912a160a3686427f075628922c55a249193dad1266db54d491aa0b2"
+    },
+    {
+      "path": "src/backends/vulkan/Presentation.hpp",
+      "bytes": 22401,
+      "sha256": "d94750c339c6a39187fb9e9f930e0d4be926c9a2057191fb31382ee143c300a9"
+    },
+    {
+      "path": "src/backends/vulkan/Spirv.hpp",
+      "bytes": 14703,
+      "sha256": "3a302edb3a59f9bdde09085033023819242c799573e9b532fc8b8aa619ed99f1"
+    },
+    {
+      "path": "src/backends/vulkan/Timestamp.hpp",
+      "bytes": 1492,
+      "sha256": "f68693d9d213123b314a384cf7da7cffb731d72d2425b189ddb6795740cd8bdc"
+    },
+    {
+      "path": "src/backends/vulkan/Vulkan.cpp",
+      "bytes": 116412,
+      "sha256": "a4c6833822c768c2da41a728ffe529da5399bb04efc04a8b1d26156faaf23ac3"
+    },
+    {
+      "path": "src/backends/vulkan/VulkanValidation.hpp",
+      "bytes": 2733,
+      "sha256": "44465bed7347812efdfa5e50d7909fb6fd8a690df0dab887dae19b50234a7a22"
+    },
+    {
+      "path": "src/backends/vulkan/Xcb.hpp",
+      "bytes": 2101,
+      "sha256": "a9d1d312d50009195dbd33cc71b0e82ff0ad56ac0c559e3764c9b77a1d9b5c55"
+    },
+    {
+      "path": "src/foundation/Backend.cpp",
+      "bytes": 1658,
+      "sha256": "62b89e781ef343d8f01651c786aee471bcabe747013072ab742b44b9c4d9bd24"
+    },
+    {
+      "path": "src/foundation/Bindings.cpp",
+      "bytes": 2221,
+      "sha256": "db8a3fc712356cc461d739e7a859d83fedd86988a3c7bfe7f7ff55b34410ffbc"
+    },
+    {
+      "path": "src/foundation/RenderPass.cpp",
+      "bytes": 3200,
+      "sha256": "460d174271531b8b06ae9afa28763b58e0739e85e50a9158f86f5ee1bcd82845"
+    },
+    {
+      "path": "src/foundation/VertexInput.cpp",
+      "bytes": 2167,
+      "sha256": "0090fbf38888198967d729abe55635180eba99f0226a4360c2b131e399e6656c"
+    },
+    {
+      "path": "src/shader/Shader.cpp",
+      "bytes": 4120,
+      "sha256": "6626d4a2445e5058e136b587bbd228551703f06a34812da96fc606e17027d0f3"
+    },
+    {
+      "path": "tests/recorded_sources.json",
+      "bytes": 6868,
+      "sha256": "c23ba664865cb73c70015dff62a2b5dcd9a35b116b2fd3345967baa7d9ae380f"
+    },
+    {
+      "path": "tests/recorded_sources.py",
+      "bytes": 2748,
+      "sha256": "40a03192c77f887ccab0295fd9486fa0450b49116ae81a3c78e7f328d627a0e5"
+    },
+    {
+      "path": "tests/test_adapter_validation.py",
+      "bytes": 3843,
+      "sha256": "7ef9336386b0f52772b145e6947d327d350c76e75933326603152e1a4e60512c"
+    },
+    {
+      "path": "tests/test_benchmarks.py",
+      "bytes": 6979,
+      "sha256": "1f90ee716f738b1ef19f8ded6e3db5785791dff7b1767b73bd59513282356b8f"
+    },
+    {
+      "path": "tests/test_bounded_gbv.py",
+      "bytes": 6046,
+      "sha256": "e217ad8f6e74c294e339d64d5852294669a0b560e2e22c8f4799bacdc3a38379"
+    },
+    {
+      "path": "tests/test_capture_memory_failure.py",
+      "bytes": 3846,
+      "sha256": "7da5e794d3ff2324359e8a7c1518147c4f96b4147201326a9d5fc2e6c82069d1"
+    },
+    {
+      "path": "tests/test_crash_capture.py",
+      "bytes": 7941,
+      "sha256": "9c44ca9e5564e008f2389bb7032dfdd0d2b9e61e7fe657c47c21fc42dd3f7a24"
+    },
+    {
+      "path": "tests/test_device_lifetime.py",
+      "bytes": 6828,
+      "sha256": "f5172b52875342fc35804e5206a0154024e571bd7ae34fe3b7b47d613c238147"
+    },
+    {
+      "path": "tests/test_fixed_memory.py",
+      "bytes": 11446,
+      "sha256": "67123f59b85190e2f20c7c03ea47f2247682aaae5167e7fd0bfb257d9e94d1ac"
+    },
+    {
+      "path": "tests/test_forge_benchmarks.py",
+      "bytes": 3256,
+      "sha256": "8afe6e2e71ba50189a9f12836c6b5ff77a742241330ff8ff0fa813a8d64c902a"
+    },
+    {
+      "path": "tests/test_gpu_memory_trace.py",
+      "bytes": 4932,
+      "sha256": "a162b719ce53c8596aa2ba583f46e7accc039069ff883a4a2df4cfda8d04ea04"
+    },
+    {
+      "path": "tests/test_gpu_timestamps.py",
+      "bytes": 4064,
+      "sha256": "36dbd5749e89828ac324513125ca2c502c661b3eb761ef725481d30c9151424d"
+    },
+    {
+      "path": "tests/test_license_audit.py",
+      "bytes": 8933,
+      "sha256": "2c25a29dca9fd58bc1e1b4a88bf38011214f82c61c9de80aabaf839f28772b56"
+    },
+    {
+      "path": "tests/test_linux_hardware.py",
+      "bytes": 3714,
+      "sha256": "68de86b53c64aae91d111d2382ef8c550700e28fd2785c5ca4b31007768724b2"
+    },
+    {
+      "path": "tests/test_linux_package_audit.py",
+      "bytes": 4192,
+      "sha256": "b3906aae5ff6c3474308ecad8650446d578f9a845bd01fd4b83e91bd3a853e03"
+    },
+    {
+      "path": "tests/test_linux_wsi_scope.py",
+      "bytes": 3857,
+      "sha256": "a260f7dc19902d70ce88460d92b1cb1d6a2f5b05b337ef30464d9437bba23229"
+    },
+    {
+      "path": "tests/test_linux_xcb_present.py",
+      "bytes": 4076,
+      "sha256": "34dfe3e585eef406ac7762dd1882ed3d770f7d3afdcd1d3fb9441299d0699ae7"
+    },
+    {
+      "path": "tests/test_linux_xcb_surface.py",
+      "bytes": 2710,
+      "sha256": "9008844b77977450abd028bc5c92213a3b4e48986d320231b990f8993f132953"
+    },
+    {
+      "path": "tests/test_llgl_upload.py",
+      "bytes": 1958,
+      "sha256": "7962c45d3da489cdbdf58382575e4d4cb1a227409e99877bcb172c4ff4adc4d0"
+    },
+    {
+      "path": "tests/test_manual_presentation_evidence.py",
+      "bytes": 4006,
+      "sha256": "8b6f7cafa437429327910e357076b4e2f3b0748fe01399dfe92942c3b08a72ca"
+    },
+    {
+      "path": "tests/test_memory_budget_campaign.py",
+      "bytes": 6799,
+      "sha256": "4b94fe6ccbc83b4a806e49f9c107747143f878625c0a267996496855e38d816e"
+    },
+    {
+      "path": "tests/test_memory_campaign.py",
+      "bytes": 11880,
+      "sha256": "f08e9dfa1c6e3a5a37c8a65e46b0888b3bedc56a421662f08f45ba3346f0091f"
+    },
+    {
+      "path": "tests/test_memory_environment.py",
+      "bytes": 15460,
+      "sha256": "e9a9b47f8b19cd46b3a0e29496bcc2a7f4cdbe45176e1e70883f790fdc9f2e56"
+    },
+    {
+      "path": "tests/test_memory_stress.py",
+      "bytes": 7289,
+      "sha256": "4837db7ec50fa9554f4d237ac1e06098f3ce84c139f5e948568c09969e3ccdf6"
+    },
+    {
+      "path": "tests/test_phase1.py",
+      "bytes": 9457,
+      "sha256": "52016ec275e4fbfa49007d9e7b17d61ea60a493f67e15b3feaebbab48fc447c1"
+    },
+    {
+      "path": "tests/test_presentation.py",
+      "bytes": 8295,
+      "sha256": "7cd33db05edb6dcbd7495fa3096f7d64cee817fcb2aa630d0aae5c408aece09b"
+    },
+    {
+      "path": "tests/test_recorded_sources.py",
+      "bytes": 3697,
+      "sha256": "960ad02db2e1e73940c0bee69a67899b53acc7488869e1ded0197c4775861d08"
+    },
+    {
+      "path": "tests/test_runtime_comparison.py",
+      "bytes": 7479,
+      "sha256": "30d48d7f53223d9aca02a24a54f5a9b3a25da3f3ca9ac30a7ee0da06b5adcd5f"
+    },
+    {
+      "path": "tests/test_telemetry.py",
+      "bytes": 6169,
+      "sha256": "aca296d1283ea0fa0ebbc780a5f4f1ce4c04728a7dc9296ebb5fa24bd4075fca"
+    },
+    {
+      "path": "tests/test_virtual_ranges.py",
+      "bytes": 11434,
+      "sha256": "6493da3e78b41143c456ff3a1b8e740386905fc7a43bab6720951772f362a270"
+    },
+    {
+      "path": "tests/test_vulkan_adaptive_buffer_pool.py",
+      "bytes": 7051,
+      "sha256": "5c433657fc3b44a3a9cbbf4ff8902824ebcf95a4e483fa4f1314df2fbe50ce22"
+    },
+    {
+      "path": "tests/test_vulkan_allocation.py",
+      "bytes": 8288,
+      "sha256": "c2931fbd857edc30fae7615d16caae2b7538582765af02261ac83326ef317ade"
+    },
+    {
+      "path": "tests/test_vulkan_allocation_trace.py",
+      "bytes": 6429,
+      "sha256": "96bca162975361dd3c8ae5aee5daa439a4ab4ef1f80a7b65588497f735233c13"
+    },
+    {
+      "path": "tests/test_vulkan_buffer_pool.py",
+      "bytes": 6041,
+      "sha256": "2aecc99d40ceaaa18db5bc969ea8e30b628750de534fc1d88bfc136cc9fadda1"
+    },
+    {
+      "path": "tests/test_vulkan_buffer_pool_fault.py",
+      "bytes": 7675,
+      "sha256": "ec87d9f06e16aa61c48ba65418ee64a569769578c885916cf0ccd24c3e9d45a5"
+    },
+    {
+      "path": "tests/test_vulkan_creation_ownership.py",
+      "bytes": 4107,
+      "sha256": "dc46fc001acf690a10c3d759a078cc7ee9e2233551765e58994c8525fb3e3bf2"
+    },
+    {
+      "path": "tests/test_vulkan_draw.py",
+      "bytes": 6793,
+      "sha256": "4dafdcfbb9a16d5dd400782a3af3d7a4c5758cbace9ca91eed9ad6e62a333879"
+    },
+    {
+      "path": "tests/test_vulkan_loader_fault.py",
+      "bytes": 3959,
+      "sha256": "3fdccc4f28a24bc82768346bc75220fd872b30cf8f3f90dc04440d35c5d29a36"
+    },
+    {
+      "path": "tests/test_vulkan_markers.py",
+      "bytes": 3149,
+      "sha256": "a0077ac5778af67ad8701fb3c63eb4db55046c2a2f751d27246fb82be7d3ab83"
+    },
+    {
+      "path": "tests/test_vulkan_pool_churn.py",
+      "bytes": 4479,
+      "sha256": "b3e6e97a53daa1f0fe30749091f6e41237477407dceb27cdb97770246292ed7d"
+    },
+    {
+      "path": "tests/test_vulkan_pool_rebase_fault.py",
+      "bytes": 5002,
+      "sha256": "bf95051734f15e69d10f6de62ae3e93b425f43397490e8b57af4ac3f4b034094"
+    },
+    {
+      "path": "tests/test_vulkan_pso.py",
+      "bytes": 6987,
+      "sha256": "5e103c9975455b1cb9641dc487a5f86116f271a3323401ad910103cdfa49874b"
+    },
+    {
+      "path": "tests/test_vulkan_recovery.py",
+      "bytes": 3378,
+      "sha256": "70ca4664b128ff33302301102661e7d4c024246261afcdfe4c043c1aba4f0482"
+    },
+    {
+      "path": "tests/test_vulkan_upload.py",
+      "bytes": 4978,
+      "sha256": "190d93063d8f00494d6ab4b52812852889abebc970e8c17f7c8872d3f0e2c4b1"
+    },
+    {
+      "path": "tests/test_vulkan_upload_compare.py",
+      "bytes": 2325,
+      "sha256": "47d2860948719ff243f72a6389d8349f6e865266318da8ab52e6cb5e5923bcdb"
+    },
+    {
+      "path": "tools/analyze_bounded_gbv.py",
+      "bytes": 6907,
+      "sha256": "2bb72aeb48dd82ebcb043d94147b6cfde5d632ded989dd3a8b6bcab5f01ab1fa"
+    },
+    {
+      "path": "tools/analyze_gpu_memory_trace.py",
+      "bytes": 17182,
+      "sha256": "67cfdd3f7f2b30aca5845c95fff6da8d982805128729e266fc038631d1cd567c"
+    },
+    {
+      "path": "tools/analyze_memory_stress.py",
+      "bytes": 16432,
+      "sha256": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095"
+    },
+    {
+      "path": "tools/analyze_virtual_ranges.py",
+      "bytes": 14746,
+      "sha256": "1a8809112ee84a5e1f4084761a3ddc47730c0e80a6eefe9500e3b6143bfa32ed"
+    },
+    {
+      "path": "tools/archive_measured_sources.py",
+      "bytes": 2809,
+      "sha256": "2bb8df52b54222ee8b92ba640b8d2a219f53b95318bed86c69bf5e00c2ad50c5"
+    },
+    {
+      "path": "tools/audit_licenses.py",
+      "bytes": 30690,
+      "sha256": "b5a9d7914a6de25166bb59680e9393903deb256cb934048d105b0cd173c321f4"
+    },
+    {
+      "path": "tools/audit_linux_package.py",
+      "bytes": 4603,
+      "sha256": "5fb6807e3a74f7b91645f0c9c6e558a43ee5ec3d3da082200806fee4ef5bc07f"
+    },
+    {
+      "path": "tools/audit_vulkan.py",
+      "bytes": 16762,
+      "sha256": "bbdae297fc477623f34c6dc7acc1d507bb4815ff0c1210cc249267466eb337d8"
+    },
+    {
+      "path": "tools/audit_vulkan_adaptive_buffer_pool.py",
+      "bytes": 6887,
+      "sha256": "a337c280a5d7eaba4d497c4620d8e0dfbf88a70cb24627558eb2a7c3a1749761"
+    },
+    {
+      "path": "tools/audit_vulkan_allocation.py",
+      "bytes": 8853,
+      "sha256": "9f239b2fdc5fa39820daa74f812f1f36a52e4314cc17d5026f9d9c9b0c3d4ac0"
+    },
+    {
+      "path": "tools/audit_vulkan_allocation_trace.py",
+      "bytes": 9948,
+      "sha256": "95443a2035035a9ba5422fd11bcc41d4969d1f00848d81fdf849d96a1f41cc0c"
+    },
+    {
+      "path": "tools/audit_vulkan_buffer_pool.py",
+      "bytes": 6827,
+      "sha256": "458eb1013692e6df5b83d10a2aca73338ad1d2837bcc069d4316c6ee17cb09dd"
+    },
+    {
+      "path": "tools/audit_vulkan_buffer_pool_fault.py",
+      "bytes": 6891,
+      "sha256": "1b1983daef13dad355415aa06b162e0bb1a2fc0eccd1c87a618ac3ba823a6253"
+    },
+    {
+      "path": "tools/audit_vulkan_creation_ownership.py",
+      "bytes": 7478,
+      "sha256": "cc2e9a48487ef1151414e0436ecc336c6fd4d7fab8709feecc0d57bb374bdebe"
+    },
+    {
+      "path": "tools/audit_vulkan_draw.py",
+      "bytes": 8814,
+      "sha256": "cd71aba25fa691f4580fc08db4650a5be27e45af39c06291ccd8dea8fe8a4f60"
+    },
+    {
+      "path": "tools/audit_vulkan_loader_fault.py",
+      "bytes": 5343,
+      "sha256": "0bef38710a7ce17edbce03fc95f0c2af458fc4acc31d93d54ad918581ab95709"
+    },
+    {
+      "path": "tools/audit_vulkan_pool_churn.py",
+      "bytes": 6368,
+      "sha256": "8ed431cebaec50521b14e31a080fb843b3afe4aba3f0dea2095df3006205235d"
+    },
+    {
+      "path": "tools/audit_vulkan_pool_rebase_fault.py",
+      "bytes": 4803,
+      "sha256": "fd07fb77178f3d3e298f3eb6dfc6b0dc07a17e6f504106a2dc09ef7a900c9eb6"
+    },
+    {
+      "path": "tools/audit_vulkan_pso.py",
+      "bytes": 8799,
+      "sha256": "be2400e3fc8970cff2f35ca2373d86f54d5c1e672802c1b731c0a9dfe6885fad"
+    },
+    {
+      "path": "tools/audit_vulkan_upload.py",
+      "bytes": 8378,
+      "sha256": "e9abb27b014e5ef62c700951929eb07ef87806ac19510ff261386f75024d379c"
+    },
+    {
+      "path": "tools/audit_vulkan_upload_compare.py",
+      "bytes": 8372,
+      "sha256": "39e0995c74760c181bfd0d81e2053f73c841117d63329b8ffeaa478d28ed6f30"
+    },
+    {
+      "path": "tools/audit_xcb_surface_inputs.py",
+      "bytes": 3497,
+      "sha256": "b061cadb912172e23801cbb069191eea12563ebb9f427d62af71b35f201c7463"
+    },
+    {
+      "path": "tools/benchmark_telemetry.py",
+      "bytes": 4710,
+      "sha256": "993ad46de7f9356d4c12a23968a11bdc6752290753bd06974b1d55755f8f10c0"
+    },
+    {
+      "path": "tools/bgfx_license_profile.py",
+      "bytes": 3221,
+      "sha256": "570ba70b56f5872ba5cd27164665aaa8d46e58a6b8913e747099d0543dca2fe3"
+    },
+    {
+      "path": "tools/bounded_gbv_policy.json",
+      "bytes": 441,
+      "sha256": "4e66c71b5fe1d8d6bb907dd15be673070340871ceaafb65a481fcecc93e7a6cd"
+    },
+    {
+      "path": "tools/capture_memory_failure.py",
+      "bytes": 7170,
+      "sha256": "3f7f647fa16b27f824291627a4afc9d260d002f067b658aed706543053475a92"
+    },
+    {
+      "path": "tools/check_python_contracts.py",
+      "bytes": 4295,
+      "sha256": "a70ecf19a78bdf0262980b8a0c275cea2fd53d63bec767cb921fa6758f1b8c89"
+    },
+    {
+      "path": "tools/compare_results.py",
+      "bytes": 3505,
+      "sha256": "ef07f40335291b48b40b43c72dbab3eebcc61469013d496404c7b8b04479731e"
+    },
+    {
+      "path": "tools/compare_vulkan_upload.py",
+      "bytes": 8999,
+      "sha256": "a376885cd016183f2f86f1c373f398deb2d0720d2799b8fe3a1dc65090073b96"
+    },
+    {
+      "path": "tools/crash_capture/evidence.py",
+      "bytes": 8754,
+      "sha256": "aecc80e68ab3f78b6f42f6413c6b15cea7a54cc8fed9d545e0252dc15372309e"
+    },
+    {
+      "path": "tools/crash_capture/validate.py",
+      "bytes": 5648,
+      "sha256": "8e2ef7acd1e64e1eff49a740f2b4f0a1b4a6fde4ca3d42813fe035122dec1033"
+    },
+    {
+      "path": "tools/diligent_license_profile.py",
+      "bytes": 5661,
+      "sha256": "0b1d4fafc85b670c5939f9614795e7d65872e26945bc47d08ae93931d17e45e6"
+    },
+    {
+      "path": "tools/fetch_references.py",
+      "bytes": 2939,
+      "sha256": "09b4b61235e0afbf968bb13fa53cb70df1eeccac779cd412071e356ce317848b"
+    },
+    {
+      "path": "tools/forge_license_profile.py",
+      "bytes": 6424,
+      "sha256": "b5ddde007614bc9272df2f72f1950a45c2d3000865897962ee4673170f993161"
+    },
+    {
+      "path": "tools/linux-vulkan-validation.json",
+      "bytes": 459,
+      "sha256": "dce8d2443045ac57e377bc7549474a01c0712e778d004d0523335ca2694a548d"
+    },
+    {
+      "path": "tools/linux-xcb-validation.json",
+      "bytes": 469,
+      "sha256": "fa37ae922bc1fad51c9fc9ae1c338f241a39141c53a384ef2b13fd0780a487b3"
+    },
+    {
+      "path": "tools/linux_build_capture.py",
+      "bytes": 1873,
+      "sha256": "363ff4f0713e929073bf03961bafbe6ac768bae3404171df0e20b3e8aae38f1a"
+    },
+    {
+      "path": "tools/linux_hardware.py",
+      "bytes": 15524,
+      "sha256": "e547616047bb0f8afcf5161edb4007bbe68591fdda682a5e77095d0d38c4b02f"
+    },
+    {
+      "path": "tools/linux_package.py",
+      "bytes": 16806,
+      "sha256": "d74893d5587f4d72fcbe982c4f930407a2b868f8527415bc0cb0774103577fa5"
+    },
+    {
+      "path": "tools/manual_presentation_evidence.py",
+      "bytes": 4326,
+      "sha256": "98b360eec3046d01107db19974d1cf56e90dedc46330ef3273cfbacee52698bd"
+    },
+    {
+      "path": "tools/memory_environment.py",
+      "bytes": 22376,
+      "sha256": "8d79582da70e65f01ac838a44ce8d666d543ddefa289639327e6cea03081f2f8"
+    },
+    {
+      "path": "tools/memory_stress_policy.json",
+      "bytes": 915,
+      "sha256": "a8c57bcfc96917a177817675cfdf33f06474f6240df4cca98eb174a6ff8add6c"
+    },
+    {
+      "path": "tools/memory_validation_probe/agility-runtime.lock.json",
+      "bytes": 1124,
+      "sha256": "2d3dd1a199b8cacc64b4146390e154fb5cfeae7f274fa88acfb6a023d7ac6b83"
+    },
+    {
+      "path": "tools/memory_validation_probe/lifetime.py",
+      "bytes": 12111,
+      "sha256": "32efccc5b88f86dab1b9c9abefec282e71a34972e212117183ee82142943c10c"
+    },
+    {
+      "path": "tools/memory_validation_probe/prepare_runtime.py",
+      "bytes": 3123,
+      "sha256": "068d3cf9587358728b727312bd29a5410a4b1a7e8987352fc7c63426fdc32b0b"
+    },
+    {
+      "path": "tools/memory_validation_probe/run.py",
+      "bytes": 5492,
+      "sha256": "f775a40fe37744aebb8b25eae394f49cc5490339c16cd0af8eec6738d1336ea0"
+    },
+    {
+      "path": "tools/memory_validation_probe/runtime_compare.py",
+      "bytes": 11479,
+      "sha256": "91403c2405336db545fe18dae94ca68c61fb74cef08a53e31e35accc373e22e0"
+    },
+    {
+      "path": "tools/phase1_acceptance.py",
+      "bytes": 1795,
+      "sha256": "abbe63aaa9725ab7c0bfca09a29a2eaed05b54201efe9d761bfcd3968872da5c"
+    },
+    {
+      "path": "tools/prepare_linux_validation.py",
+      "bytes": 6165,
+      "sha256": "6fd146fc70f1711b23b7ba528879615ebcc705565352cf8a3c75f5d2a3bcbc6d"
+    },
+    {
+      "path": "tools/prepare_vulkan_adaptive_buffer_pool.py",
+      "bytes": 8075,
+      "sha256": "8197c45a1fc1250ec3295360beb9a7ca4d9cccbc60944a8277f3b8df6db893fc"
+    },
+    {
+      "path": "tools/prepare_vulkan_buffer_pool.py",
+      "bytes": 7897,
+      "sha256": "a6a9f091f9c68d3f0e13d62eb283f84adaf9b747185c9439335fe611363f989f"
+    },
+    {
+      "path": "tools/prepare_vulkan_buffer_pool_fault.py",
+      "bytes": 2790,
+      "sha256": "906958993ca451687f7089e415f3b2a17d97bdda535ba9e9abdc61156c58d7c1"
+    },
+    {
+      "path": "tools/prepare_vulkan_pool_churn.py",
+      "bytes": 7230,
+      "sha256": "aff6e3b187242c7c618ddf8affae82f831c9a036af1567c4e7c350395ae3cd50"
+    },
+    {
+      "path": "tools/prepare_vulkan_validation.py",
+      "bytes": 5088,
+      "sha256": "612a8eb1e2c40c63242b025d479d6eee1418b8be588862fdfcc7799d38894295"
+    },
+    {
+      "path": "tools/report_benchmarks.py",
+      "bytes": 11113,
+      "sha256": "f9060a142e955f514a95b7ac64aa9161d54e47fb47ce4c9dceae42c736622ba5"
+    },
+    {
+      "path": "tools/report_bgfx_benchmarks.py",
+      "bytes": 12134,
+      "sha256": "ca7720b17a08c2d8a754b83b94c88ee38bd1c9c8fcce5e02d8b197239e45938d"
+    },
+    {
+      "path": "tools/report_diligent_benchmarks.py",
+      "bytes": 9611,
+      "sha256": "3936cdb1302fc0bd23ca964ec3ca41c6f4d83ee3ff3e4e7e3f48d3cdd26f4318"
+    },
+    {
+      "path": "tools/report_forge_benchmarks.py",
+      "bytes": 13590,
+      "sha256": "e758aa29f55f06bc3aa72fc3f1be2285131d99ab7085b011ec9b4d373dbccc4f"
+    },
+    {
+      "path": "tools/report_llgl_upload.py",
+      "bytes": 6068,
+      "sha256": "693844a11f31c2469393498238b9fb223046689ceea1d9b6f5f8618e53c0143d"
+    },
+    {
+      "path": "tools/report_memory_stress.py",
+      "bytes": 6319,
+      "sha256": "c2c27ad911a32879cb57883eebe372d19bfc89579972a71140406b48c15a082b"
+    },
+    {
+      "path": "tools/report_phase1.py",
+      "bytes": 5952,
+      "sha256": "75c8634ab735af3617f809f75749cf724207de37bc20d1a39252fd7a7c9152e7"
+    },
+    {
+      "path": "tools/report_phase1_comparison.py",
+      "bytes": 11978,
+      "sha256": "5314ceb203185041ba68cee887e34c0a2fffd71f01d50d87e91807027ef2d179"
+    },
+    {
+      "path": "tools/report_telemetry_benchmarks.py",
+      "bytes": 7006,
+      "sha256": "6226b664f02d0f8ffb24ceb93365868c89f3248dd1b93b449877cfd037360242"
+    },
+    {
+      "path": "tools/report_timestamp_benchmarks.py",
+      "bytes": 16891,
+      "sha256": "7db6e7e3e41c928069c343f8cc4a447e269977d9fc4b852912cc509aad422287"
+    },
+    {
+      "path": "tools/report_vulkan_adaptive_buffer_pool.py",
+      "bytes": 7227,
+      "sha256": "3a913b31c44198a40cc59969f1c1ba805e9e5c9e857835fc29edc84e27733957"
+    },
+    {
+      "path": "tools/report_vulkan_allocation.py",
+      "bytes": 7814,
+      "sha256": "708fd9a80417a31d575fcf53303907bbd8e5fed7afc7f1ab493fa23b1190d7be"
+    },
+    {
+      "path": "tools/report_vulkan_allocation_trace.py",
+      "bytes": 5925,
+      "sha256": "330101b6c20ee8926e783d4301dbc8eadf0ed464aa6e6ed803d6ef6ddf10e7a1"
+    },
+    {
+      "path": "tools/report_vulkan_buffer_pool.py",
+      "bytes": 7033,
+      "sha256": "e8657b948b44336b1674008e2d00186562731ff504f0fbc378244921ee25cd44"
+    },
+    {
+      "path": "tools/report_vulkan_buffer_pool_fault.py",
+      "bytes": 5701,
+      "sha256": "6d1cb06ceaa0d895ccd32a83abe60390c5c13ad61804d405959935c325efa74e"
+    },
+    {
+      "path": "tools/report_vulkan_creation_ownership.py",
+      "bytes": 5841,
+      "sha256": "9dfa61cb58d47bf2f9dc7753a5c7667cd3b3ced6a277e4c6697d3d5d550d99df"
+    },
+    {
+      "path": "tools/report_vulkan_draw.py",
+      "bytes": 7735,
+      "sha256": "ee5bb9aad3a022227e59fe1bf9d960cf9903f0b2cee52127c040a83e8a5a0052"
+    },
+    {
+      "path": "tools/report_vulkan_loader_fault.py",
+      "bytes": 6606,
+      "sha256": "4e50b509abbc6f010866f85dc9f6026653623b335681aca84b04e081231567eb"
+    },
+    {
+      "path": "tools/report_vulkan_pool_churn.py",
+      "bytes": 6213,
+      "sha256": "8e46bedd1a68cd9114070ac4c4fb54cf40154b48c63b607a267ba4e4c85f2655"
+    },
+    {
+      "path": "tools/report_vulkan_pool_rebase_fault.py",
+      "bytes": 6979,
+      "sha256": "0297731742ab8f16d4410a0ee0d1bf1ce3312f24a1ff636f054e5e403e7ead5b"
+    },
+    {
+      "path": "tools/report_vulkan_pso.py",
+      "bytes": 7444,
+      "sha256": "8dc156a0c60505ec25fcb059d73a25fd604713709dcf465d614759aeaead7fe4"
+    },
+    {
+      "path": "tools/report_vulkan_upload.py",
+      "bytes": 13393,
+      "sha256": "99f95e7b1126471949a524e349cc0ff86a0e391f5ea0e77bfdf2d3ef04fa7dd5"
+    },
+    {
+      "path": "tools/report_vulkan_upload_compare.py",
+      "bytes": 8002,
+      "sha256": "aee28dfce49554493f3c977fe35d024d3555f9c24c67f1a630932668c26d484a"
+    },
+    {
+      "path": "tools/roadmap.py",
+      "bytes": 14465,
+      "sha256": "55583bfedacfe79e3dfca6601e1b34fd8b9cb7c64b6d3c03fbe7b463742b8f46"
+    },
+    {
+      "path": "tools/run_adapter_validation.py",
+      "bytes": 6623,
+      "sha256": "3e0524b1d66426c5fba2aef1008a2243eb704bac7e4aec8a3d8a495cff4b3194"
+    },
+    {
+      "path": "tools/run_benchmarks.py",
+      "bytes": 21900,
+      "sha256": "d907db1ad956e1063c5a626935cfea7472e45d12e7b81e7873c496ce7776e4d4"
+    },
+    {
+      "path": "tools/run_fixed_memory.py",
+      "bytes": 15752,
+      "sha256": "b2a6d989e08508ae770bfc46ef8e68165239b9ae9fe5ba5179da503e3ad161c7"
+    },
+    {
+      "path": "tools/run_linux_compile.py",
+      "bytes": 7787,
+      "sha256": "7e9b875a7791af775f23296b667609fdf1508ba7c0dad5f7f9e9e7db1a38d51e"
+    },
+    {
+      "path": "tools/run_linux_depth.py",
+      "bytes": 10455,
+      "sha256": "cd916f297bb701d56a3c52df4fe6eb4f57dd349561d543b90a2254b07c28eef4"
+    },
+    {
+      "path": "tools/run_linux_device.py",
+      "bytes": 8620,
+      "sha256": "0ab9c9c74c32c65a07bab471997b453c582ffbd2991c35cc34da4e94326ac1ed"
+    },
+    {
+      "path": "tools/run_linux_draw.py",
+      "bytes": 10911,
+      "sha256": "2eb4b876795bbffe820c7257fb301630334b8fb6b39c1897cb2bfd6505d559bd"
+    },
+    {
+      "path": "tools/run_linux_input.py",
+      "bytes": 11264,
+      "sha256": "f310d44e8a06e94186152cd02b87d14b2f3b6cdee678964323539cff79182baa"
+    },
+    {
+      "path": "tools/run_linux_texture.py",
+      "bytes": 10064,
+      "sha256": "0430c0f4cb2dcf0d1066a10eab3fd70b98479a31c023d40b607f71cea911c724"
+    },
+    {
+      "path": "tools/run_linux_timestamp.py",
+      "bytes": 13089,
+      "sha256": "2fd19c1dacfb1235e06c4a47728bbf6ba69bbbd69dfcca7608cd14fa8f9a3567"
+    },
+    {
+      "path": "tools/run_linux_transfer.py",
+      "bytes": 9196,
+      "sha256": "fcc89bcec53e5957f80df225994916f14e659521d6df4fefc498c2ea67c1b3aa"
+    },
+    {
+      "path": "tools/run_linux_validation.py",
+      "bytes": 11548,
+      "sha256": "9283b929d1871b27a68a5f2750cf3a38460dc0aca7d8aad4e307b3cd7d090a89"
+    },
+    {
+      "path": "tools/run_linux_wsi_scope.py",
+      "bytes": 7342,
+      "sha256": "c4c44d3df31cb2664699219b6282180998afdadf4ff50d75a2d5f5a1c86d6537"
+    },
+    {
+      "path": "tools/run_linux_xcb_present.py",
+      "bytes": 6858,
+      "sha256": "313f678ed3d5f1bb4a6840d897846b7ed7db088d791c7c7e0735d225470e0b3b"
+    },
+    {
+      "path": "tools/run_linux_xcb_surface.py",
+      "bytes": 5379,
+      "sha256": "8d47a948271e16b394f07122b8a6706206d24591411bfcf3dabcbf16e6487f15"
+    },
+    {
+      "path": "tools/run_memory_stress.py",
+      "bytes": 9814,
+      "sha256": "6a23cdaf472ccacdfa53494d518634ff01c20f9f1cc1a02fea1e378507f9a352"
+    },
+    {
+      "path": "tools/run_phase1.py",
+      "bytes": 12133,
+      "sha256": "dbfbfeffd27bf56671b0dc143ef6221ea862c5a06647bfb4db0b3d0674fc460a"
+    },
+    {
+      "path": "tools/run_presentation_validation.py",
+      "bytes": 14119,
+      "sha256": "a770975ae77cba58d9dfa369bff970b915ce8508bf07d97edaaa6cd27b3e8914"
+    },
+    {
+      "path": "tools/run_vulkan_adaptive_buffer_pool.py",
+      "bytes": 13038,
+      "sha256": "7a6fcf3455e5272873585a734dfb103d856015b13f63854404a038370ae1581a"
+    },
+    {
+      "path": "tools/run_vulkan_allocation.py",
+      "bytes": 13459,
+      "sha256": "95c87bb088dba4cde3150a1b65467c3a1d75fcc50c40b42d1a59f28ccbf693fa"
+    },
+    {
+      "path": "tools/run_vulkan_allocation_trace.py",
+      "bytes": 12622,
+      "sha256": "4588b1eccc3189c6f8810645c676cfd54d3a42447970b8a368a0bb7b0b559eef"
+    },
+    {
+      "path": "tools/run_vulkan_buffer_pool.py",
+      "bytes": 12251,
+      "sha256": "3dc986258fc5c34764e4167734f80dd6673c7a9ff704afb990801ddecdfd216f"
+    },
+    {
+      "path": "tools/run_vulkan_buffer_pool_fault.py",
+      "bytes": 13114,
+      "sha256": "34f5230c0d9aac439b0261e36f349f89c375e8d065e96f8037b06c4465cd14db"
+    },
+    {
+      "path": "tools/run_vulkan_creation_ownership.py",
+      "bytes": 7528,
+      "sha256": "72ac38513d8b5c24d97835c146e9ee40897ba8888e37828a129d9f864f306974"
+    },
+    {
+      "path": "tools/run_vulkan_draw.py",
+      "bytes": 13584,
+      "sha256": "b6c926568e1d73d966be7711ad2df30bfa33b8c020cbd5955d727b0c638f6310"
+    },
+    {
+      "path": "tools/run_vulkan_loader_fault.py",
+      "bytes": 9759,
+      "sha256": "1d21f5bc6b93cc66886bca4f60bec73725b521747b9ef817180848951c2b1eac"
+    },
+    {
+      "path": "tools/run_vulkan_markers.py",
+      "bytes": 6016,
+      "sha256": "0b27ad4ebe47c51ef229183934ccd371c1508fb95cbe86fb8a9d558745cde9c8"
+    },
+    {
+      "path": "tools/run_vulkan_pool_churn.py",
+      "bytes": 14620,
+      "sha256": "745815f77e103089a8f659114941aa373dd598a30f0722ff16a3dae00cc73ad0"
+    },
+    {
+      "path": "tools/run_vulkan_pool_rebase_fault.py",
+      "bytes": 16508,
+      "sha256": "4a18db29e8e40348cfe1507862147b2d5ed769844ff0ff183f93d834568bf5ea"
+    },
+    {
+      "path": "tools/run_vulkan_pso.py",
+      "bytes": 13059,
+      "sha256": "bb53a90bc37023ac7566128286af817e5350b3357e2bf6d70e62e8ee918cf002"
+    },
+    {
+      "path": "tools/run_vulkan_recovery.py",
+      "bytes": 6057,
+      "sha256": "e76b2868a40c72c24e1198fc85426f574bc5f46e474834f21bf88144ba1e1c0a"
+    },
+    {
+      "path": "tools/run_vulkan_upload.py",
+      "bytes": 12188,
+      "sha256": "90175b5ca4e0ed0e9175bbfe55fa52da77bc1815dce53e69ea9e9d2d569083a0"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate.py",
+      "bytes": 7492,
+      "sha256": "50193972623a1ff6a6003481404d54ad8fb6691992a324861a70ad74bf9988e4"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate_bindings.py",
+      "bytes": 7664,
+      "sha256": "e026202e01496ce3b08688fffefbabc1f8a4215503b75951ab98253de1ae53d3"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate_depth.py",
+      "bytes": 5009,
+      "sha256": "b71919689890487f77561f8040865feb5244ded85286e53590898e950bed44b3"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate_vertex.py",
+      "bytes": 5743,
+      "sha256": "d87a6812c7c441ebefc61f257d8ac6fa681a5066d03de454b5757f3ac5124707"
+    },
+    {
+      "path": "tools/vulkan-validation.lock.json",
+      "bytes": 1628,
+      "sha256": "227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"
+    },
+    {
+      "path": "tools/vulkan_creation_provenance.py",
+      "bytes": 1259,
+      "sha256": "8a2c3551284ce899b87c7b73123c8f962355778c2657e961faf3a6a0efc684f3"
+    },
+    {
+      "path": "tools/vulkan_upload_experiment.py",
+      "bytes": 2622,
+      "sha256": "93c98aadbc935863d54911321bc9e837a82f346e408d69d25b14b772156afe8c"
+    }
+  ],
+  "inputs_unchanged": true,
+  "tracked_status_before": "",
+  "tracked_status_after": "",
+  "tests": 697,
+  "test_ids": [
+    "test_adapter_validation.AdapterEvidenceTests.test_duplicate_identity_fails",
+    "test_adapter_validation.AdapterEvidenceTests.test_hardware_and_warp_exact_selection",
+    "test_adapter_validation.AdapterEvidenceTests.test_initial_and_final_wrong_id_fail",
+    "test_adapter_validation.AdapterEvidenceTests.test_malformed_id_and_unavailable_metadata_are_not_zero",
+    "test_adapter_validation.AdapterEvidenceTests.test_missing_or_stale_list_footer_fails",
+    "test_adapter_validation.AdapterEvidenceTests.test_missing_recovery_receipt_fails",
+    "test_adapter_validation.AdapterEvidenceTests.test_recovery_fallback_is_rejected",
+    "test_adapter_validation.AdapterEvidenceTests.test_same_name_is_not_identity",
+    "test_adapter_validation.AdapterEvidenceTests.test_unique_metadata_with_real_zero_id",
+    "test_adapter_validation.AdapterEvidenceTests.test_wrong_validation_or_software_mode_fails",
+    "test_benchmarks.StatisticsTests.test_bgfx_fingerprint_includes_build_options_and_fixed_dependency_commits",
+    "test_benchmarks.StatisticsTests.test_bgfx_lazy_program_is_not_a_measured_pso",
+    "test_benchmarks.StatisticsTests.test_bgfx_pool_policy_cannot_enter_default_allocation_comparison",
+    "test_benchmarks.StatisticsTests.test_bgfx_unsupported_request_fails_before_creating_measurements",
+    "test_benchmarks.StatisticsTests.test_diligent_fingerprint_detects_source_and_dependency_changes",
+    "test_benchmarks.StatisticsTests.test_incomparable_hardware_and_validation",
+    "test_benchmarks.StatisticsTests.test_noise_and_repeatability",
+    "test_benchmarks.StatisticsTests.test_tail_and_run_medians",
+    "test_benchmarks.StatisticsTests.test_workload_and_readback_must_match_the_request",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_accepts_only_fixed_working_set",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_cpu_and_gpu_retention_controls_are_required",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_error_count_cannot_be_filtered_or_omitted",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_missing_footer_and_samples_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_missing_memory_and_failed_dxgi_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_pending_or_changed_pool_and_final_leaks_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_private_gpu_and_handle_growth_cannot_pass",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_reference_work_duration_and_checkpoint_gap_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_sdk_identity_and_adapter_are_required",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_short_or_disabled_validation_is_rejected",
+    "test_capture_memory_failure.SelectedLibraryTests.test_selected_library_mutation_rejects_completed_child",
+    "test_capture_memory_failure.SelectedLibraryTests.test_separate_symbol_library_needs_no_default_core_library",
+    "test_crash_capture.CrashEvidenceTests.test_application_breakpoint_not_labelled_as_loader_event",
+    "test_crash_capture.CrashEvidenceTests.test_child_exit_and_collector_exit_must_agree",
+    "test_crash_capture.CrashEvidenceTests.test_completed_and_crashed_capture_never_accept_memory",
+    "test_crash_capture.CrashEvidenceTests.test_missing_counter_debug_text_overflow_and_dump_failure_rejected",
+    "test_crash_capture.CrashEvidenceTests.test_second_chance_and_fault_context_cannot_disappear",
+    "test_crash_capture.CrashEvidenceTests.test_timeout_requires_matching_native_exit_and_receipt",
+    "test_crash_capture.CrashEvidenceTests.test_truncated_capture_not_complete",
+    "test_crash_capture.CrashEvidenceTests.test_wrong_scope_or_nondiagnostic_result_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_complete_and_explicitly_truncated_sets",
+    "test_crash_capture.ThreadSnapshotTests.test_downgraded_or_orphan_receipts_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_duplicate_threads_and_fault_misclassification_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_missing_worker_context_or_pc",
+    "test_crash_capture.ThreadSnapshotTests.test_snapshot_correlation_and_order_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_thread_and_frame_limits_cannot_be_relaxed",
+    "test_crash_capture.ThreadSnapshotTests.test_truncation_and_false_completeness_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_unavailable_context_cannot_have_frames",
+    "test_crash_capture.ThreadSnapshotTests.test_unavailable_context_is_explicit_and_not_complete",
+    "test_crash_capture.ThreadSnapshotTests.test_unbounded_or_discontinuous_stacks_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_changed_source_order_or_final_callback_totals_are_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_early_resource_or_device_destruction_is_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_failed_or_reduced_validation_cannot_pass",
+    "test_device_lifetime.LifetimeParserTests.test_missing_footer_cycle_or_callback_is_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_missing_identity_module_or_failed_hardware_observation",
+    "test_device_lifetime.LifetimeParserTests.test_post_device_statistics_cannot_be_fabricated",
+    "test_device_lifetime.LifetimeParserTests.test_sdk_ownership_and_full_references_are_required",
+    "test_device_lifetime.LifetimeParserTests.test_valid_native_and_sdk_scopes_remain_observations",
+    "test_device_lifetime.LifetimeParserTests.test_warp_unsupported_dxgi_is_explicit",
+    "test_fixed_memory.FixedMemoryContracts.test_abort_requires_observed_threshold_and_no_later_work",
+    "test_fixed_memory.FixedMemoryContracts.test_bad_types_ranges_and_timing_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_case_artifact_reference_command_and_frozen_identity_cannot_change",
+    "test_fixed_memory.FixedMemoryContracts.test_command_paths_and_argument_order_remain_bound",
+    "test_fixed_memory.FixedMemoryContracts.test_different_work_or_binary_does_not_produce_memory_comparison",
+    "test_fixed_memory.FixedMemoryContracts.test_equivalent_output_path_preserves_original_command",
+    "test_fixed_memory.FixedMemoryContracts.test_exact_warmup_measurement_and_remainder_checkpoint",
+    "test_fixed_memory.FixedMemoryContracts.test_fixed_work_cannot_enter_timed_acceptance",
+    "test_fixed_memory.FixedMemoryContracts.test_guard_and_wall_deadline_preserve_verified_prefix",
+    "test_fixed_memory.FixedMemoryContracts.test_identity_public_budget_and_drain_contracts_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_incomplete_oversized_and_wrong_split_counts_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_matched_comparison_uses_work_coordinates",
+    "test_fixed_memory.FixedMemoryContracts.test_missing_duplicate_and_out_of_order_work_checkpoints_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_zero_warmup_and_one_round_are_valid",
+    "test_forge_benchmarks.ForgeContracts.test_external_configuration_is_part_of_the_compiled_identity",
+    "test_forge_benchmarks.ForgeContracts.test_legacy_nvapi_is_rejected_but_forge_fallback_helper_is_allowed",
+    "test_forge_benchmarks.ForgeContracts.test_runtime_and_gpu_configuration_copies_must_match_pinned_bytes",
+    "test_forge_benchmarks.ForgeContracts.test_vendor_terms_are_distinguished_from_forge_root_license",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_loss_decode_error_or_unknown_clock_cannot_pass",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_missing_or_inconsistent_lifetime_or_usage_is_rejected",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_system_thread_destruction_is_joined_by_allocation_handle",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_transient_positive_control_requires_overlap_inside_checkpoint_gap_and_missed_peak",
+    "test_gpu_timestamps.TimestampContracts.test_completed_gpu_query_is_required_and_finite",
+    "test_gpu_timestamps.TimestampContracts.test_diligent_start_resolve_inside_interval_cannot_enter_common_comparison",
+    "test_gpu_timestamps.TimestampContracts.test_missing_or_different_interval_and_cpu_wait_masquerade_are_rejected",
+    "test_gpu_timestamps.TimestampContracts.test_statistics_preserve_gpu_query_values_and_contract_separation",
+    "test_gpu_timestamps.TimestampContracts.test_unsupported_adapters_fail_before_output_creation",
+    "test_license_audit.CompilerEvidenceTests.test_bgfx_vendored_notices_are_not_replaced_by_root_bsd",
+    "test_license_audit.CompilerEvidenceTests.test_d3dx12_origin_accepts_only_recorded_body",
+    "test_license_audit.CompilerEvidenceTests.test_diligent_checksum_keeps_rsa_terms_and_nvapi_binary_is_explicit",
+    "test_license_audit.CompilerEvidenceTests.test_missing_trace_is_not_empty_success",
+    "test_license_audit.CompilerEvidenceTests.test_notices_inside_amalgamated_header_and_at_end",
+    "test_license_audit.CompilerEvidenceTests.test_pin_refresh_requires_new_review",
+    "test_license_audit.CompilerEvidenceTests.test_private_backend_headers_are_part_of_sdk_source_identity",
+    "test_license_audit.CompilerEvidenceTests.test_specific_license_precedes_project_default",
+    "test_license_audit.CompilerEvidenceTests.test_unknown_linked_library_is_not_covered_by_header_inventory",
+    "test_license_audit.CompilerEvidenceTests.test_utf16_batched_sources_and_headers",
+    "test_license_audit.PackageTests.test_archive_traversal_and_windows_aliases",
+    "test_license_audit.PackageTests.test_competitor_dll_cannot_hide_in_sdk_package",
+    "test_license_audit.PackageTests.test_known_sdk_payload",
+    "test_license_audit.PackageTests.test_missing_or_changed_license_and_library",
+    "test_license_audit.PackageTests.test_unreviewed_header_cannot_hide_under_public_include",
+    "test_license_audit.PackageTests.test_unsafe_directory_cannot_be_skipped_by_zip_reader",
+    "test_license_audit.SnapshotTests.test_changed_notice_is_detected_without_overwriting",
+    "test_linux_hardware.PhysicalGateContracts.test_boolean_metadata_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_cpu_and_software_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_driver_uuid_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_exact_creation_controls_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_pci_provenance_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_selection_rejections_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_numeric_large_adapter_id_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_source_mismatch_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_synthetic_gate_model",
+    "test_linux_hardware.PhysicalGateContracts.test_uuid_set_mismatch_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_virtual_and_other_kinds_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_virtual_pci_driver_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_workload_and_validation_are_required",
+    "test_linux_hardware.PhysicalGateContracts.test_wrong_exact_id_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_consumer_repository_header_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_consumer_vendor_header_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_exact_payload_zip",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_extra_runtime_binary_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_gnu_continuation_and_escaped_space",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_header_tamper_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_installed_header_accepted",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_missing_dependency_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_missing_notice_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_missing_target_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_notice_tamper_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_stale_archive_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_unknown_external_input_rejected",
+    "test_linux_wsi_scope.ScopeContracts.test_BGRA_is_explicit_and_requires_native_format",
+    "test_linux_wsi_scope.ScopeContracts.test_Wayland_and_software_are_not_inferred",
+    "test_linux_wsi_scope.ScopeContracts.test_honest_unsupported_prerequisite",
+    "test_linux_wsi_scope.ScopeContracts.test_limits_and_device_creation_are_required",
+    "test_linux_wsi_scope.ScopeContracts.test_missing_completion_or_format_or_usage",
+    "test_linux_wsi_scope.ScopeContracts.test_no_duplicate_or_unknown_native_identity",
+    "test_linux_wsi_scope.ScopeContracts.test_scope_is_not_SDK_presentation",
+    "test_linux_wsi_scope.ScopeContracts.test_stale_or_incomplete_source",
+    "test_linux_wsi_scope.ScopeContracts.test_wrong_selected_queue_or_surface_support",
+    "test_linux_xcb_present.PresentContracts.test_all_declared_controls",
+    "test_linux_xcb_present.PresentContracts.test_format_mode_extent_are_native",
+    "test_linux_xcb_present.PresentContracts.test_full_images_transfers_and_padding_required",
+    "test_linux_xcb_present.PresentContracts.test_mailbox_has_stricter_native_image_count",
+    "test_linux_xcb_present.PresentContracts.test_missing_presents_or_completion",
+    "test_linux_xcb_present.PresentContracts.test_native_stderr_survives_outer_stderr_stdout_merge",
+    "test_linux_xcb_present.PresentContracts.test_no_fake_coverage_or_human_acceptance",
+    "test_linux_xcb_present.PresentContracts.test_no_native_leak_or_validation_errors",
+    "test_linux_xcb_present.PresentContracts.test_stale_source_or_wrong_validation",
+    "test_linux_xcb_surface.XcbContracts.test_GPU_reference_and_origin",
+    "test_linux_xcb_surface.XcbContracts.test_all_control_modes_and_builds",
+    "test_linux_xcb_surface.XcbContracts.test_missing_and_disabled_paths_never_synthesize_support",
+    "test_linux_xcb_surface.XcbContracts.test_native_closure_and_both_queries",
+    "test_linux_xcb_surface.XcbContracts.test_no_presentation_or_missing_result",
+    "test_linux_xcb_surface.XcbContracts.test_source_and_mode_are_bound",
+    "test_llgl_upload.LLGLUploadContracts.test_adapter_identity_changes_with_pin_harness_or_copy_layout",
+    "test_llgl_upload.LLGLUploadContracts.test_new_upload_and_telemetry_contracts_stay_separate_from_historical_data",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_failed_exit_changed_inputs_or_mismatched_receipt_rejected",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_frames_during_minimize_and_after_close_rejected",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_human_cannot_replace_missing_native_minimize",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_native_events_alone_do_not_grant_human_acceptance",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_native_self_acceptance_loss_or_missing_shutdown_rejected",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_negative_unbound_or_automated_observation_rejected",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_all_four_stable_mapping_fields_are_checked",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_current_receipts_count_both_segments_and_legacy_makes_no_claim",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_dynamic_bracket_is_counted_without_asserting_equality",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_guard_abort_still_retains_budget_receipts_without_acceptance",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_identity_segment_status_and_native_code_cannot_be_changed",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_missing_null_negative_boolean_float_and_overflow_bytes_are_rejected",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_native_failure_malformed_after_and_fake_zero_cannot_pass",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_sdk_positive_control_cannot_be_replaced_by_native_only_success",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_unsupported_warp_requires_explicit_nulls_and_matching_failure",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_zero_and_over_budget_uint64_snapshots_are_not_clamped",
+    "test_memory_campaign.CampaignReceiptsTests.test_canonical_root_alias_preserves_source_receipts",
+    "test_memory_campaign.CampaignReceiptsTests.test_changed_input_invalidates_campaign",
+    "test_memory_campaign.CampaignReceiptsTests.test_guard_failure_receipt_survives_and_warp_still_runs",
+    "test_memory_campaign.CampaignReceiptsTests.test_native_crash_retains_exit_code_and_runs_remaining_mode",
+    "test_memory_campaign.CampaignReceiptsTests.test_old_executable_or_corrupt_budget_cannot_pass_current_runner",
+    "test_memory_campaign.CampaignReceiptsTests.test_timeout_is_preserved_and_child_is_reaped",
+    "test_memory_campaign.MemoryIdentityTests.test_adapter_cli_rejects_sign_trailing_text_unicode_and_overflow",
+    "test_memory_campaign.MemoryIdentityTests.test_campaign_cannot_mix_hardware_or_warp_ids",
+    "test_memory_campaign.MemoryIdentityTests.test_exit_code_threshold_and_guard_record_must_agree",
+    "test_memory_campaign.MemoryIdentityTests.test_guard_abort_stays_rejected_even_with_full_soak_shape",
+    "test_memory_campaign.MemoryIdentityTests.test_historical_record_cannot_prove_new_explicit_request",
+    "test_memory_campaign.MemoryIdentityTests.test_invalid_luid_and_missing_guard_rejected",
+    "test_memory_campaign.MemoryIdentityTests.test_kind_and_full_gbv_cannot_be_reduced",
+    "test_memory_campaign.MemoryIdentityTests.test_missing_explicit_request_and_boolean_identity_rejected",
+    "test_memory_campaign.MemoryIdentityTests.test_sdk_observer_request_and_footer_cannot_disagree",
+    "test_memory_campaign.MemoryIdentityTests.test_short_diagnostics_never_accept_soak",
+    "test_memory_campaign.MemoryIdentityTests.test_zero_unsigned_high_bits_and_all_modes",
+    "test_memory_environment.MemoryEnvironmentContracts.test_case_metadata_cannot_override_native_command_or_results",
+    "test_memory_environment.MemoryEnvironmentContracts.test_cases_bind_workload_settings_and_functional_references",
+    "test_memory_environment.MemoryEnvironmentContracts.test_collect_snapshot_requires_unique_hardware_and_exact_pci_name",
+    "test_memory_environment.MemoryEnvironmentContracts.test_compare_cli_never_overwrites_existing_result",
+    "test_memory_environment.MemoryEnvironmentContracts.test_cpu_bios_microcode_policy_sdk_binary_gpu_and_os_changes_reject",
+    "test_memory_environment.MemoryEnvironmentContracts.test_driver_change_requires_real_change_and_all_other_controls_equal",
+    "test_memory_environment.MemoryEnvironmentContracts.test_missing_or_malformed_control_is_rejected",
+    "test_memory_environment.MemoryEnvironmentContracts.test_partial_crash_is_recorded_as_native_failed_without_invented_references",
+    "test_memory_environment.MemoryEnvironmentContracts.test_reboot_allows_fresh_id_only_between_runs",
+    "test_memory_environment.MemoryEnvironmentContracts.test_record_rejects_command_binding_error_before_reporting_recorded",
+    "test_memory_environment.MemoryEnvironmentContracts.test_record_wrapper_records_normal_run_and_rejects_environment_drift",
+    "test_memory_environment.MemoryEnvironmentContracts.test_runner_exception_is_preserved_and_existing_output_not_probed",
+    "test_memory_environment.MemoryEnvironmentContracts.test_same_environment_ignores_observation_time_but_never_accepts_memory",
+    "test_memory_environment.MemoryEnvironmentContracts.test_tampered_artifact_and_outside_path_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_fake_cpu_control_and_missing_release_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_fake_gpu_control_and_missing_release_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_inconsistent_dxgi_status_and_fake_zero_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_missing_and_nonfinite_process_counter_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_missing_checkpoint_pair_or_large_gap_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_missing_footer_or_failed_process_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_monotonic_private_gpu_and_handle_leaks_fail_plateau",
+    "test_memory_stress.MemoryAcceptanceTests.test_native_gbv_error_cannot_pass",
+    "test_memory_stress.MemoryAcceptanceTests.test_no_validation_or_statistics_contract_result_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_no_work_and_partial_image_coverage_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_resources_pending_references_and_objects_must_drain",
+    "test_memory_stress.MemoryAcceptanceTests.test_smoke_cannot_satisfy_soak_gate",
+    "test_memory_stress.MemoryAcceptanceTests.test_stable_observations_accept_all_modes",
+    "test_memory_stress.MemoryAcceptanceTests.test_stale_sdk_cannot_reuse_old_campaign",
+    "test_memory_stress.MemoryAcceptanceTests.test_truncated_and_duplicate_json_fields_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_warp_unsupported_dxgi_is_null_and_explicit",
+    "test_phase1.Phase1Contracts.test_both_cpu_references_and_real_completed_gpu_results_are_mandatory",
+    "test_phase1.Phase1Contracts.test_cache_counters_prove_actual_application_layer_and_include_warmup",
+    "test_phase1.Phase1Contracts.test_comparison_report_rejects_missing_duplicate_or_mixed_evidence",
+    "test_phase1.Phase1Contracts.test_matched_contract_retains_public_binding_abi_difference",
+    "test_phase1.Phase1Contracts.test_other_sdk_adapters_are_not_silently_replaced_with_llgl_or_native",
+    "test_phase1.Phase1Contracts.test_registry_matches_compiled_cli_and_ctest_scenarios",
+    "test_phase1.Phase1Contracts.test_sampled_memory_or_trace_filename_cannot_complete_phase1",
+    "test_phase1.Phase1Contracts.test_sdl_requires_cpu_only_and_rejects_llgl_results_and_instrumentation",
+    "test_phase1.Phase1Contracts.test_video_composition_rejects_a_solid_overlay_or_wrong_plane_payload",
+    "test_presentation.InstalledConsumerAuditTests.test_installed_header_matches_exact_reviewed_public_source",
+    "test_presentation.InstalledConsumerAuditTests.test_stale_or_missing_installed_library_fails",
+    "test_presentation.LifecycleEvidenceTests.test_errors_unavailable_validation_and_wrong_mode_fail",
+    "test_presentation.LifecycleEvidenceTests.test_minimized_frames_stale_extent_and_missing_padding_fail",
+    "test_presentation.LifecycleEvidenceTests.test_missing_footer_image_or_loss_is_not_success",
+    "test_presentation.LifecycleEvidenceTests.test_retained_objects_destroyed_hwnd_and_fake_loss_fail",
+    "test_presentation.LifecycleEvidenceTests.test_scope_cannot_be_upgraded_to_interactive_or_unexpected_loss",
+    "test_presentation.LifecycleEvidenceTests.test_six_modes_and_null_for_unavailable_validation",
+    "test_presentation.LifecycleEvidenceTests.test_tiny_extent_coverage_cannot_be_dropped",
+    "test_presentation.PacingEvidenceTests.test_early_frames_no_wait_wrong_cap_and_claimed_acceptance_fail",
+    "test_presentation.PacingEvidenceTests.test_missing_ready_or_injected_recovery_cannot_pass_normal_loop",
+    "test_presentation.PacingEvidenceTests.test_real_clock_lower_bound_and_readiness",
+    "test_recorded_sources.RecordedSourceContracts.test_aggregate_fingerprint_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_archive_digest_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_churn_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_duplicate_source_path_rejected",
+    "test_recorded_sources.RecordedSourceContracts.test_empty_source_set_rejected",
+    "test_recorded_sources.RecordedSourceContracts.test_loader_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_member_digest_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_missing_archive_fails_without_skip",
+    "test_recorded_sources.RecordedSourceContracts.test_rebase_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_source_path_escape_rejected",
+    "test_runtime_comparison.PinnedPackageTests.test_duplicate_case_alias_members_are_rejected",
+    "test_runtime_comparison.PinnedPackageTests.test_modified_package_is_rejected_before_extraction",
+    "test_runtime_comparison.RuntimeComparisonTests.test_all_nine_combinations_are_observations",
+    "test_runtime_comparison.RuntimeComparisonTests.test_fallback_or_wrong_provider_cannot_pass",
+    "test_runtime_comparison.RuntimeComparisonTests.test_hardware_counter_failures_and_incomplete_footer_fail",
+    "test_runtime_comparison.RuntimeComparisonTests.test_matrix_cannot_mix_adapters_or_versions",
+    "test_runtime_comparison.RuntimeComparisonTests.test_missing_checkpoints_and_native_alias_errors_fail",
+    "test_runtime_comparison.RuntimeComparisonTests.test_missing_error_control_or_unexpected_error_fails",
+    "test_runtime_comparison.RuntimeComparisonTests.test_mixed_missing_and_duplicate_modules_fail",
+    "test_runtime_comparison.RuntimeComparisonTests.test_reduced_or_misreported_validation_fails",
+    "test_runtime_comparison.RuntimeComparisonTests.test_warp_missing_dxgi_is_explicit",
+    "test_telemetry.TelemetryContracts.test_cpu_percent_is_one_core_and_process_aggregate_not_frame_samples",
+    "test_telemetry.TelemetryContracts.test_live_allocations_are_observed_before_release_and_order_is_required",
+    "test_telemetry.TelemetryContracts.test_llgl_upload_is_restored_only_with_the_new_public_buffer_copy_model",
+    "test_telemetry.TelemetryContracts.test_missing_invalid_or_inconsistent_cpu_counters_fail",
+    "test_telemetry.TelemetryContracts.test_missing_memory_is_never_zero_and_lifetime_peaks_cannot_reverse",
+    "test_telemetry.TelemetryContracts.test_opt_in_and_scope_and_gpu_identity_cannot_be_silently_changed",
+    "test_telemetry.TelemetryContracts.test_telemetry_comparisons_cannot_mix_with_original_uninstrumented_contract",
+    "test_virtual_ranges.VirtualRangeContracts.test_disjoint_tied_free_and_commit_report_peak_bounds_not_export_order",
+    "test_virtual_ranges.VirtualRangeContracts.test_disjoint_timestamp_ties_allowed_overlapping_ties_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_frees_need_no_allocation_origin_symbol",
+    "test_virtual_ranges.VirtualRangeContracts.test_interval_results_match_independent_page_oracle",
+    "test_virtual_ranges.VirtualRangeContracts.test_invalid_target_time_range_flags_and_stack_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_json_duplicate_truncation_and_existing_output_are_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_malformed_document_containers_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_manifest_requires_lossless_frozen_target_and_exact_counters",
+    "test_virtual_ranges.VirtualRangeContracts.test_recommit_does_not_double_count_or_reassign_origin",
+    "test_virtual_ranges.VirtualRangeContracts.test_reservation_is_not_commit_and_combined_reserve_commit_is",
+    "test_virtual_ranges.VirtualRangeContracts.test_sparse_64bit_ranges_do_not_require_page_sized_storage",
+    "test_virtual_ranges.VirtualRangeContracts.test_split_partial_free_release_and_reused_hole",
+    "test_virtual_ranges.VirtualRangeContracts.test_symbol_identity_conflict_missing_or_duplicate_frame_rejected",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_1000_buffers_66_blocks",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_candidate_fingerprint",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_changed_gpu",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_cross_phase_continuity",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_empty_block_release",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_exact_anchor_required",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fewer_blocks_than_required",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_final_live_bytes",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fixed_1000_control",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fixed_candidate_identity",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fixed_single_control",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_boolean_policy",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_type",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_value",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_policy_variant",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_zero_policy",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_layer_schema_revision",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_logical_release_count",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_missing_anchor_rejected",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_missing_byte_readback",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_missing_phase",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_native_dropped_event",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_native_implicit_teardown",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_native_ledger_error",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_no_physical_reclamation_claim",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_no_trace_timings",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_original_dedicated_control",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_outside_source_root_rejected",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_policy_boundaries",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_required_validation_layer",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_reserved_byte_accounting",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_single_buffer_reservation",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_trace_source_identity",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_unique_patch",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_GPU_use_untimed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_actual_memory_not_claimed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_allocation_policy",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_api_separation",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_buffer_shape_and_usage",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_category_separation",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_contract_revision",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_cpu_changed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_created_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_dependency_pin_stale",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_driver_changed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_every_byte_verified",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_every_iteration_verified",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_every_resource_verified",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_full_readback_required",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_gpu_changed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_harness_source_stale",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_instance_request",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_interval_values",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_invalid_identity",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_invalid_percentile",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_invalid_times",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_large_texture_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_matching_completed_payload",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_native_allocation_not_claimed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_no_buffer_claim_for_texture",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_no_timestamp_inference",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_no_total_interval",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_not_probe",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_percentile_interpolation",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_release_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_release_only",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_required_null_field",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_required_validation_layer",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_sample_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_sample_count_boolean",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_sdk_source_stale",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_shape",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_software_rejected",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_usage_policy",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_used_regions",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_validation_contamination",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_validation_errors_on_stdout",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_warmup_contract",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_zero_release_allowed",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_accounting_errors",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_actual_interception_required",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_byte_conservation",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_category_separation",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_complete_balanced_trace",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_counter_boolean_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_counter_negative_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_counter_overflow_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_cross_scope_continuity",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_dropped_events",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_duplicate_scope",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_final_live_resources",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_full_readback",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_gpu_identity",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_implicit_cleanup_bytes",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_implicit_cleanup_not_counted_as_free",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_missing_scope",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_more_successes_than_calls",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_native_call_failure",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_no_gpu_timestamp",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_no_memory_reclamation_claim",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_object_conservation",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_old_contract_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_performance_samples_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_phase_errors",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_snapshot_boolean",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_stale_layer",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_timings_must_be_excluded",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_unknown_call",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_validation_contamination",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_1000_buffers_63_blocks",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_candidate_fingerprint",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_changed_gpu",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_cross_phase_continuity",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_empty_block_release",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_exact_anchor_required",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_fewer_blocks_than_required",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_final_live_bytes",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_type",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_value",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_layer_schema_revision",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_logical_release_count",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_missing_anchor_rejected",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_missing_byte_readback",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_missing_phase",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_native_dropped_event",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_native_implicit_teardown",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_native_ledger_error",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_no_physical_reclamation_claim",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_no_trace_timings",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_original_dedicated_control",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_outside_source_root_rejected",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_required_validation_layer",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_reserved_byte_accounting",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_single_buffer_reservation",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_trace_source_identity",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_unique_patch",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_all_clean_case_models",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_all_guard_readbacks_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_boolean_guard_counter_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_continuity_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_fallback_size_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_full_byte_readback_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_gpu_luid_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_guard_failure_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_invalid_free_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_layer_identity_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_leaked_shared_slot_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_missing_failed_buffer_destroy",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_missing_trace_frame",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_accounting_errors",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_dropped_events",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_implicit_device_cleanup",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_silent_null_only_injection",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_pending_fault_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_poisoned_output_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_recorded_bind_offset_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_regression_must_be_explicit",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_reused_bind_offset_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_sdk_identity_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_two_guarded_regressions",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_unknown_error_must_not_fallback",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_valid_counter_types",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_validation_layer_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_wrong_error_rejected",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_absolute_path",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_changed_snapshot_bytes",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_matching_current_is_preferred",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_traversal_path",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_unchanged_current_input",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_unreviewed_historical_path",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_verified_snapshot_resolution",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_wrong_snapshot_identity",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_boolean_gpu_calls",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_counter_aggregate",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_cpu_is_not_gpu",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_duplicate_case",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_invalid_cleanup",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_leaked_object",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_masked_regression",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_missing_case",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_undestroyed_object",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_valid_clean_matrix",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_valid_regression_matrix",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_wrong_sdk",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_boundaries",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_nonfinite",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_partition",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_total",
+    "test_vulkan_draw.VulkanDrawContracts.test_api_separation",
+    "test_vulkan_draw.VulkanDrawContracts.test_category_separation",
+    "test_vulkan_draw.VulkanDrawContracts.test_clean_process_output",
+    "test_vulkan_draw.VulkanDrawContracts.test_contract_revision",
+    "test_vulkan_draw.VulkanDrawContracts.test_cpu_changed",
+    "test_vulkan_draw.VulkanDrawContracts.test_dependency_pin_stale",
+    "test_vulkan_draw.VulkanDrawContracts.test_driver_changed",
+    "test_vulkan_draw.VulkanDrawContracts.test_every_byte_verified",
+    "test_vulkan_draw.VulkanDrawContracts.test_every_iteration_verified",
+    "test_vulkan_draw.VulkanDrawContracts.test_first_vertex",
+    "test_vulkan_draw.VulkanDrawContracts.test_full_readback_required",
+    "test_vulkan_draw.VulkanDrawContracts.test_geometry",
+    "test_vulkan_draw.VulkanDrawContracts.test_gpu_changed",
+    "test_vulkan_draw.VulkanDrawContracts.test_harness_source_stale",
+    "test_vulkan_draw.VulkanDrawContracts.test_instancing_contract",
+    "test_vulkan_draw.VulkanDrawContracts.test_invalid_identity",
+    "test_vulkan_draw.VulkanDrawContracts.test_invalid_percentile",
+    "test_vulkan_draw.VulkanDrawContracts.test_invalid_times",
+    "test_vulkan_draw.VulkanDrawContracts.test_matching_completed_payload",
+    "test_vulkan_draw.VulkanDrawContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_draw.VulkanDrawContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_draw.VulkanDrawContracts.test_no_timestamp_inference",
+    "test_vulkan_draw.VulkanDrawContracts.test_not_probe",
+    "test_vulkan_draw.VulkanDrawContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_draw.VulkanDrawContracts.test_percentile_interpolation",
+    "test_vulkan_draw.VulkanDrawContracts.test_release_only",
+    "test_vulkan_draw.VulkanDrawContracts.test_required_null_field",
+    "test_vulkan_draw.VulkanDrawContracts.test_required_validation_layer",
+    "test_vulkan_draw.VulkanDrawContracts.test_sample_count",
+    "test_vulkan_draw.VulkanDrawContracts.test_sample_count_boolean",
+    "test_vulkan_draw.VulkanDrawContracts.test_scissor_contract",
+    "test_vulkan_draw.VulkanDrawContracts.test_sdk_source_stale",
+    "test_vulkan_draw.VulkanDrawContracts.test_shader_identity",
+    "test_vulkan_draw.VulkanDrawContracts.test_shape",
+    "test_vulkan_draw.VulkanDrawContracts.test_software_rejected",
+    "test_vulkan_draw.VulkanDrawContracts.test_submitted_work",
+    "test_vulkan_draw.VulkanDrawContracts.test_validation_contamination",
+    "test_vulkan_draw.VulkanDrawContracts.test_validation_errors_on_either_stream",
+    "test_vulkan_draw.VulkanDrawContracts.test_warmup_contract",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_counter",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_error",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_poison",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_schema",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_duplicate_cycle",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_every_recorded_profile",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_extra_injection",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_failed_creation_adopts_output",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_hidden_regression",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_invalid_cleanup",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_json_scalar_identity",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_leaked_native_instance",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_missing_cycle",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_missing_frame",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_missing_guard_data",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_retry_not_observed",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_trace_errors",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_unaccounted_device_destruction",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_unconsumed_error",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_unknown_snapshot_field",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_byte_count",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_layer",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_profile",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_sdk",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_hardware_not_accepted_as_software_and_denial_cannot_hide_calls",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_label_truncation_reordering_and_unforwarded_calls_rejected",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_single_adapter_native_count_and_multi_adapter_minimum",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_stale_source_missing_observer_or_incomplete_result_rejected",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_supported_and_missing_proc_are_separate_complete_contracts",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_all_recorded_profiles",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_baseline_sharing_claim",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_boolean_native_error",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_boolean_schema",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_duplicate_checkpoint",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_held_retention",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_implicit_cleanup",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_invalid_free",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_checkpoint",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_injection",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_model_checks",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_native_class",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_native_frame",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_readback",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_native_live_leak",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_native_trace_drop",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_no_actual_reuse",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_nonempty_cache",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_pending_fault",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_singleton_reset",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_sparse_survivor_count",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_unaccounted_growth",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_unique_rebase_anchor",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_unsafe_range",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_injected_error",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_native_counter",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_occupancy",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_payload",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_readback_bytes",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_sdk",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_source",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_all_fresh_mixed_profiles",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_binding_guard",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_boolean_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_boolean_schema",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_boolean_trace_error",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_failed_target_changes_growth",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_failed_target_changes_owners",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_fault_consumed_on_reuse",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_hidden_empty_block",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_implicit_cleanup",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_invalid_free",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_invalid_memory_type",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_cycle",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_fallback_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_phase",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_readback",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_second_oom",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_native_final_leak",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_pending_fault",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_trace_drop",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_unaligned_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_unknown_error_retried_as_oom",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_unpoisoned_allocation",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_assertions",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_binding_error",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_block_request",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_bytes",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_growth_after_reuse",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_memory_bytes",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_reuse_offset",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_sdk",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_source",
+    "test_vulkan_pso.VulkanPsoContracts.test_GPU_use_untimed",
+    "test_vulkan_pso.VulkanPsoContracts.test_actual_memory_not_claimed",
+    "test_vulkan_pso.VulkanPsoContracts.test_api_separation",
+    "test_vulkan_pso.VulkanPsoContracts.test_cache_not_classified",
+    "test_vulkan_pso.VulkanPsoContracts.test_category_separation",
+    "test_vulkan_pso.VulkanPsoContracts.test_contract_revision",
+    "test_vulkan_pso.VulkanPsoContracts.test_cpu_changed",
+    "test_vulkan_pso.VulkanPsoContracts.test_created_count",
+    "test_vulkan_pso.VulkanPsoContracts.test_dependency_pin_stale",
+    "test_vulkan_pso.VulkanPsoContracts.test_driver_changed",
+    "test_vulkan_pso.VulkanPsoContracts.test_every_byte_verified",
+    "test_vulkan_pso.VulkanPsoContracts.test_every_iteration_verified",
+    "test_vulkan_pso.VulkanPsoContracts.test_full_readback_required",
+    "test_vulkan_pso.VulkanPsoContracts.test_gpu_changed",
+    "test_vulkan_pso.VulkanPsoContracts.test_harness_source_stale",
+    "test_vulkan_pso.VulkanPsoContracts.test_instance_request",
+    "test_vulkan_pso.VulkanPsoContracts.test_interval_values",
+    "test_vulkan_pso.VulkanPsoContracts.test_invalid_identity",
+    "test_vulkan_pso.VulkanPsoContracts.test_invalid_percentile",
+    "test_vulkan_pso.VulkanPsoContracts.test_invalid_times",
+    "test_vulkan_pso.VulkanPsoContracts.test_matching_completed_payload",
+    "test_vulkan_pso.VulkanPsoContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_pso.VulkanPsoContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_pso.VulkanPsoContracts.test_no_timestamp_inference",
+    "test_vulkan_pso.VulkanPsoContracts.test_no_total_interval",
+    "test_vulkan_pso.VulkanPsoContracts.test_not_probe",
+    "test_vulkan_pso.VulkanPsoContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_pso.VulkanPsoContracts.test_percentile_interpolation",
+    "test_vulkan_pso.VulkanPsoContracts.test_release_count",
+    "test_vulkan_pso.VulkanPsoContracts.test_release_only",
+    "test_vulkan_pso.VulkanPsoContracts.test_required_null_field",
+    "test_vulkan_pso.VulkanPsoContracts.test_required_validation_layer",
+    "test_vulkan_pso.VulkanPsoContracts.test_sample_count",
+    "test_vulkan_pso.VulkanPsoContracts.test_sample_count_boolean",
+    "test_vulkan_pso.VulkanPsoContracts.test_sdk_source_stale",
+    "test_vulkan_pso.VulkanPsoContracts.test_shader_identity",
+    "test_vulkan_pso.VulkanPsoContracts.test_shader_objects_included",
+    "test_vulkan_pso.VulkanPsoContracts.test_shape",
+    "test_vulkan_pso.VulkanPsoContracts.test_software_rejected",
+    "test_vulkan_pso.VulkanPsoContracts.test_used_regions",
+    "test_vulkan_pso.VulkanPsoContracts.test_validation_contamination",
+    "test_vulkan_pso.VulkanPsoContracts.test_validation_errors_on_stdout",
+    "test_vulkan_pso.VulkanPsoContracts.test_warmup_contract",
+    "test_vulkan_pso.VulkanPsoContracts.test_zero_release_allowed",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_cleanup_order_and_failed_retry_counts_cannot_be_dropped",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_fault_modes_automatic_policy_and_reorder_must_be_exercised",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_full_gpu_image_and_buffer_references_required",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_generations_cannot_alias_or_be_reused",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_single_and_multiple_adapter_recovery",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_stale_source_actual_tdr_claim_and_software_alias_rejected",
+    "test_vulkan_upload.VulkanUploadContracts.test_api_separation",
+    "test_vulkan_upload.VulkanUploadContracts.test_category_separation",
+    "test_vulkan_upload.VulkanUploadContracts.test_contract_revision",
+    "test_vulkan_upload.VulkanUploadContracts.test_cpu_changed",
+    "test_vulkan_upload.VulkanUploadContracts.test_dependency_pin_stale",
+    "test_vulkan_upload.VulkanUploadContracts.test_driver_changed",
+    "test_vulkan_upload.VulkanUploadContracts.test_every_byte_verified",
+    "test_vulkan_upload.VulkanUploadContracts.test_every_iteration_verified",
+    "test_vulkan_upload.VulkanUploadContracts.test_full_readback_required",
+    "test_vulkan_upload.VulkanUploadContracts.test_gpu_changed",
+    "test_vulkan_upload.VulkanUploadContracts.test_harness_source_stale",
+    "test_vulkan_upload.VulkanUploadContracts.test_invalid_identity",
+    "test_vulkan_upload.VulkanUploadContracts.test_invalid_percentile",
+    "test_vulkan_upload.VulkanUploadContracts.test_invalid_times",
+    "test_vulkan_upload.VulkanUploadContracts.test_matching_completed_payload",
+    "test_vulkan_upload.VulkanUploadContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_upload.VulkanUploadContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_upload.VulkanUploadContracts.test_no_timestamp_inference",
+    "test_vulkan_upload.VulkanUploadContracts.test_not_probe",
+    "test_vulkan_upload.VulkanUploadContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_upload.VulkanUploadContracts.test_percentile_interpolation",
+    "test_vulkan_upload.VulkanUploadContracts.test_release_only",
+    "test_vulkan_upload.VulkanUploadContracts.test_required_null_field",
+    "test_vulkan_upload.VulkanUploadContracts.test_required_validation_layer",
+    "test_vulkan_upload.VulkanUploadContracts.test_sample_count",
+    "test_vulkan_upload.VulkanUploadContracts.test_sample_count_boolean",
+    "test_vulkan_upload.VulkanUploadContracts.test_sdk_source_stale",
+    "test_vulkan_upload.VulkanUploadContracts.test_shape",
+    "test_vulkan_upload.VulkanUploadContracts.test_software_rejected",
+    "test_vulkan_upload.VulkanUploadContracts.test_validation_contamination",
+    "test_vulkan_upload.VulkanUploadContracts.test_warmup_contract",
+    "test_vulkan_upload_compare.CPUStageContracts.test_bad_intervals",
+    "test_vulkan_upload_compare.CPUStageContracts.test_boundary_order",
+    "test_vulkan_upload_compare.CPUStageContracts.test_byte_count",
+    "test_vulkan_upload_compare.CPUStageContracts.test_changed_device",
+    "test_vulkan_upload_compare.CPUStageContracts.test_changed_driver",
+    "test_vulkan_upload_compare.CPUStageContracts.test_changed_sdk",
+    "test_vulkan_upload_compare.CPUStageContracts.test_end_to_end_is_separate",
+    "test_vulkan_upload_compare.CPUStageContracts.test_incomplete_reference",
+    "test_vulkan_upload_compare.CPUStageContracts.test_missing_rows",
+    "test_vulkan_upload_compare.CPUStageContracts.test_not_GPU_time",
+    "test_vulkan_upload_compare.CPUStageContracts.test_partition",
+    "test_vulkan_upload_compare.CPUStageContracts.test_sum_does_not_match",
+    "test_vulkan_upload_compare.CPUStageContracts.test_validation_excluded"
+  ],
+  "subtests": 574,
+  "failures": [],
+  "errors": [],
+  "skipped": [],
+  "expected_failures": [],
+  "unexpected_successes": [],
+  "successful": true,
+  "seconds": 7.953000000000031,
+  "log": {
+    "path": "out/python-contracts/unittest.log",
+    "bytes": 87811,
+    "sha256": "12e0707f1b016d886c4ec4ab960ef318f42546c5aec87c2e35d384060f066d94"
+  },
+  "historical_replay": "three pinned source ZIPs restored byte-for-byte by test fixtures; runtime validators still check their selected current source",
+  "native_GPU_executed_by_this_Python_suite": false,
+  "memory_or_Intel_investigation_resumed": false
+}

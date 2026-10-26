@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "schema_version": 1,
+    "source_lock": "tools/vulkan-validation.lock.json",
+    "platform": "Linux-x86_64",
+    "compiler": "g++-14",
+    "build_type": "Release",
+    "runtime_release_flags": "-O0 -DNDEBUG",
+    "prerequisite_parallel": 2,
+    "layer_parallel": 1,
+    "WSI_support": "XCB",
+    "mimalloc": false,
+    "upstream_tests": false,
+    "SPIRV_executables": false,
+    "scope": "External XCB validation runtime only; not SDK payload or performance measurement"
+  },
+  "profile_file": {
+    "path": "tools/linux-xcb-validation.json",
+    "bytes": 454,
+    "sha256": "3891d710961dcb3859211d9730057b09374b8b59171dcbe302d6d5ca509f965a"
+  },
+  "source_lock": {
+    "path": "tools/vulkan-validation.lock.json",
+    "bytes": 1628,
+    "sha256": "227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"
+  },
+  "components": [
+    {
+      "name": "Vulkan-ValidationLayers",
+      "url": "https://github.com/KhronosGroup/Vulkan-ValidationLayers.git",
+      "commit": "79f4759c2c492c1be37e18c0318330f2959327cb",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "Vulkan-Headers",
+      "url": "https://github.com/KhronosGroup/Vulkan-Headers.git",
+      "commit": "b379292b2ab6df5771ba9870d53cf8b2c9295daf",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "Vulkan-Utility-Libraries",
+      "url": "https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git",
+      "commit": "5f26cf65a18bc89a8e3d6569c14314b6fdac8d4d",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "SPIRV-Headers",
+      "url": "https://github.com/KhronosGroup/SPIRV-Headers.git",
+      "commit": "2acb319af38d43be3ea76bfabf3998e5281d8d12",
+      "ref": "2acb319af38d43be3ea76bfabf3998e5281d8d12"
+    },
+    {
+      "name": "SPIRV-Tools",
+      "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+      "commit": "0cfe9e7219148716dfd30b37f4d21753f098707a",
+      "ref": "0cfe9e7219148716dfd30b37f4d21753f098707a"
+    },
+    {
+      "name": "robin-hood-hashing",
+      "url": "https://github.com/martinus/robin-hood-hashing.git",
+      "commit": "9145f963d80d6a02f0f96a47758050a89184a3ed",
+      "ref": "3.11.5"
+    }
+  ],
+  "layer_manifest": {
+    "path": "out/linux-xcb-vvl-runtime-build/Vulkan-ValidationLayers/layers/VkLayer_khronos_validation.json",
+    "bytes": 95948,
+    "sha256": "e7a747e87a6663097db54662a353efe25fa92061995b89db9f2693ffd219f4ef"
+  },
+  "layer_library": {
+    "path": "out/linux-xcb-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so",
+    "bytes": 59933848,
+    "sha256": "1a54044265daa552ab99063c316b2e554746618fd3e328d78e2065fa62de1962"
+  },
+  "builder": {
+    "path": "tools/prepare_linux_validation.py",
+    "bytes": 6165,
+    "sha256": "6fd146fc70f1711b23b7ba528879615ebcc705565352cf8a3c75f5d2a3bcbc6d"
+  },
+  "licenses": [
+    {
+      "path": ".deps/vvl-linux/Vulkan-ValidationLayers/LICENSE.txt",
+      "bytes": 12983,
+      "sha256": "ac7f9f4384d1cec4c318493e0614a68871a74a4ae6c1f592022b0b8b86690c71"
+    },
+    {
+      "path": ".deps/Vulkan-Headers/LICENSE.md",
+      "bytes": 458,
+      "sha256": "ac24e5ea920e4318e4d02c4086ae51f53cfb03feed06c18df1019e7ada1ec7bc"
+    },
+    {
+      "path": ".deps/vvl-linux/Vulkan-Utility-Libraries/LICENSE.md",
+      "bytes": 304,
+      "sha256": "69760673abf91cfd0280ae73739a29c078f493804d9016a122b3b189b48ad6e6"
+    },
+    {
+      "path": ".deps/vvl-linux/SPIRV-Headers/LICENSE",
+      "bytes": 4812,
+      "sha256": "ff04ae7e6a468587fe59434fee2e67c0e2a749b592c794b764ff80f30b94a084"
+    },
+    {
+      "path": ".deps/vvl-linux/SPIRV-Tools/LICENSE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": ".deps/vvl-linux/robin-hood-hashing/LICENSE",
+      "bytes": 1075,
+      "sha256": "686cf8d62cc44fecff4be967238aba89665f9b6acf8a728987801ffc3a626bc7"
+    }
+  ],
+  "runtime_redistributed": false,
+  "system_installation": false,
+  "diagnostics": [
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Headers-build.log",
+      "bytes": 11864,
+      "sha256": "cbbebbb652d938343915b9d0dbb368d4aea70aeead4e722c423f2065f694887e"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Headers-checkout.log",
+      "bytes": 65,
+      "sha256": "fafce0afe61a9605cbc95c88d302196af0fb163a3b5b2d4f9875dddf0ecf5f60"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Headers-configure.log",
+      "bytes": 597,
+      "sha256": "8b603e681ea0228fd9347b351260298e1515b6409be4a2f8feffff73f05dde30"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Headers-fetch.log",
+      "bytes": 127,
+      "sha256": "54391d8ca4132941af7059aa9c5cf6b14954a9a17a2920507d1538d4175f8e71"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Headers-init.log",
+      "bytes": 700,
+      "sha256": "9842dde5affbbd8a530125bee246db0019d77270a0c81cdd0a2a9e128d1ae9f4"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Headers-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Tools-build.log",
+      "bytes": 35868,
+      "sha256": "505dd7bb0d1742fb2cf4393817e764b51be7b90012fd01e95d22169ce258de21"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Tools-checkout.log",
+      "bytes": 55,
+      "sha256": "6dcd416b6fd94fc6de0df83f26d6dc5a46457f55199d8f6037c5624b14543b68"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Tools-configure.log",
+      "bytes": 908,
+      "sha256": "fbc3a68017f9db23257150378f49018c91c7e7fe89f85523d433d0c0e969d481"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Tools-fetch.log",
+      "bytes": 125,
+      "sha256": "f6b1c52453b9f3f76b29b4aa485e86966b91cb53514902289721f9b9c0233fed"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Tools-init.log",
+      "bytes": 698,
+      "sha256": "581edc81896fcd4517fe7a0f07f40d9dd20a301cfa234d2bf0f6bda62bc7c272"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/SPIRV-Tools-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Headers-build.log",
+      "bytes": 9261,
+      "sha256": "3c537f817fdfad36ac8b99f75155b6974f5afc247f1ecda4b31f9d87da821b1b"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Headers-configure.log",
+      "bytes": 844,
+      "sha256": "48b52495140891e02a469e1969a0bb04b5188a6a1fd201d9adafcb6906aaaa86"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Utility-Libraries-build.log",
+      "bytes": 3960,
+      "sha256": "ae6e73ae91bfa249037a9cb43f9a1d17e5f156176ec6ceb56cf987b247d161eb"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Utility-Libraries-checkout.log",
+      "bytes": 55,
+      "sha256": "9a128d44a96fbebd5478daaeb8242e49d7e733fa3a0676948475a7cb93393a8c"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Utility-Libraries-configure.log",
+      "bytes": 608,
+      "sha256": "e627ee76ce61aa50e9c85e3b674eba2f1ae747f0ef82e710adce23c270e411f8"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Utility-Libraries-fetch.log",
+      "bytes": 138,
+      "sha256": "91eea0b59313b9d91aa89f6fd131923e4c6c52f8944fad424816a1b7720bf81b"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Utility-Libraries-init.log",
+      "bytes": 711,
+      "sha256": "b3a803d3b38a9b72cadb90fa415425600120ed6d7f6080d1724a57fe87dec450"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-Utility-Libraries-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-ValidationLayers-checkout.log",
+      "bytes": 55,
+      "sha256": "850f081411e3f8b2d40e6820467bf26f80d9377d83fb4ebba8dcee334d6fbecf"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-ValidationLayers-fetch.log",
+      "bytes": 137,
+      "sha256": "4467b68a2e55a84117b69a665b72fa0f661017bc3e9cc212df17f1cfe4dae604"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-ValidationLayers-init.log",
+      "bytes": 710,
+      "sha256": "ef3d826e4df1765d0d536369846198d7221200d90a1571e0eac19d4580373326"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/Vulkan-ValidationLayers-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/commands.json",
+      "bytes": 14322,
+      "sha256": "39b71327221283a9d3ecb51fbbfb95776e5ed51e0f80ada9be22d5aa059c6149"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/layer-build.log",
+      "bytes": 15797,
+      "sha256": "b241b24d0c9754d088745beaec1965eb4f72db08fa2ab20a0b6559fa87088820"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/layer-configure.log",
+      "bytes": 624,
+      "sha256": "d94e42f119616cee0b8f0bab87f80e21ead389abb346684cd710854faee33be7"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/robin-hood-hashing-build.log",
+      "bytes": 485,
+      "sha256": "2c13436de5252e90b13e6beb6263caf8d239d7505f504a619a3edaf93c6a9ef4"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/robin-hood-hashing-checkout.log",
+      "bytes": 46,
+      "sha256": "8a3386e13581fbf0206eac053bd955d237695199cab4b211c9de679d78247563"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/robin-hood-hashing-configure.log",
+      "bytes": 972,
+      "sha256": "6b05104d89888af8b428594242a01493786ed96eb28b9eae5b09df675f0a20f8"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/robin-hood-hashing-fetch.log",
+      "bytes": 128,
+      "sha256": "5403082df6c3e06f72882b6a16549e227bd881543a51ac149f613ef724a6197a"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/robin-hood-hashing-init.log",
+      "bytes": 705,
+      "sha256": "7a910f938e40348398c80024cb2653597f9d076490446342dd91e38bce0ee533"
+    },
+    {
+      "path": "out/linux-xcb-validation-evidence/runtime/robin-hood-hashing-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
