@@ -491,6 +491,15 @@ present는 host 대기가 있는 초기 구현이며 present 완료 펜스는 �
 현재 Intel driver의 해당 feature 미지원은 Unsupported로 반환한다. 공개 API/ABI 모양은 같다.
 [Vulkan 상세 계약](VULKAN.md#win32-presentation)과 [검증 범위](PHASE3_VULKAN_PRESENTATION_REPORT.md)를 따른다.
 
+선택 Linux XCB 경로에도 같은 current backbuffer·present version·보유 recording·device 퇴역
+계약을 적용한다. 보유 참조가 있으면 같은 extent의 resize도 거부하고, 공개 chain을 파괴한 뒤
+남은 texture/recording은 native 자원을 보유하되 새 GPU 연산은 거부한다. 제출을 완료하기 전에
+공개 recording을 해제해도 SDK가 완료까지 보유하며 chain 파괴와 device 종료는 queued 작업을
+drain한다. present 자원은 maintenance1 completion fence로 확인한다.
+호출자는 XCB connection/window를 해당 chain과 보유 객체의 정리가 끝날 때까지 유지한다.
+[XCB 수명 검증](PHASE3_LINUX_XCB_LIFETIME_REPORT.md)은 실제 미완료 제출·해제·퇴역과 부분
+생성/제출 실패를 구분한다. 창 크기 변경·소실·육안 표시 수용은 별도 단계다.
+
 현재 D3D12/Vulkan의 capability별 조건, 포맷·동기화·미지원 API와 후속 검사 ID는
 [Phase 3 지원 범위표](PHASE3_SCOPE.md)에 정리한다. `DeviceCaps`에는 debug marker와
 OS memory budget 지원 필드가 없으며 해당 API의 Result로 지원 여부를 구분한다.

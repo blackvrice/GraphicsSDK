@@ -1165,14 +1165,17 @@
       "phase": 3,
       "group": "P3-WSI",
       "title": "출력 자원 완료·보유 수명",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-WSI-03"
       ],
-      "work": "Present 완료와 fence/retained image/recording 해제 규칙을 구현한다.",
-      "done_when": "옛 backbuffer·미완료 제출·chain 파괴의 수명/거부 검사 통과.",
-      "evidence": [],
+      "work": "기존 XCB current backbuffer/version·recording/submission 보유·present 완료·파괴/퇴역 계약을 설치 소비자와 실제 GPU event 대기로 검증하고 부분 생성·present 전 실패의 자원 회수 controls를 추가했다. 제품 SDK 소스는 변경하지 않았다.",
+      "done_when": "실제 Linux XCB/software ICD 일반·고정 core+sync validation에서 각 6개 수명 경우·16개 거부·실제 미완료 fence 2개·present 11회와 전체 readback 3개 통과. native 객체 생성/해제 및 파괴 순서 오류 0 확인. Windows 표시 2/2와 Python 703 통과. resize/loss·전체 표시 matrix·물리 GPU·육안은 별도 유지.",
+      "evidence": [
+        "docs/PHASE3_LINUX_XCB_LIFETIME_REPORT.md",
+        "benchmarks/reports/2026-10-26-phase3-linux-xcb-lifetime/summary.json"
+      ],
       "requires": "선택한 Linux window system·GPU·표시 환경"
     },
     {

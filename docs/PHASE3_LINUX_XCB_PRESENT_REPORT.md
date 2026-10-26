@@ -1,5 +1,8 @@
 # P3-WSI-03 — Linux XCB swapchain·BGRA8
 
+후속 [P3-WSI-04](PHASE3_LINUX_XCB_LIFETIME_REPORT.md)는 실제 미완료 제출·보유 자원·종료·부분 실패
+수명을 별도 검증한다. 아래 WSI-04 미완료 표기는 이 표시 구현 단계 당시의 수용 경계다.
+
 2026-10-26. `GFX_VULKAN_XCB=ON`에서 실제 XCB swapchain acquire→submit→present를 연결하고
 `Format::BGRA8UNorm`을 추가했다. 최초 제품 구현은 `1a378fcb88d0c093d3e84ea01e4a2194de565d25`다.
 이후 시험의 기존 alpha/footprint 계약과 진단 로그 수집을 수정했다. 표시 모드별 이미지 한도 수정은

@@ -76,6 +76,14 @@ through to RGBA16F for a new enum. Transfer, clear, scissored draw and alpha ble
 have full references; existing format enum values remain unchanged. The blend alpha
 channel replaces destination alpha with source alpha.
 
+The [XCB lifetime report](PHASE3_LINUX_XCB_LIFETIME_REPORT.md) covers retained images
+and recordings, stale submissions, native present-resource completion, destruction
+with actually pending software-GPU work, device retirement and partial/pre-present
+failure cleanup. It uses a dedicated test proxy and real host-signaled Vulkan events;
+the SDK has no public gate or fault API. Caller-owned XCB windows/connections must
+outlive their chains and retained children. Resize/loss/event handling and human
+display acceptance remain separate WSI tasks.
+
 ## Upload CPU diagnostics
 
 The [upload memory study](PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) adds a standalone
