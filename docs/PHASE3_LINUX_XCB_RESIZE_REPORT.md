@@ -130,3 +130,7 @@ fingerprint가 이전 제품과 일치하는지 검증한다. 이전 source 분�
 ```sh
 python -B benchmarks/reports/validation/2026-10-26-phase3-linux-xcb-resize/verify_evidence.py
 ```
+
+후속 [P3-WSI-06 이벤트·소실 검증](PHASE3_LINUX_XCB_EVENTS_REPORT.md)은 창/연결 만료와
+surface 소실의 공유 guard를 추가했다. 이 보고서와 원본 source fingerprint는 WSI-05 당시 값으로
+유지하며 새 SDK 실행의 근거는 후속 보고서에 기록한다.

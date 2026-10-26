@@ -429,3 +429,14 @@
 /tests/test_linux_xcb_resize.py text eol=lf
 /tests/linux_xcb_resize/** text eol=lf
 /.github/workflows/linux-xcb-resize.yml text eol=lf
+
+# Preserve XCB event/surface-loss evidence without newline normalization.
+/benchmarks/reports/2026-10-27-phase3-linux-xcb-events/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/validation/2026-10-27-phase3-linux-xcb-events/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/sources/linux-xcb-events-*.zip -text
+/tools/run_linux_xcb_events.py text eol=lf
+/tools/xcb_window_manager.py text eol=lf
+/tests/test_linux_xcb_events.py text eol=lf
+/tests/linux_xcb_events/** text eol=lf
+/examples/xcb_presentation/** text eol=lf
+/.github/workflows/linux-xcb-events.yml text eol=lf

@@ -1201,14 +1201,17 @@
       "phase": 3,
       "group": "P3-WSI",
       "title": "창 숨김·최소화·닫기·surface 소실",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-WSI-05"
       ],
-      "work": "플랫폼 이벤트와 일시 정지·안전한 종료를 연결한다.",
-      "done_when": "지원 이벤트 조합에서 busy loop/잘못된 자원 접근 없이 복귀·종료.",
-      "evidence": [],
+      "work": "XCB backbuffer 입력·제출에 창/연결 검사와 sticky expiry를 적용하고 SURFACE_LOST를 보존해 새 surface로만 복구한다. 설치 SDK 예제에서 실제 WM/XCB 이벤트로 일시 정지·복원·닫기와 GPU drain을 연결했다.",
+      "done_when": "실제 Xvfb/Openbox/software ICD 일반·고정 core/sync validation에서 각 11개 경우·거부 17개·전체 이미지 참조 19개·native present 20회 통과. 실제 숨김·WM 최소화/복원·닫기 protocol·창 파괴/XID 재사용·연결 단절과 별도 Vulkan 소실 status 제어 확인. 닫기 후 작업 전달·파괴 순서·validation 오류 0. Python 719 통과, Windows 63/65의 기존 fence 예외 2개 유지. 물리 GPU·육안·자연 driver 소실 수용과 구분.",
+      "evidence": [
+        "docs/PHASE3_LINUX_XCB_EVENTS_REPORT.md",
+        "benchmarks/reports/2026-10-27-phase3-linux-xcb-events/summary.json"
+      ],
       "requires": "선택한 Linux window system·GPU·표시 환경"
     },
     {

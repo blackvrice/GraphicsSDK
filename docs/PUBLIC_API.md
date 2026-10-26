@@ -498,7 +498,7 @@ present는 host 대기가 있는 초기 구현이며 present 완료 펜스는 �
 drain한다. present 자원은 maintenance1 completion fence로 확인한다.
 호출자는 XCB connection/window를 해당 chain과 보유 객체의 정리가 끝날 때까지 유지한다.
 [XCB 수명 검증](PHASE3_LINUX_XCB_LIFETIME_REPORT.md)은 실제 미완료 제출·해제·퇴역과 부분
-생성/제출 실패를 구분한다. 창 크기 변경·소실·육안 표시 수용은 별도 단계다.
+생성/제출 실패를 구분한다. 후속 resize·이벤트·소실 근거는 아래에 기록하며 육안 표시는 별도다.
 
 Vulkan resize는 공개 TexturePtr 보유를 먼저 거부한다. 공개 recording을 해제한 미완료 제출은
 GPU 완료와 pending 정리까지 기다린 뒤 재생성하며, 그 후에도 보유한 recording은 거부한다.
@@ -506,7 +506,15 @@ GPU 완료와 pending 정리까지 기다린 뒤 재생성하며, 그 후에도 
 시도한 뒤 실패하면 이전 chain을 되살리지 않으며, acquire/present는 InvalidState이고 유효한
 extent로 resize를 재시도해야 한다. SUBOPTIMAL은 사용 가능한 성공이며 호출자가 geometry를
 확인해 명시적으로 resize한다. [XCB resize 검증](PHASE3_LINUX_XCB_RESIZE_REPORT.md)의 status
-control은 실제 OS 이벤트 발생과 구분한다. 최소화·닫기·surface 소실과 육안 수용은 별도다.
+control은 실제 OS 이벤트 발생과 구분한다.
+
+XCB backbuffer 입력·제출에도 실제 창/연결 유효성을 검사한다. 관측한 창 만료는 같은 XID를
+재사용해도 취소하지 않는다. SURFACE_LOST는 surface에 보관해 InvalidState와 nativeCode를
+유지하며, 같은 surface resize 대신 새 chain/surface가 필요하다. caller는 연결 객체 allocation을
+정리 완료까지 유지한다. 동기 attribute 질의는 snapshot이며 제출과 원자적이지 않다.
+[XCB 이벤트 검증](PHASE3_LINUX_XCB_EVENTS_REPORT.md)과 [설치 SDK 예제](../examples/xcb_presentation/README.md)는
+실제 map/unmap·WM 최소화/복원·닫기 protocol·파괴/연결 단절과 일시 정지·drain을 확인한다.
+Vulkan 소실 값은 별도 status control이다. 다중 창 통합 matrix와 Linux 육안 수용은 남아 있다.
 
 현재 D3D12/Vulkan의 capability별 조건, 포맷·동기화·미지원 API와 후속 검사 ID는
 [Phase 3 지원 범위표](PHASE3_SCOPE.md)에 정리한다. `DeviceCaps`에는 debug marker와

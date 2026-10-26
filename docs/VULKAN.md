@@ -81,8 +81,8 @@ and recordings, stale submissions, native present-resource completion, destructi
 with actually pending software-GPU work, device retirement and partial/pre-present
 failure cleanup. It uses a dedicated test proxy and real host-signaled Vulkan events;
 the SDK has no public gate or fault API. Caller-owned XCB windows/connections must
-outlive their chains and retained children. Resize/loss/event handling and human
-display acceptance remain separate WSI tasks.
+outlive their chains and retained children. Subsequent resize/loss/event evidence
+is recorded below; human display acceptance remains separate.
 
 The [XCB resize report](PHASE3_LINUX_XCB_RESIZE_REPORT.md) records real geometry
 changes, full recreated-image references, pending-work drain before checking
@@ -91,6 +91,18 @@ Out-of-date/suboptimal status controls are identified separately from actual OS
 events. Input/reference rejection preserves the old chain; failure after a native
 recreation attempt requires an explicit resize retry. Suboptimal remains a usable
 success rather than a new public notification API.
+
+The [XCB events report](PHASE3_LINUX_XCB_EVENTS_REPORT.md) adds shared backbuffer
+input/submission guards and sticky observed window expiry/surface loss. A reused
+XID cannot revive the old surface; SURFACE_LOST preserves InvalidState/nativeCode
+and requires a new chain/native surface. Keep the connection allocation alive
+through cleanup. Synchronous attribute queries are snapshots with IPC cost and
+cannot make window changes atomic with submission.
+The [installed-SDK example](../examples/xcb_presentation/README.md) owns its event
+loop and pauses on unmap/iconify; WM_DELETE drains before window destruction.
+Private Xvfb/Openbox tests exercise real WM/events/disconnection and separately
+controlled Vulkan loss statuses. They do not accept human display, natural driver
+loss, other window managers or the remaining WSI-07 integrated matrix.
 
 ## Upload CPU diagnostics
 
