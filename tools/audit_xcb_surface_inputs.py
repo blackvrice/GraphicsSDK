@@ -14,8 +14,14 @@ def record(p):
 def main():
     output=ROOT/'out/xcb-surface-evidence/setup'
     output.mkdir(parents=True,exist_ok=True)
-    own={p.resolve() for folder in ('src','include') for p in (ROOT/folder).rglob('*') if p.is_file()}
-    headers=ROOT/'.deps/Vulkan-Headers';vendor={p.resolve() for p in (headers/'include/vulkan').glob('*.h')}
+    manifest=json.loads((ROOT/'licenses/linux-vulkan-policy.json').read_text())
+    own={(ROOT/p).resolve() for p in manifest['own_compiler_inputs']}
+    headers=ROOT/'.deps/Vulkan-Headers'
+    base_reviewed=manifest['dependency']['reviewed_headers']
+    reviewed=base_reviewed+manifest['xcb_reviewed_headers']
+    vendor={(headers/r['path']).resolve() for r in reviewed}
+    for item in reviewed:
+        audit.require(hashlib.sha256((headers/item['path']).read_bytes()).hexdigest()==item['sha256'],'Reviewed external header changed')
     rows=[]
     for policy in ('on','off'):
         deps=(output/f'deps-{policy}.txt').read_text()
@@ -24,6 +30,8 @@ def main():
         audited=audit.audit_dependencies(sorted(paths),'sdk',own,set(),set(),vendor)
         actual_vendor={p for p in paths if p in vendor}
         audit.require(bool(actual_vendor),'Reviewed Vulkan inputs missing')
+        expected={ (headers/r['path']).resolve() for r in (reviewed if policy=='on' else base_reviewed) }
+        audit.require(actual_vendor==expected,'Actual reviewed header set differs')
         xcb_header=any(p.as_posix().endswith('/xcb/xcb.h') for p in paths)
         audit.require(xcb_header is (policy=='on'),'XCB compiler input differs from build flag')
         audit.require(((headers/'include/vulkan/vulkan_xcb.h').resolve() in paths) is (policy=='on'),'Vulkan XCB header differs from build flag')
