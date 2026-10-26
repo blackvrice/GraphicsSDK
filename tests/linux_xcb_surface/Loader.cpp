@@ -9,6 +9,9 @@
 #ifdef GFX_RESIZE_OBSERVER
 #include "../linux_xcb_resize/Control.hpp"
 #endif
+#ifdef GFX_EVENT_OBSERVER
+#include "../linux_xcb_events/Control.hpp"
+#endif
 #include <dlfcn.h>
 #include <algorithm>
 #include <cstdlib>
@@ -66,7 +69,13 @@ VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL deviceGet(VkDevice,const char*);
 #ifdef GFX_RESIZE_OBSERVER
 #include "../linux_xcb_resize/Observer.hpp"
 #endif
+#ifdef GFX_EVENT_OBSERVER
+#include "../linux_xcb_events/Observer.hpp"
+#endif
 PFN_vkVoidFunction deviceHook(const char* name){
+#ifdef GFX_EVENT_OBSERVER
+    if(auto hook=eventHook(name))return hook;
+#endif
 #ifdef GFX_RESIZE_OBSERVER
     if(auto hook=resizeHook(name))return hook;
 #endif
@@ -135,4 +144,8 @@ extern "C" int gfxLifetimeSnapshot(lifetimeprobe::Snapshot* out,unsigned size){i
 #ifdef GFX_RESIZE_OBSERVER
 extern "C" int gfxResizeControl(unsigned operation){return resizeControl(operation);}
 extern "C" int gfxResizeSnapshot(resizeprobe::Snapshot* out,unsigned size){if(!out||size!=sizeof(*out))return 0;std::lock_guard lock(mutex);*out=resizeStats;return 1;}
+#endif
+#ifdef GFX_EVENT_OBSERVER
+extern "C" int gfxEventControl(unsigned operation){return eventControl(operation);}
+extern "C" int gfxEventSnapshot(eventprobe::Snapshot* out,unsigned size){if(!out||size!=sizeof(*out))return 0;std::lock_guard lock(mutex);*out=eventStats;return 1;}
 #endif

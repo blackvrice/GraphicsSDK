@@ -16,6 +16,16 @@ struct XcbApi {
     ~XcbApi() { if (module) dlclose(module); }
 };
 struct XcbWindowInfo { std::uint32_t width{}, height{}; xcb_visualid_t visual{}; };
+bool xcbWindowAlive(void* pointer, std::uint32_t window) {
+    XcbApi xcb;
+    auto connection = static_cast<xcb_connection_t*>(pointer);
+    if (!xcb.available() || !connection || xcb.connection_has_error(connection)) return false;
+    xcb_generic_error_t* error{};
+    std::unique_ptr<xcb_get_window_attributes_reply_t, decltype(&std::free)> attributes(
+        xcb.get_window_attributes_reply(connection, xcb.get_window_attributes(connection, window), &error), &std::free);
+    std::free(error);
+    return attributes && attributes->_class == XCB_WINDOW_CLASS_INPUT_OUTPUT;
+}
 Result<XcbWindowInfo> xcbWindow(void* pointer, std::uint32_t window) {
     XcbApi xcb;
     if (!xcb.available()) return fail(ErrorCode::Unsupported, "libxcb native window queries unavailable");

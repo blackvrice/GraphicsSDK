@@ -1,6 +1,5 @@
 // Private implementation included inside Vulkan.cpp's anonymous namespace.
 // Win32 WSI deliberately uses host-fenced acquisition; no throughput claim.
-#include "Xcb.hpp"
 Result<std::shared_ptr<NativeSurface>> makeSurface(const std::shared_ptr<State>& owner, Surface surface) {
     auto& in = *owner->native->instance;
 #ifdef _WIN32
@@ -48,6 +47,14 @@ struct VulkanSwapchain final : SwapChain {
     std::shared_ptr<int> token;
     SwapChainDesc desc;
     std::vector<std::shared_ptr<VulkanTexture>> buffers;
+    Result<void> surfaceResult(VkResult result, const char* operation) {
+        if (result == VK_ERROR_SURFACE_LOST_KHR) {
+            surface->lost = true;
+            if (native) native->invalid = true;
+            return fail(ErrorCode::InvalidState, "Surface lost; create a new swapchain with a new native surface", result);
+        }
+        return owner->accept(result, operation);
+    }
     ~VulkanSwapchain() override {
         if (!owner->retired) {
             owner->native->DeviceWaitIdle(owner->native->handle);
@@ -57,6 +64,8 @@ struct VulkanSwapchain final : SwapChain {
         buffers.clear();
     }
     Result<VkSwapchainCreateInfoKHR> configuration(std::uint32_t width, std::uint32_t height) {
+        if (surface->lost) return fail(ErrorCode::InvalidState, "Surface lost; create a new swapchain with a new native surface", VK_ERROR_SURFACE_LOST_KHR);
+        if (!surfaceWindowReady(*surface)) return fail(ErrorCode::InvalidState, "Swapchain window expired; create a new swapchain");
         if (!width || !height || desc.buffers < 2 || desc.buffers > 4)
             return fail(ErrorCode::InvalidArgument, "Swapchain requires nonzero extent and 2..4 requested buffers");
 #ifdef _WIN32
@@ -68,7 +77,7 @@ struct VulkanSwapchain final : SwapChain {
 #endif
         auto& in = *owner->native->instance;
         VkSurfaceCapabilitiesKHR caps{};
-        if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceCapabilitiesKHR(owner->physical, surface->handle, &caps), "Query surface capabilities"); !ok) return std::unexpected(ok.error());
+        if (auto ok = surfaceResult(in.GetPhysicalDeviceSurfaceCapabilitiesKHR(owner->physical, surface->handle, &caps), "Query surface capabilities"); !ok) return std::unexpected(ok.error());
         if ((caps.currentExtent.width != UINT32_MAX && (width != caps.currentExtent.width || height != caps.currentExtent.height)) ||
             width < caps.minImageExtent.width || width > caps.maxImageExtent.width || height < caps.minImageExtent.height || height > caps.maxImageExtent.height ||
             width > owner->maxFramebufferWidth || height > owner->maxFramebufferHeight || width > (UINT32_MAX - 255u) / 4u)
@@ -77,10 +86,10 @@ struct VulkanSwapchain final : SwapChain {
         if ((caps.supportedUsageFlags & usage) != usage) return fail(ErrorCode::Unsupported, "Surface requires color attachment and transfer support");
         std::uint32_t count{};
         auto r = in.GetPhysicalDeviceSurfaceFormatsKHR(owner->physical, surface->handle, &count, nullptr);
-        if (r != VK_SUCCESS) return nativeError(r, "Query surface formats");
+        if (auto ok = surfaceResult(r, "Query surface formats"); !ok) return std::unexpected(ok.error());
         std::vector<VkSurfaceFormatKHR> formats(count);
         r = in.GetPhysicalDeviceSurfaceFormatsKHR(owner->physical, surface->handle, &count, formats.data());
-        if (r != VK_SUCCESS) return nativeError(r, "Query surface formats");
+        if (auto ok = surfaceResult(r, "Query surface formats"); !ok) return std::unexpected(ok.error());
         formats.resize(count);
         auto imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
         auto supports = [&](VkFormat format) { return std::any_of(formats.begin(), formats.end(), [&](auto f) { return (f.format == format || f.format == VK_FORMAT_UNDEFINED) && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; }); };
@@ -92,10 +101,10 @@ struct VulkanSwapchain final : SwapChain {
                 return fail(ErrorCode::Unsupported, "Surface requires supported UNORM with SRGB nonlinear color space");
         }
         r = in.GetPhysicalDeviceSurfacePresentModesKHR(owner->physical, surface->handle, &count, nullptr);
-        if (r != VK_SUCCESS) return nativeError(r, "Query present modes");
+        if (auto ok = surfaceResult(r, "Query present modes"); !ok) return std::unexpected(ok.error());
         std::vector<VkPresentModeKHR> modes(count);
         r = in.GetPhysicalDeviceSurfacePresentModesKHR(owner->physical, surface->handle, &count, modes.data());
-        if (r != VK_SUCCESS) return nativeError(r, "Query present modes");
+        if (auto ok = surfaceResult(r, "Query present modes"); !ok) return std::unexpected(ok.error());
         modes.resize(count);
         auto mode = VK_PRESENT_MODE_FIFO_KHR;
         if (!desc.vsync) {
@@ -107,7 +116,7 @@ struct VulkanSwapchain final : SwapChain {
         VkSurfacePresentModeEXT selectedMode{VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_EXT}; selectedMode.presentMode = mode;
         VkPhysicalDeviceSurfaceInfo2KHR query{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR}; query.surface = surface->handle; query.pNext = &selectedMode;
         VkSurfaceCapabilities2KHR selectedCaps{VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR};
-        if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceCapabilities2KHR(owner->physical, &query, &selectedCaps), "Query selected present-mode capabilities"); !ok) return std::unexpected(ok.error());
+        if (auto ok = surfaceResult(in.GetPhysicalDeviceSurfaceCapabilities2KHR(owner->physical, &query, &selectedCaps), "Query selected present-mode capabilities"); !ok) return std::unexpected(ok.error());
         caps.minImageCount = std::max(caps.minImageCount, selectedCaps.surfaceCapabilities.minImageCount);
         const auto selectedMax = selectedCaps.surfaceCapabilities.maxImageCount;
         if (selectedMax) caps.maxImageCount = caps.maxImageCount ? std::min(caps.maxImageCount, selectedMax) : selectedMax;
@@ -132,7 +141,7 @@ struct VulkanSwapchain final : SwapChain {
         auto& n = *owner->native;
         auto r = vulkan::acquireOutput(next->handle, n.CreateSwapchainKHR, n.handle, &info, nullptr);
         native.reset();
-        if (r != VK_SUCCESS) return owner->accept(r, "vkCreateSwapchainKHR (retry resize after failure)");
+        if (r != VK_SUCCESS) return surfaceResult(r, "vkCreateSwapchainKHR (retry resize after failure)");
         std::uint32_t count{};
         r = n.GetSwapchainImagesKHR(n.handle, next->handle, &count, nullptr);
         if (r != VK_SUCCESS) return owner->accept(r, "Get swapchain image count");
@@ -162,12 +171,9 @@ struct VulkanSwapchain final : SwapChain {
     }
     Result<TexturePtr> acquire() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (surface->lost) return fail(ErrorCode::InvalidState, "Surface lost; create a new swapchain with a new native surface", VK_ERROR_SURFACE_LOST_KHR);
+        if (!surfaceWindowReady(*surface)) return fail(ErrorCode::InvalidState, "Swapchain window expired; create a new swapchain");
         if (!native || !native->alive || native->invalid) return fail(ErrorCode::InvalidState, "Swapchain requires resize");
-#ifdef _WIN32
-        if (!IsWindow(static_cast<HWND>(surface->window))) return fail(ErrorCode::InvalidState, "Swapchain window expired");
-#elif defined(GFX_HAS_VULKAN_XCB)
-        if (!xcbWindow(surface->connection, surface->windowId)) return fail(ErrorCode::InvalidState, "Swapchain XCB window unavailable");
-#endif
         if (!native->acquired) {
             auto& n = *owner->native; VkFence fence{}; VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
             if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Acquire fence"); !ok) return std::unexpected(ok.error());
@@ -175,10 +181,14 @@ struct VulkanSwapchain final : SwapChain {
             if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR) {
                 r = n.WaitForFences(n.handle, 1, &fence, VK_TRUE, UINT64_MAX);
                 native->acquired = r == VK_SUCCESS;
-            } else if (r == VK_ERROR_OUT_OF_DATE_KHR || r == VK_ERROR_SURFACE_LOST_KHR) native->invalid = true;
+            } else if (r == VK_ERROR_OUT_OF_DATE_KHR || r == VK_ERROR_SURFACE_LOST_KHR) {
+                native->invalid = true;
+                if (r == VK_ERROR_SURFACE_LOST_KHR) surface->lost = true;
+            }
             n.DestroyFence(n.handle, fence, nullptr);
             if (r != VK_SUCCESS) {
-                if (native->invalid) return fail(ErrorCode::InvalidState, "Surface out of date/lost; resize required", r);
+                if (surface->lost) return std::unexpected(surfaceResult(r, "Acquire surface lost").error());
+                if (native->invalid) return fail(ErrorCode::InvalidState, "Surface out of date; resize required", r);
                 if (r == VK_NOT_READY) return fail(ErrorCode::Timeout, "Acquire image not ready", r);
                 return std::unexpected(owner->accept(r, "vkAcquireNextImageKHR / acquire wait").error());
             }
@@ -224,6 +234,7 @@ struct VulkanSwapchain final : SwapChain {
         VkSwapchainPresentFenceInfoEXT completion{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT}; completion.swapchainCount = 1; completion.pFences = &fence;
         info.pNext = &completion;
         auto r = n.QueuePresentKHR(n.queue, &info); ++a.version; native->acquired = false;
+        if (r == VK_ERROR_SURFACE_LOST_KHR) { surface->lost = true; native->invalid = true; }
         // Completion here permits safe semaphore/swapchain destruction even without
         // another acquisition. WaitIdle alone cannot prove presentation completion.
         auto waited = VK_SUCCESS;
@@ -233,7 +244,8 @@ struct VulkanSwapchain final : SwapChain {
         if (auto ok = owner->accept(waited, "Wait presentation resource completion"); !ok) { native->invalid = true; return ok; }
         if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR) return {};
         native->invalid = true;
-        if (r == VK_ERROR_OUT_OF_DATE_KHR || r == VK_ERROR_SURFACE_LOST_KHR) return fail(ErrorCode::InvalidState, "Surface out of date/lost; resize required", r);
+        if (r == VK_ERROR_SURFACE_LOST_KHR) return surfaceResult(r, "Present surface lost");
+        if (r == VK_ERROR_OUT_OF_DATE_KHR) return fail(ErrorCode::InvalidState, "Surface out of date; resize required", r);
         return owner->accept(r, "vkQueuePresentKHR");
     }
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {

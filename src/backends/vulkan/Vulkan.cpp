@@ -38,6 +38,7 @@ auto nativeError(VkResult result, const char* operation) {
         result == VK_TIMEOUT ? ErrorCode::Timeout : ErrorCode::BackendFailure;
     return fail(code, operation, result);
 }
+#include "Xcb.hpp"
 bool markerText(std::string_view text) {
     if (text.size() > UINT32_MAX) return false;
     for (std::size_t i = 0; i < text.size();) {
@@ -296,11 +297,22 @@ struct NativeSurface {
     std::shared_ptr<NativeDevice> native;
     VkSurfaceKHR handle{};
     void* window{};
+    bool lost{}, expired{};
 #ifdef GFX_HAS_VULKAN_XCB
     void* connection{}; std::uint32_t windowId{};
 #endif
     ~NativeSurface() { if (handle) native->instance->DestroySurfaceKHR(native->instance->handle, handle, nullptr); }
 };
+bool surfaceWindowReady(NativeSurface& surface) {
+#ifdef GFX_HAS_VULKAN_XCB
+    if (!surface.expired && !xcbWindowAlive(surface.connection, surface.windowId)) surface.expired = true;
+    return !surface.expired;
+#elif defined(_WIN32)
+    return IsWindow(static_cast<HWND>(surface.window)) != FALSE;
+#else
+    (void)surface; return false;
+#endif
+}
 struct NativeSwapchain {
     std::shared_ptr<NativeSurface> surface;
     VkSwapchainKHR handle{};
@@ -344,11 +356,8 @@ struct Allocation {
 bool currentBackbuffer(const Allocation& a) {
     if (!a.swapchain) return true;
     const auto& s = *a.swapchain;
-    bool liveWindow = true;
-#ifdef _WIN32
-    liveWindow = IsWindow(static_cast<HWND>(s.surface->window)) != FALSE;
-#endif
-    return liveWindow && s.alive && !s.invalid && s.acquired && s.current == a.imageIndex;
+    return s.alive && !s.invalid && s.acquired && s.current == a.imageIndex &&
+        !s.surface->lost && surfaceWindowReady(*s.surface);
 }
 struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized, contentsInitialized; };
 struct NativePass {
