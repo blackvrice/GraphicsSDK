@@ -239,10 +239,14 @@ struct VulkanSwapchain final : SwapChain {
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {
         if (auto ok = owner->poll(); !ok) return ok;
         auto info = configuration(width, height); if (!info) return std::unexpected(info.error());
-        for (auto& t : buffers) if (t.use_count() != 1 || t->allocation.use_count() != 1)
-            return fail(ErrorCode::InvalidState, "Release backbuffer references and recordings before resizing");
+        for (auto& t : buffers) if (t.use_count() != 1)
+            return fail(ErrorCode::InvalidState, "Release backbuffer references before resizing");
         if (auto ok = owner->accept(owner->native->DeviceWaitIdle(owner->native->handle), "Resize wait"); !ok) return ok;
         if (auto ok = owner->poll(); !ok) return ok;
+        // A pending SDK submission can be the allocation's only extra owner.
+        // Drain it before distinguishing retained public recordings from queued work.
+        for (auto& t : buffers) if (t->allocation.use_count() != 1)
+            return fail(ErrorCode::InvalidState, "Release backbuffer recordings before resizing");
         return rebuild(*info);
     }
 };
