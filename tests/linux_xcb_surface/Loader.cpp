@@ -10,16 +10,31 @@
 #include <map>
 #include <mutex>
 #include <vector>
+#include <cstdio>
+#include <memory>
 namespace {
 surfaceprobe::Snapshot totals;std::mutex mutex;std::map<VkPhysicalDevice,VkInstance> parents;
 std::map<VkDevice,VkInstance> devices;std::map<VkQueue,VkDevice> queues;std::map<VkFence,VkDevice> presentFences;
 int mode(){auto p=std::getenv("GFX_SURFACE_CONTROL");return p?std::atoi(p):0;}
+struct Diagnostic { PFN_vkDebugUtilsMessengerCallbackEXT callback; void* user; };
+std::map<VkDebugUtilsMessengerEXT,std::unique_ptr<Diagnostic>> diagnostics;
+VKAPI_ATTR VkBool32 VKAPI_CALL message(VkDebugUtilsMessageSeverityFlagBitsEXT severity,VkDebugUtilsMessageTypeFlagsEXT type,const VkDebugUtilsMessengerCallbackDataEXT* data,void* user){
+    auto& state=*static_cast<Diagnostic*>(user);
+    std::fprintf(stderr,"validation: %s\n",data&&data->pMessage?data->pMessage:"<empty>");
+    return state.callback(severity,type,data,state.user);
+}
 PFN_vkGetInstanceProcAddr original(){
     static void* library=dlopen(std::getenv("GFX_SURFACE_REAL_LOADER"),RTLD_NOW|RTLD_LOCAL);
     static auto get=library?reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(library,"vkGetInstanceProcAddr")):nullptr;
     return get;
 }
 template<class T>T next(VkInstance i,const char* name){return reinterpret_cast<T>(original()(i,name));}
+VKAPI_ATTR VkResult VKAPI_CALL createMessenger(VkInstance i,const VkDebugUtilsMessengerCreateInfoEXT* info,const VkAllocationCallbacks* a,VkDebugUtilsMessengerEXT* out){
+    auto state=std::make_unique<Diagnostic>(Diagnostic{info->pfnUserCallback,info->pUserData});auto copy=*info;copy.pfnUserCallback=message;copy.pUserData=state.get();
+    auto r=next<PFN_vkCreateDebugUtilsMessengerEXT>(i,"vkCreateDebugUtilsMessengerEXT")(i,&copy,a,out);
+    if(r==VK_SUCCESS){std::lock_guard lock(mutex);diagnostics[*out]=std::move(state);}return r;
+}
+VKAPI_ATTR void VKAPI_CALL destroyMessenger(VkInstance i,VkDebugUtilsMessengerEXT m,const VkAllocationCallbacks* a){next<PFN_vkDestroyDebugUtilsMessengerEXT>(i,"vkDestroyDebugUtilsMessengerEXT")(i,m,a);std::lock_guard lock(mutex);diagnostics.erase(m);}
 VkInstance parent(VkPhysicalDevice p){std::lock_guard lock(mutex);return parents.at(p);}
 template<class T>T deviceNext(VkDevice d,const char* name){VkInstance i;{std::lock_guard lock(mutex);i=devices.at(d);}return reinterpret_cast<T>(next<PFN_vkGetDeviceProcAddr>(i,"vkGetDeviceProcAddr")(d,name));}
 VKAPI_ATTR VkResult VKAPI_CALL createDevice(VkPhysicalDevice p,const VkDeviceCreateInfo* info,const VkAllocationCallbacks* a,VkDevice* out){auto i=parent(p);auto r=next<PFN_vkCreateDevice>(i,"vkCreateDevice")(p,info,a,out);if(r==VK_SUCCESS){std::lock_guard lock(mutex);devices[*out]=i;++totals.devices;}return r;}
@@ -85,6 +100,7 @@ extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInst
     H(GetInstanceProcAddr,vkGetInstanceProcAddr) H(EnumerateInstanceExtensionProperties,extensions) H(CreateInstance,createInstance) H(DestroyInstance,destroyInstance)
     H(EnumeratePhysicalDevices,physicalDevices) H(CreateXcbSurfaceKHR,createSurface) H(DestroySurfaceKHR,destroySurface) H(GetPhysicalDeviceSurfaceSupportKHR,surfaceSupport) H(GetPhysicalDeviceXcbPresentationSupportKHR,visualSupport)
     H(CreateDevice,createDevice) H(GetPhysicalDeviceSurfaceFormatsKHR,formats) H(GetPhysicalDeviceSurfacePresentModesKHR,modes)
+    H(CreateDebugUtilsMessengerEXT,createMessenger) H(DestroyDebugUtilsMessengerEXT,destroyMessenger)
 #undef H
     return original()(i,name);
 }
