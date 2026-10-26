@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import pathlib
+import posixpath
 import re
 import subprocess
 import sys
@@ -39,6 +40,12 @@ def validate_controls(stdout,fp,layer):
     return dict(source=fp,loaded_layers=loaded,**dict(zip(('assertions','adapters','native_core_errors','native_sync_hazards','sync_disabled_controls','synthetic_errors','invalid_GPU_submissions'),map(int,matches[0]))))
 
 
+def validate_control_load(stderr,layer):
+    loaded={posixpath.normpath(p.strip()) for p in re.findall(r'calling init:\s+([^\n]*libVkLayer_khronos_validation\.so)\s*$',stderr,re.M)}
+    require(loaded=={posixpath.normpath(layer)},'Control runtime load not observed')
+    return sorted(loaded)
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for n in ('consumer-root','sdk-library','icd','output'):p.add_argument('--'+n,type=pathlib.Path,required=True)
@@ -69,7 +76,7 @@ def main():
             env.update(VK_DRIVER_FILES=str(args.icd.resolve()),VK_LOADER_LAYERS_DISABLE='~implicit~',VK_LAYER_PATH=str(args.validation_dir.resolve()),VK_LAYER_SETTINGS_PATH=str(empty.resolve()),GFX_EXPECT_VULKAN_LAYER=layer,LD_DEBUG='libs',LP_NUM_THREADS='2')
             binary=args.consumer_root/'matrix/gfx_xcb_validation_controls';require(fp.encode() in binary.read_bytes(),'Stale control executable')
             child=subprocess.run([str(binary.resolve())],cwd=ROOT,env=env,capture_output=True,timeout=180);(args.output/'controls.stdout').write_bytes(child.stdout);(args.output/'controls.stderr').write_bytes(child.stderr);require(child.returncode==0,'Isolated error controls failed')
-            controls=validate_controls(child.stdout.decode(),fp,layer);require('calling init:' in child.stderr.decode() and layer in child.stderr.decode(),'Control runtime load not observed');receipt['controls']=controls
+            controls=validate_controls(child.stdout.decode(),fp,layer);receipt['controls']=controls;receipt['controls_loaded_paths']=validate_control_load(child.stderr.decode(),layer)
         inputs={n:json.loads((args.output/n/'receipt.json').read_text()) for n in SUITES};receipt['result']=validate_campaign(inputs,fp,validation,controls);receipt['status']='passed'
     except (OSError,ValueError,KeyError,subprocess.SubprocessError) as e:receipt.update(status='failed',error=str(e))
     receipt['inputs_unchanged']=fp==sdk_fingerprint(ROOT) and all(pathlib.Path(n).is_file() and hashlib.sha256(pathlib.Path(n).read_bytes()).hexdigest()==h for n,h in frozen.items());save();print(receipt['status'],flush=True)

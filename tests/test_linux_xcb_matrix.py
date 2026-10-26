@@ -4,7 +4,7 @@ import sys
 import unittest
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'tools'))
 from run_linux_xcb_matrix import validate_rows
-from run_linux_xcb_campaign import SUITES,validate_campaign,validate_controls
+from run_linux_xcb_campaign import SUITES,validate_campaign,validate_controls,validate_control_load
 FP='e'*64
 
 
@@ -62,6 +62,11 @@ class MultiWindowContracts(unittest.TestCase):
 
 
 class IntegratedContracts(unittest.TestCase):
+    def test_control_loader_dot_segments_and_wrong_runtime(self):
+        layer='/pinned/libVkLayer_khronos_validation.so'
+        self.assertEqual(validate_control_load('  123: calling init: /pinned/./libVkLayer_khronos_validation.so\n',layer),[layer])
+        for bad in (' 123: calling init: /wrong/libVkLayer_khronos_validation.so\n',' 123: calling fini: '+layer+'\n',''):
+            with self.assertRaises(ValueError):validate_control_load(bad,layer)
     def test_complete_campaigns(self):
         for v in (False,True):validate_campaign(receipts(v),FP,v,controls() if v else None)
     def test_missing_suite_or_changed_install(self):
