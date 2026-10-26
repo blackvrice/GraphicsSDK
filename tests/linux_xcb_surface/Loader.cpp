@@ -3,6 +3,9 @@
 #define VK_USE_PLATFORM_XCB_KHR
 #include <vulkan/vulkan.h>
 #include "Control.hpp"
+#ifdef GFX_LIFETIME_OBSERVER
+#include "../linux_xcb_lifetime/Control.hpp"
+#endif
 #include <dlfcn.h>
 #include <algorithm>
 #include <cstdlib>
@@ -54,7 +57,13 @@ VKAPI_ATTR VkResult VKAPI_CALL capabilities2(VkPhysicalDevice p,const VkPhysical
 }
 VKAPI_ATTR VkResult VKAPI_CALL modes(VkPhysicalDevice p,VkSurfaceKHR s,uint32_t* count,VkPresentModeKHR* out){auto call=next<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(parent(p),"vkGetPhysicalDeviceSurfacePresentModesKHR");if(mode()!=7&&mode()!=8)return call(p,s,count,out);uint32_t n{};auto r=call(p,s,&n,nullptr);if(r!=VK_SUCCESS)return r;std::vector<VkPresentModeKHR> values(n);r=call(p,s,&n,values.data());if(r!=VK_SUCCESS)return r;values.resize(n);std::erase_if(values,[](auto m){return mode()==7?m!=VK_PRESENT_MODE_FIFO_KHR:m==VK_PRESENT_MODE_IMMEDIATE_KHR;});if(!out){*count=values.size();return VK_SUCCESS;}auto size=std::min<std::size_t>(*count,values.size());std::copy_n(values.data(),size,out);*count=size;return size<values.size()?VK_INCOMPLETE:VK_SUCCESS;}
 VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL deviceGet(VkDevice,const char*);
+#ifdef GFX_LIFETIME_OBSERVER
+#include "../linux_xcb_lifetime/Observer.hpp"
+#endif
 PFN_vkVoidFunction deviceHook(const char* name){
+#ifdef GFX_LIFETIME_OBSERVER
+    if(auto hook=lifetimeHook(name))return hook;
+#endif
 #define H(n,f) if(!std::strcmp(name,"vk" #n))return reinterpret_cast<PFN_vkVoidFunction>(f);
     H(GetDeviceProcAddr,deviceGet) H(DestroyDevice,destroyDevice) H(GetDeviceQueue,getQueue) H(CreateSwapchainKHR,createChain) H(DestroySwapchainKHR,destroyChain) H(GetSwapchainImagesKHR,chainImages) H(AcquireNextImageKHR,acquire) H(QueuePresentKHR,present) H(WaitForFences,wait)
 #undef H
@@ -110,3 +119,7 @@ extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInst
     return original()(i,name);
 }
 extern "C" int gfxSurfaceSnapshot(surfaceprobe::Snapshot* out,unsigned size){if(!out||size!=sizeof(*out))return 0;std::lock_guard lock(mutex);*out=totals;return 1;}
+#ifdef GFX_LIFETIME_OBSERVER
+extern "C" int gfxLifetimeControl(unsigned operation){return lifetimeControl(operation);}
+extern "C" int gfxLifetimeSnapshot(lifetimeprobe::Snapshot* out,unsigned size){if(!out||size!=sizeof(*out))return 0;std::lock_guard lock(mutex);*out=lifetime;return 1;}
+#endif
