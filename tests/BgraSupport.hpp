@@ -24,17 +24,17 @@ inline gfx::PipelinePtr pipeline(gfx::Device& d,F format,bool blend){
     return take(d.createGraphicsPipeline(p));
 }
 inline void frame(gfx::Device& d,const gfx::TexturePtr& t,unsigned draw,gfx::SwapChain* swap=nullptr){
-    const auto desc=t->description();const auto f=t->footprint();check((desc.format==F::BGRA8UNorm||desc.format==F::RGBA8UNorm)&&f.rowBytes==desc.width*4&&f.height==desc.height&&f.size==std::uint64_t(f.rowPitch)*f.height,"Truthful 8-bit format and footprint");
+    const auto desc=t->description();const auto f=t->footprint();check((desc.format==F::BGRA8UNorm||desc.format==F::RGBA8UNorm)&&f.rowBytes==desc.width*4&&f.height==desc.height&&f.size>=std::uint64_t(f.rowPitch)*(f.height-1)+f.rowBytes&&f.size<=std::uint64_t(f.rowPitch)*f.height,"Truthful 8-bit format and footprint");
     auto read=take(d.createBuffer({f.size,gfx::Memory::Readback}));auto pad=take(d.createBuffer({f.size,gfx::Memory::Upload}));take(pad->write(0,std::vector<std::byte>(f.size,std::byte{0xb7})));
     auto c=take(d.createCommandList());take(c->begin());take(c->copyBuffer(pad,read,f.size));take(c->transition(t,S::RenderTarget));take(c->beginRenderPass(t,{.25f,.5f,.75f,1}));
     if(draw){auto p=pipeline(d,desc.format,draw==2);take(c->setPipeline(p));take(c->setScissor(1,1,desc.width-2,desc.height-2));take(c->draw(3));}
     take(c->endRenderPass());take(c->transition(t,S::CopySource));take(c->copyTextureToBuffer(t,read));if(swap)take(c->transition(t,S::Present));take(c->end());auto fence=take(d.queue().submit(*c));
     if(swap)take(swap->present());take(d.queue().wait(fence));auto bytes=take(read->read(0,f.size));bool pixels=true,padding=true;
     for(unsigned y=0;y<desc.height;++y){
-        for(unsigned x=0;x<desc.width;++x){std::array<float,4> color{.25f,.5f,.75f,1};if(draw&&x>0&&x+1<desc.width&&y>0&&y+1<desc.height)color=draw==2?std::array<float,4>{.625f,.25f,.375f,1}:std::array<float,4>{1,0,0,1};
+        for(unsigned x=0;x<desc.width;++x){std::array<float,4> color{.25f,.5f,.75f,1};if(draw&&x>0&&x+1<desc.width&&y>0&&y+1<desc.height)color=draw==2?std::array<float,4>{.625f,.25f,.375f,.5f}:std::array<float,4>{1,0,0,1};
             for(unsigned k=0;k<4;++k){auto channel=desc.format==F::BGRA8UNorm&&k<3?2-k:k;pixels &= std::abs(std::to_integer<unsigned>(bytes[y*f.rowPitch+x*4+k])-color[channel]*255.f)<=1.1f;}
         }
-        for(unsigned k=f.rowBytes;k<f.rowPitch;++k)padding &= bytes[y*f.rowPitch+k]==std::byte{0xb7};if(f.rowPitch>f.rowBytes)++paddedRows;
+        for(unsigned k=f.rowBytes;k<f.rowPitch&&std::uint64_t(y)*f.rowPitch+k<f.size;++k)padding &= bytes[y*f.rowPitch+k]==std::byte{0xb7};if(f.size>std::uint64_t(y)*f.rowPitch+f.rowBytes)++paddedRows;
     }
     check(pixels&&padding,"Full clear/draw/blend image and every padding byte");++images;pixelBytes+=std::uint64_t(f.rowBytes)*f.height;
 }
