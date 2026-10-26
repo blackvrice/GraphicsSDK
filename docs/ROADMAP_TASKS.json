@@ -1109,15 +1109,18 @@
       "phase": 3,
       "group": "P3-WSI",
       "title": "Linux window-system 지원 계약",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-SCP-01",
         "P3-LNX-03"
       ],
-      "work": "Wayland/X11의 우선 지원과 표면·queue·완료 보장 요건을 정한다.",
-      "done_when": "필수 Linux 출력 경로와 나머지 경로의 지원 계획 명시.",
-      "evidence": [],
+      "work": "X11/XCB 우선·native Wayland/XWayland 미수용 조합과 단일 graphics/present queue·maintenance1 완료 fence·명시 BGRA8 형식 확장 계획을 결정했다.",
+      "done_when": "실제 Linux XCB 창/surface·queue/format/완료 feature 및 native device 생성·DISPLAY 부재 대조 기록. 필수 후속 구현·GPU/validation·사람의 표시 검증 계획 연결. SDK Linux present 구현 완료가 아님.",
+      "evidence": [
+        "docs/PHASE3_LINUX_WSI_SCOPE.md",
+        "benchmarks/reports/2026-10-26-phase3-linux-wsi-scope/summary.json"
+      ],
       "requires": "선택한 Linux window system·GPU·표시 환경"
     },
     {

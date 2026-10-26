@@ -76,6 +76,10 @@
 
 ## 플랫폼·검증·측정 수용 경계
 
+[P3-WSI-01 범위 결정](PHASE3_LINUX_WSI_SCOPE.md)은 X11/XCB를 첫 필수 Linux 표시 경로로
+정하고 실제 XCB surface/queue·completion feature와 BGRA8 필요성을 관측했다. native Wayland와
+XWayland는 별도 검증 전까지 미지원 조합이다. Linux SDK 표시 구현 `P3-WSI-02`~`08`은 남아 있다.
+
 | 범위 | 현재 코드/기존 근거 | 필수 잔여 검사 |
 |---|---|---|
 | Windows D3D12 | 기본 그래픽스·통제된 recovery·memory budget 구현. [NVIDIA 기본 표시의 사용자 창 조작 수용](PHASE2_MANUAL_PRESENTATION_REPORT.md) 완료 | 재개 `P2-ACC-01`·`02`, 실제 DPI·물리 손실 `P2-ACC-04`~`05` 미완료 |

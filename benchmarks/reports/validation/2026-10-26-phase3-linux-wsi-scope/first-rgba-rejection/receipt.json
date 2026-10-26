@@ -1,0 +1,46 @@
+{
+  "task": "P3-WSI-01",
+  "SDK_source_fingerprint": "ca2f63fadcfdf373bde663c747e0bed626d071f737131d6e2d6daee2ff7c0f9e",
+  "source_commit": "df4f1479768b29918555fee7e0c5560126f77066",
+  "status": "failed",
+  "frozen_inputs": {
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/out/wsi-probe/gfx_linux_wsi_scope": "00ee4a8ddad168e44549feaba5bb8891c743d14ea6329f0aa07ce5fad5b27945",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/out/wsi-install/lib/libGraphicsSDKCore.a": "bec4b8caded1e05b84dbff500e4cf20e49106a3824ff9c019064cb2dd80835dc",
+    "/usr/share/vulkan/icd.d/lvp_icd.json": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tools/run_linux_wsi_scope.py": "c8dc972a46948052da4e55e1222c02f9eb2f1e70910caa65766333cfedc01cfb",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_wsi_scope/Probe.cpp": "48c065d69c77c6b818b94f41988072b8e7db9dd13d4708906ca2fcec6eb59c1e",
+    "/home/runner/work/GraphicsSDK/GraphicsSDK/tests/linux_wsi_scope/CMakeLists.txt": "5684fbf2948c362407e21b24e601fd93e50dfeba2c0770a838d7bb436e5528f9"
+  },
+  "cases": [
+    {
+      "name": "xcb",
+      "command": [
+        "xvfb-run",
+        "-a",
+        "-s",
+        "-screen 0 800x600x24",
+        "/home/runner/work/GraphicsSDK/GraphicsSDK/out/wsi-probe/gfx_linux_wsi_scope"
+      ],
+      "returncode": 0,
+      "environment": {
+        "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/wsi-scope-evidence/empty-settings",
+        "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/wsi-scope-evidence/empty-settings"
+      },
+      "result": {
+        "event": "result",
+        "source": "ca2f63fadcfdf373bde663c747e0bed626d071f737131d6e2d6daee2ff7c0f9e",
+        "adapters": 1,
+        "software_adapters": 1,
+        "policy_ready_adapters": 0,
+        "sdk_linux_wsi": false,
+        "swapchain_created": false,
+        "presented": false,
+        "human_display_accepted": false
+      }
+    }
+  ],
+  "error": "CI requires observed ready software candidates",
+  "inputs_unchanged": true
+}

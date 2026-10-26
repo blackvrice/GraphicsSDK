@@ -36,7 +36,7 @@ python tools/roadmap.py --write
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
 | 2 — D3D12 core·잔여 수용 | 10 | 4 | 0 | 0 | 0 | 구현·자동 회귀와 NVIDIA 기본 표시의 사용자 창 조작 수용 완료. 장시간 메모리·Intel AV 원인, 실제 DPI·다중 모니터와 물리 손실은 필수 미완료다. |
-| 3 — Vulkan | 36 | 34 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
+| 3 — Vulkan | 37 | 33 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 6 | 0 | 0 | 11 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
@@ -178,7 +178,7 @@ P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/drive
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P3-WSI-01`<br>미완료 · 필수 | **Linux window-system 지원 계약**<br>Wayland/X11의 우선 지원과 표면·queue·완료 보장 요건을 정한다.<br>완료: 필수 Linux 출력 경로와 나머지 경로의 지원 계획 명시. | 선행: `P3-SCP-01`, `P3-LNX-03`<br>환경: 선택한 Linux window system·GPU·표시 환경 |
+| [x] `P3-WSI-01`<br>완료 · 필수 | **Linux window-system 지원 계약**<br>X11/XCB 우선·native Wayland/XWayland 미수용 조합과 단일 graphics/present queue·maintenance1 완료 fence·명시 BGRA8 형식 확장 계획을 결정했다.<br>완료: 실제 Linux XCB 창/surface·queue/format/완료 feature 및 native device 생성·DISPLAY 부재 대조 기록. 필수 후속 구현·GPU/validation·사람의 표시 검증 계획 연결. SDK Linux present 구현 완료가 아님. | 선행: `P3-SCP-01`, `P3-LNX-03`<br>환경: 선택한 Linux window system·GPU·표시 환경<br>근거: [PHASE3_LINUX_WSI_SCOPE](PHASE3_LINUX_WSI_SCOPE.md), [summary.json](../benchmarks/reports/2026-10-26-phase3-linux-wsi-scope/summary.json) |
 | [ ] `P3-WSI-02`<br>미완료 · 필수 | **표면·instance extension 연결**<br>공통 Surface와 선택한 Linux native surface 생성/해제 연결.<br>완료: 실제 surface와 present queue 확인, 누락 extension·잘못된 표면 거부. | 선행: `P3-WSI-01`, `P3-LNX-04`<br>환경: 선택한 Linux window system·GPU·표시 환경 |
 | [ ] `P3-WSI-03`<br>미완료 · 필수 | **Swapchain acquire/present**<br>선택 포맷/extent/image count/present mode와 실제 제출을 연결한다.<br>완료: 실제 창에 clear/draw 프레임을 acquire→submit→present. | 선행: `P3-WSI-02`<br>환경: 선택한 Linux window system·GPU·표시 환경 |
 | [ ] `P3-WSI-04`<br>미완료 · 필수 | **출력 자원 완료·보유 수명**<br>Present 완료와 fence/retained image/recording 해제 규칙을 구현한다.<br>완료: 옛 backbuffer·미완료 제출·chain 파괴의 수명/거부 검사 통과. | 선행: `P3-WSI-03`<br>환경: 선택한 Linux window system·GPU·표시 환경 |

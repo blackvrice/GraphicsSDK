@@ -1,5 +1,9 @@
 # Build
 
+Linux 표시의 첫 구현 경로·미지원 조합·XCB 창 서버 사전 조사 재현은
+[P3-WSI-01 범위 결정](PHASE3_LINUX_WSI_SCOPE.md)을 따른다. 이 probe는 설치 SDK에 연결하지만
+SDK의 Linux swapchain/present 구현이나 물리 표시 수용을 완료한 것은 아니다.
+
 Vulkan generation recovery의 설치 SDK 소비자·합성 손실 제어·Windows/Linux 결과는
 [P3-CAP-02 보고서](PHASE3_VULKAN_RECOVERY_REPORT.md)와
 [실행 절차](../tests/vulkan_recovery/README.md)를 따른다. 정상 generation은 InvalidState,
