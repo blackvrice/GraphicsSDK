@@ -20,6 +20,7 @@ def validate_rows(rows, fingerprint):
     sessions = [r for r in rows if r.get('event') == 'session']
     adapters = [r for r in rows if r.get('event') == 'adapter']
     queues = [r for r in rows if r.get('event') == 'queue']
+    formats = [r for r in rows if r.get('event') == 'surface_format']
     result = rows[-1]
     require(len(sessions) == 1 and sessions[0]['system'] == 'xcb' and sessions[0]['native_surface'] is True
             and (sessions[0]['width'], sessions[0]['height']) == (64,48)
@@ -34,7 +35,10 @@ def validate_rows(rows, fingerprint):
         require(graphics and a['selected_family'] == graphics[0], 'Selected queue differs from SDK policy')
         q = next(q for q in families if q['family'] == a['selected_family'])
         require(a['selected_present'] is (q['surface_present'] and q['visual_present']), 'Surface/visual query mismatch')
-        supported = all(a[k] is True for k in ('selected_present','swapchain_extension','maintenance_extension','maintenance_feature','rgba8','fifo'))
+        fs=[f for f in formats if f['uuid']==a['uuid']]
+        require(fs and a['rgba8'] is any(f['format'] in (0,37) and f['color_space']==0 for f in fs)
+                and a['bgra8'] is any(f['format'] in (0,44) and f['color_space']==0 for f in fs), 'Unproven surface formats')
+        supported = all(a[k] is True for k in ('selected_present','swapchain_extension','maintenance_extension','maintenance_feature','fifo')) and (a['rgba8'] is True or a['bgra8'] is True)
         supported = supported and (a['usage'] & 19) == 19 and sessions[0]['surface_maintenance1'] is True and sessions[0]['surface_capabilities2'] is True
         require(a['policy_ready'] is supported and a['native_device_created'] is supported, 'Unsupported policy or missing native creation')
         require(a['current_width'] == 64 and a['current_height'] == 48 and a['min_images'] > 0

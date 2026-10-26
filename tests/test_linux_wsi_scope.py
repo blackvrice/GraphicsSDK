@@ -12,7 +12,8 @@ UUID='b'*32
 def rows():
     return [dict(event='session',system='xcb',native_surface=True,width=64,height=48,wayland_session_tested=False,surface_maintenance1=True,surface_capabilities2=True),
             dict(event='queue',uuid=UUID,family=0,graphics=True,surface_present=True,visual_present=True),
-            dict(event='adapter',uuid=UUID,device_type=4,selected_family=0,selected_present=True,swapchain_extension=True,maintenance_extension=True,maintenance_feature=True,rgba8=True,fifo=True,usage=19,policy_ready=True,native_device_created=True,current_width=64,current_height=48,min_images=2,max_images=0),
+            dict(event='adapter',uuid=UUID,device_type=4,selected_family=0,selected_present=True,swapchain_extension=True,maintenance_extension=True,maintenance_feature=True,rgba8=True,bgra8=False,fifo=True,usage=19,policy_ready=True,native_device_created=True,current_width=64,current_height=48,min_images=2,max_images=0),
+            dict(event='surface_format',uuid=UUID,format=37,color_space=0),
             dict(event='result',source=FP,adapters=1,software_adapters=1,policy_ready_adapters=1,sdk_linux_wsi=False,swapchain_created=False,presented=False,human_display_accepted=False)]
 
 
@@ -60,6 +61,12 @@ class ScopeContracts(unittest.TestCase):
         r=rows();r[0]['wayland_session_tested']=True
         with self.assertRaises(ValueError):validate_rows(r,FP)
         r=rows();r[2]['device_type']=2
+        with self.assertRaises(ValueError):validate_rows(r,FP)
+
+    def test_BGRA_is_explicit_and_requires_native_format(self):
+        r=rows();r[2].update(rgba8=False,bgra8=True);r[3]['format']=44
+        self.assertEqual(validate_rows(r,FP)['policy_ready_adapters'],1)
+        r[3]['format']=50
         with self.assertRaises(ValueError):validate_rows(r,FP)
 
 
