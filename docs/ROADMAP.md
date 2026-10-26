@@ -1,6 +1,6 @@
 # GraphicsSDK 세부 개발 로드맵
 
-기준일: 2026-10-25 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
+기준일: 2026-10-26 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
 
 이 문서는 현재 작업 상태표다. 원본 요구사항의 Phase 순서와 기존 검증 범위를 유지하면서 큰 묶음을 독립 작업으로 분할했다. 초기 개발 snapshot 0.0.1이며, Phase 3 또는 v0.1 전체 완료를 의미하지 않는다.
 
@@ -35,7 +35,7 @@ python tools/roadmap.py --write
 |---|---:|---:|---:|---:|---:|---|
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
-| 2 — D3D12 core·잔여 수용 | 9 | 4 | 0 | 0 | 1 | 구현·자동 회귀는 완료 근거를 유지. 장시간 메모리는 사용자 지시로 재개했으며 Intel AV는 별도 보류. 실제 표시·물리 사건 수용도 별도 미완료. |
+| 2 — D3D12 core·잔여 수용 | 9 | 5 | 0 | 0 | 0 | 구현·자동 회귀는 완료 근거를 유지. 장시간 메모리와 Intel AV 조사는 사용자 지시로 각각 재개했으며 필수 미완료다. 실제 표시·물리 사건 수용도 별도 미완료. |
 | 3 — Vulkan | 34 | 35 | 9 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
@@ -54,7 +54,7 @@ python tools/roadmap.py --write
 
 ## 변경하지 않는 경계
 
-- 보류 수용 항목: P2-ACC-02 (과거 Intel AV 원인 조사). 각 작업의 재개·수용 상태를 따르며 하드웨어 원인 확정으로 표시하지 않는다.
+- 보류 수용 항목: 없음. 각 작업의 재개·수용 상태를 따르며 하드웨어 원인 확정으로 표시하지 않는다.
 - Windows Vulkan의 기본 그래픽스 기능과 최근 생성/로더/할당 장애 검증은 완료 근거를 보존한다. 미완료 Linux 검증과 혼합하지 않는다.
 - 버퍼 풀은 실험 후보다. sparse 예약 6.2배 관측은 유지하며 제품 dedicated 기본 정책은 그대로다. 후보 채택은 Phase 6의 별도 결정이다.
 - DXC/일반 reflection/MSL 변환은 Phase 5, allocator/upload ring/cache 최적화는 Phase 6, 전체 배포는 Phase 7이다. Linux native 설치 smoke 등 Phase 3 수용에 필요한 좁은 작업은 해당 ID에서 검사한다.
@@ -89,7 +89,7 @@ python tools/roadmap.py --write
 
 ## Phase 2 — D3D12 core·잔여 수용
 
-구현·자동 회귀는 완료 근거를 유지. 장시간 메모리는 사용자 지시로 재개했으며 Intel AV는 별도 보류. 실제 표시·물리 사건 수용도 별도 미완료.
+구현·자동 회귀는 완료 근거를 유지. 장시간 메모리와 Intel AV 조사는 사용자 지시로 각각 재개했으며 필수 미완료다. 실제 표시·물리 사건 수용도 별도 미완료.
 
 ### P2-CORE — D3D12 구현·자동 검증 완료
 
@@ -109,8 +109,8 @@ python tools/roadmap.py --write
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P2-ACC-01`<br>미완료 · 필수 | **장시간 메모리 수용**<br>2026-10-25 사용자 명시 재개. 현재 SDK의 NVIDIA GPU 900초와 WARP 300초는 원래 기준 통과. Full GBV는 warmup 9.398초/608 frames에서 baseline 대비 516.719MiB 증가로 512MiB guard 중단. 정책·입력·관측 환경을 보존했고 전체 세 모드 수용은 실패해 필수 미완료다. Intel AV 원인 조사는 별도 보류.<br>완료: 원래 정책의 GPU 900초·full GBV 300초·WARP 300초, 각 30초 warmup·참조·정상 오류 0·메모리 plateau·동일 입력과 장치·환경의 실제 수용 증거. 기준 완화나 짧은 진단으로 대체하지 않음. | 선행: 없음<br>근거: [PHASE2_MEMORY_CAMPAIGN_REPORT](PHASE2_MEMORY_CAMPAIGN_REPORT.md), [PHASE2_MEMORY_RESUMPTION_REPORT](PHASE2_MEMORY_RESUMPTION_REPORT.md), [summary.json](../benchmarks/reports/2026-10-25-phase2-memory-resumed/summary.json) |
-| [ ] `P2-ACC-02`<br>보류 · 보류 유지 | **과거 Intel AV 원인 조사**<br>과거 crash/stack/environment 자료를 보존한다.<br>완료: 재개 지시와 원인·재현·수정 검증이 있어야 함. | 선행: 없음<br>보류 사유: 사용자 지시로 보류. 이후 재현되지 않은 실행이 원인 규명을 대신하지 않음.<br>근거: [PHASE2_FAULT_INVESTIGATION_REPORT](PHASE2_FAULT_INVESTIGATION_REPORT.md) |
+| [ ] `P2-ACC-01`<br>미완료 · 필수 | **장시간 메모리 수용**<br>2026-10-25 사용자 명시 재개. 현재 SDK의 NVIDIA GPU 900초와 WARP 300초는 원래 기준 통과. Full GBV는 warmup 9.398초/608 frames에서 baseline 대비 516.719MiB 증가로 512MiB guard 중단. 정책·입력·관측 환경을 보존했고 전체 세 모드 수용은 실패해 필수 미완료다. 별도 재개한 Intel AV 조사는 P2-ACC-02를 따른다.<br>완료: 원래 정책의 GPU 900초·full GBV 300초·WARP 300초, 각 30초 warmup·참조·정상 오류 0·메모리 plateau·동일 입력과 장치·환경의 실제 수용 증거. 기준 완화나 짧은 진단으로 대체하지 않음. | 선행: 없음<br>근거: [PHASE2_MEMORY_CAMPAIGN_REPORT](PHASE2_MEMORY_CAMPAIGN_REPORT.md), [PHASE2_MEMORY_RESUMPTION_REPORT](PHASE2_MEMORY_RESUMPTION_REPORT.md), [summary.json](../benchmarks/reports/2026-10-25-phase2-memory-resumed/summary.json) |
+| [ ] `P2-ACC-02`<br>미완료 · 필수 | **과거 Intel AV 원인 조사**<br>2026-10-25 사용자 지시로 재개. 별도 최적화 SDK 심볼 2,429개 해석과 수집기 9개 제어 검증 완료. 현재 Intel 일반/계측 실행 각각 300초+30초 정상 종료했으나 미처리 AV는 비재현, private 메모리 기준은 별도 실패다. 실제 원인·수정은 미확정으로 필수 미완료이며 과거 자료를 보존한다.<br>완료: 실제 AV 재현 조건과 예외·스택·자원 수명 등 원인 근거, 수정 또는 통제된 환경 비교, 수정 전후 회귀 검증. 비재현만으로 완료하지 않는다. | 선행: 없음<br>근거: [PHASE2_FAULT_INVESTIGATION_REPORT](PHASE2_FAULT_INVESTIGATION_REPORT.md), [PHASE2_INTEL_CRASH_RESUMPTION_REPORT](PHASE2_INTEL_CRASH_RESUMPTION_REPORT.md) |
 | [ ] `P2-ACC-03`<br>미완료 · 필수 | **실제 사용자 창 조작·표시 확인**<br>최소화/복원/resize/닫기와 monitor 출력 확인.<br>완료: 사람이 확인한 표시 및 창 동작 기록. 자동 readback만으로 체크하지 않음. | 선행: `P2-CORE-09`<br>환경: Windows 실제 표시·사용자 조작 환경 |
 | [ ] `P2-ACC-04`<br>미완료 · 필수 | **실제 DPI·다중 모니터 출력 수용**<br>물리 모니터 이동과 DPI 변화의 지원 범위 검사.<br>완료: 지원 조합별 관측과 재현 가능한 수용 기록. | 선행: `P2-ACC-03`<br>환경: DPI가 다른 실제 다중 모니터 |
 | [ ] `P2-ACC-05`<br>미완료 · 필수 | **예상하지 않은 TDR/hot-unplug 복구 수용**<br>통제된 RemoveDevice와 별도로 실제 손실 수용 범위 확인.<br>완료: 지원 환경에서 실제 사건·옛 generation 거부·복구 출력 확인. | 선행: `P2-CORE-05`<br>환경: 해당 사건을 안전하게 관측할 수 있는 실제 환경 |

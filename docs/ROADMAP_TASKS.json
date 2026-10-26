@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-25",
+  "updated_at": "2026-10-26",
   "baseline_commit": "6556b812b4b91379fb4eadffb851d66d06edb1df",
   "active_phase": 3,
   "history": {
@@ -22,7 +22,7 @@
     {
       "id": 2,
       "title": "D3D12 core·잔여 수용",
-      "scope": "구현·자동 회귀는 완료 근거를 유지. 장시간 메모리는 사용자 지시로 재개했으며 Intel AV는 별도 보류. 실제 표시·물리 사건 수용도 별도 미완료."
+      "scope": "구현·자동 회귀는 완료 근거를 유지. 장시간 메모리와 Intel AV 조사는 사용자 지시로 각각 재개했으며 필수 미완료다. 실제 표시·물리 사건 수용도 별도 미완료."
     },
     {
       "id": 3,
@@ -468,7 +468,7 @@
       "status": "todo",
       "gate": "required",
       "depends_on": [],
-      "work": "2026-10-25 사용자 명시 재개. 현재 SDK의 NVIDIA GPU 900초와 WARP 300초는 원래 기준 통과. Full GBV는 warmup 9.398초/608 frames에서 baseline 대비 516.719MiB 증가로 512MiB guard 중단. 정책·입력·관측 환경을 보존했고 전체 세 모드 수용은 실패해 필수 미완료다. Intel AV 원인 조사는 별도 보류.",
+      "work": "2026-10-25 사용자 명시 재개. 현재 SDK의 NVIDIA GPU 900초와 WARP 300초는 원래 기준 통과. Full GBV는 warmup 9.398초/608 frames에서 baseline 대비 516.719MiB 증가로 512MiB guard 중단. 정책·입력·관측 환경을 보존했고 전체 세 모드 수용은 실패해 필수 미완료다. 별도 재개한 Intel AV 조사는 P2-ACC-02를 따른다.",
       "done_when": "원래 정책의 GPU 900초·full GBV 300초·WARP 300초, 각 30초 warmup·참조·정상 오류 0·메모리 plateau·동일 입력과 장치·환경의 실제 수용 증거. 기준 완화나 짧은 진단으로 대체하지 않음.",
       "evidence": [
         "docs/PHASE2_MEMORY_CAMPAIGN_REPORT.md",
@@ -481,15 +481,15 @@
       "phase": 2,
       "group": "P2-ACC",
       "title": "과거 Intel AV 원인 조사",
-      "status": "deferred",
-      "gate": "deferred",
+      "status": "todo",
+      "gate": "required",
       "depends_on": [],
-      "work": "과거 crash/stack/environment 자료를 보존한다.",
-      "done_when": "재개 지시와 원인·재현·수정 검증이 있어야 함.",
+      "work": "2026-10-25 사용자 지시로 재개. 별도 최적화 SDK 심볼 2,429개 해석과 수집기 9개 제어 검증 완료. 현재 Intel 일반/계측 실행 각각 300초+30초 정상 종료했으나 미처리 AV는 비재현, private 메모리 기준은 별도 실패다. 실제 원인·수정은 미확정으로 필수 미완료이며 과거 자료를 보존한다.",
+      "done_when": "실제 AV 재현 조건과 예외·스택·자원 수명 등 원인 근거, 수정 또는 통제된 환경 비교, 수정 전후 회귀 검증. 비재현만으로 완료하지 않는다.",
       "evidence": [
-        "docs/PHASE2_FAULT_INVESTIGATION_REPORT.md"
-      ],
-      "reason": "사용자 지시로 보류. 이후 재현되지 않은 실행이 원인 규명을 대신하지 않음."
+        "docs/PHASE2_FAULT_INVESTIGATION_REPORT.md",
+        "docs/PHASE2_INTEL_CRASH_RESUMPTION_REPORT.md"
+      ]
     },
     {
       "id": "P2-ACC-03",

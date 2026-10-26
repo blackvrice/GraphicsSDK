@@ -60,9 +60,27 @@ The capture wrapper records its hash and location only. Existing output/dump fil
 are refused. A requested dump write failure rejects the capture.
 
 `gfx_memory_stress_symbols` compiles the existing workload with Release `/O2 /MD`,
-plus `/Zi` and linker `/DEBUG`, linking the unchanged core library. Its PDB improves
-own workload stack resolution; it supplies no private SDK/runtime/driver symbols.
-The wrapper freezes sources, executable/PDB/core hashes and exact public adapter ID,
+plus `/Zi` and linker `/DEBUG`. By default it links `out/core/Release/GraphicsSDKCore.lib`.
+For SDK stack resolution, build an isolated optimized SDK with `/Zi`, select that
+library explicitly in CMake and pass the same path to the wrapper. Preserve the
+SDK compiler PDB locally until the workload link has completed. The final workload
+PDB can then resolve linked SDK functions; it supplies no private runtime/driver symbols.
+
+```powershell
+cmake --preset windows -B out/intel-symbol-sdk -DGFX_BUILD_TESTS=OFF -DGFX_BUILD_EXAMPLES=OFF -DGFX_ENABLE_VULKAN=OFF "-DCMAKE_CXX_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi"
+cmake --build out/intel-symbol-sdk --config Release --target GraphicsSDKCore --parallel 1
+cmake -S tools/crash_capture -B out/intel-symbol-capture -G "Visual Studio 17 2022" -A x64 -DGFX_CRASH_CORE_LIBRARY=D:/source/GraphicsSDK/out/intel-symbol-sdk/Release/GraphicsSDKCore.lib
+cmake --build out/intel-symbol-capture --config Release --parallel 1
+python tools/crash_capture/validate.py --binary out/intel-symbol-capture/Release --output out/intel-symbol-controls-new
+python tools/capture_memory_failure.py --binary out/intel-symbol-capture/Release --core-library out/intel-symbol-sdk/Release/GraphicsSDKCore.lib --adapter <fresh-hardware-id> --output out/intel-symbol-case-new --dump out/intel-symbol-case-new.dmp
+```
+
+The selected library path is an explicit input assertion: the wrapper does not
+reconstruct static link provenance from an executable. Retain the CMake cache and
+actual compiler/link commands alongside binary/PDB hashes to substantiate it.
+This rebuild is separate instrumentation, even when SDK source bytes are unchanged.
+
+The wrapper freezes sources, policy, executable/PDB/core hashes and exact public adapter ID,
 retains the default 512MiB growth guard and full GBV/state tracking. Native completed,
 guard-aborted, timed-out, crashed and collector-failed outcomes remain distinct.
 Every outcome has `memory_acceptance=false`: debugger instrumentation and a new

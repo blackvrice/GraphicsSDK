@@ -72,13 +72,13 @@
 | `P3-CAP-07` GPU-assisted validation | 조건부, 초기 subset에서는 추가하지 않음 | 필수 검증은 실제 core+sync validation과 오류 검출 controls다. GPU-assisted는 별도 계측/오류 control 경로가 필요하고 기존 sync validation 결과로 대체할 수 없음 |
 | `P3-CAP-05` Intel 출력 확대, `P3-CAP-06` 추가 GPU/driver | **후속 `P3-SCP-02`에서 정책 결정 완료, 두 구현/검증 작업은 미완료 유지** | [Windows 지원 정책](PHASE3_WINDOWS_SUPPORT.md)의 정확한 조합을 초기 후보로 제한하고 legacy fallback은 미채택. 범위 확대는 해당 ID의 새 근거 필요. 특정 driver 기능 부재와 과거 Intel AV 원인을 연결하지 않음 |
 
-장시간 메모리 수용 `P2-ACC-01`은 2026-10-25 사용자 지시로 재개했다. Intel AV 원인 조사 `P2-ACC-02`는 별도 보류를 유지한다. 하드웨어 원인 확정이나 완료 판정으로 바꾸지 않는다. Pooling/upload ring/cache 등 성능 정책은 Phase 6이며 marker 등 필수 기능을 대신하지 않는다.
+장시간 메모리 수용 `P2-ACC-01`과 [Intel AV 원인 조사 `P2-ACC-02`](PHASE2_INTEL_CRASH_RESUMPTION_REPORT.md)는 2026-10-25 사용자 지시로 각각 재개했고 필수 미완료다. 하드웨어 원인 확정이나 완료 판정으로 바꾸지 않는다. Pooling/upload ring/cache 등 성능 정책은 Phase 6이며 marker 등 필수 기능을 대신하지 않는다.
 
 ## 플랫폼·검증·측정 수용 경계
 
 | 범위 | 현재 코드/기존 근거 | 필수 잔여 검사 |
 |---|---|---|
-| Windows D3D12 | 기본 그래픽스·통제된 recovery·memory budget 구현과 기존 보고서. 장시간/실제 표시·물리 사건 수용은 별도 | 재개 `P2-ACC-01`, `P2-ACC-03`~`05`; `P2-ACC-02` 보류 유지 |
+| Windows D3D12 | 기본 그래픽스·통제된 recovery·memory budget 구현과 기존 보고서. 장시간/실제 표시·물리 사건 수용은 별도 | 재개 `P2-ACC-01`·`02`, 실제 수용 `P2-ACC-03`~`05` 미완료 |
 | Windows Vulkan offscreen | 기존 NVIDIA/Intel 기본 GPU suite 보고서. 모든 장치·driver·현재 source의 새 측정은 아님 | `P3-SCP-02`, `P3-GATE-01` |
 | Windows Vulkan WSI | 기존 NVIDIA 실제 present 경로, 해당 Intel driver의 caps=false/Unsupported | `P3-SCP-02`, 조건 선택 시 `P3-CAP-05`~`06`; 사람의 표시 확인과 구분 |
 | Linux Vulkan headless | [Native compile/CPU CI](PHASE3_LINUX_COMPILE_REPORT.md), [software ICD loader/device 선택](PHASE3_LINUX_DEVICE_REPORT.md), [버퍼·queue/fence·수명](PHASE3_LINUX_TRANSFER_REPORT.md), [텍스처 전송·texel/padding](PHASE3_LINUX_TEXTURE_REPORT.md), [컬러 pass·기본 draw](PHASE3_LINUX_DRAW_REPORT.md), [입력·바인딩](PHASE3_LINUX_INPUT_REPORT.md), [D32·depth/MRT](PHASE3_LINUX_DEPTH_REPORT.md), [timestamp](PHASE3_LINUX_TIMESTAMP_REPORT.md), [고정 core/sync validation·controls](PHASE3_LINUX_VALIDATION_REPORT.md), [설치 경로 이동·실제 GNU 입력/고지/payload 감사](PHASE3_LINUX_PACKAGE_REPORT.md), [전체 Python CI 정합성](PHASE3_PYTHON_CI_REPORT.md) 성공. [물리 GPU 실행 도구와 software 거부 검증](PHASE3_LINUX_HARDWARE_READINESS.md) 준비. 물리 GPU 미검증; 실제 counter wrap은 미재현 | 실제 Linux GPU 대상 필요, 물리 GPU 수용 `P3-LNX-15` 미완료. software/CPU 성공을 hardware 수용으로 합산하지 않음 |

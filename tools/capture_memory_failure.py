@@ -18,12 +18,14 @@ def run(args):
     stress = args.binary/"gfx_memory_stress_symbols.exe"
     fingerprint = sdk_fingerprint(ROOT)
     require(fingerprint.encode() in stress.read_bytes(), "Stale diagnostic SDK executable")
-    paths = [capture, stress, capture.with_suffix(".pdb"), stress.with_suffix(".pdb"), ROOT/"out/core/Release/GraphicsSDKCore.lib",
+    core_library = getattr(args, "core_library", ROOT/"out/core/Release/GraphicsSDKCore.lib")
+    paths = [capture, stress, capture.with_suffix(".pdb"), stress.with_suffix(".pdb"), core_library,
              ROOT/"tools/MemoryStress.cpp", pathlib.Path(__file__), ROOT/"tools/run_memory_stress.py", ROOT/"tools/analyze_memory_stress.py",
+             ROOT/"tools/memory_stress_policy.json",
              *sorted((ROOT/"tools/crash_capture").glob("*.cpp")), ROOT/"tools/crash_capture/CMakeLists.txt", ROOT/"tools/crash_capture/evidence.py"]
     frozen = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
     for p in paths:
-        if p.suffix in (".cpp", ".py") or p.name == "CMakeLists.txt":
+        if p.suffix in (".cpp", ".py", ".json") or p.name == "CMakeLists.txt":
             target = args.output/"source"/p.relative_to(ROOT)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(p.read_bytes())
@@ -35,7 +37,7 @@ def run(args):
     command += ["--", str(stress), "--mode", args.mode, "--adapter", str(args.adapter), "--seconds", str(seconds),
                 "--warmup", str(warmup), "--interval", "5", "--max-private-growth-mib", str(args.max_private_growth_mib),
                 "--output", str(args.output/"memory.jsonl")]
-    result = {"SDK_source_fingerprint": fingerprint, "command": command, "frozen_inputs": frozen, "diagnostic_only": True,
+    result = {"SDK_source_fingerprint": fingerprint, "command": command, "core_library": str(core_library), "frozen_inputs": frozen, "diagnostic_only": True,
               "memory_acceptance": False, "capture_complete": False, "status": "starting"}
     target = args.output/"summary.json"
 
@@ -88,6 +90,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output", type=pathlib.Path, required=True)
     p.add_argument("--binary", type=pathlib.Path, default=ROOT/"out/crash-capture/Release")
+    p.add_argument("--core-library", type=pathlib.Path, default=ROOT/"out/core/Release/GraphicsSDKCore.lib",
+                   help="Exact library linked into the diagnostic workload; match GFX_CRASH_CORE_LIBRARY")
     p.add_argument("--mode", choices=("gpu", "validation", "warp"), default="validation")
     p.add_argument("--adapter", type=adapter_argument, required=True)
     p.add_argument("--diagnostic-seconds", type=int)
@@ -96,7 +100,7 @@ def main():
     args = p.parse_args()
     if args.diagnostic_seconds is not None and not 1 <= args.diagnostic_seconds <= 120 or not 1 <= args.max_private_growth_mib <= 4096:
         p.error("diagnostic duration must be 1..120 seconds; private growth guard 1..4096 MiB")
-    args.output, args.binary = args.output.resolve(), args.binary.resolve()
+    args.output, args.binary, args.core_library = args.output.resolve(), args.binary.resolve(), args.core_library.resolve()
     if args.dump:
         args.dump = args.dump.resolve()
     try:

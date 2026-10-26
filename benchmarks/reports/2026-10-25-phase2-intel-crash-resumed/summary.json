@@ -1,0 +1,540 @@
+{
+  "schema": 1,
+  "task": "P2-ACC-02",
+  "resumed_by_user": true,
+  "task_status": "todo",
+  "gate": "required",
+  "source_base_commit": "59c28fc1d98fe38b3cde52b21060e4870a20a651",
+  "SDK_source_fingerprint": "2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401",
+  "SDK_CXX_or_CMakeLists_modified": false,
+  "diagnostic_only": true,
+  "memory_acceptance": false,
+  "crash_cause_resolved": false,
+  "result": "No AV in this bounded pair; original fault remains unresolved",
+  "results": [
+    {
+      "name": "normal-512",
+      "kind": "normal",
+      "guard_MiB": 512,
+      "runner_exit": 1,
+      "native_exit": 0,
+      "status": "completed",
+      "wall_seconds": 334.0470000000005,
+      "requested_measurement_seconds": 300,
+      "warmup_seconds": 30,
+      "recorded_environment_controls_match": true,
+      "inputs_unchanged": true,
+      "elapsed_seconds": 330.3969615,
+      "measured_seconds": 300.0808753,
+      "frames": 14856,
+      "full_images": 44568,
+      "verified_buffer_bytes": 3894411264,
+      "validation_errors": 0,
+      "private_baseline_bytes": 191905792,
+      "private_final_bytes": 664215552,
+      "private_growth_bytes": 472309760,
+      "native_references": {
+        "mode": "validation",
+        "adapter_id": 107212,
+        "frames": 14856,
+        "full_images": 44568,
+        "verified_buffer_bytes": 3894411264,
+        "functional_references_passed": true,
+        "validation_errors": 0,
+        "status": "passed",
+        "accepted": false,
+        "public_memory_budget": {
+          "recorded": true,
+          "segments": {
+            "local": {
+              "snapshots": 129,
+              "available": 129,
+              "unsupported": 0,
+              "stable_native_matches": 129,
+              "unstable_native_brackets": 0
+            },
+            "nonlocal": {
+              "snapshots": 129,
+              "available": 129,
+              "unsupported": 0,
+              "stable_native_matches": 129,
+              "unstable_native_brackets": 0
+            }
+          }
+        }
+      },
+      "numeric_analysis_only": {
+        "accepted": false,
+        "rejection": "Memory plateau gate failed: private_bytes"
+      },
+      "memory_acceptance": false
+    },
+    {
+      "name": "captured-512",
+      "kind": "captured",
+      "guard_MiB": 512,
+      "runner_exit": 0,
+      "native_exit": 0,
+      "status": "completed",
+      "wall_seconds": 340.15700000000015,
+      "requested_measurement_seconds": 300,
+      "warmup_seconds": 30,
+      "recorded_environment_controls_match": true,
+      "inputs_unchanged": true,
+      "elapsed_seconds": 330.0946758,
+      "measured_seconds": 300.0118464,
+      "frames": 7848,
+      "full_images": 23544,
+      "verified_buffer_bytes": 2057306112,
+      "validation_errors": 0,
+      "private_baseline_bytes": 128507904,
+      "private_final_bytes": 308707328,
+      "private_growth_bytes": 180199424,
+      "native_references": {
+        "mode": "validation",
+        "adapter_id": 107212,
+        "frames": 7848,
+        "full_images": 23544,
+        "verified_buffer_bytes": 2057306112,
+        "functional_references_passed": true,
+        "validation_errors": 0,
+        "status": "passed",
+        "accepted": false,
+        "public_memory_budget": {
+          "recorded": true,
+          "segments": {
+            "local": {
+              "snapshots": 127,
+              "available": 127,
+              "unsupported": 0,
+              "stable_native_matches": 127,
+              "unstable_native_brackets": 0
+            },
+            "nonlocal": {
+              "snapshots": 127,
+              "available": 127,
+              "unsupported": 0,
+              "stable_native_matches": 127,
+              "unstable_native_brackets": 0
+            }
+          }
+        }
+      },
+      "numeric_analysis_only": {
+        "accepted": false,
+        "rejection": "Memory plateau gate failed: private_bytes"
+      },
+      "memory_acceptance": false
+    }
+  ],
+  "selected_driver": {
+    "version": "32.0.101.6129",
+    "date": "2024-10-18T00:00:00.0000000Z"
+  },
+  "source_archive": {
+    "path": "benchmarks/reports/sources/intel-crash-resumed-2e511b8e53dbef4bbb2bf3d86ab4b19cf03e8765111de2b3dad4fe45fa551401-7f2efa66389d1d6b.zip",
+    "bytes": 134877,
+    "sha256": "b66f49d5c243479ebbc40e03d8dd17f686bc98fef5e80a5ba8467e52ec6fe91c"
+  },
+  "native_collector_controls": 9,
+  "overwrite_refused": true,
+  "full_Python_tests": 656,
+  "symbol_resolution": {
+    "diagnostic_only": true,
+    "scope": "Local PE/PDB symbol resolution; not a GPU execution, captured fault or driver symbol proof",
+    "executable_sha256": "2d6aeb3a92e37145d06e62ef78e94421450de45721a230e7069b5f5e609e74a4",
+    "pdb_sha256": "47d793f5cdb541ecceffaf27f9861d8e27a1d5c20e6d7118c1c7dfe16c59c0f6",
+    "total_symbols": 6310,
+    "sdk_symbols": 2429,
+    "sdk_symbol_examples": [
+      "gfx::Retirable::`RTTI Complete Object Locator'",
+      "gfx::DXCommands::`vftable'",
+      "gfx::NativeSwapChain `RTTI Type Descriptor'",
+      "gfx::CommandList::`vftable'",
+      "std::_Ref_count_obj2<gfx::NativeCommands>::`RTTI Class Hierarchy Descriptor'",
+      "gfx::DXCommands::`RTTI Base Class Array'",
+      "gfx::DXTexture `RTTI Type Descriptor'",
+      "gfx::DXBuffer::`RTTI Class Hierarchy Descriptor'",
+      "gfx::DXDevice::`RTTI Base Class Array'",
+      "std::_Ref_count_obj2<gfx::State>::`RTTI Base Class Array'",
+      "gfx::DXSwapChain::`RTTI Complete Object Locator'",
+      "std::_Ref_count_obj2<gfx::Tracker>::`RTTI Base Class Descriptor at (0,-1,0,64)'",
+      "std::_Ref_count_obj2<gfx::Tracker>::`vftable'",
+      "std::_Ref_count_obj2<gfx::DXPipeline> `RTTI Type Descriptor'",
+      "std::_Ref_count_obj2<gfx::NativeSwapChain>::`RTTI Base Class Array'",
+      "std::_Ref_count_obj2<gfx::State>::`RTTI Class Hierarchy Descriptor'",
+      "std::_Ref_count_obj2<gfx::NativeCommands>::`RTTI Base Class Array'",
+      "gfx::DXCommands `RTTI Type Descriptor'",
+      "gfx::DXBuffer::`RTTI Base Class Array'",
+      "gfx::NativeCommands::`RTTI Base Class Descriptor at (0,-1,0,64)'"
+    ],
+    "symbol_server_used": false
+  },
+  "evidence": [
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/binary-identities.json",
+      "bytes": 2395,
+      "sha256": "8c713078e765404637f2a403d17e7318594648633c20bb758374538b7ccd6171"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/arguments.jsonl",
+      "bytes": 813,
+      "sha256": "bbd030f60d06770f397ecdce4c427fde8e1be44ad4618a88fceb7ccfc7bcdfc3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/arguments.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/breakpoint.jsonl",
+      "bytes": 8716,
+      "sha256": "20e05e39296c53503e409fc15e1a2ca9b67a01bbf876cf434e9fb0e660a58738"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/breakpoint.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/debug-spam.jsonl",
+      "bytes": 46204,
+      "sha256": "3c4b633876a9ab933f72fcb925ba7f3586c80604927c2c26b5c5d8805bbf278e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/debug-spam.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/exit-seven.jsonl",
+      "bytes": 730,
+      "sha256": "761f0a95c6898c5a5fb834d6a9450db8a515fabb399623ac4e2923a90521603b"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/exit-seven.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/handled.jsonl",
+      "bytes": 984,
+      "sha256": "3c11d75ff617d5306a0195a477bb831d6bdfebfa643af7e6f703fd02af8a9d79"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/handled.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/null-call.jsonl",
+      "bytes": 8605,
+      "sha256": "38d08ca38da984eeafe733ef44f2e559579ced80fed1935b0b5272d4c21f2ed2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/null-call.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/overwrite.log",
+      "bytes": 64,
+      "sha256": "2e347793b7259ff620596ed9640c0b7a9d5f6edd355af6cd017245d568cd6b15"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/sleep.jsonl",
+      "bytes": 766,
+      "sha256": "05e2b11b38afb0ddcba129e08a69fe808f9153b0b1b3ad367110fbc9de5a959f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/sleep.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/summary.json",
+      "bytes": 12584,
+      "sha256": "2d203ce4c9faa755ff90e3bcd88b8568a84ef6529f24f33e81856b1437a1d786"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/thread-limit.jsonl",
+      "bytes": 31018,
+      "sha256": "2987a3e9370b869bf1e822cc3e5686198660377f73dcb1a0c47a0f474c54e83d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/thread-limit.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/worker-crash.jsonl",
+      "bytes": 16071,
+      "sha256": "8e7b32428a4ed4a8dfe7236269d68e1436cddde70ef9c3aeb35c8fcc630cbcc3"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/controls/worker-crash.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/initial-environment-query-failure/adapters.jsonl",
+      "bytes": 706,
+      "sha256": "bf4ee1e869b992d1a37f2be1a8b44f87dc83e78bda5ff721ba8ed959e5064537"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/initial-environment-query-failure/resumption.json",
+      "bytes": 4349,
+      "sha256": "4fa97c961cf932f68d4177710ace713fba03af6e127fcacacbb41d3fd2aabcf1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/initial-environment-query-failure/runner.py",
+      "bytes": 4975,
+      "sha256": "b55f0cb764e05df35cd3bd0e6186aebca6d264e9005aa64fb0ffbe4ec18fea25"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/adapters.jsonl",
+      "bytes": 706,
+      "sha256": "bf4ee1e869b992d1a37f2be1a8b44f87dc83e78bda5ff721ba8ed959e5064537"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/capture.jsonl",
+      "bytes": 75947,
+      "sha256": "78d86dbafadc36d862e50a8bb7273e048ef64339f4c432cae0e9d291d817baad"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/memory.jsonl",
+      "bytes": 153850,
+      "sha256": "2ac06e2f7d1a48039600164515057681300bac82191b85c137f39a080a6cddf4"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/analyze_memory_stress.py",
+      "bytes": 16432,
+      "sha256": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/capture_memory_failure.py",
+      "bytes": 7170,
+      "sha256": "3f7f647fa16b27f824291627a4afc9d260d002f067b658aed706543053475a92"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/crash_capture/Capture.cpp",
+      "bytes": 17641,
+      "sha256": "1fb973f5e2938f19eb9fca80aac099949f93b8e460c672699b2a7c55635d114e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/crash_capture/CMakeLists.txt",
+      "bytes": 1261,
+      "sha256": "9808a5c8ada46ce6d4f6ef5c29c10201309242b62e5af21081eceb7fe7ace3cb"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/crash_capture/evidence.py",
+      "bytes": 8754,
+      "sha256": "aecc80e68ab3f78b6f42f6413c6b15cea7a54cc8fed9d545e0252dc15372309e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/crash_capture/Fixture.cpp",
+      "bytes": 2611,
+      "sha256": "788d4acf76061c861345599459fdc4567ab518d87620f9349a7c81c1b4b96819"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/memory_stress_policy.json",
+      "bytes": 897,
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/MemoryStress.cpp",
+      "bytes": 19696,
+      "sha256": "04a93ec808b009d3b0594b0c30d10915e606f67060477ae62c7cfe1726ced16f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/source/tools/run_memory_stress.py",
+      "bytes": 9981,
+      "sha256": "9bb48a27f46d392e040f4f8a8cf3a3f8e178389c83ffc55f41b4f65267449619"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512/summary.json",
+      "bytes": 4441,
+      "sha256": "88ec57917d2e0bf4e3e54e3e3cf5be64be7bd640ab9418875736045546459d28"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512-environment-after.json",
+      "bytes": 4486,
+      "sha256": "6e06f7977ea0042aa66c1bd2933e990df732fa38b54fe03324b59c8a036099c9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512-environment-before.json",
+      "bytes": 4486,
+      "sha256": "4e5b520585e62b39a1e934ba1160bc1c67034c7fd8fbb2887eaaf00283c52f6e"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/captured-512-environment-comparison.json",
+      "bytes": 389,
+      "sha256": "a471a1fea477ddee5fce13ca7c7b24ec097a32ef71f0827560ece980eab6955a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/acceptance.json",
+      "bytes": 1257,
+      "sha256": "6dfde8deb61fe6444a7ccfd119884be7a838219e146cda122d0fe30ed54d7191"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/campaign.json",
+      "bytes": 1909,
+      "sha256": "b4ad031bd4661ff69672972d3bd5124f475701279d30d14cf320234bdd122f2c"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/source/tools/analyze_memory_stress.py",
+      "bytes": 16432,
+      "sha256": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/source/tools/memory_stress_policy.json",
+      "bytes": 897,
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/source/tools/MemoryStress.cpp",
+      "bytes": 19696,
+      "sha256": "04a93ec808b009d3b0594b0c30d10915e606f67060477ae62c7cfe1726ced16f"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/source/tools/run_memory_stress.py",
+      "bytes": 9981,
+      "sha256": "9bb48a27f46d392e040f4f8a8cf3a3f8e178389c83ffc55f41b4f65267449619"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/validation.jsonl",
+      "bytes": 156451,
+      "sha256": "fb31adb55b235d979139f827f424fa936929d40161a9201502c9c3a494a4a6f8"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512/validation.log",
+      "bytes": 3370,
+      "sha256": "06e67fdc160f5f3341d650acffcfe956302338afa8e5ee090d343ba977e02582"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512-environment-after.json",
+      "bytes": 4431,
+      "sha256": "38a7d87a858c1932c6296bf380faef9327d6a6b6dc520da631bdca3d6e509b23"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512-environment-before.json",
+      "bytes": 4431,
+      "sha256": "3069e5bb2964a3b3fd10bff4af779b5027569e3e3bf21795f5c7320f7041b7d2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/normal-512-environment-comparison.json",
+      "bytes": 389,
+      "sha256": "a471a1fea477ddee5fce13ca7c7b24ec097a32ef71f0827560ece980eab6955a"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/native/resumption.json",
+      "bytes": 4618,
+      "sha256": "8f1d6d748ad2c1e2df080cafac878a511ab43fd5b4cf83625856409e81c88ab6"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/full-python-receipt.json",
+      "bytes": 90255,
+      "sha256": "7dab0f11394b5d307300f7a3ac5ad301d5fea7c8f220b7c98866d57cb50f97e7"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/full-python-unittest.log",
+      "bytes": 81732,
+      "sha256": "add6485a64de98d95f7910416cb5d80297bdb0b0b0168e0ecfd023481908c737"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/CMakeCache.txt",
+      "bytes": 13370,
+      "sha256": "448b7cbfa43a0889bd4be68f5bb9efc4d56250139be9f3aa95346ef0738b8487"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/CMakeFiles/4.3.1/CompilerIdCXX/Debug/CompilerIdCXX.tlog/CL.command.1.tlog",
+      "bytes": 808,
+      "sha256": "cd01ec28fc72e0bfa8d289cd354537c87451420f31b96a3df786a4a2620dda1d"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/CMakeFiles/4.3.1/CompilerIdCXX/Debug/CompilerIdCXX.tlog/link.command.1.tlog",
+      "bytes": 1070,
+      "sha256": "aa490a17f1faddc846f697fc04b6d0804614b6a8c26c3f18afdc162bd42b2978"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/gfx_crash_capture.dir/Release/gfx_cras.5D34E753.tlog/CL.command.1.tlog",
+      "bytes": 760,
+      "sha256": "fb1f8ed20dfb34189ced765f7b92b164955671a8792032dded1c171afe2399aa"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/gfx_crash_capture.dir/Release/gfx_cras.5D34E753.tlog/link.command.1.tlog",
+      "bytes": 1410,
+      "sha256": "e5e4215b597bd155be8fb35039fd025ee6504b1fea0a590b56c08e6afd5167c1"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/gfx_crash_fixture.dir/Release/gfx_cras.19A255E0.tlog/CL.command.1.tlog",
+      "bytes": 760,
+      "sha256": "117fb8bf88db88010cddbe84f29f3dad3fa3bc8e8086865fdd729e3da785d979"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/gfx_crash_fixture.dir/Release/gfx_cras.19A255E0.tlog/link.command.1.tlog",
+      "bytes": 1386,
+      "sha256": "459bf8b635504c17b9f8979a7a5fbc3be21fff1398b4a7d549a799f12b02aa06"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/gfx_memory_stress_symbols.dir/Release/gfx_memo.82F853B5.tlog/CL.command.1.tlog",
+      "bytes": 820,
+      "sha256": "004eac1142e5af8296c91d57926d06dd52f8b9eb7028a0062b084ba37a0d5c66"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-capture/gfx_memory_stress_symbols.dir/Release/gfx_memo.82F853B5.tlog/link.command.1.tlog",
+      "bytes": 1770,
+      "sha256": "0cb96de94e62b6eb998930db9159344b79d23b1bae63dab7df31e1693286f0d9"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-symbol-sdk/CMakeCache.txt",
+      "bytes": 17034,
+      "sha256": "71164e583e762e4cefffd54857296f2d3766ea553e1ae34d71e18399c5badb13"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-symbol-sdk/CMakeFiles/4.3.1/CompilerIdCXX/Debug/CompilerIdCXX.tlog/CL.command.1.tlog",
+      "bytes": 820,
+      "sha256": "6f6263014a080244cdfa07dd3464b83d51a9ad18e52ed5d59d4272f0600a59b2"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-symbol-sdk/CMakeFiles/4.3.1/CompilerIdCXX/Debug/CompilerIdCXX.tlog/link.command.1.tlog",
+      "bytes": 1076,
+      "sha256": "f4b09b924fd25c5ce3565e65b9e59997cb779c3357f8237e9947dff1e5424291"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-symbol-sdk/GraphicsSDKCore.dir/Release/GraphicsSDKCore.tlog/CL.command.1.tlog",
+      "bytes": 7090,
+      "sha256": "8c76a179c7ad60a98563336537981d8d048333f5d5f5c71a99053b2d9afe2bef"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/out/intel-crash-resume-symbol-sdk/GraphicsSDKCore.dir/Release/GraphicsSDKCore.tlog/Lib.command.1.tlog",
+      "bytes": 1922,
+      "sha256": "de9123afe653189a9c9531347418ce04fdb4f49111e8a5c82ee76567669e3f79"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/probe_intel_symbols.py",
+      "bytes": 2335,
+      "sha256": "9a3bac9ea3ce93d64621e6d0b92daaf88e68c179e7679b267439b6a5cde89577"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/setup/symbol-resolution.json",
+      "bytes": 1621,
+      "sha256": "cce2ea7ea54369ebeec3b66ecfe89c593b5815925ce1890a9d44f6516f97c697"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/source-manifest.json",
+      "bytes": 8589,
+      "sha256": "4df01d252a8295dfafe6142b26aebd005b78603c61eaeecb0b657405d5815924"
+    },
+    {
+      "path": "benchmarks/reports/validation/2026-10-25-phase2-intel-crash-resumed/verify_evidence.py",
+      "bytes": 8694,
+      "sha256": "a7b0b790d657656ff91410ddacfbbbaff1b2535a8cc38f7e1947c9e960790617"
+    }
+  ]
+}
