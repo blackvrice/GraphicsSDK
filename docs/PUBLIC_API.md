@@ -500,6 +500,14 @@ drain한다. present 자원은 maintenance1 completion fence로 확인한다.
 [XCB 수명 검증](PHASE3_LINUX_XCB_LIFETIME_REPORT.md)은 실제 미완료 제출·해제·퇴역과 부분
 생성/제출 실패를 구분한다. 창 크기 변경·소실·육안 표시 수용은 별도 단계다.
 
+Vulkan resize는 공개 TexturePtr 보유를 먼저 거부한다. 공개 recording을 해제한 미완료 제출은
+GPU 완료와 pending 정리까지 기다린 뒤 재생성하며, 그 후에도 보유한 recording은 거부한다.
+잘못된 configuration과 남은 공개 참조에 의한 거부는 기존 chain을 유지한다. native 재생성을
+시도한 뒤 실패하면 이전 chain을 되살리지 않으며, acquire/present는 InvalidState이고 유효한
+extent로 resize를 재시도해야 한다. SUBOPTIMAL은 사용 가능한 성공이며 호출자가 geometry를
+확인해 명시적으로 resize한다. [XCB resize 검증](PHASE3_LINUX_XCB_RESIZE_REPORT.md)의 status
+control은 실제 OS 이벤트 발생과 구분한다. 최소화·닫기·surface 소실과 육안 수용은 별도다.
+
 현재 D3D12/Vulkan의 capability별 조건, 포맷·동기화·미지원 API와 후속 검사 ID는
 [Phase 3 지원 범위표](PHASE3_SCOPE.md)에 정리한다. `DeviceCaps`에는 debug marker와
 OS memory budget 지원 필드가 없으며 해당 API의 Result로 지원 여부를 구분한다.

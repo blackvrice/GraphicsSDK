@@ -84,6 +84,14 @@ the SDK has no public gate or fault API. Caller-owned XCB windows/connections mu
 outlive their chains and retained children. Resize/loss/event handling and human
 display acceptance remain separate WSI tasks.
 
+The [XCB resize report](PHASE3_LINUX_XCB_RESIZE_REPORT.md) records real geometry
+changes, full recreated-image references, pending-work drain before checking
+retained recording allocations, and retirement/retry after failed native creation.
+Out-of-date/suboptimal status controls are identified separately from actual OS
+events. Input/reference rejection preserves the old chain; failure after a native
+recreation attempt requires an explicit resize retry. Suboptimal remains a usable
+success rather than a new public notification API.
+
 ## Upload CPU diagnostics
 
 The [upload memory study](PHASE3_VULKAN_UPLOAD_MEMORY_REPORT.md) adds a standalone

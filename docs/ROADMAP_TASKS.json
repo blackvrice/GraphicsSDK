@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-26",
+  "updated_at": "2026-10-27",
   "baseline_commit": "6556b812b4b91379fb4eadffb851d66d06edb1df",
   "active_phase": 3,
   "history": {
@@ -1183,14 +1183,17 @@
       "phase": 3,
       "group": "P3-WSI",
       "title": "Resize/out-of-date/suboptimal",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-WSI-04"
       ],
-      "work": "크기·swapchain 상태 변화와 안전한 재생성 처리.",
-      "done_when": "성공/실패 재생성에서 옛 chain retirement 계약과 새 프레임 참조 검증.",
-      "evidence": [],
+      "work": "Vulkan resize의 공개 texture 참조 확인과 GPU drain 뒤 recording 참조 확인 순서를 수정했다. 실제 XCB geometry 변경·재생성, acquire/present out-of-date/suboptimal 제어, native 할당·열거·view 생성 실패 뒤 oldSwapchain 퇴역과 재시도를 검증했다.",
+      "done_when": "실제 XCB/software ICD 일반·고정 core+sync validation에서 각 7개 경우·성공 resize 13회·거부 24개·전체 프레임 참조 46개·실제 present 45회 통과. 미완료 제출 resize 대기·모든 native 자원 회수와 재생성 실패 후 NULL oldSwapchain 재시도 확인. Python 711 통과. Windows 63/65의 기존 fence 예외 2개 유지. 상태 제어를 실제 OS 이벤트·물리 GPU·육안 수용으로 세지 않음.",
+      "evidence": [
+        "docs/PHASE3_LINUX_XCB_RESIZE_REPORT.md",
+        "benchmarks/reports/2026-10-26-phase3-linux-xcb-resize/summary.json"
+      ],
       "requires": "선택한 Linux window system·GPU·표시 환경"
     },
     {

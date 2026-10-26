@@ -1,6 +1,6 @@
 # GraphicsSDK 세부 개발 로드맵
 
-기준일: 2026-10-26 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
+기준일: 2026-10-27 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
 
 이 문서는 현재 작업 상태표다. 원본 요구사항의 Phase 순서와 기존 검증 범위를 유지하면서 큰 묶음을 독립 작업으로 분할했다. 초기 개발 snapshot 0.0.1이며, Phase 3 또는 v0.1 전체 완료를 의미하지 않는다.
 
@@ -36,7 +36,7 @@ python tools/roadmap.py --write
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
 | 2 — D3D12 core·잔여 수용 | 10 | 4 | 0 | 0 | 0 | 구현·자동 회귀와 NVIDIA 기본 표시의 사용자 창 조작 수용 완료. 장시간 메모리·Intel AV 원인, 실제 DPI·다중 모니터와 물리 손실은 필수 미완료다. |
-| 3 — Vulkan | 40 | 30 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
+| 3 — Vulkan | 41 | 29 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 6 | 0 | 0 | 11 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
@@ -182,7 +182,7 @@ P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/drive
 | [x] `P3-WSI-02`<br>완료 · 필수 | **표면·instance extension 연결**<br>공통 Xcb connection/32-bit XID와 checkSurfaceSupport를 추가하고 선택 XCB 빌드의 실제 native surface 생성·해제·선택 queue/visual 확인을 연결했다.<br>완료: 설치 ON/OFF 소비자의 실제 Linux XCB surface·queue·누락 extension/procedure·잘못된 창·thread·surface 소실·headless 대조와 입력/고지 감사 통과. Linux swapchain/present는 미구현 유지. 로컬 기존 fence 예외는 별도 보존. | 선행: `P3-WSI-01`, `P3-LNX-04`<br>환경: 선택한 Linux window system·GPU·표시 환경<br>근거: [PHASE3_LINUX_XCB_SURFACE_REPORT](PHASE3_LINUX_XCB_SURFACE_REPORT.md), [summary.json](../benchmarks/reports/2026-10-26-phase3-linux-xcb-surface/summary.json) |
 | [x] `P3-WSI-03`<br>완료 · 필수 | **Swapchain acquire/present**<br>선택 XCB swapchain의 native format/extent/image count/present mode와 acquire→submit→present를 연결하고 BGRA8 형식 및 모드별 최소/최대 이미지 한도를 구현했다.<br>완료: 실제 Xvfb/XCB·software ICD의 일반/고정 core+sync validation에서 각 24회 present·48개 전체 프레임 참조와 형식/모드 거부 controls 통과. Windows BGRA 5/5, Python 697 통과. 기존 Windows fence 예외 2개와 물리 GPU·사람의 표시·WSI-04~08은 별도 유지. | 선행: `P3-WSI-02`<br>환경: 선택한 Linux window system·GPU·표시 환경<br>근거: [PHASE3_LINUX_XCB_PRESENT_REPORT](PHASE3_LINUX_XCB_PRESENT_REPORT.md), [summary.json](../benchmarks/reports/2026-10-26-phase3-linux-xcb-present/summary.json) |
 | [x] `P3-WSI-04`<br>완료 · 필수 | **출력 자원 완료·보유 수명**<br>기존 XCB current backbuffer/version·recording/submission 보유·present 완료·파괴/퇴역 계약을 설치 소비자와 실제 GPU event 대기로 검증하고 부분 생성·present 전 실패의 자원 회수 controls를 추가했다. 제품 SDK 소스는 변경하지 않았다.<br>완료: 실제 Linux XCB/software ICD 일반·고정 core+sync validation에서 각 6개 수명 경우·16개 거부·실제 미완료 fence 2개·present 11회와 전체 readback 3개 통과. native 객체 생성/해제 및 파괴 순서 오류 0 확인. Windows 표시 2/2와 Python 703 통과. resize/loss·전체 표시 matrix·물리 GPU·육안은 별도 유지. | 선행: `P3-WSI-03`<br>환경: 선택한 Linux window system·GPU·표시 환경<br>근거: [PHASE3_LINUX_XCB_LIFETIME_REPORT](PHASE3_LINUX_XCB_LIFETIME_REPORT.md), [summary.json](../benchmarks/reports/2026-10-26-phase3-linux-xcb-lifetime/summary.json) |
-| [ ] `P3-WSI-05`<br>미완료 · 필수 | **Resize/out-of-date/suboptimal**<br>크기·swapchain 상태 변화와 안전한 재생성 처리.<br>완료: 성공/실패 재생성에서 옛 chain retirement 계약과 새 프레임 참조 검증. | 선행: `P3-WSI-04`<br>환경: 선택한 Linux window system·GPU·표시 환경 |
+| [x] `P3-WSI-05`<br>완료 · 필수 | **Resize/out-of-date/suboptimal**<br>Vulkan resize의 공개 texture 참조 확인과 GPU drain 뒤 recording 참조 확인 순서를 수정했다. 실제 XCB geometry 변경·재생성, acquire/present out-of-date/suboptimal 제어, native 할당·열거·view 생성 실패 뒤 oldSwapchain 퇴역과 재시도를 검증했다.<br>완료: 실제 XCB/software ICD 일반·고정 core+sync validation에서 각 7개 경우·성공 resize 13회·거부 24개·전체 프레임 참조 46개·실제 present 45회 통과. 미완료 제출 resize 대기·모든 native 자원 회수와 재생성 실패 후 NULL oldSwapchain 재시도 확인. Python 711 통과. Windows 63/65의 기존 fence 예외 2개 유지. 상태 제어를 실제 OS 이벤트·물리 GPU·육안 수용으로 세지 않음. | 선행: `P3-WSI-04`<br>환경: 선택한 Linux window system·GPU·표시 환경<br>근거: [PHASE3_LINUX_XCB_RESIZE_REPORT](PHASE3_LINUX_XCB_RESIZE_REPORT.md), [summary.json](../benchmarks/reports/2026-10-26-phase3-linux-xcb-resize/summary.json) |
 | [ ] `P3-WSI-06`<br>미완료 · 필수 | **창 숨김·최소화·닫기·surface 소실**<br>플랫폼 이벤트와 일시 정지·안전한 종료를 연결한다.<br>완료: 지원 이벤트 조합에서 busy loop/잘못된 자원 접근 없이 복귀·종료. | 선행: `P3-WSI-05`<br>환경: 선택한 Linux window system·GPU·표시 환경 |
 | [ ] `P3-WSI-07`<br>미완료 · 필수 | **Linux 출력 자동 참조·validation**<br>다중 창·홀수 크기·padding·vsync와 출력 자원 수명 회귀.<br>완료: 전체 이미지 참조 및 core/sync validation 오류 0, 미지원 조합 명시. | 선행: `P3-WSI-06`, `P3-LNX-11`<br>환경: 선택한 Linux window system·GPU·표시 환경 |
 | [ ] `P3-WSI-08`<br>미완료 · 필수 | **실제 Linux 표시 수용**<br>사람이 보는 창 출력·resize/닫기와 실제 표시 경로를 확인한다.<br>완료: 사람/환경/동작 관측 기록. 자동 readback과 물리 출력 수용을 구분. | 선행: `P3-WSI-07`<br>환경: 선택한 Linux window system·GPU·표시 환경 |

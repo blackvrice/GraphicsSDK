@@ -1,5 +1,9 @@
 # P3-WSI-04 — XCB 출력 자원 완료·보유 수명
 
+후속 [P3-WSI-05](PHASE3_LINUX_XCB_RESIZE_REPORT.md)는 미완료 제출만 남은 resize의 대기 순서를
+수정하고 실제 창 크기 변경·재생성 실패·상태 제어·재시도를 검증했다. 아래 SDK 미변경 및
+WSI-05 미완료 설명은 이 수명 단계 당시의 기록이다.
+
 2026-10-26. 제품의 기존 backbuffer·recording·submission 보유와 present 완료 계약을
 실제 Linux XCB 설치 소비자로 검증한다. 시험 구현 기준은
 `c7d8d98011fb59def0b519f67e37bcfd4da5e283`이다. 이 단계에서는 SDK 제품 소스를 변경하지 않았다.
