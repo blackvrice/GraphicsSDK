@@ -1,5 +1,6 @@
 """Replay the exact recorded sources, preserving platform byte identities."""
 import hashlib,importlib.util,json,pathlib,sys,tempfile,zipfile
+sys.dont_write_bytecode=True
 ROOT=next(p for p in pathlib.Path(__file__).resolve().parents if (p/'tools/audit_licenses.py').exists())
 F=pathlib.Path(__file__).resolve().parent
 def read(p):return json.loads(p.read_text(encoding='utf-8-sig'))
@@ -14,7 +15,7 @@ for kind in ('windows','linux-git'):
   assert json.loads(z.read('source-receipt.json'))=={k:v for k,v in m.items() if k!='archive'}
   for row in m['files']:
    p=target/row['path'];assert p.resolve().is_relative_to(target)
-   assert not row['path'].startswith('.deps/') and p.suffix.lower() not in ('.dll','.exe','.lib','.pdb','.dmp','.so','.a')
+   assert not row['path'].startswith('.deps/') and p.suffix.lower() not in ('.dll','.exe','.lib','.pdb','.dmp','.so','.a','.pyc')
    data=z.read(row['path']);assert len(data)==row['bytes'] and sha(data)==row['sha256'];p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
 sys.path.insert(0,str(snapshots['windows']/'tools'))
 from audit_licenses import sdk_fingerprint
@@ -79,7 +80,7 @@ assert core['source_commit']==runs['broader_linux_core_sync']['commit'] and core
 assert runs['broader_linux_core_sync']['conclusion']=='success'
 binaries=read(F/'binary-identities.json');assert len(binaries)==6 and all(b['redistributed'] is False for b in binaries)
 assert binaries[0]['sha256']==binaries[1]['sha256']
-assert not any(p.suffix.lower() in ('.dll','.exe','.lib','.pdb','.dmp','.so','.a') for p in F.rglob('*') if p.is_file())
+assert not any(p.suffix.lower() in ('.dll','.exe','.lib','.pdb','.dmp','.so','.a','.pyc') for p in F.rglob('*') if p.is_file())
 summary=dict(schema=1,task='P3-CAP-01',status='done',gate='required',implementation_commit=runs['implementation_commit'],
  Windows_SDK_source_fingerprint=manifests['windows']['SDK_source_fingerprint'],Linux_SDK_source_fingerprint=manifests['linux-git']['SDK_source_fingerprint'],
  public_headers_or_D3D12_implementation_changed=False,results=results,Windows_native_labels=24,Linux_native_labels=6,native_CTests=58,full_Python_tests=667,
