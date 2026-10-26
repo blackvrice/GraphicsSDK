@@ -12,6 +12,8 @@
 #include <cstring>
 #include <limits>
 #include <list>
+#include <new>
+#include <string>
 #include <thread>
 #ifdef _WIN32
 #include <Windows.h>
@@ -30,6 +32,27 @@ auto nativeError(VkResult result, const char* operation) {
         result == VK_ERROR_OUT_OF_HOST_MEMORY || result == VK_ERROR_OUT_OF_DEVICE_MEMORY ? ErrorCode::OutOfMemory :
         result == VK_TIMEOUT ? ErrorCode::Timeout : ErrorCode::BackendFailure;
     return fail(code, operation, result);
+}
+bool markerText(std::string_view text) {
+    if (text.size() > UINT32_MAX) return false;
+    for (std::size_t i = 0; i < text.size();) {
+        const auto lead = static_cast<unsigned char>(text[i++]);
+        if (!lead) return false; // A native C string cannot preserve embedded NUL.
+        if (lead < 0x80) continue;
+        unsigned tail{}, value{}, minimum{};
+        if (lead >= 0xc2 && lead <= 0xdf) { tail = 1; value = lead & 0x1f; minimum = 0x80; }
+        else if (lead >= 0xe0 && lead <= 0xef) { tail = 2; value = lead & 0x0f; minimum = 0x800; }
+        else if (lead >= 0xf0 && lead <= 0xf4) { tail = 3; value = lead & 7; minimum = 0x10000; }
+        else return false;
+        if (text.size() - i < tail) return false;
+        while (tail--) {
+            const auto byte = static_cast<unsigned char>(text[i++]);
+            if ((byte & 0xc0) != 0x80) return false;
+            value = (value << 6) | (byte & 0x3f);
+        }
+        if (value < minimum || value > 0x10ffff || (value >= 0xd800 && value <= 0xdfff)) return false;
+    }
+    return true;
 }
 
 struct Loader {
@@ -53,6 +76,7 @@ struct Instance {
     PFN_vkDestroyDebugUtilsMessengerEXT destroyMessenger{};
     vulkan::ValidationCounter validation;
     bool presentation{};
+    bool debugUtils{};
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR{};
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR{};
     PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR GetPhysicalDeviceSurfaceCapabilitiesKHR{};
@@ -82,7 +106,6 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     if (api < VK_API_VERSION_1_1) return fail(ErrorCode::Unsupported, "Vulkan 1.1 required");
     const char* layer = vulkan::ValidationConfiguration::layer;
     std::vector<const char*> enabledExtensions;
-#ifdef _WIN32
     const auto enumerateExtensions = reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(get(nullptr, "vkEnumerateInstanceExtensionProperties"));
     if (enumerateExtensions) {
         std::uint32_t count{};
@@ -93,12 +116,15 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
         if (r != VK_SUCCESS) return nativeError(r, "Enumerate instance extensions");
         names.resize(count);
         const auto has = [&](const char* name) { return std::any_of(names.begin(), names.end(), [&](auto& p) { return std::strcmp(p.extensionName, name) == 0; }); };
+        instance->debugUtils = has(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#ifdef _WIN32
         instance->presentation = has(VK_KHR_SURFACE_EXTENSION_NAME) && has(VK_KHR_WIN32_SURFACE_EXTENSION_NAME) &&
             has(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME) && has(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME);
         if (instance->presentation) enabledExtensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
             VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME};
-    }
 #endif
+    }
+    if (instance->debugUtils) enabledExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     if (validation) {
         const auto layers = reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(get(nullptr, "vkEnumerateInstanceLayerProperties"));
         const auto extensions = reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(get(nullptr, "vkEnumerateInstanceExtensionProperties"));
@@ -132,7 +158,10 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     info.pApplicationInfo = &app;
     if (validation) {
         info.enabledLayerCount = 1; info.ppEnabledLayerNames = &layer;
-        enabledExtensions.insert(enabledExtensions.end(), std::begin(vulkan::ValidationConfiguration::extensions), std::end(vulkan::ValidationConfiguration::extensions));
+        for (const auto required : vulkan::ValidationConfiguration::extensions)
+            if (std::none_of(enabledExtensions.begin(), enabledExtensions.end(), [&](const auto name) { return std::strcmp(name, required) == 0; }))
+                enabledExtensions.push_back(required);
+        instance->debugUtils = true;
         info.pNext = &validationConfig.layerSettings;
     }
     info.enabledExtensionCount = static_cast<std::uint32_t>(enabledExtensions.size()); info.ppEnabledExtensionNames = enabledExtensions.data();
@@ -231,6 +260,7 @@ struct NativeDevice {
     VkDevice handle{};
     VkQueue queue{};
     bool presentation{};
+    PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT{};
     PFN_vkCreateSwapchainKHR CreateSwapchainKHR{};
     PFN_vkDestroySwapchainKHR DestroySwapchainKHR{};
     PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR{};
@@ -996,7 +1026,18 @@ struct VulkanCommands final : CommandList {
         if (!elapsed) return std::unexpected(elapsed.error());
         record->timestampResult = *elapsed; return *elapsed;
     }
-    Result<void> debugMarker(std::string_view) override { return unsupported(); }
+    Result<void> debugMarker(std::string_view text) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!owner->native->CmdInsertDebugUtilsLabelEXT) return fail(ErrorCode::Unsupported, "Vulkan debug-utils labels unavailable");
+        if (!markerText(text)) return fail(ErrorCode::InvalidArgument, "Marker requires NUL-free UTF-8 and at most UINT32_MAX bytes");
+        try {
+            std::string name;
+            if (!text.empty()) name.assign(text);
+            const VkDebugUtilsLabelEXT label{VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, name.c_str(), {0, 0, 0, 0}};
+            owner->native->CmdInsertDebugUtilsLabelEXT(record->command, &label);
+            return {};
+        } catch (const std::bad_alloc&) { return fail(ErrorCode::OutOfMemory, "Marker text allocation failed"); }
+    }
 };
 struct VulkanQueue final : CommandQueue {
     std::shared_ptr<State> owner;
@@ -1375,6 +1416,8 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan device entry point missing: vk" #name);
     DEVICE_FUNCTIONS(LOAD)
 #undef LOAD
+    if ((*instance)->debugUtils)
+        native->CmdInsertDebugUtilsLabelEXT = reinterpret_cast<PFN_vkCmdInsertDebugUtilsLabelEXT>((*instance)->GetDeviceProcAddr(native->handle, "vkCmdInsertDebugUtilsLabelEXT"));
     if (native->presentation) {
 #define LOAD_WSI(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan swapchain entry point missing: vk" #name);
         LOAD_WSI(CreateSwapchainKHR) LOAD_WSI(DestroySwapchainKHR) LOAD_WSI(GetSwapchainImagesKHR) LOAD_WSI(AcquireNextImageKHR) LOAD_WSI(QueuePresentKHR)

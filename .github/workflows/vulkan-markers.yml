@@ -1,0 +1,34 @@
+name: Vulkan marker observation (Linux software ICD)
+on:
+  push:
+    paths: ['src/**', 'include/**', 'CMakeLists.txt', 'tests/VulkanMarkerTests.cpp', 'tests/vulkan_marker/**', 'tools/run_vulkan_markers.py', 'tests/test_vulkan_markers.py', '.github/workflows/vulkan-markers.yml']
+  pull_request:
+    paths: ['src/**', 'include/**', 'CMakeLists.txt', 'tests/VulkanMarkerTests.cpp', 'tests/vulkan_marker/**', 'tools/run_vulkan_markers.py', 'tests/test_vulkan_markers.py', '.github/workflows/vulkan-markers.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+      - run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers
+      - run: cmake -S . -B out/marker-sdk -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-14 -DGFX_ENABLE_D3D12=OFF -DGFX_ENABLE_VULKAN=ON -DGFX_BUILD_TESTS=OFF -DGFX_BUILD_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX="$PWD/out/marker-install"
+      - run: cmake --build out/marker-sdk --parallel 1 && cmake --install out/marker-sdk
+      - run: cmake -S tests/vulkan_marker -B out/marker-observer -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_PREFIX_PATH="$PWD/out/marker-install" && cmake --build out/marker-observer --parallel 1
+      - name: Observe labels and missing-procedure control
+        shell: bash
+        run: |
+          mapfile -t icds < <(find /usr/share/vulkan/icd.d -maxdepth 1 -name 'lvp_icd*.json')
+          test "${#icds[@]}" -eq 1
+          python3 tools/run_vulkan_markers.py --binary out/marker-observer/gfx_marker_observe --layer out/marker-observer/libVkLayer_gfx_marker.so --manifest-dir out/marker-observer/Release --sdk-library out/marker-install/lib/libGraphicsSDKCore.a --icd "${icds[0]}" --require-software --output out/marker-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-marker-evidence
+          path: out/marker-evidence
