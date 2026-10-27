@@ -37,6 +37,17 @@ def unchanged(rows):return all(pathlib.Path(x['path']).is_file() and record(path
 def git(folder,*args):return subprocess.check_output([*GIT,'-C',str(folder),*args],text=True).strip()
 def pin(folder,commit):require(git(folder,'rev-parse','HEAD')==commit and not git(folder,'status','--porcelain','--untracked-files=no'),'Dependency pin or tracked bytes changed')
 
+def cache(path):
+    result={}
+    for line in path.read_text(encoding='utf-8-sig').splitlines():
+        if not line.startswith(('#','//')) and ':' in line and '=' in line:
+            key,value=line.split('=',1);result[key.split(':',1)[0]]=value
+    return result
+
+def packages(c,install,sdl):
+    require(c['CMAKE_BUILD_TYPE']=='Release' and pathlib.Path(c['GraphicsSDK_DIR']).resolve().is_relative_to(install.resolve())
+            and pathlib.Path(c['SDL3_DIR']).resolve().is_relative_to(sdl.resolve()),'Probe package escaped fresh SDK/SDL roots')
+
 def driver_libraries(manifest,stderr,loader):
     declared=pathlib.Path(read(manifest)['ICD']['library_path'])
     paths=[pathlib.Path(p.strip()) for p in re.findall(r'calling init:\s+(/[^\n]+)\s*$',stderr,re.M)]
@@ -98,7 +109,7 @@ def check(folder,live=False):
     r=read(folder/'receipt.json');require(r['status']=='completed' and r['task']=='P3-BEN-07' and r['inputs_unchanged'] is True,'Incomplete probe campaign')
     mode=r['mode'];require(r['physical_probe_qualified']==(mode=='physical') and type(r['physical_probe_qualified']) is bool
             and r['P3_BEN_07_completed']==(mode=='physical') and type(r['P3_BEN_07_completed']) is bool
-            and r['workload_accepted'] is r['performance_accepted'] is r['SDL_native_handle_verified'] is False and r['measurement_samples']==0,'Diagnostic probe promoted to hardware/workload/performance acceptance')
+            and r['workload_accepted'] is r['performance_accepted'] is r['SDL_native_handle_verified'] is False and type(r['measurement_samples']) is int and r['measurement_samples']==0,'Diagnostic probe promoted to hardware/workload/performance acceptance')
     require(sha(folder/'runtime-receipt.json')==r['runtime_receipt_sha256'],'Runtime receipt changed')
     runtime=read(folder/'runtime-receipt.json');require(runtime['profile']==read(ROOT/'tools/linux-vulkan-validation.json') and runtime['components']==read(ROOT/'tools/vulkan-validation.lock.json')['components'],'Runtime source/profile changed')
     require(any(x['path']==r['validation_library'] and x['sha256']==runtime['layer_library']['sha256'] for x in r['frozen_inputs']),'Runtime library binding changed')
@@ -160,6 +171,8 @@ def run(a):
     build_call('configure-sdl',['cmake','-S',ROOT/'.deps/SDL','-B',sdl,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_C_COMPILER=gcc-14','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DSDL_STATIC=ON','-DSDL_SHARED=OFF','-DSDL_GPU=ON','-DSDL_VULKAN=ON','-DSDL_TESTS=OFF','-DSDL_TEST_LIBRARY=OFF','-DSDL_X11=OFF','-DSDL_WAYLAND=OFF','-DSDL_KMSDRM=OFF','-DSDL_OPENGL=OFF','-DSDL_OPENGLES=OFF','-DSDL_OFFSCREEN=ON','-DSDL_UNIX_CONSOLE_BUILD=ON','-DSDL_AUDIO=OFF','-DSDL_CAMERA=OFF'])
     build_call('build-sdl',['cmake','--build',sdl,'--parallel','2'])
     build_call('configure-probe',['cmake','-S',ROOT/'benchmarks/linux_comparison','-B',probe_build,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DCMAKE_PREFIX_PATH='+str(install)+';'+str(sdl)])
+    packages(cache(probe_build/'CMakeCache.txt'),install,sdl)
+    require(cache(sdl/'CMakeCache.txt')['SDL_STATIC']=='ON' and cache(sdl/'CMakeCache.txt')['SDL_SHARED']=='OFF','Static SDL build required')
     build_call('build-probe',['cmake','--build',probe_build,'--parallel','2']);exe=probe_build/'linux_comparison'
     build_call('selection',[probe_build/'linux_comparison_selection'])
     plain=overrides(out,str(icd),str(layer),False);_,stdout,stderr=call('inventory',[exe,'inventory'],plain,90);inventory=json.loads(stdout)
@@ -171,7 +184,9 @@ def run(a):
     for p in sorted(pathlib.Path('/sys/bus/pci/devices').glob('*')):
         if (p/'class').read_text().strip() in ('0x030000','0x030200','0x038000'):pci.append(dict(address=p.name,vendor_id=int((p/'vendor').read_text(),16),device_id=int((p/'device').read_text(),16),driver=(p/'driver').resolve().name if (p/'driver').exists() else None))
     selected=select(inventory['inventory'],uuid,a.mode,pci);libraries=driver_libraries(icd,stderr.decode(errors='replace'),inventory['loader_path'])
-    frozen=[record(p) for p in sorted(set(sources+[runtime_path,layer,manifest,icd,exe,probe_build/'linux_comparison_selection',sdk/'libGraphicsSDKCore.a',sdl/'libSDL3.a',out/'settings/vk_layer_settings.txt']+[pathlib.Path(x['path']) for x in libraries]))]
+    installed_library=install/'lib/libGraphicsSDKCore.a';require(sha(installed_library)==sha(sdk/'libGraphicsSDKCore.a'),'Installed SDK library differs')
+    for p in (ROOT/'include').rglob('*.hpp'):require(sha(p)==sha(install/'include'/p.relative_to(ROOT/'include')),'Installed SDK header differs')
+    frozen=[record(p) for p in sorted(set(sources+[runtime_path,layer,manifest,icd,exe,probe_build/'linux_comparison_selection',sdk/'libGraphicsSDKCore.a',installed_library,sdl/'libSDL3.a',out/'settings/vk_layer_settings.txt']+[pathlib.Path(x['path']) for x in libraries]))]
     for project in (sdk,sdl,probe_build):frozen += [record(project/n) for n in ('CMakeCache.txt','compile_commands.json','build.ninja')]
     r=dict(task='P3-BEN-07',status='running',source_commit=commit,mode=a.mode,device_uuid=uuid,inventory=inventory['inventory'],environment=inventory['environment'],selected=selected,pci=pci,
            SDK_source_fingerprint=sdk_fingerprint(ROOT),probe_fingerprint=fingerprint(),SDL_commit=sdl_pin,Vulkan_Headers_commit=HEADERS,probe=record(exe),icd=record(icd),loader_path=inventory['loader_path'],runtime_libraries=libraries,

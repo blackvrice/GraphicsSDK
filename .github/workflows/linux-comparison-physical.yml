@@ -1,0 +1,67 @@
+name: Linux comparison physical probe (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      icd:
+        description: Absolute installed physical GPU ICD manifest path
+        required: true
+        type: string
+      device_uuid:
+        description: Exact lowercase 32-digit native physical GPU UUID
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  physical-probe:
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, Linux, X64, graphicssdk-gpu]
+    timeout-minutes: 60
+    env:
+      GFX_COMPARISON_ICD: ${{ inputs.icd }}
+      GFX_COMPARISON_UUID: ${{ inputs.device_uuid }}
+    defaults:
+      run:
+        working-directory: comparison-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: comparison-${{ github.run_id }}-${{ github.run_attempt }}
+          clean: false
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: comparison-${{ github.run_id }}-${{ github.run_attempt }}/.deps/Vulkan-Headers
+          clean: false
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL
+          ref: 3b2bc951500ca6a1f428af77e036e732d9a8afe3
+          path: comparison-${{ github.run_id }}-${{ github.run_attempt }}/.deps/SDL
+          clean: false
+          persist-credentials: false
+      - name: Require explicit installed ICD and UUID
+        run: |
+          python3 - <<'PY'
+          import os,pathlib,re
+          assert pathlib.Path(os.environ['GFX_COMPARISON_ICD']).is_file()
+          assert re.fullmatch('[0-9a-f]{32}',os.environ['GFX_COMPARISON_UUID']) and int(os.environ['GFX_COMPARISON_UUID'],16)
+          PY
+      - name: Build isolated pinned validation runtime
+        run: python3 tools/prepare_linux_validation.py
+      - name: Require physical SDK and SDL device probes with pinned validation
+        run: |
+          python3 tools/linux_comparison.py run --mode physical --icd "$GFX_COMPARISON_ICD" --device-uuid "$GFX_COMPARISON_UUID" --runtime-receipt out/linux-vulkan-validation-evidence/runtime/receipt.json --output out/linux-comparison-physical
+          python3 tools/linux_comparison.py check --output out/linux-comparison-physical --live
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-comparison-physical-${{ github.sha }}-${{ github.run_id }}
+          path: |
+            comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-comparison-physical/
+            comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-vulkan-validation-evidence/runtime/
+          if-no-files-found: error
+          retention-days: 14

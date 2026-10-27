@@ -28,6 +28,7 @@ jobs:
           path: .deps/SDL
           persist-credentials: false
       - name: Prepare compiler and explicit software ICD
+        timeout-minutes: 10
         run: sudo apt-get update && sudo apt-get install -y gcc-14 g++-14 ninja-build libvulkan1 mesa-vulkan-drivers
       - name: Build pinned isolated VVL runtime
         run: python3 tools/prepare_linux_validation.py

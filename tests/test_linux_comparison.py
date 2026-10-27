@@ -96,4 +96,18 @@ class LinuxComparison(unittest.TestCase):
             v.save(p/'receipt.json',r)
             with self.assertRaisesRegex(ValueError,'promoted'):v.check(p)
 
+    def test_packages_must_resolve_to_fresh_roots(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=pathlib.Path(td);install=root/'install';sdl=root/'sdl'
+            c=dict(CMAKE_BUILD_TYPE='Release',GraphicsSDK_DIR=str(install/'lib/cmake/GraphicsSDK'),SDL3_DIR=str(sdl))
+            v.packages(c,install,sdl)
+            for key,value in [('CMAKE_BUILD_TYPE','Debug'),('GraphicsSDK_DIR',str(root/'old-sdk')),('SDL3_DIR',str(root/'old-sdl'))]:
+                bad=dict(c);bad[key]=value
+                with self.subTest(key=key),self.assertRaises(ValueError):v.packages(bad,install,sdl)
+
+    def test_real_cmake_cache_syntax(self):
+        with tempfile.TemporaryDirectory() as td:
+            path=pathlib.Path(td)/'CMakeCache.txt';path.write_text('// comment\n# comment\nSDL_STATIC:BOOL=ON\nSDL_SHARED:BOOL=OFF\n')
+            self.assertEqual(v.cache(path),dict(SDL_STATIC='ON',SDL_SHARED='OFF'))
+
 if __name__=='__main__':unittest.main()
