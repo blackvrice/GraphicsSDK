@@ -1430,14 +1430,20 @@
       "phase": 3,
       "group": "P3-BEN",
       "title": "현재 제품/SDL 업로드 재측정",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-BEN-02"
       ],
       "work": "기존 upload 계약을 현재 제품으로 다시 실행한다.",
       "done_when": "지원 해상도/포맷별 참조·새 반복 측정·환경 일치.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_CURRENT_UPLOAD_REPORT.md",
+        "benchmarks/phase3_comparison/upload.json",
+        "tools/run_current_vulkan_upload.py",
+        "benchmarks/reports/2026-10-27-phase3-current-upload/summary.json",
+        "benchmarks/reports/validation/2026-10-27-phase3-current-upload/accepted/receipt.json"
+      ],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
     },
     {

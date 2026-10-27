@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "task": "P3-BEN-01",
+  "scope": "windows-x64-vulkan-graphicssdk-sdl",
+  "sdks": ["graphicssdk", "sdl"],
+  "build": {
+    "generator": "Visual Studio 17 2022",
+    "architecture": "x64",
+    "configuration": "Release",
+    "runtime_library": "MultiThreadedDLL",
+    "interprocedural_optimization": "OFF",
+    "SDK_D3D12": "ON",
+    "SDK_VULKAN": "ON",
+    "SDL_STATIC": "ON",
+    "SDL_SHARED": "OFF"
+  },
+  "adapter_policy": {
+    "vendor_id": 4318,
+    "preference": "high",
+    "exact_gpu_name_required": true,
+    "attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+    "SDL_native_handle_verified": false
+  },
+  "measurement_policy": {
+    "this_stage": "identity_probes_only",
+    "performance_samples": 0,
+    "historical_timings_reused": false,
+    "correctness_accepted": false,
+    "performance_comparison_accepted": false,
+    "overall_SDK_ranking": false,
+    "next_gate": "P3-BEN-02",
+    "future_required": ["separate_required_validation", "full_changing_readback", "separate_processes", "interleaved_repetitions", "retain_all_raw_samples"]
+  },
+  "profiles": {
+    "upload": {
+      "contract": "vulkan_upload_cpu_payload_to_texture_fence_complete_each_sample_readback_v1",
+      "category": "end_to_end",
+      "columns": ["total_ms"],
+      "shapes": {"odd": [65,37,4], "upload1080": [1920,1080,4], "upload4k": [3840,2160,4], "upload4k16f": [3840,2160,8]},
+      "boundary": "CPU payload write through upload and completed fence; readback outside timing",
+      "difference": "SDK padded staging versus SDL tight transfer layout; SDL default instance API request differs from the three explicit-1.1 profiles"
+    },
+    "draw": {
+      "contract": "vulkan_scissored_fullscreen_triangle_draw_fence_each_sample_readback_v1",
+      "category": "end_to_end",
+      "columns": ["record_ms","submit_ms","wait_ms","total_ms"],
+      "shapes": {"draw1": [65,37,4], "draw1000": [65,37,4], "instanced1000": [65,37,4]},
+      "work": {"draw1": [1,1], "draw1000": [1000,1], "instanced1000": [1,1000]},
+      "scissor": [5,3,55,31],
+      "vertices_per_instance": 3,
+      "boundary": "record+submit+completed fence wall time; full changing readback outside timing"
+    },
+    "pso": {
+      "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+      "category": "cpu_api",
+      "columns": ["create_ms","public_release_ms"],
+      "shapes": {"pso1": [65,37,4], "pso8": [65,37,4]},
+      "work": {"pso1": 1, "pso8": 8},
+      "boundary": "public creation/release calls; pipeline GPU use and full readback outside timers",
+      "difference": "Each API shader/pipeline setup as implemented; native creation counts, cache state and physical reclamation unverified"
+    },
+    "allocation": {
+      "contract": "vulkan_resource_create_public_release_full_readback_v1",
+      "category": "cpu_api",
+      "columns": ["create_ms","public_release_ms"],
+      "shapes": {"buffer1": [0,0,0], "buffer1000": [0,0,0], "texture1": [65,37,4], "texture1000": [65,37,4]},
+      "work": {"buffer1": 1, "buffer1000": 1000, "texture1": 1, "texture1000": 1000},
+      "buffer_bytes": 4096,
+      "boundary": "public creation/release calls; GPU use and full changing readback outside timers",
+      "difference": "SDK general device buffer versus SDL vertex usage; neither release timing proves native allocation counts or memory reclamation"
+    }
+  }
+}
