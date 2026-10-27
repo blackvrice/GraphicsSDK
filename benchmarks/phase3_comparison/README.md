@@ -67,3 +67,26 @@ GFX selection or validation settings. Commands, per-process environment override
 PIDs, serialized start/end intervals, stdout/stderr and input hashes are retained.
 The offline `check` recomputes statistics from raw output, verifies complete order
 and controls, and rejects altered outputs, missing repetitions or mixed modes.
+
+## Full upload campaign (P3-BEN-03)
+
+`upload.json` fixes all four shapes, including the odd alignment case. Each SDK
+runs each shape in a required-validation process (1 warmup + 3 samples), then two
+absent-layer/target controls per SDK must fail. Only then are five independent
+timing repetitions run per shape/SDK, with 5 warmups + 30 samples each. Adjacent
+SDK pairs alternate across repetitions in seeded scenario blocks: 52 processes,
+40 timing processes, 1,200 raw samples, 150 samples per shape/SDK group.
+
+```powershell
+python tools/run_current_vulkan_upload.py run --qualification out/phase3-comparison-protocol-20261027 --runtime-receipt out/vulkan-validation-runtime/receipt.json --output out/current-upload-new
+python tools/run_current_vulkan_upload.py check --output out/current-upload-new --live
+```
+
+The completed BEN-02 qualification and unchanged BEN-01 binaries/runtime are
+required. Every measured iteration still verifies the full changing image.
+Payload generation and readback are outside the timer; staging map/CPU copy,
+record/submit and completed upload fence are inside. Results are completed CPU
+wall times, with the SDK padded/SDL tight staging difference preserved. No GPU
+timestamp, PCIe bandwidth or overall SDK ranking is inferred. Earlier timing
+samples are not pooled into these results. BEN-03 accepts only upload; draw,
+PSO and allocation full-workload acceptance remain BEN-04..06.
