@@ -1452,7 +1452,7 @@
       "phase": 3,
       "group": "P3-BEN",
       "title": "현재 제품/SDL draw 재측정",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-BEN-02"
@@ -1460,7 +1460,12 @@
       "work": "사용자 선택한 고정 CPU 비교 계약으로 draw/instancing 규모와 shader/geometry·full readback을 맞춘다.",
       "done_when": "draw 3종의 이미지 참조와 새 record/submit/wait/total CPU 구간·반복 통계. GPU timestamp 비교는 P3-BEN-09에서 별도 미완료.",
       "evidence": [
-        "docs/PHASE3_DRAW_SCOPE.md"
+        "docs/PHASE3_DRAW_SCOPE.md",
+        "docs/PHASE3_CURRENT_DRAW_REPORT.md",
+        "benchmarks/phase3_comparison/draw.json",
+        "tools/run_current_vulkan_draw.py",
+        "benchmarks/reports/2026-10-27-phase3-current-draw/summary.json",
+        "benchmarks/reports/validation/2026-10-27-phase3-current-draw/accepted/receipt.json"
       ],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
     },

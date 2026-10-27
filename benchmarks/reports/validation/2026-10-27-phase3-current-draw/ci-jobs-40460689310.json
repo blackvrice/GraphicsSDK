@@ -1,0 +1,253 @@
+{
+  "total_count": 2,
+  "jobs": [
+    {
+      "id": 122044307738,
+      "run_id": 40460689310,
+      "workflow_name": "Build and correctness",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/blackvrice/GraphicsSDK/actions/runs/40460689310",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVQ_ems8AAAAcamhZGg",
+      "head_sha": "2323f3ab0e4c6de6ae5c75b17c2dfdc257ac88ac",
+      "url": "https://api.github.com/repos/blackvrice/GraphicsSDK/actions/jobs/122044307738",
+      "html_url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40460689310/job/122044307738",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-27T06:22:15Z",
+      "started_at": "2026-10-27T06:22:17Z",
+      "completed_at": "2026-10-27T06:24:10Z",
+      "name": "windows",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-27T06:22:18Z",
+          "completed_at": "2026-10-27T06:22:19Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-27T06:22:19Z",
+          "completed_at": "2026-10-27T06:22:28Z"
+        },
+        {
+          "name": "Run cmake --preset windows",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-27T06:22:28Z",
+          "completed_at": "2026-10-27T06:22:41Z"
+        },
+        {
+          "name": "Run cmake --build --preset windows-release",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-27T06:22:41Z",
+          "completed_at": "2026-10-27T06:23:31Z"
+        },
+        {
+          "name": "Run ctest --preset windows-release --exclude-regex \"^memory_reclamation_(gpu|validation)$\"",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-27T06:23:31Z",
+          "completed_at": "2026-10-27T06:23:50Z"
+        },
+        {
+          "name": "Run cmake --install out/core --config Release --prefix out/install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-27T06:23:50Z",
+          "completed_at": "2026-10-27T06:23:50Z"
+        },
+        {
+          "name": "Run python tools/audit_licenses.py --profile sdk --output out/license-audit",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-27T06:23:50Z",
+          "completed_at": "2026-10-27T06:23:51Z"
+        },
+        {
+          "name": "Run cmake -S tests/consumer -B out/consumer -A x64 \"-DCMAKE_PREFIX_PATH=$pwd/out/install\"",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-27T06:23:51Z",
+          "completed_at": "2026-10-27T06:23:59Z"
+        },
+        {
+          "name": "Run python tools/check_python_contracts.py --output out/python-contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-27T06:23:59Z",
+          "completed_at": "2026-10-27T06:24:06Z"
+        },
+        {
+          "name": "Independently replay saved current draw evidence",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-10-27T06:24:06Z",
+          "completed_at": "2026-10-27T06:24:06Z"
+        },
+        {
+          "name": "Preserve complete Python contracts and checkout identities",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-27T06:24:06Z",
+          "completed_at": "2026-10-27T06:24:07Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-10-27T06:24:07Z",
+          "completed_at": "2026-10-27T06:24:09Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-10-27T06:24:09Z",
+          "completed_at": "2026-10-27T06:24:09Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/blackvrice/GraphicsSDK/check-runs/122044307738",
+      "labels": [
+        "windows-2022"
+      ],
+      "runner_id": 1000001273,
+      "runner_name": "GitHub Actions 1000001273",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 122044307976,
+      "run_id": 40460689310,
+      "workflow_name": "Build and correctness",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/blackvrice/GraphicsSDK/actions/runs/40460689310",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVQ_ems8AAAAcamhaCA",
+      "head_sha": "2323f3ab0e4c6de6ae5c75b17c2dfdc257ac88ac",
+      "url": "https://api.github.com/repos/blackvrice/GraphicsSDK/actions/jobs/122044307976",
+      "html_url": "https://github.com/blackvrice/GraphicsSDK/actions/runs/40460689310/job/122044307976",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-27T06:22:15Z",
+      "started_at": "2026-10-27T06:22:17Z",
+      "completed_at": "2026-10-27T06:23:00Z",
+      "name": "portable-core",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-27T06:22:18Z",
+          "completed_at": "2026-10-27T06:22:19Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-27T06:22:19Z",
+          "completed_at": "2026-10-27T06:22:23Z"
+        },
+        {
+          "name": "Run sudo apt-get update && sudo apt-get install -y g++-14 ninja-build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-27T06:22:23Z",
+          "completed_at": "2026-10-27T06:22:31Z"
+        },
+        {
+          "name": "Run cmake --preset portable-core -DCMAKE_CXX_COMPILER=g++-14",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-27T06:22:31Z",
+          "completed_at": "2026-10-27T06:22:35Z"
+        },
+        {
+          "name": "Run cmake --build --preset portable-core",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-27T06:22:35Z",
+          "completed_at": "2026-10-27T06:22:48Z"
+        },
+        {
+          "name": "Run ctest --preset portable-core",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-27T06:22:48Z",
+          "completed_at": "2026-10-27T06:22:49Z"
+        },
+        {
+          "name": "Run python3 tools/check_python_contracts.py --output out/python-contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-27T06:22:49Z",
+          "completed_at": "2026-10-27T06:22:55Z"
+        },
+        {
+          "name": "Independently replay saved current draw evidence",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-10-27T06:22:55Z",
+          "completed_at": "2026-10-27T06:22:55Z"
+        },
+        {
+          "name": "Preserve complete Python contracts and checkout identities",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-27T06:22:55Z",
+          "completed_at": "2026-10-27T06:22:57Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-27T06:22:57Z",
+          "completed_at": "2026-10-27T06:22:57Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-27T06:22:57Z",
+          "completed_at": "2026-10-27T06:22:57Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/blackvrice/GraphicsSDK/check-runs/122044307976",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000001274,
+      "runner_name": "GitHub Actions 1000001274",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

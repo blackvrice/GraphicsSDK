@@ -1,0 +1,616 @@
+{
+  "task": "P3-BEN-04",
+  "status": "done",
+  "scope": "User-selected fixed draw CPU comparison contract only",
+  "source_commit": "2323f3ab0e4c6de6ae5c75b17c2dfdc257ac88ac",
+  "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+  "profile_fingerprints": {
+    "upload": "78dc8719fbc6cdb822aa09170b428cc1702be3dfa6fb9aab935f1114943e8f7b",
+    "draw": "e11454fe0f0fd09fd796c66b4994c296a711411a9f5cc39f121d83998c342a27",
+    "pso": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+    "allocation": "afda2e90f9cb5876464147bc2c25304f12b79b98192abe994f18966222028b4f"
+  },
+  "SDK_product_source_changed": false,
+  "SDK_files": 28,
+  "snapshot_files": 83,
+  "identity": {
+    "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+    "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+    "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+    "device_luid": "287e010000000000",
+    "native_vendor_id": 4318,
+    "native_device_id": 8644,
+    "native_driver_version": 2604679168,
+    "native_api_version": 4211045,
+    "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:97832",
+      "driver": "32.0.16.2101",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    }
+  },
+  "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "fresh_SDK_SDL_four_consumers": true,
+  "fresh_current_LUID_preparation_probes": 8,
+  "fresh_current_LUID_protocol_processes": 66,
+  "runtime_library_sha256": "39fb7e8398408c9bdecb4400ea7217350610c48ebbbfca908922ea805654b0aa",
+  "runtime_redistributed": false,
+  "serialized_draw_processes": 40,
+  "validation_processes": 6,
+  "control_processes": 4,
+  "measurement_processes": 30,
+  "measurement_samples": 900,
+  "validation_sample_intervals_excluded": 18,
+  "warmup_iterations_excluded_from_statistics": 150,
+  "statistics_per_scenario_and_SDK": 150,
+  "CPU_statistics_columns": 24,
+  "samples_removed": 0,
+  "validation_verified_bytes": 230880,
+  "measurement_verified_bytes": 10101000,
+  "verified_images": 1074,
+  "verified_bytes": 10331880,
+  "public_submitted_draw_calls": 358716,
+  "native_draw_count_verified": false,
+  "full_changing_readback_all_successful_workloads": true,
+  "inputs_unchanged": true,
+  "Python_tests": 822,
+  "new_Python_tests": 19,
+  "statistics": [
+    {
+      "scenario": "draw1",
+      "sdk": "graphicssdk",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": [
+        1,
+        1
+      ],
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.01745,
+          "p95_ms": 0.027424999999999974,
+          "p99_ms": 0.0345,
+          "min_ms": 0.0115,
+          "max_ms": 0.0371,
+          "MAD_ms": 0.0028499999999999992,
+          "process_medians_ms": [
+            0.0141,
+            0.0185,
+            0.0172,
+            0.019200000000000002,
+            0.0201
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0132,
+          "p95_ms": 0.01932999999999999,
+          "p99_ms": 0.024503999999999995,
+          "min_ms": 0.0095,
+          "max_ms": 0.0255,
+          "MAD_ms": 0.0020999999999999994,
+          "process_medians_ms": [
+            0.01075,
+            0.0145,
+            0.01325,
+            0.0137,
+            0.0137
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0392,
+          "p95_ms": 0.043554999999999996,
+          "p99_ms": 0.048027999999999973,
+          "min_ms": 0.0354,
+          "max_ms": 0.0499,
+          "MAD_ms": 0.0005000000000000004,
+          "process_medians_ms": [
+            0.03895,
+            0.039,
+            0.0392,
+            0.0393,
+            0.0393
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0708,
+          "p95_ms": 0.08780499999999998,
+          "p99_ms": 0.09525899999999998,
+          "min_ms": 0.0601,
+          "max_ms": 0.1015,
+          "MAD_ms": 0.0050000000000000044,
+          "process_medians_ms": [
+            0.06395,
+            0.0722,
+            0.069,
+            0.0733,
+            0.0743
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "draw1",
+      "sdk": "sdl",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": [
+        1,
+        1
+      ],
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.00675,
+          "p95_ms": 0.012109999999999998,
+          "p99_ms": 0.015817999999999985,
+          "min_ms": 0.0052,
+          "max_ms": 0.0178,
+          "MAD_ms": 0.0007499999999999998,
+          "process_medians_ms": [
+            0.0063,
+            0.00625,
+            0.0085,
+            0.0062,
+            0.00705
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0104,
+          "p95_ms": 0.015554999999999998,
+          "p99_ms": 0.017658999999999994,
+          "min_ms": 0.0089,
+          "max_ms": 0.0181,
+          "MAD_ms": 0.0008999999999999998,
+          "process_medians_ms": [
+            0.010700000000000001,
+            0.010249999999999999,
+            0.01145,
+            0.0101,
+            0.0103
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0284,
+          "p95_ms": 0.032665,
+          "p99_ms": 0.03702199999999998,
+          "min_ms": 0.0229,
+          "max_ms": 0.0489,
+          "MAD_ms": 0.0005000000000000004,
+          "process_medians_ms": [
+            0.02835,
+            0.0283,
+            0.029449999999999997,
+            0.02855,
+            0.027950000000000003
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.04625,
+          "p95_ms": 0.05641,
+          "p99_ms": 0.06082799999999997,
+          "min_ms": 0.0423,
+          "max_ms": 0.0728,
+          "MAD_ms": 0.0022000000000000006,
+          "process_medians_ms": [
+            0.04635,
+            0.04555,
+            0.0505,
+            0.0447,
+            0.04705
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "draw1000",
+      "sdk": "graphicssdk",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": [
+        1000,
+        1
+      ],
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0421,
+          "p95_ms": 0.05449499999999998,
+          "p99_ms": 0.07657599999999994,
+          "min_ms": 0.038,
+          "max_ms": 0.093,
+          "MAD_ms": 0.0020499999999999997,
+          "process_medians_ms": [
+            0.041749999999999995,
+            0.0406,
+            0.0425,
+            0.042550000000000004,
+            0.042249999999999996
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.01395,
+          "p95_ms": 0.0195,
+          "p99_ms": 0.027584999999999967,
+          "min_ms": 0.0107,
+          "max_ms": 0.0329,
+          "MAD_ms": 0.0013499999999999996,
+          "process_medians_ms": [
+            0.012150000000000001,
+            0.014100000000000001,
+            0.014450000000000001,
+            0.0144,
+            0.01405
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0791,
+          "p95_ms": 0.08433999999999998,
+          "p99_ms": 0.11231099999999958,
+          "min_ms": 0.0736,
+          "max_ms": 0.1415,
+          "MAD_ms": 0.0006000000000000033,
+          "process_medians_ms": [
+            0.07915,
+            0.07905000000000001,
+            0.0787,
+            0.07905000000000001,
+            0.0793
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.1356,
+          "p95_ms": 0.15505999999999998,
+          "p99_ms": 0.18998699999999996,
+          "min_ms": 0.1295,
+          "max_ms": 0.2008,
+          "MAD_ms": 0.0034500000000000086,
+          "process_medians_ms": [
+            0.13385,
+            0.13545,
+            0.13715,
+            0.13555,
+            0.1357
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "draw1000",
+      "sdk": "sdl",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": [
+        1000,
+        1
+      ],
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0249,
+          "p95_ms": 0.03201999999999999,
+          "p99_ms": 0.037358999999999996,
+          "min_ms": 0.0229,
+          "max_ms": 0.0378,
+          "MAD_ms": 0.0007999999999999986,
+          "process_medians_ms": [
+            0.0249,
+            0.025,
+            0.0245,
+            0.0257,
+            0.02525
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0095,
+          "p95_ms": 0.014374999999999992,
+          "p99_ms": 0.019213999999999988,
+          "min_ms": 0.0085,
+          "max_ms": 0.0217,
+          "MAD_ms": 0.0005000000000000004,
+          "process_medians_ms": [
+            0.0092,
+            0.00955,
+            0.0093,
+            0.00975,
+            0.009850000000000001
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0671,
+          "p95_ms": 0.07231499999999998,
+          "p99_ms": 0.09055499999999972,
+          "min_ms": 0.0577,
+          "max_ms": 0.1173,
+          "MAD_ms": 0.000449999999999999,
+          "process_medians_ms": [
+            0.06715,
+            0.06735,
+            0.06709999999999999,
+            0.0668,
+            0.06725
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.10235,
+          "p95_ms": 0.11463,
+          "p99_ms": 0.13683099999999984,
+          "min_ms": 0.0985,
+          "max_ms": 0.1516,
+          "MAD_ms": 0.0017500000000000016,
+          "process_medians_ms": [
+            0.1014,
+            0.10444999999999999,
+            0.10125,
+            0.10395,
+            0.10275000000000001
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "instanced1000",
+      "sdk": "graphicssdk",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": [
+        1,
+        1000
+      ],
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0168,
+          "p95_ms": 0.025019999999999994,
+          "p99_ms": 0.027956999999999992,
+          "min_ms": 0.0126,
+          "max_ms": 0.0321,
+          "MAD_ms": 0.0017499999999999998,
+          "process_medians_ms": [
+            0.0173,
+            0.017,
+            0.015649999999999997,
+            0.0165,
+            0.0171
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0127,
+          "p95_ms": 0.017209999999999996,
+          "p99_ms": 0.018805999999999993,
+          "min_ms": 0.0101,
+          "max_ms": 0.0218,
+          "MAD_ms": 0.0011000000000000003,
+          "process_medians_ms": [
+            0.0127,
+            0.01385,
+            0.01175,
+            0.0124,
+            0.0127
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.07625000000000001,
+          "p95_ms": 0.08080999999999999,
+          "p99_ms": 0.08907099999999998,
+          "min_ms": 0.0706,
+          "max_ms": 0.102,
+          "MAD_ms": 0.0005500000000000088,
+          "process_medians_ms": [
+            0.0768,
+            0.076,
+            0.076,
+            0.07675,
+            0.076
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.10655,
+          "p95_ms": 0.11963,
+          "p99_ms": 0.12832199999999996,
+          "min_ms": 0.0989,
+          "max_ms": 0.1304,
+          "MAD_ms": 0.0028500000000000053,
+          "process_medians_ms": [
+            0.10665,
+            0.1085,
+            0.10375000000000001,
+            0.10575000000000001,
+            0.10635
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "instanced1000",
+      "sdk": "sdl",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": [
+        1,
+        1000
+      ],
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0075,
+          "p95_ms": 0.012364999999999996,
+          "p99_ms": 0.013451,
+          "min_ms": 0.005,
+          "max_ms": 0.0137,
+          "MAD_ms": 0.0013000000000000004,
+          "process_medians_ms": [
+            0.006,
+            0.00875,
+            0.0073,
+            0.0085,
+            0.0073
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0113,
+          "p95_ms": 0.017809999999999996,
+          "p99_ms": 0.0355119999999999,
+          "min_ms": 0.0083,
+          "max_ms": 0.0672,
+          "MAD_ms": 0.0015999999999999999,
+          "process_medians_ms": [
+            0.0092,
+            0.01185,
+            0.01145,
+            0.0125,
+            0.0119
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0654,
+          "p95_ms": 0.07646999999999998,
+          "p99_ms": 0.12215999999999994,
+          "min_ms": 0.0531,
+          "max_ms": 0.1262,
+          "MAD_ms": 0.0012999999999999956,
+          "process_medians_ms": [
+            0.0645,
+            0.06684999999999999,
+            0.06615,
+            0.065,
+            0.0654
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0851,
+          "p95_ms": 0.1046149999999999,
+          "p99_ms": 0.14514799999999994,
+          "min_ms": 0.0786,
+          "max_ms": 0.1688,
+          "MAD_ms": 0.003149999999999993,
+          "process_medians_ms": [
+            0.0799,
+            0.08815,
+            0.08545,
+            0.08745,
+            0.08560000000000001
+          ],
+          "samples_removed": 0
+        }
+      }
+    }
+  ],
+  "historical_timings_reused": false,
+  "completed_workload_tasks": [
+    "P3-BEN-04"
+  ],
+  "GPU_timestamp_pending_task": "P3-BEN-09",
+  "overall_SDK_ranking": false,
+  "GPU_timestamp_measurement": false,
+  "SDL_native_handle_verified": false,
+  "Intel_GPU_device_created": false,
+  "Linux_benchmark_executed": false,
+  "human_display_accepted": false,
+  "next_task": "P3-BEN-05",
+  "source_commit_CI": {
+    "Build and correctness": 40460689310,
+    "Linux Vulkan compile": 40460689301,
+    "conclusion": "success"
+  },
+  "offline_tamper_rejections": 14,
+  "initial_LUID_probe_and_Python_failure_retained": true
+}
