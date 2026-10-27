@@ -74,6 +74,12 @@ def cache(path):
     return result
 
 
+def validate_compiler_flags(text):
+    # /GL- explicitly disables LTCG (SDL_mslibc); paths may also contain /GL/.
+    flags=set(re.findall(r'(?<!\S)(/[^\s]+)',text))
+    require('/O2' in flags and '/MD' in flags and not flags.intersection(('/GL','/GL+','/MDd')),'Unreviewed Release compiler flags')
+
+
 def validate_cache(c,kind,roots):
     required=dict(CMAKE_GENERATOR='Visual Studio 17 2022',CMAKE_GENERATOR_PLATFORM='x64',CMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDLL',CMAKE_INTERPROCEDURAL_OPTIMIZATION='OFF')
     if kind=='sdk':required.update(GFX_ENABLE_D3D12='ON',GFX_ENABLE_VULKAN='ON',GFX_VULKAN_XCB='OFF',GFX_BUILD_TESTS='OFF',GFX_BUILD_EXAMPLES='OFF')
@@ -100,7 +106,7 @@ def collect_inputs(roots,tracked):
         validate_cache(cache(build/'CMakeCache.txt'),kind,roots);inputs.add(build/'CMakeCache.txt')
         reads=[p for p in build.rglob('CL.read.1.tlog') if 'Release' in p.parts];commands=[p for p in build.rglob('CL.command.1.tlog') if 'Release' in p.parts];require(reads and commands,'Missing actual Release compiler evidence: '+kind)
         for p in commands:
-            text=p.read_bytes().decode('utf-16');require(re.search(r'/O2\b',text) and re.search(r'/MD\b',text) and not re.search(r'/GL\b',text),'Unreviewed Release compiler flags: '+kind)
+            text=p.read_bytes().decode('utf-16');validate_compiler_flags(text)
         for p in reads:
             for raw in parse_tlog(p.read_bytes()):
                 q=pathlib.Path(raw).resolve()
@@ -109,7 +115,7 @@ def collect_inputs(roots,tracked):
                 if q.is_relative_to(ROOT/'.deps/SDL'):require(q.relative_to(ROOT/'.deps/SDL').as_posix().casefold() in tracked['sdl'],'Untracked SDL compiler input')
                 elif q.is_relative_to(ROOT/'.deps/Vulkan-Headers'):require(q.relative_to(ROOT/'.deps/Vulkan-Headers').as_posix().casefold() in tracked['headers'],'Untracked Vulkan compiler input')
                 elif q.is_relative_to(roots):pass
-                elif q.is_relative_to(ROOT):require(q.relative_to(ROOT).as_posix().startswith(('include/','src/','benchmarks/','tests/fixtures/')),'Unexpected own compiler input')
+                elif q.is_relative_to(ROOT):require(q.relative_to(ROOT).as_posix().casefold().startswith(('include/','src/','benchmarks/','tests/fixtures/')),'Unexpected own compiler input')
                 else:require(system_input(q),'Unreviewed external compiler input: '+raw)
                 inputs.add(q)
         logs.extend(reads+commands)

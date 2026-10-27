@@ -89,5 +89,12 @@ class ComparisonInputs(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             p=pathlib.Path(tmp)/'source';p.write_bytes(b'abc');rows=[v.record(p)];self.assertTrue(v.unchanged(rows));p.write_bytes(b'xyz');self.assertFalse(v.unchanged(rows));p.unlink();self.assertFalse(v.unchanged(rows))
 
+    def test_sdl_explicitly_disabled_ltcg_is_accepted(self):
+        v.validate_compiler_flags('/c /O2 /MD /GL- D:/SDK/GL/file.c')
+
+    def test_enabled_ltcg_or_debug_runtime_rejected(self):
+        for flags in ('/O2 /MD /GL','/O2 /MD /GL+','/Od /MD','/O2 /MDd','/O2 /MD /MDd'):
+            with self.subTest(flags=flags),self.assertRaises(ValueError):v.validate_compiler_flags(flags)
+
 
 if __name__=='__main__':unittest.main()
