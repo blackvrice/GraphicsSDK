@@ -80,6 +80,12 @@ def validate_compiler_flags(text):
     require('/O2' in flags and '/MD' in flags and not flags.intersection(('/GL','/GL+','/MDd')),'Unreviewed Release compiler flags')
 
 
+def validate_target_rejection(name,sdk,code,stdout,stderr):
+    message='Selected GPU differs from expected GPU' if sdk=='sdl' else 'Exact unambiguous SDK adapter required' if name=='upload' else 'Unique exact SDK GPU required'
+    lines=stderr.decode(errors='replace').strip().splitlines()
+    require(type(code) is int and code==1 and not stdout and lines and lines[-1]=='FAIL: '+message,'Wrong-target probe did not reject explicitly')
+
+
 def validate_cache(c,kind,roots):
     required=dict(CMAKE_GENERATOR='Visual Studio 17 2022',CMAKE_GENERATOR_PLATFORM='x64',CMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDLL',CMAKE_INTERPROCEDURAL_OPTIMIZATION='OFF')
     if kind=='sdk':required.update(GFX_ENABLE_D3D12='ON',GFX_ENABLE_VULKAN='ON',GFX_VULKAN_XCB='OFF',GFX_BUILD_TESTS='OFF',GFX_BUILD_EXAMPLES='OFF')
@@ -144,7 +150,9 @@ def check(folder,live=False):
         require(identity==r['identity'],'Stored GPU identity changed')
     require(len(r['rejections'])==8 and {(p['profile'],p['sdk']) for p in r['rejections']}==expected,'Missing exact-target rejection controls')
     for p in r['rejections']:
-        require(p['returncode']==1 and sha(folder/p['stderr'])==p['stderr_sha256'] and 'GPU' in (folder/p['stderr']).read_text(errors='replace'),'Expected-GPU rejection changed')
+        name=p['profile']+'-'+p['sdk']+'-wrong-target';command=next(c for c in r['commands'] if c['name']==name)
+        require(sha(folder/p['stderr'])==p['stderr_sha256'] and command['returncode']==p['returncode'] and command['expected']==1 and command['argv'][1:]==['--probe',p['sdk'],'high','GraphicsSDK BEN01 absent GPU'],'Expected-GPU rejection changed')
+        validate_target_rejection(p['profile'],p['sdk'],p['returncode'],(folder/'commands'/(name+'.stdout')).read_bytes(),(folder/p['stderr']).read_bytes())
     if live:require(unchanged(read(folder/'inputs.json')['files']) and sdk_fingerprint(ROOT)==r['SDK_source_fingerprint'] and all(MODULES[n].fingerprint()==r['profile_fingerprints'][n] for n in NAMES),'Live build/source input changed')
     return dict(task='P3-BEN-01',input_preparation_verified=True,performance_samples=0,performance_comparison_accepted=False,overall_SDK_ranking=False)
 
@@ -176,7 +184,7 @@ def build(args):
                 p,stdout,stderr=call(n+'-'+sdk+'-probe',[exe,'--probe',sdk,'high',args.gpu_name],timeout=60);require(not re.search(rb'Validation Error|SYNC-HAZARD',p.stderr),'Unexpected native validation error');data=json.loads(p.stdout);identity=validate_probe(n,sdk,data,r,reference)
                 if reference is None:reference=identity;r['identity']=identity
                 r['probes'].append(dict(profile=n,sdk=sdk,stdout=stdout.relative_to(out).as_posix(),stderr=stderr.relative_to(out).as_posix(),stdout_sha256=sha(stdout),stderr_sha256=sha(stderr)));write()
-                p,_,stderr=call(n+'-'+sdk+'-wrong-target',[exe,'--probe',sdk,'high','GraphicsSDK BEN01 absent GPU'],expected=1,timeout=60);require(not p.stdout and 'GPU' in p.stderr.decode(errors='replace'),'Wrong-target probe did not reject explicitly');r['rejections'].append(dict(profile=n,sdk=sdk,returncode=p.returncode,stderr=stderr.relative_to(out).as_posix(),stderr_sha256=sha(stderr)));write()
+                p,_,stderr=call(n+'-'+sdk+'-wrong-target',[exe,'--probe',sdk,'high','GraphicsSDK BEN01 absent GPU'],expected=1,timeout=60);validate_target_rejection(n,sdk,p.returncode,p.stdout,p.stderr);r['rejections'].append(dict(profile=n,sdk=sdk,returncode=p.returncode,stderr=stderr.relative_to(out).as_posix(),stderr_sha256=sha(stderr)));write()
         pin(ROOT/'.deps/SDL',sdl);pin(ROOT/'.deps/Vulkan-Headers',headers);r['inputs_unchanged']=unchanged(frozen) and unchanged(before) and sdk_fingerprint(ROOT)==fp and all(MODULES[n].fingerprint()==fps[n] for n in NAMES);require(r['inputs_unchanged'],'Inputs changed during preparation');r['status']='prepared';write();check(out,live=True);print('PASS fresh SDK/SDL + four consumers, eight same-GPU probes/eight target rejections; no performance samples')
     except (OSError,ValueError,KeyError,subprocess.SubprocessError) as e:r.update(status='failed',error=str(e));write();print(str(e));return 1
     return 0

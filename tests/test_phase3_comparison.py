@@ -96,5 +96,14 @@ class ComparisonInputs(unittest.TestCase):
         for flags in ('/O2 /MD /GL','/O2 /MD /GL+','/Od /MD','/O2 /MDd','/O2 /MD /MDd'):
             with self.subTest(flags=flags),self.assertRaises(ValueError):v.validate_compiler_flags(flags)
 
+    def test_actual_sdk_and_sdl_target_errors_accept(self):
+        for n in v.NAMES:
+            v.validate_target_rejection(n,'graphicssdk',1,b'',('FAIL: '+('Exact unambiguous SDK adapter required' if n=='upload' else 'Unique exact SDK GPU required')+'\n').encode())
+            v.validate_target_rejection(n,'sdl',1,b'',b'FAIL: Selected GPU differs from expected GPU\n')
+
+    def test_unrelated_failure_is_not_target_rejection(self):
+        for code,stdout,stderr in [(0,b'',b'FAIL: Exact unambiguous SDK adapter required'),(1,b'{}',b'FAIL: Exact unambiguous SDK adapter required'),(1,b'',b'GPU crashed'),(1,b'',b'FAIL: Device lost')]:
+            with self.subTest(code=code,stdout=stdout,stderr=stderr),self.assertRaises(ValueError):v.validate_target_rejection('upload','graphicssdk',code,stdout,stderr)
+
 
 if __name__=='__main__':unittest.main()
