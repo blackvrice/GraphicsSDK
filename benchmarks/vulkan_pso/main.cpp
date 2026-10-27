@@ -103,13 +103,13 @@ struct SDL final:Adapter {
 };
 }
 int main(int argc,char**argv)try{
-    using namespace psobench;const bool probe=argc==4&&std::string_view(argv[1])=="--probe";
-    if(!probe&&argc!=8)throw std::runtime_error("Usage: vulkan_pso <graphicssdk|sdl> <pso1|pso8> <high|low> <warmup 1..64> <samples 3..256> <validation 0|1> <expected GPU>; or --probe <sdk> <high|low>");
+    using namespace psobench;const bool probe=(argc==4||argc==5)&&std::string_view(argv[1])=="--probe";
+    if(!probe&&argc!=8)throw std::runtime_error("Usage: vulkan_pso <graphicssdk|sdl> <pso1|pso8> <high|low> <warmup 1..64> <samples 3..256> <validation 0|1> <expected GPU>; or --probe <sdk> <high|low> [expected GPU]");
     const std::string sdk=argv[probe?2:1],preference=argv[3];if((sdk!="sdl"&&sdk!="graphicssdk")||(preference!="high"&&preference!="low"))throw std::runtime_error("Usage: invalid SDK/preference");
-    unsigned count=probe?0:work(argv[2]),warmup=probe?0:number(argv[4],1,64),samples=probe?0:number(argv[5],3,256);bool validation=!probe&&number(argv[6],0,1);const std::string expected=probe?"":argv[7];if(!probe&&expected.empty())throw std::runtime_error("Expected GPU name required");
+    unsigned count=probe?0:work(argv[2]),warmup=probe?0:number(argv[4],1,64),samples=probe?0:number(argv[5],3,256);bool validation=!probe&&number(argv[6],0,1);const std::string expected=probe?(argc==5?argv[4]:""):argv[7];if((!probe||argc==5)&&expected.empty())throw std::runtime_error("Expected GPU name required");
     if(validation){SDK required(true,expected);required.close();}
     std::unique_ptr<Adapter>a;if(sdk=="sdl")a=std::make_unique<SDL>(validation,preference=="low");else a=std::make_unique<SDK>(validation,expected);
-    auto name=a->name();if(!probe&&name!=expected)throw std::runtime_error("Selected GPU differs from expected GPU");auto id=upload::identify(name);auto env=bench::environment(name);auto loaded=layer(validation);std::vector<Times> measured;
+    auto name=a->name();if(!expected.empty()&&name!=expected)throw std::runtime_error("Selected GPU differs from expected GPU");auto id=upload::identify(name);auto env=bench::environment(name);auto loaded=layer(validation);std::vector<Times> measured;
     if(!probe){a->prepare();for(unsigned i=0;i<warmup+samples;++i){auto result=a->sample(count,i);if(a->read()!=reference(i,count))throw std::runtime_error("Full pipeline stripe reference mismatch at iteration "+std::to_string(i));if(i>=warmup)measured.push_back(result);}}
     a->close();if(logErrors)throw std::runtime_error("SDL teardown errors");
     std::cout<<std::setprecision(17)<<"{\"schema_version\":1,\"sdk\":"<<quote(sdk)<<",\"api\":\"vulkan\",\"category\":\"cpu_api\",\"contract\":\"vulkan_pipeline_create_public_release_use_checked_v1\",\"probe\":"<<(probe?"true":"false")

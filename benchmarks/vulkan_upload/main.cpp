@@ -97,15 +97,15 @@ void payload(std::vector<std::byte>& data,Shape s,unsigned seed){
 }
 int main(int argc,char** argv)try{
     using namespace upload;
-    const bool probe=argc==4&&std::string_view(argv[1])=="--probe";
-    if(!probe&&argc!=8)throw std::runtime_error("Usage: vulkan_upload <graphicssdk|sdl> <odd|upload1080|upload4k|upload4k16f> <high|low> <warmup 1..64> <samples 3..256> <validation 0|1> <expected GPU>; or --probe <sdk> <high|low>");
+    const bool probe=(argc==4||argc==5)&&std::string_view(argv[1])=="--probe";
+    if(!probe&&argc!=8)throw std::runtime_error("Usage: vulkan_upload <graphicssdk|sdl> <odd|upload1080|upload4k|upload4k16f> <high|low> <warmup 1..64> <samples 3..256> <validation 0|1> <expected GPU>; or --probe <sdk> <high|low> [expected GPU]");
     const std::string sdk=argv[probe?2:1],preference=argv[3];
     if((sdk!="sdl"&&sdk!="graphicssdk")||(preference!="high"&&preference!="low"))throw std::runtime_error("Usage: unsupported SDK/preference");
-    const auto s=probe?Shape{}:shape(argv[2]);const auto warmup=probe?0:number(argv[4],1,64),samples=probe?0:number(argv[5],3,256);const bool validation=!probe&&number(argv[6],0,1);const std::string expected=probe?"":argv[7];
-    if(!probe&&expected.empty())throw std::runtime_error("Expected GPU name is required");
+    const auto s=probe?Shape{}:shape(argv[2]);const auto warmup=probe?0:number(argv[4],1,64),samples=probe?0:number(argv[5],3,256);const bool validation=!probe&&number(argv[6],0,1);const std::string expected=probe?(argc==5?argv[4]:""):argv[7];
+    if((!probe||argc==5)&&expected.empty())throw std::runtime_error("Expected GPU name is required");
     if(validation){SDK required(true,expected);required.close();}
     auto a=adapter(sdk,validation,preference=="low",expected);auto name=a->name();
-    if(!probe&&name!=expected)throw std::runtime_error("Selected GPU differs from expected GPU");
+    if(!expected.empty()&&name!=expected)throw std::runtime_error("Selected GPU differs from expected GPU");
     auto identity=identify(name);auto env=bench::environment(name);const auto loadedLayer=layer(validation);
     std::vector<double> measured;std::uint64_t verifiedBytes{};
     if(!probe){a->prepare(s);std::vector<std::byte> bytes(std::size_t(s.w)*s.h*s.bpp);
