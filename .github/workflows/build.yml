@@ -20,6 +20,9 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           ./out/consumer/Release/consumer.exe
       - run: python tools/check_python_contracts.py --output out/python-contracts
+      - name: Independently replay saved current draw evidence
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-current-draw/verify.py') != '' }}
+        run: python benchmarks/reports/validation/2026-10-27-phase3-current-draw/verify.py
       - name: Preserve complete Python contracts and checkout identities
         if: always()
         uses: actions/upload-artifact@v4
@@ -37,6 +40,9 @@ jobs:
       - run: cmake --build --preset portable-core
       - run: ctest --preset portable-core
       - run: python3 tools/check_python_contracts.py --output out/python-contracts
+      - name: Independently replay saved current draw evidence
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-current-draw/verify.py') != '' }}
+        run: python3 benchmarks/reports/validation/2026-10-27-phase3-current-draw/verify.py
       - name: Preserve complete Python contracts and checkout identities
         if: always()
         uses: actions/upload-artifact@v4

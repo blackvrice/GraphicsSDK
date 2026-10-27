@@ -90,3 +90,26 @@ wall times, with the SDK padded/SDL tight staging difference preserved. No GPU
 timestamp, PCIe bandwidth or overall SDK ranking is inferred. Earlier timing
 samples are not pooled into these results. BEN-03 accepts only upload; draw,
 PSO and allocation full-workload acceptance remain BEN-04..06.
+
+## Full draw CPU campaign (P3-BEN-04)
+
+The user selected the fixed CPU comparison contract; GPU timestamp comparison
+remains a separate required task, P3-BEN-09 (see `docs/PHASE3_DRAW_SCOPE.md`).
+`draw.json` freezes draw1 / draw1000 / instanced1000, a 65x37 RGBA8 target, scissor
+[5,3,55,31], and the same changing full-image reference/SPIR-V shader fixtures.
+Six required-validation processes and four missing-layer/target controls must
+finish before 30 timing processes (5 warmups + 30 samples, five repetitions per
+scenario/SDK). Seeded adjacent SDK pairs alternate across repetitions. All 900
+primary samples and record/submit/wait/total CPU columns are retained, with 150
+samples per group and full readback outside the timer on every iteration.
+
+```powershell
+python tools/run_current_vulkan_draw.py run --qualification out/current-qualification --runtime-receipt out/vulkan-validation-runtime/receipt.json --output out/current-draw-new
+python tools/run_current_vulkan_draw.py check --output out/current-draw-new --live
+```
+
+Use a qualification bound to the current GPU/driver/LUID; regenerate preparation
+and qualification if that identity changed. Neither CPU fence wait nor total is
+a GPU timestamp. Resource/shader/pipeline setup and image readback are outside
+the timer. The offline check reproduces all four columns from raw per-frame
+intervals, verifies that each partitions total, and retains the pending GPU task.

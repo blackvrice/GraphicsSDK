@@ -187,6 +187,7 @@
     "P3-BEN-06",
     "P3-BEN-07",
     "P3-BEN-08",
+    "P3-BEN-09",
     "P3-CMP-01",
     "P3-CMP-02",
     "P3-CMP-03",
@@ -1456,9 +1457,11 @@
       "depends_on": [
         "P3-BEN-02"
       ],
-      "work": "Draw/instancing 규모와 shader/binding 계약을 맞춘다.",
-      "done_when": "선택한 동일 draw 작업의 이미지 참조 및 새 CPU/GPU 구간 측정.",
-      "evidence": [],
+      "work": "사용자 선택한 고정 CPU 비교 계약으로 draw/instancing 규모와 shader/geometry·full readback을 맞춘다.",
+      "done_when": "draw 3종의 이미지 참조와 새 record/submit/wait/total CPU 구간·반복 통계. GPU timestamp 비교는 P3-BEN-09에서 별도 미완료.",
+      "evidence": [
+        "docs/PHASE3_DRAW_SCOPE.md"
+      ],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
     },
     {
@@ -1521,6 +1524,23 @@
       "done_when": "선택된 Vulkan 비교 프로그램의 native Linux build·실행 probe.",
       "evidence": [],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
+    },
+    {
+      "id": "P3-BEN-09",
+      "phase": 3,
+      "group": "P3-BEN",
+      "title": "SDK/SDL 동일 draw GPU timestamp 비교",
+      "status": "todo",
+      "gate": "required",
+      "depends_on": [
+        "P3-BEN-04"
+      ],
+      "work": "사용자 선택으로 P3-BEN-04에서 분리한 GPU 계측. 같은 draw 구간의 native GPU timestamp 경로와 정확한 장치/queue 귀속을 양 SDK에서 검증한다.",
+      "done_when": "GPU 전용 process의 실제 counter·valid bits/period·availability/fence·동일 구간과 계측 영향/참조 검증. CPU wait/total을 GPU 시간으로 대체하지 않음.",
+      "evidence": [
+        "docs/PHASE3_DRAW_SCOPE.md"
+      ],
+      "requires": "고정 SDL 공개 API에 timestamp가 없어 별도 native 계측 경로와 실제 GPU가 필요"
     },
     {
       "id": "P3-CMP-01",
@@ -1826,6 +1846,7 @@
       "depends_on": [
         "P3-BEN-03",
         "P3-BEN-04",
+        "P3-BEN-09",
         "P3-BEN-05",
         "P3-BEN-06",
         "P3-CMP-07",
