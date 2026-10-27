@@ -113,3 +113,22 @@ and qualification if that identity changed. Neither CPU fence wait nor total is
 a GPU timestamp. Resource/shader/pipeline setup and image readback are outside
 the timer. The offline check reproduces all four columns from raw per-frame
 intervals, verifies that each partitions total, and retains the pending GPU task.
+
+## Full pipeline creation/public release campaign (P3-BEN-05)
+
+`pso.json` freezes the 1/8-pipeline cases and both CPU API columns. Four required
+validation processes and four layer/target controls precede twenty timing
+processes: five independent repetitions with 5 warmups + 30 retained samples,
+600 paired intervals, 150 per case/SDK. Every pipeline is used in a changing
+scissored region and the entire image is verified outside the timers.
+
+```powershell
+python tools/run_current_vulkan_pso.py run --qualification out/current-qualification --runtime-receipt out/vulkan-validation-runtime/receipt.json --output out/current-pso-new
+python tools/run_current_vulkan_pso.py check --output out/current-pso-new --live
+```
+
+Creation includes shader object creation/release within the public implementation;
+descriptor preparation, GPU use, fences/idle waits and readback are untimed.
+Public release time does not prove physical reclamation or native pipeline
+counts. Driver caches remain uncontrolled; cold/hit/miss labels and GPU-time
+inferences are rejected. See `docs/PHASE3_PSO_SCOPE.md` for acceptance boundaries.
