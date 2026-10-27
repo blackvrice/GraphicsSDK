@@ -36,7 +36,7 @@ python tools/roadmap.py --write
 | 0 — 조사 | 3 | 0 | 0 | 0 | 0 | 기존 고정 snapshot과 검토된 플랫폼·입력 범위에서 완료. |
 | 1 — 공통 벤치마크 기반 | 6 | 0 | 0 | 0 | 0 | 문서화된 Windows D3D12 subset 수용. 모든 플랫폼/SDK 조합 완료가 아님. |
 | 2 — D3D12 core·잔여 수용 | 10 | 4 | 0 | 0 | 0 | 구현·자동 회귀와 NVIDIA 기본 표시의 사용자 창 조작 수용 완료. 장시간 메모리·Intel AV 원인, 실제 DPI·다중 모니터와 물리 손실은 필수 미완료다. |
-| 3 — Vulkan | 44 | 26 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
+| 3 — Vulkan | 45 | 25 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 6 | 0 | 0 | 11 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
@@ -204,7 +204,7 @@ P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/drive
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
 | [x] `P3-BEN-01`<br>완료 · 필수 | **현재 제품용 비교 계약·build roots**<br>최종 비교할 source/SDK/driver/workload를 고정하고 과거 측정과 분리한다.<br>완료: 현재 fingerprint의 설치 SDK와 비교 소비자·raw receipt. 과거 timing 재귀속 금지. | 선행: `P3-SCP-01`<br>환경: 해당 플랫폼의 실제 비교 GPU·고정 의존성<br>근거: [PHASE3_COMPARISON_INPUTS_REPORT](PHASE3_COMPARISON_INPUTS_REPORT.md), [contract.json](../benchmarks/phase3_comparison/contract.json), [prepare_vulkan_comparison.py](../tools/prepare_vulkan_comparison.py), [summary.json](../benchmarks/reports/2026-10-27-phase3-comparison-inputs/summary.json), [receipt.json](../benchmarks/reports/validation/2026-10-27-phase3-comparison-inputs/accepted/receipt.json) |
-| [ ] `P3-BEN-02`<br>미완료 · 필수 | **비교 정확성·분리 실행·통계**<br>같은 payload/참조/완료 범위와 validation/performance 별도 process를 연결한다.<br>완료: 동일 참조 통과 후 반복·warmup·P50/P95/P99/MAD·원본 출력 검증. | 선행: `P3-BEN-01`<br>환경: 해당 플랫폼의 실제 비교 GPU·고정 의존성 |
+| [x] `P3-BEN-02`<br>완료 · 필수 | **비교 정확성·분리 실행·통계**<br>같은 payload/참조/완료 범위와 validation/performance 별도 process를 연결한다.<br>완료: 동일 참조 통과 후 반복·warmup·P50/P95/P99/MAD·원본 출력 검증. | 선행: `P3-BEN-01`<br>환경: 해당 플랫폼의 실제 비교 GPU·고정 의존성<br>근거: [PHASE3_COMPARISON_PROTOCOL_REPORT](PHASE3_COMPARISON_PROTOCOL_REPORT.md), [protocol.json](../benchmarks/phase3_comparison/protocol.json), [run_vulkan_comparison.py](../tools/run_vulkan_comparison.py), [summary.json](../benchmarks/reports/2026-10-27-phase3-comparison-protocol/summary.json), [receipt.json](../benchmarks/reports/validation/2026-10-27-phase3-comparison-protocol/accepted/receipt.json) |
 | [ ] `P3-BEN-03`<br>미완료 · 필수 | **현재 제품/SDL 업로드 재측정**<br>기존 upload 계약을 현재 제품으로 다시 실행한다.<br>완료: 지원 해상도/포맷별 참조·새 반복 측정·환경 일치. | 선행: `P3-BEN-02`<br>환경: 해당 플랫폼의 실제 비교 GPU·고정 의존성 |
 | [ ] `P3-BEN-04`<br>미완료 · 필수 | **현재 제품/SDL draw 재측정**<br>Draw/instancing 규모와 shader/binding 계약을 맞춘다.<br>완료: 선택한 동일 draw 작업의 이미지 참조 및 새 CPU/GPU 구간 측정. | 선행: `P3-BEN-02`<br>환경: 해당 플랫폼의 실제 비교 GPU·고정 의존성 |
 | [ ] `P3-BEN-05`<br>미완료 · 필수 | **현재 제품/SDL PSO 재측정**<br>동일 shader·생성/공개 해제 구간과 cache 조건 경계를 명시한다.<br>완료: 실제 pipeline GPU 사용·새 반복 수치. driver cache 통제 여부 구분. | 선행: `P3-BEN-02`<br>환경: 해당 플랫폼의 실제 비교 GPU·고정 의존성 |

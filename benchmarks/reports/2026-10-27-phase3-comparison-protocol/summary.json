@@ -1,0 +1,430 @@
+{
+  "task": "P3-BEN-02",
+  "status": "done",
+  "scope": "Windows NVIDIA Vulkan protocol qualification; representative timing only",
+  "source_commit": "18c316de929a4d83cf668cfa0552b67252c38901",
+  "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+  "profile_fingerprints": {
+    "upload": "78dc8719fbc6cdb822aa09170b428cc1702be3dfa6fb9aab935f1114943e8f7b",
+    "draw": "e11454fe0f0fd09fd796c66b4994c296a711411a9f5cc39f121d83998c342a27",
+    "pso": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+    "allocation": "afda2e90f9cb5876464147bc2c25304f12b79b98192abe994f18966222028b4f"
+  },
+  "SDK_product_source_changed": false,
+  "SDK_files": 28,
+  "snapshot_files": 74,
+  "identity": {
+    "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+    "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+    "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+    "device_luid": "907c010000000000",
+    "native_vendor_id": 4318,
+    "native_device_id": 8644,
+    "native_driver_version": 2604679168,
+    "native_api_version": 4211045,
+    "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:97424",
+      "driver": "32.0.16.2101",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    }
+  },
+  "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "prepared_source_commit": "6cc848ac9e34273ba19bacd60909da03b72e9672",
+  "existing_BEN01_binaries_reused_with_live_hash_checks": true,
+  "historical_timings_reused": false,
+  "runtime_library_sha256": "39fb7e8398408c9bdecb4400ea7217350610c48ebbbfca908922ea805654b0aa",
+  "runtime_redistributed": false,
+  "serialized_processes": 66,
+  "validation_processes": 26,
+  "control_processes": 16,
+  "measurement_processes": 24,
+  "measurement_samples": 288,
+  "validation_sample_intervals_excluded": 78,
+  "warmup_iterations_excluded_from_statistics": 72,
+  "statistics_per_profile_and_SDK": 36,
+  "samples_removed": 0,
+  "validation_verified_bytes": 972917088,
+  "measurement_verified_bytes": 2966040,
+  "full_changing_readback_all_successful_workloads": true,
+  "inputs_unchanged": true,
+  "Python_tests": 785,
+  "new_Python_tests": 19,
+  "statistics": [
+    {
+      "profile": "upload",
+      "sdk": "graphicssdk",
+      "scenario": "odd",
+      "category": "end_to_end",
+      "statistics": {
+        "total_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.0679,
+          "p95_ms": 0.170025,
+          "p99_ms": 0.180325,
+          "min_ms": 0.064,
+          "max_ms": 0.1826,
+          "MAD_ms": 0.0022000000000000075,
+          "process_medians_ms": [
+            0.06670000000000001,
+            0.0684,
+            0.06875
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "profile": "upload",
+      "sdk": "sdl",
+      "scenario": "odd",
+      "category": "end_to_end",
+      "statistics": {
+        "total_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.052599999999999994,
+          "p95_ms": 0.0653,
+          "p99_ms": 0.07657499999999998,
+          "min_ms": 0.0494,
+          "max_ms": 0.082,
+          "MAD_ms": 0.0017999999999999995,
+          "process_medians_ms": [
+            0.0521,
+            0.05455,
+            0.05205
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "profile": "draw",
+      "sdk": "graphicssdk",
+      "scenario": "draw1",
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.01845,
+          "p95_ms": 0.0296,
+          "p99_ms": 0.034164999999999994,
+          "min_ms": 0.0126,
+          "max_ms": 0.0363,
+          "MAD_ms": 0.004850000000000001,
+          "process_medians_ms": [
+            0.02385,
+            0.01925,
+            0.0135
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.01405,
+          "p95_ms": 0.020325,
+          "p99_ms": 0.021689999999999997,
+          "min_ms": 0.0106,
+          "max_ms": 0.0219,
+          "MAD_ms": 0.0024000000000000002,
+          "process_medians_ms": [
+            0.01715,
+            0.0144,
+            0.0115
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.0476,
+          "p95_ms": 0.119825,
+          "p99_ms": 0.143115,
+          "min_ms": 0.0443,
+          "max_ms": 0.1435,
+          "MAD_ms": 0.0014500000000000034,
+          "process_medians_ms": [
+            0.0552,
+            0.047200000000000006,
+            0.0464
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.08115,
+          "p95_ms": 0.16555,
+          "p99_ms": 0.19133,
+          "min_ms": 0.0693,
+          "max_ms": 0.1914,
+          "MAD_ms": 0.009349999999999997,
+          "process_medians_ms": [
+            0.0973,
+            0.08335000000000001,
+            0.0718
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "profile": "draw",
+      "sdk": "sdl",
+      "scenario": "draw1",
+      "category": "end_to_end",
+      "statistics": {
+        "record_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.0072,
+          "p95_ms": 0.018575,
+          "p99_ms": 0.050779999999999936,
+          "min_ms": 0.0051,
+          "max_ms": 0.068,
+          "MAD_ms": 0.0017999999999999995,
+          "process_medians_ms": [
+            0.006699999999999999,
+            0.00545,
+            0.011099999999999999
+          ],
+          "samples_removed": 0
+        },
+        "submit_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.01125,
+          "p95_ms": 0.019,
+          "p99_ms": 0.022004999999999997,
+          "min_ms": 0.0088,
+          "max_ms": 0.0233,
+          "MAD_ms": 0.0018499999999999992,
+          "process_medians_ms": [
+            0.0115,
+            0.0095,
+            0.01465
+          ],
+          "samples_removed": 0
+        },
+        "wait_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.036199999999999996,
+          "p95_ms": 0.041150000000000006,
+          "p99_ms": 0.04396,
+          "min_ms": 0.0343,
+          "max_ms": 0.0441,
+          "MAD_ms": 0.0006500000000000013,
+          "process_medians_ms": [
+            0.03655,
+            0.0357,
+            0.037599999999999995
+          ],
+          "samples_removed": 0
+        },
+        "total_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.0552,
+          "p95_ms": 0.07475000000000001,
+          "p99_ms": 0.10925499999999994,
+          "min_ms": 0.05,
+          "max_ms": 0.1263,
+          "MAD_ms": 0.004799999999999999,
+          "process_medians_ms": [
+            0.05495,
+            0.05055,
+            0.06495000000000001
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "profile": "pso",
+      "sdk": "graphicssdk",
+      "scenario": "pso1",
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.083,
+          "p95_ms": 0.09975,
+          "p99_ms": 0.102925,
+          "min_ms": 0.074,
+          "max_ms": 0.1031,
+          "MAD_ms": 0.004299999999999998,
+          "process_medians_ms": [
+            0.08275,
+            0.08074999999999999,
+            0.0859
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.00275,
+          "p95_ms": 0.003725,
+          "p99_ms": 0.003865,
+          "min_ms": 0.0021,
+          "max_ms": 0.0039,
+          "MAD_ms": 0.00039999999999999996,
+          "process_medians_ms": [
+            0.0025,
+            0.0028,
+            0.0034
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "profile": "pso",
+      "sdk": "sdl",
+      "scenario": "pso1",
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.060649999999999996,
+          "p95_ms": 0.07895,
+          "p99_ms": 0.083,
+          "min_ms": 0.0517,
+          "max_ms": 0.083,
+          "MAD_ms": 0.004399999999999994,
+          "process_medians_ms": [
+            0.06634999999999999,
+            0.0566,
+            0.059899999999999995
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.0001,
+          "p95_ms": 0.000125,
+          "p99_ms": 0.00026499999999999983,
+          "min_ms": 0,
+          "max_ms": 0.0003,
+          "MAD_ms": 0.0,
+          "process_medians_ms": [
+            0.0001,
+            0.0001,
+            0.0001
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "profile": "allocation",
+      "sdk": "graphicssdk",
+      "scenario": "buffer1",
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.054000000000000006,
+          "p95_ms": 0.07305,
+          "p99_ms": 0.085755,
+          "min_ms": 0.0453,
+          "max_ms": 0.0888,
+          "MAD_ms": 0.003900000000000004,
+          "process_medians_ms": [
+            0.054650000000000004,
+            0.0546,
+            0.0531
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.1166,
+          "p95_ms": 0.1354,
+          "p99_ms": 0.13665000000000002,
+          "min_ms": 0.1011,
+          "max_ms": 0.137,
+          "MAD_ms": 0.0054499999999999965,
+          "process_medians_ms": [
+            0.1222,
+            0.11804999999999999,
+            0.1091
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "profile": "allocation",
+      "sdk": "sdl",
+      "scenario": "buffer1",
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.0013,
+          "p95_ms": 0.0019,
+          "p99_ms": 0.0019,
+          "min_ms": 0.0008,
+          "max_ms": 0.0019,
+          "MAD_ms": 0.0002999999999999999,
+          "process_medians_ms": [
+            0.0010500000000000002,
+            0.00135,
+            0.0012000000000000001
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 3,
+          "samples": 36,
+          "p50_ms": 0.0001,
+          "p95_ms": 0.0002,
+          "p99_ms": 0.0002,
+          "min_ms": 0,
+          "max_ms": 0.0002,
+          "MAD_ms": 0.0,
+          "process_medians_ms": [
+            0.0001,
+            0.0001,
+            0.0001
+          ],
+          "samples_removed": 0
+        }
+      }
+    }
+  ],
+  "full_workload_tasks_completed": [],
+  "overall_SDK_ranking": false,
+  "SDL_native_handle_verified": false,
+  "Intel_GPU_device_created": false,
+  "Linux_benchmark_executed": false,
+  "human_display_accepted": false,
+  "next_task": "P3-BEN-03",
+  "source_commit_CI": {
+    "Build and correctness": 40440925078,
+    "Linux Vulkan compile": 40440925081,
+    "conclusion": "success"
+  },
+  "offline_tamper_rejections": 12,
+  "initial_Python_failure_retained": true
+}

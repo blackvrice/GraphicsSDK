@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "task": "P3-BEN-02",
+  "scope": "windows-nvidia-vulkan-protocol-qualification",
+  "validation": {"all_contract_scenarios": true, "warmup": 1, "samples": 3, "required_core_and_sync": true},
+  "performance": {
+    "scenarios": {"upload": "odd", "draw": "draw1", "pso": "pso1", "allocation": "buffer1"},
+    "warmup": 3,
+    "samples": 12,
+    "repetitions": 3,
+    "seed": 20261027,
+    "order": "seeded_profile_blocks_with_alternating_adjacent_SDK_pairs_each_repetition"
+  },
+  "statistics": {
+    "quantile": "linear_interpolation_at_(N-1)*q",
+    "fields": ["p50_ms", "p95_ms", "p99_ms", "min_ms", "max_ms", "MAD_ms", "process_medians_ms"],
+    "retain_all_raw_samples": true,
+    "validation_timings_excluded": true,
+    "warmup_excluded": true,
+    "samples_removed": 0,
+    "interpretation": "descriptive_protocol_qualification_not_workload_acceptance_or_confidence_bounds"
+  },
+  "controls": ["missing_required_layer_for_each_profile_and_SDK", "absent_exact_GPU_for_each_profile_and_SDK"],
+  "serialized_processes": true,
+  "historical_timings_reused": false,
+  "overall_SDK_ranking": false,
+  "SDL_native_handle_verified": false,
+  "full_workload_tasks_completed": [],
+  "next_gate": "P3-BEN-03"
+}

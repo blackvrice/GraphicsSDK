@@ -1,0 +1,967 @@
+{
+  "task": "P3-BEN-01",
+  "status": "prepared",
+  "source_commit": "6cc848ac9e34273ba19bacd60909da03b72e9672",
+  "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+  "profile_fingerprints": {
+    "upload": "78dc8719fbc6cdb822aa09170b428cc1702be3dfa6fb9aab935f1114943e8f7b",
+    "draw": "e11454fe0f0fd09fd796c66b4994c296a711411a9f5cc39f121d83998c342a27",
+    "pso": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+    "allocation": "afda2e90f9cb5876464147bc2c25304f12b79b98192abe994f18966222028b4f"
+  },
+  "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+  "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "Vulkan_Headers_commit": "b379292b2ab6df5771ba9870d53cf8b2c9295daf",
+  "expected_gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "roots": "out/phase3-comparison-20261027-3",
+  "contract_sha256": "30bee1d19ce92384b010ed32fa51c0595d417dfedc5e564858a09f5bbd417808",
+  "performance_samples": 0,
+  "historical_timings_reused": false,
+  "performance_comparison_accepted": false,
+  "overall_SDK_ranking": false,
+  "probes": [
+    {
+      "profile": "upload",
+      "sdk": "graphicssdk",
+      "stdout": "commands/upload-graphicssdk-probe.stdout",
+      "stderr": "commands/upload-graphicssdk-probe.stderr",
+      "stdout_sha256": "8b01799fa8a6cdf086799ca81ff96be3122ce54b8aea07c83b965035e1a56ff7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "upload",
+      "sdk": "sdl",
+      "stdout": "commands/upload-sdl-probe.stdout",
+      "stderr": "commands/upload-sdl-probe.stderr",
+      "stdout_sha256": "f2d1a06b9023a29120b50b2a56730edff26a5fdc1459045769f4945c9cc04b1a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "draw",
+      "sdk": "graphicssdk",
+      "stdout": "commands/draw-graphicssdk-probe.stdout",
+      "stderr": "commands/draw-graphicssdk-probe.stderr",
+      "stdout_sha256": "58885a4caa69b45efcdd99c73da5952d7b495e97cd010d852df6c3353d8869aa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "draw",
+      "sdk": "sdl",
+      "stdout": "commands/draw-sdl-probe.stdout",
+      "stderr": "commands/draw-sdl-probe.stderr",
+      "stdout_sha256": "3ff020e83eecf08da1d40d4b7ef880b7f313160a42a9ec7408add5c481061ef5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "pso",
+      "sdk": "graphicssdk",
+      "stdout": "commands/pso-graphicssdk-probe.stdout",
+      "stderr": "commands/pso-graphicssdk-probe.stderr",
+      "stdout_sha256": "1c8d822a6f3d80391a7dbf8b3ccc16e4c3efe514f60cb1c99b3625c3bbf36336",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "pso",
+      "sdk": "sdl",
+      "stdout": "commands/pso-sdl-probe.stdout",
+      "stderr": "commands/pso-sdl-probe.stderr",
+      "stdout_sha256": "86d5b28b67313ce6a5f93ac01692e7d542c6d667328aa4368558e1cc64fc087d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "allocation",
+      "sdk": "graphicssdk",
+      "stdout": "commands/allocation-graphicssdk-probe.stdout",
+      "stderr": "commands/allocation-graphicssdk-probe.stderr",
+      "stdout_sha256": "12dbc842b80dc039c6b14eeeeb2c0910669ef77c27c31b523429dc03c6fb9152",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "allocation",
+      "sdk": "sdl",
+      "stdout": "commands/allocation-sdl-probe.stdout",
+      "stderr": "commands/allocation-sdl-probe.stderr",
+      "stdout_sha256": "71a9459b44f686981e07095ca703aefd9bfda6b7a06497a679b9173d2408aed6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "rejections": [
+    {
+      "profile": "upload",
+      "sdk": "graphicssdk",
+      "returncode": 1,
+      "stderr": "commands/upload-graphicssdk-wrong-target.stderr",
+      "stderr_sha256": "3aee138b7acab4f7caed1f91a57c7126e03f3a7c647805c66310347887842cf1"
+    },
+    {
+      "profile": "upload",
+      "sdk": "sdl",
+      "returncode": 1,
+      "stderr": "commands/upload-sdl-wrong-target.stderr",
+      "stderr_sha256": "625bd303ce6243deb2d9b77f708770f96dc336d26169d0031334c168164cfe4f"
+    },
+    {
+      "profile": "draw",
+      "sdk": "graphicssdk",
+      "returncode": 1,
+      "stderr": "commands/draw-graphicssdk-wrong-target.stderr",
+      "stderr_sha256": "0fca265cf78b8721caea05e6f53b374099000c2309ce5a03e06dff339fbec1c0"
+    },
+    {
+      "profile": "draw",
+      "sdk": "sdl",
+      "returncode": 1,
+      "stderr": "commands/draw-sdl-wrong-target.stderr",
+      "stderr_sha256": "625bd303ce6243deb2d9b77f708770f96dc336d26169d0031334c168164cfe4f"
+    },
+    {
+      "profile": "pso",
+      "sdk": "graphicssdk",
+      "returncode": 1,
+      "stderr": "commands/pso-graphicssdk-wrong-target.stderr",
+      "stderr_sha256": "0fca265cf78b8721caea05e6f53b374099000c2309ce5a03e06dff339fbec1c0"
+    },
+    {
+      "profile": "pso",
+      "sdk": "sdl",
+      "returncode": 1,
+      "stderr": "commands/pso-sdl-wrong-target.stderr",
+      "stderr_sha256": "625bd303ce6243deb2d9b77f708770f96dc336d26169d0031334c168164cfe4f"
+    },
+    {
+      "profile": "allocation",
+      "sdk": "graphicssdk",
+      "returncode": 1,
+      "stderr": "commands/allocation-graphicssdk-wrong-target.stderr",
+      "stderr_sha256": "0fca265cf78b8721caea05e6f53b374099000c2309ce5a03e06dff339fbec1c0"
+    },
+    {
+      "profile": "allocation",
+      "sdk": "sdl",
+      "returncode": 1,
+      "stderr": "commands/allocation-sdl-wrong-target.stderr",
+      "stderr_sha256": "625bd303ce6243deb2d9b77f708770f96dc336d26169d0031334c168164cfe4f"
+    }
+  ],
+  "commands": [
+    {
+      "name": "sdk-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-build",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_ENABLE_D3D12=ON",
+        "-DGFX_ENABLE_VULKAN=ON",
+        "-DGFX_VULKAN_XCB=OFF",
+        "-DGFX_BUILD_TESTS=OFF",
+        "-DGFX_BUILD_EXAMPLES=OFF",
+        "-DCMAKE_INSTALL_PREFIX=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-install"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 2.6409999999996217
+    },
+    {
+      "name": "sdk-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-build",
+        "--config",
+        "Release",
+        "--target",
+        "GraphicsSDKCore",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 11.640000000000327
+    },
+    {
+      "name": "sdk-install",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--install",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-build",
+        "--config",
+        "Release"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.09400000000005093
+    },
+    {
+      "name": "sdl-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\.deps\\SDL",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdl-build",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DSDL_SHARED=OFF",
+        "-DSDL_STATIC=ON",
+        "-DSDL_GPU=ON",
+        "-DSDL_VULKAN=ON",
+        "-DSDL_TESTS=OFF",
+        "-DSDL_TEST_LIBRARY=OFF"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 25.34400000000005
+    },
+    {
+      "name": "sdl-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdl-build",
+        "--config",
+        "Release",
+        "--target",
+        "SDL3-static",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 26.20299999999952
+    },
+    {
+      "name": "upload-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_upload",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\upload",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 2.0
+    },
+    {
+      "name": "upload-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\upload",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_upload",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 4.311999999999898
+    },
+    {
+      "name": "draw-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_draw",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\draw",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 1.9380000000001019
+    },
+    {
+      "name": "draw-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\draw",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_draw",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 4.375
+    },
+    {
+      "name": "pso-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_pso",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\pso",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 1.9369999999998981
+    },
+    {
+      "name": "pso-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\pso",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_pso",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 4.563000000000102
+    },
+    {
+      "name": "allocation-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_allocation",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\allocation",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 2.061999999999898
+    },
+    {
+      "name": "allocation-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\allocation",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_allocation",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 4.610000000000582
+    },
+    {
+      "name": "upload-graphicssdk-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\upload\\Release\\vulkan_upload.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.3599999999996726
+    },
+    {
+      "name": "upload-graphicssdk-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\upload\\Release\\vulkan_upload.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.2650000000003274
+    },
+    {
+      "name": "upload-sdl-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\upload\\Release\\vulkan_upload.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.34400000000005093
+    },
+    {
+      "name": "upload-sdl-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\upload\\Release\\vulkan_upload.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.5159999999996217
+    },
+    {
+      "name": "draw-graphicssdk-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\draw\\Release\\vulkan_draw.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.625
+    },
+    {
+      "name": "draw-graphicssdk-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\draw\\Release\\vulkan_draw.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.31199999999989814
+    },
+    {
+      "name": "draw-sdl-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\draw\\Release\\vulkan_draw.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.35900000000037835
+    },
+    {
+      "name": "draw-sdl-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\draw\\Release\\vulkan_draw.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.4070000000001528
+    },
+    {
+      "name": "pso-graphicssdk-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\pso\\Release\\vulkan_pso.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.3600000000005821
+    },
+    {
+      "name": "pso-graphicssdk-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\pso\\Release\\vulkan_pso.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.31199999999989814
+    },
+    {
+      "name": "pso-sdl-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\pso\\Release\\vulkan_pso.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.39099999999962165
+    },
+    {
+      "name": "pso-sdl-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\pso\\Release\\vulkan_pso.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.4219999999995707
+    },
+    {
+      "name": "allocation-graphicssdk-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\allocation\\Release\\vulkan_allocation.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.3600000000005821
+    },
+    {
+      "name": "allocation-graphicssdk-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\allocation\\Release\\vulkan_allocation.exe",
+        "--probe",
+        "graphicssdk",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.25
+    },
+    {
+      "name": "allocation-sdl-probe",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\allocation\\Release\\vulkan_allocation.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.3280000000004293
+    },
+    {
+      "name": "allocation-sdl-wrong-target",
+      "argv": [
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\consumers\\allocation\\Release\\vulkan_allocation.exe",
+        "--probe",
+        "sdl",
+        "high",
+        "GraphicsSDK BEN01 absent GPU"
+      ],
+      "returncode": 1,
+      "expected": 1,
+      "seconds": 0.39100000000053114
+    }
+  ],
+  "environment_overrides": {
+    "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+    "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\evidence\\empty-settings",
+    "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027-3\\evidence\\empty-settings"
+  },
+  "inputs_sha256": "a9fddb76507de42029327f7a2eea12a25d45fd3db75b4479c43ce8fb012640f3",
+  "source_inputs": [
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/common/Adapter.hpp",
+      "bytes": 2274,
+      "sha256": "8a83881349458ad79e2acddc869f16c7116905312074ad886190ac502dbd0aa2"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/common/Environment.cpp",
+      "bytes": 3515,
+      "sha256": "291fefcb0e36ea5fa7b9d668a5ecef1c7227b6f08eebcbc75ce1f82d6e0085dc"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/competitors/sources.lock.json",
+      "bytes": 2762,
+      "sha256": "68575fb323de4a5c52fdf8f243fed702f649433d6c87f2fbaf09c6a8db4e07df"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/phase3_comparison/contract.json",
+      "bytes": 3411,
+      "sha256": "30bee1d19ce92384b010ed32fa51c0595d417dfedc5e564858a09f5bbd417808"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_allocation/CMakeLists.txt",
+      "bytes": 2903,
+      "sha256": "99a971306a0fb7d76464a56af0c36fcc5d76ffc7f9e79f751f41aabf6041ee0d"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_allocation/main.cpp",
+      "bytes": 14046,
+      "sha256": "770f3869f50235fe0e30cd7fcd8ef1514c35526edaae6691031b4bd2970303f7"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp",
+      "bytes": 1874,
+      "sha256": "e1b08c98fd923fac2b386ab4700fd988cc709770ba355d3734692155ac20eb35"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_draw/CMakeLists.txt",
+      "bytes": 3100,
+      "sha256": "f35c7f90ee7ec4101c9f3fbfdf5cb10d189578f9aface804401fd7eec885d6c6"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_draw/Frame.hpp",
+      "bytes": 1131,
+      "sha256": "763b066c15069cb7efab624132af7bb713c4abc14e478f53efe61bfe6375a2d6"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_draw/main.cpp",
+      "bytes": 14305,
+      "sha256": "1dd9ead5ee9c6b944c96ddd11291dc99bd53332c175a711d8d062065b7c5831e"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_pso/CMakeLists.txt",
+      "bytes": 3084,
+      "sha256": "e44e354ca6e1f2e89d94343a96638553854c921f1111a1913db68e9cdb46aa89"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_pso/Frame.hpp",
+      "bytes": 1214,
+      "sha256": "860b3aae50d58f202b958f51e54869579683028a4f5f7758998c8ea5c8198fb6"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_pso/main.cpp",
+      "bytes": 14654,
+      "sha256": "2d3c6946c19f1ece89b2db14602ba31acf2164a75991af3667db0ba58408186d"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_upload/CMakeLists.txt",
+      "bytes": 2450,
+      "sha256": "6eb17f67347200fed62e6d5438dade6e6bd7817dd52d9dc0f47da124f41bbf82"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_upload/Identity.hpp",
+      "bytes": 3062,
+      "sha256": "0d7a95aaac0014390e8eac2a4927331ffa6607d650d5227a4539e7797962269a"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_upload/main.cpp",
+      "bytes": 12731,
+      "sha256": "f2e687c2c5be93af335459f7a9f9856d1534422f55f44bed68fcc42ac38ab853"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/cmake/GraphicsSDKConfig.cmake.in",
+      "bytes": 116,
+      "sha256": "52203193a8ee27684bca60d02517dbab99f8a4b5885d465d6c8959e099cc3c0b"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/CMakeLists.txt",
+      "bytes": 18463,
+      "sha256": "137a2a1bc4499717426d0cb8ac65174dd25e54107608e687ed2eb6adb17de682"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Backend.hpp",
+      "bytes": 533,
+      "sha256": "bbcd4b9b74732a18c70652788ec161e39c67c7ecb5e5afb81f9d409ad73cbdb4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Bindings.hpp",
+      "bytes": 1504,
+      "sha256": "de4f5896b55e65cf31f27b2122ca4307f7a1f7bffee7ee316a881a72a2866762"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/CommandList.hpp",
+      "bytes": 2840,
+      "sha256": "5ce778322e916ab5e15d6832aef5f7d1cc166fbeb2744237a45e0e20eea56f16"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/CommandQueue.hpp",
+      "bytes": 725,
+      "sha256": "c6d978c5db58d90fd236436233dac460cd781c35276bd9ad3a1e677b03644045"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Device.hpp",
+      "bytes": 2470,
+      "sha256": "3049da402abbd901ef412ac108bad2c3fdfb0aceb264e13ea7ef9b7cfb359f8f"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Graphics.hpp",
+      "bytes": 58,
+      "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Pipeline.hpp",
+      "bytes": 1262,
+      "sha256": "3f036387d9ae65f465f38c092a7c0726ffa49679c7f1d657a9d9542d5cc30cac"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/RenderPass.hpp",
+      "bytes": 1025,
+      "sha256": "ec3d89ef60c7cc1bf546149843677961e682bcbcc6cf3e7af375e0ce2da0c5e4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Resources.hpp",
+      "bytes": 719,
+      "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Shader.hpp",
+      "bytes": 1013,
+      "sha256": "a8568d729efea023d11f2852fa4bdb26d3f430152bb538014450146f32f22643"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Surface.hpp",
+      "bytes": 545,
+      "sha256": "8442d5d0a978789466ab7e0d79ea511a3178f9ec6edd566f901d4459f67dd5e8"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/SwapChain.hpp",
+      "bytes": 604,
+      "sha256": "a0a8a171c818ac9f9f6ed7c0b8b74a3e5ae537bde8ee3345860f54705cc3f6a5"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Types.hpp",
+      "bytes": 3083,
+      "sha256": "506c93e2babddd1fa241d8108339049158611c9f13cf0af14da7161ec62f1761"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/licenses/policy.json",
+      "bytes": 5349,
+      "sha256": "e778c798a822b3f3ea2b4f7d4b1f043ce5b687c0ca6b4b1685692c544f57b296"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/licenses/vulkan-presentation-policy.json",
+      "bytes": 4938,
+      "sha256": "13d40bff332d7da4ff57e0610a202095adcfbc8d1dee4a96cc4dca4799cc47e8"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/d3d12/D3D12.cpp",
+      "bytes": 83706,
+      "sha256": "f13ad0cd41839ebd0e5f8a94909cebc80366d9e08fcad5f8d56e8cc4dd2985d3"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/d3d12/FenceWait.hpp",
+      "bytes": 2958,
+      "sha256": "1aee58bc9765885a62e79e4fd0e3665e9fed3ed44ba497c61c80fa9815b293b4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Creation.hpp",
+      "bytes": 567,
+      "sha256": "4beec8947912a160a3686427f075628922c55a249193dad1266db54d491aa0b2"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Presentation.hpp",
+      "bytes": 23814,
+      "sha256": "0cbe6e3b88d7783056cb45de1dd2a9d591388b09797d6b4774420eb7b698f044"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Spirv.hpp",
+      "bytes": 14703,
+      "sha256": "3a302edb3a59f9bdde09085033023819242c799573e9b532fc8b8aa619ed99f1"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Timestamp.hpp",
+      "bytes": 1492,
+      "sha256": "f68693d9d213123b314a384cf7da7cffb731d72d2425b189ddb6795740cd8bdc"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp",
+      "bytes": 116740,
+      "sha256": "62b6b249f25c001b466e16dca8616826a6388cda51c9acec1979774c5ae6dc75"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/VulkanValidation.hpp",
+      "bytes": 2733,
+      "sha256": "44465bed7347812efdfa5e50d7909fb6fd8a690df0dab887dae19b50234a7a22"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Xcb.hpp",
+      "bytes": 2647,
+      "sha256": "053b1c0e710ef0df09266c7ed6134712d37a7dd78a6984b6da491fc1d37af567"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/Backend.cpp",
+      "bytes": 1658,
+      "sha256": "62b89e781ef343d8f01651c786aee471bcabe747013072ab742b44b9c4d9bd24"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/Bindings.cpp",
+      "bytes": 2221,
+      "sha256": "db8a3fc712356cc461d739e7a859d83fedd86988a3c7bfe7f7ff55b34410ffbc"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/RenderPass.cpp",
+      "bytes": 3200,
+      "sha256": "460d174271531b8b06ae9afa28763b58e0739e85e50a9158f86f5ee1bcd82845"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/VertexInput.cpp",
+      "bytes": 2167,
+      "sha256": "0090fbf38888198967d729abe55635180eba99f0226a4360c2b131e399e6656c"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/shader/Shader.cpp",
+      "bytes": 4120,
+      "sha256": "6626d4a2445e5058e136b587bbd228551703f06a34812da96fc606e17027d0f3"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/spirv/fullscreen.spvasm",
+      "bytes": 1382,
+      "sha256": "27ab8191fb5734885eea0ae0a96830ae0e16e4c72fa5e91cb75033ee03b374b5"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/spirv/green.spvasm",
+      "bytes": 587,
+      "sha256": "8ca2c7ee7133761ee6939dc8af8b5e20acf24dd9a1a1376aeab65a74ec3a6d41"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/spirv/red.spvasm",
+      "bytes": 587,
+      "sha256": "6932bef401f705e3b89a08713d438043e18da5f1efc43cdb5c96e697d372e84e"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/SpirvFixtures.hpp",
+      "bytes": 20695,
+      "sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/audit_licenses.py",
+      "bytes": 30690,
+      "sha256": "b5a9d7914a6de25166bb59680e9393903deb256cb934048d105b0cd173c321f4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/audit_vulkan.py",
+      "bytes": 16762,
+      "sha256": "bbdae297fc477623f34c6dc7acc1d507bb4815ff0c1210cc249267466eb337d8"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/prepare_vulkan_comparison.py",
+      "bytes": 21079,
+      "sha256": "26c2426e7dafe2876b051d0239dad0caac78fd8838ce4dc924c7fff9a6087f23"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_allocation.py",
+      "bytes": 13459,
+      "sha256": "95c87bb088dba4cde3150a1b65467c3a1d75fcc50c40b42d1a59f28ccbf693fa"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_draw.py",
+      "bytes": 13584,
+      "sha256": "b6c926568e1d73d966be7711ad2df30bfa33b8c020cbd5955d727b0c638f6310"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_pso.py",
+      "bytes": 13059,
+      "sha256": "bb53a90bc37023ac7566128286af817e5350b3357e2bf6d70e62e8ee918cf002"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_upload.py",
+      "bytes": 12047,
+      "sha256": "fe5f3a09292399461f8bf47ad3e5834980e3a190c7319a0b07cc51b073958321"
+    }
+  ],
+  "binaries": {
+    "upload": {
+      "path": "D:/source/GraphicsSDK/out/phase3-comparison-20261027-3/consumers/upload/Release/vulkan_upload.exe",
+      "bytes": 3176448,
+      "sha256": "d44fde2a272980afde6f87c31a37877a0c21f7f7676eb4b2791f84636034b537"
+    },
+    "draw": {
+      "path": "D:/source/GraphicsSDK/out/phase3-comparison-20261027-3/consumers/draw/Release/vulkan_draw.exe",
+      "bytes": 3186688,
+      "sha256": "06c8ac899a0ab9347ac9a09c8a73eb6f212031645b7ddb9ae859338ac3c69689"
+    },
+    "pso": {
+      "path": "D:/source/GraphicsSDK/out/phase3-comparison-20261027-3/consumers/pso/Release/vulkan_pso.exe",
+      "bytes": 3187712,
+      "sha256": "17c69de4b1f1274a4448933437cfff11855409f04b3857abc4f07dcf7b15f66f"
+    },
+    "allocation": {
+      "path": "D:/source/GraphicsSDK/out/phase3-comparison-20261027-3/consumers/allocation/Release/vulkan_allocation.exe",
+      "bytes": 3191808,
+      "sha256": "c691ec078434cfbd14a33d7bbefddb4adf3d08d09f2e6c4d8d8fbb94f4e3bf00"
+    }
+  },
+  "installed_SDK_library": {
+    "path": "D:/source/GraphicsSDK/out/phase3-comparison-20261027-3/sdk-install/lib/GraphicsSDKCore.lib",
+    "bytes": 7436262,
+    "sha256": "782f9c2bf15c5d15ddc769241b390d5c1181d40fe64732759a850dfb2999a39c"
+  },
+  "SDL_library": {
+    "path": "D:/source/GraphicsSDK/out/phase3-comparison-20261027-3/sdl-build/Release/SDL3-static.lib",
+    "bytes": 15694110,
+    "sha256": "557758793f82ed573e7ddb3d4466e874607209f67e55108556862aac509256c5"
+  },
+  "identity": {
+    "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+    "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+    "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+    "device_luid": "907c010000000000",
+    "native_vendor_id": 4318,
+    "native_device_id": 8644,
+    "native_driver_version": 2604679168,
+    "native_api_version": 4211045,
+    "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:97424",
+      "driver": "32.0.16.2101",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    }
+  },
+  "inputs_unchanged": true
+}

@@ -1409,14 +1409,20 @@
       "phase": 3,
       "group": "P3-BEN",
       "title": "비교 정확성·분리 실행·통계",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-BEN-01"
       ],
       "work": "같은 payload/참조/완료 범위와 validation/performance 별도 process를 연결한다.",
       "done_when": "동일 참조 통과 후 반복·warmup·P50/P95/P99/MAD·원본 출력 검증.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_COMPARISON_PROTOCOL_REPORT.md",
+        "benchmarks/phase3_comparison/protocol.json",
+        "tools/run_vulkan_comparison.py",
+        "benchmarks/reports/2026-10-27-phase3-comparison-protocol/summary.json",
+        "benchmarks/reports/validation/2026-10-27-phase3-comparison-protocol/accepted/receipt.json"
+      ],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
     },
     {
