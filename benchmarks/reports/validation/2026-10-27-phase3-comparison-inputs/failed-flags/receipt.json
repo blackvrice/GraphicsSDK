@@ -1,0 +1,287 @@
+{
+  "task": "P3-BEN-01",
+  "status": "failed",
+  "source_commit": "dfa87e31efc23460c6a83b49aaa227ef91273840",
+  "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+  "profile_fingerprints": {
+    "upload": "78dc8719fbc6cdb822aa09170b428cc1702be3dfa6fb9aab935f1114943e8f7b",
+    "draw": "e11454fe0f0fd09fd796c66b4994c296a711411a9f5cc39f121d83998c342a27",
+    "pso": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+    "allocation": "afda2e90f9cb5876464147bc2c25304f12b79b98192abe994f18966222028b4f"
+  },
+  "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+  "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "Vulkan_Headers_commit": "b379292b2ab6df5771ba9870d53cf8b2c9295daf",
+  "expected_gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "roots": "out/phase3-comparison-20261027",
+  "contract_sha256": "30bee1d19ce92384b010ed32fa51c0595d417dfedc5e564858a09f5bbd417808",
+  "performance_samples": 0,
+  "historical_timings_reused": false,
+  "performance_comparison_accepted": false,
+  "overall_SDK_ranking": false,
+  "probes": [],
+  "rejections": [],
+  "commands": [
+    {
+      "name": "sdk-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-build",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_ENABLE_D3D12=ON",
+        "-DGFX_ENABLE_VULKAN=ON",
+        "-DGFX_VULKAN_XCB=OFF",
+        "-DGFX_BUILD_TESTS=OFF",
+        "-DGFX_BUILD_EXAMPLES=OFF",
+        "-DCMAKE_INSTALL_PREFIX=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-install"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 3.54700000000048
+    },
+    {
+      "name": "sdk-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-build",
+        "--config",
+        "Release",
+        "--target",
+        "GraphicsSDKCore",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 11.265999999999622
+    },
+    {
+      "name": "sdk-install",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--install",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-build",
+        "--config",
+        "Release"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 0.0929999999998472
+    },
+    {
+      "name": "sdl-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\.deps\\SDL",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdl-build",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DSDL_SHARED=OFF",
+        "-DSDL_STATIC=ON",
+        "-DSDL_GPU=ON",
+        "-DSDL_VULKAN=ON",
+        "-DSDL_TESTS=OFF",
+        "-DSDL_TEST_LIBRARY=OFF"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 29.21900000000005
+    },
+    {
+      "name": "sdl-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdl-build",
+        "--config",
+        "Release",
+        "--target",
+        "SDL3-static",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 32.46900000000005
+    },
+    {
+      "name": "upload-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_upload",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\upload",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 2.344000000000051
+    },
+    {
+      "name": "upload-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\upload",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_upload",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 5.344000000000051
+    },
+    {
+      "name": "draw-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_draw",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\draw",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 2.469000000000051
+    },
+    {
+      "name": "draw-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\draw",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_draw",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 5.45299999999952
+    },
+    {
+      "name": "pso-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_pso",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\pso",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 2.405999999999949
+    },
+    {
+      "name": "pso-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\pso",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_pso",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 5.313000000000102
+    },
+    {
+      "name": "allocation-configure",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "-S",
+        "D:\\source\\GraphicsSDK\\benchmarks\\vulkan_allocation",
+        "-B",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\allocation",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DCMAKE_CONFIGURATION_TYPES=Release",
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
+        "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+        "-DGFX_INSTALLED_SDK=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdk-install",
+        "-DSDL_BINARY_DIR=D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\sdl-build"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 2.5780000000004293
+    },
+    {
+      "name": "allocation-build",
+      "argv": [
+        "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+        "--build",
+        "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\consumers\\allocation",
+        "--config",
+        "Release",
+        "--target",
+        "vulkan_allocation",
+        "--parallel",
+        "1"
+      ],
+      "returncode": 0,
+      "expected": 0,
+      "seconds": 19.342999999999847
+    }
+  ],
+  "environment_overrides": {
+    "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+    "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\evidence\\empty-settings",
+    "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-comparison-20261027\\evidence\\empty-settings"
+  },
+  "error": "Unreviewed Release compiler flags: sdl"
+}

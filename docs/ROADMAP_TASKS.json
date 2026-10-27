@@ -1388,14 +1388,20 @@
       "phase": 3,
       "group": "P3-BEN",
       "title": "현재 제품용 비교 계약·build roots",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-SCP-01"
       ],
       "work": "최종 비교할 source/SDK/driver/workload를 고정하고 과거 측정과 분리한다.",
       "done_when": "현재 fingerprint의 설치 SDK와 비교 소비자·raw receipt. 과거 timing 재귀속 금지.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_COMPARISON_INPUTS_REPORT.md",
+        "benchmarks/phase3_comparison/contract.json",
+        "tools/prepare_vulkan_comparison.py",
+        "benchmarks/reports/2026-10-27-phase3-comparison-inputs/summary.json",
+        "benchmarks/reports/validation/2026-10-27-phase3-comparison-inputs/accepted/receipt.json"
+      ],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
     },
     {
