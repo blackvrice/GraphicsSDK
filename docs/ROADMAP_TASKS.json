@@ -1243,10 +1243,16 @@
       "depends_on": [
         "P3-WSI-07"
       ],
-      "work": "사람이 보는 창 출력·resize/닫기와 실제 표시 경로를 확인한다.",
+      "work": "세션 바인딩 수동 표시 소비자·native GPU identity/driver 기록·빈 사용자 관측 양식을 준비하고 일반/고정 validation software smoke를 검증했다. 실제 사람이 보는 Linux 창의 출력·resize/닫기와 표시 경로 수용은 미완료다.",
       "done_when": "사람/환경/동작 관측 기록. 자동 readback과 물리 출력 수용을 구분.",
-      "evidence": [],
-      "requires": "선택한 Linux window system·GPU·표시 환경"
+      "evidence": [
+        "docs/PHASE3_LINUX_XCB_MANUAL_READINESS.md",
+        "tests/linux_xcb_manual/README.md",
+        "tools/linux_xcb_manual.py",
+        "benchmarks/reports/2026-10-27-phase3-linux-xcb-manual-readiness/summary.json",
+        ".github/workflows/linux-xcb-manual.yml"
+      ],
+      "requires": "실제 Linux x86_64 X11 desktop·화면을 확인할 사람/표시 경로·명시 ICD와 정확한 adapter ID 필요. 사용자가 해당 환경 없음을 확인. 준비 도구 검증 완료; native run/사람 관측 0회. P3-LNX-15 물리 GPU 수용과 별도."
     },
     {
       "id": "P3-CAP-01",

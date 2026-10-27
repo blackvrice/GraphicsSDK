@@ -516,7 +516,8 @@ XCB backbuffer 입력·제출에도 실제 창/연결 유효성을 검사한다.
 실제 map/unmap·WM 최소화/복원·닫기 protocol·파괴/연결 단절과 일시 정지·drain을 확인한다.
 Vulkan 소실 값은 별도 status control이다. [통합 출력 검증](PHASE3_LINUX_XCB_MATRIX_REPORT.md)은 같은 설치
 Core의 다섯 소비자와 두 창의 동시 획득·독립 resize/해제를 일반·고정 validation에서 확인한다.
-Linux 육안 수용은 P3-WSI-08에 남아 있다.
+Linux 육안 수용은 P3-WSI-08에 남아 있다. [수동 표시 준비 도구](PHASE3_LINUX_XCB_MANUAL_READINESS.md)는
+실행 기록과 사용자 양식을 묶지만 자동으로 사람/물리 표시 수용을 부여하지 않는다.
 
 현재 D3D12/Vulkan의 capability별 조건, 포맷·동기화·미지원 API와 후속 검사 ID는
 [Phase 3 지원 범위표](PHASE3_SCOPE.md)에 정리한다. `DeviceCaps`에는 debug marker와

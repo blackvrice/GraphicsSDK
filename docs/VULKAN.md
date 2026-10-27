@@ -107,7 +107,9 @@ runs all five consumers against the same installed Core in normal and pinned
 core/sync validation modes, including two simultaneously acquired windows,
 independent resize/retirement, full references and isolated detection controls.
 Private WM startup uses an explicit acknowledgement and liveness checks. Human
-Linux display acceptance remains WSI-08.
+Linux display acceptance remains WSI-08. The [manual preparation consumer](PHASE3_LINUX_XCB_MANUAL_READINESS.md)
+records an exact native identity and animated session with a bound empty human
+form. Its software smoke and offline checks grant no human/hardware acceptance.
 
 ## Upload CPU diagnostics
 

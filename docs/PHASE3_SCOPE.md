@@ -84,6 +84,8 @@ Linux SDK의 [출력 자원 완료·보유 수명](PHASE3_LINUX_XCB_LIFETIME_REP
 [실제 XCB/WM 이벤트·연결 단절·소실 상태 제어](PHASE3_LINUX_XCB_EVENTS_REPORT.md)를 검증했다.
 [같은 설치 Core의 다섯 소비자·다중 창 통합 matrix](PHASE3_LINUX_XCB_MATRIX_REPORT.md)도
 일반·고정 core/sync validation에서 완료했다. 사람의 표시 수용 `P3-WSI-08`은 남아 있다.
+[수동 표시 준비 도구](PHASE3_LINUX_XCB_MANUAL_READINESS.md)는 software smoke만 검증했으며 실제 Linux
+desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에 합산하지 않는다.
 
 | 범위 | 현재 코드/기존 근거 | 필수 잔여 검사 |
 |---|---|---|
