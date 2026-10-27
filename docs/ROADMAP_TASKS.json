@@ -1474,14 +1474,21 @@
       "phase": 3,
       "group": "P3-BEN",
       "title": "현재 제품/SDL PSO 재측정",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-BEN-02"
       ],
       "work": "동일 shader·생성/공개 해제 구간과 cache 조건 경계를 명시한다.",
       "done_when": "실제 pipeline GPU 사용·새 반복 수치. driver cache 통제 여부 구분.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_CURRENT_PSO_REPORT.md",
+        "docs/PHASE3_PSO_SCOPE.md",
+        "benchmarks/phase3_comparison/pso.json",
+        "tools/run_current_vulkan_pso.py",
+        "benchmarks/reports/2026-10-27-phase3-current-pso/summary.json",
+        "benchmarks/reports/validation/2026-10-27-phase3-current-pso/accepted/receipt.json"
+      ],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
     },
     {

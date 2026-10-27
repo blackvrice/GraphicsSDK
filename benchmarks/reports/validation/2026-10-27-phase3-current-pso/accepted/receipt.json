@@ -1,0 +1,5547 @@
+{
+  "task": "P3-BEN-05",
+  "status": "completed",
+  "source_commit": "37a8dda009fdbce81bb64aa25036a658c7f40fc0",
+  "qualification_evidence": "D:/source/GraphicsSDK/out/phase3-current-draw-qualification-20261027",
+  "qualification_receipt_sha256": "d3a202ce4619d802de426208dc8e9702b3394e5cdbb1bb6e1e5cce3e0616e202",
+  "output_directory": "D:/source/GraphicsSDK/out/phase3-current-pso-20261027",
+  "identity": {
+    "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+    "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+    "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+    "device_luid": "287e010000000000",
+    "native_vendor_id": 4318,
+    "native_device_id": 8644,
+    "native_driver_version": 2604679168,
+    "native_api_version": 4211045,
+    "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:97832",
+      "driver": "32.0.16.2101",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    }
+  },
+  "expected_gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+  "profile_fingerprints": {
+    "upload": "78dc8719fbc6cdb822aa09170b428cc1702be3dfa6fb9aab935f1114943e8f7b",
+    "draw": "e11454fe0f0fd09fd796c66b4994c296a711411a9f5cc39f121d83998c342a27",
+    "pso": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+    "allocation": "afda2e90f9cb5876464147bc2c25304f12b79b98192abe994f18966222028b4f"
+  },
+  "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "validation_library": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+  "validation_library_sha256": "39fb7e8398408c9bdecb4400ea7217350610c48ebbbfca908922ea805654b0aa",
+  "runtime_receipt_sha256": "1e99c43946a7cc97c6567d1ac05a71e537d6cb6a463026296d3daf7c376f1a2f",
+  "plan_sha256": "d56f5cbdc278cf6f738a6df4cfdd6b8daa0e9e8586a6f1d355c64ee9555cb191",
+  "frozen_inputs": [
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/common/Adapter.hpp",
+      "bytes": 2274,
+      "sha256": "8a83881349458ad79e2acddc869f16c7116905312074ad886190ac502dbd0aa2"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/common/Environment.cpp",
+      "bytes": 3515,
+      "sha256": "291fefcb0e36ea5fa7b9d668a5ecef1c7227b6f08eebcbc75ce1f82d6e0085dc"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/competitors/sources.lock.json",
+      "bytes": 2762,
+      "sha256": "68575fb323de4a5c52fdf8f243fed702f649433d6c87f2fbaf09c6a8db4e07df"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/phase3_comparison/contract.json",
+      "bytes": 3411,
+      "sha256": "30bee1d19ce92384b010ed32fa51c0595d417dfedc5e564858a09f5bbd417808"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/phase3_comparison/pso.json",
+      "bytes": 1859,
+      "sha256": "d56f5cbdc278cf6f738a6df4cfdd6b8daa0e9e8586a6f1d355c64ee9555cb191"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_allocation/CMakeLists.txt",
+      "bytes": 2903,
+      "sha256": "99a971306a0fb7d76464a56af0c36fcc5d76ffc7f9e79f751f41aabf6041ee0d"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_allocation/main.cpp",
+      "bytes": 14046,
+      "sha256": "770f3869f50235fe0e30cd7fcd8ef1514c35526edaae6691031b4bd2970303f7"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp",
+      "bytes": 1874,
+      "sha256": "e1b08c98fd923fac2b386ab4700fd988cc709770ba355d3734692155ac20eb35"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_draw/CMakeLists.txt",
+      "bytes": 3100,
+      "sha256": "f35c7f90ee7ec4101c9f3fbfdf5cb10d189578f9aface804401fd7eec885d6c6"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_draw/Frame.hpp",
+      "bytes": 1131,
+      "sha256": "763b066c15069cb7efab624132af7bb713c4abc14e478f53efe61bfe6375a2d6"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_draw/main.cpp",
+      "bytes": 14305,
+      "sha256": "1dd9ead5ee9c6b944c96ddd11291dc99bd53332c175a711d8d062065b7c5831e"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_pso/CMakeLists.txt",
+      "bytes": 3084,
+      "sha256": "e44e354ca6e1f2e89d94343a96638553854c921f1111a1913db68e9cdb46aa89"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_pso/Frame.hpp",
+      "bytes": 1214,
+      "sha256": "860b3aae50d58f202b958f51e54869579683028a4f5f7758998c8ea5c8198fb6"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_pso/main.cpp",
+      "bytes": 14654,
+      "sha256": "2d3c6946c19f1ece89b2db14602ba31acf2164a75991af3667db0ba58408186d"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_upload/CMakeLists.txt",
+      "bytes": 2450,
+      "sha256": "6eb17f67347200fed62e6d5438dade6e6bd7817dd52d9dc0f47da124f41bbf82"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_upload/Identity.hpp",
+      "bytes": 3062,
+      "sha256": "0d7a95aaac0014390e8eac2a4927331ffa6607d650d5227a4539e7797962269a"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/benchmarks/vulkan_upload/main.cpp",
+      "bytes": 12731,
+      "sha256": "f2e687c2c5be93af335459f7a9f9856d1534422f55f44bed68fcc42ac38ab853"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/cmake/GraphicsSDKConfig.cmake.in",
+      "bytes": 116,
+      "sha256": "52203193a8ee27684bca60d02517dbab99f8a4b5885d465d6c8959e099cc3c0b"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/CMakeLists.txt",
+      "bytes": 18463,
+      "sha256": "137a2a1bc4499717426d0cb8ac65174dd25e54107608e687ed2eb6adb17de682"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/docs/PHASE3_PSO_SCOPE.md",
+      "bytes": 1796,
+      "sha256": "dfa092b63c04ffe29579e8d14ecb2444eaa4bd2dafdfa5f3e2623854235d03c3"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Backend.hpp",
+      "bytes": 533,
+      "sha256": "bbcd4b9b74732a18c70652788ec161e39c67c7ecb5e5afb81f9d409ad73cbdb4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Bindings.hpp",
+      "bytes": 1504,
+      "sha256": "de4f5896b55e65cf31f27b2122ca4307f7a1f7bffee7ee316a881a72a2866762"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/CommandList.hpp",
+      "bytes": 2840,
+      "sha256": "5ce778322e916ab5e15d6832aef5f7d1cc166fbeb2744237a45e0e20eea56f16"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/CommandQueue.hpp",
+      "bytes": 725,
+      "sha256": "c6d978c5db58d90fd236436233dac460cd781c35276bd9ad3a1e677b03644045"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Device.hpp",
+      "bytes": 2470,
+      "sha256": "3049da402abbd901ef412ac108bad2c3fdfb0aceb264e13ea7ef9b7cfb359f8f"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Graphics.hpp",
+      "bytes": 58,
+      "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Pipeline.hpp",
+      "bytes": 1262,
+      "sha256": "3f036387d9ae65f465f38c092a7c0726ffa49679c7f1d657a9d9542d5cc30cac"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/RenderPass.hpp",
+      "bytes": 1025,
+      "sha256": "ec3d89ef60c7cc1bf546149843677961e682bcbcc6cf3e7af375e0ce2da0c5e4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Resources.hpp",
+      "bytes": 719,
+      "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Shader.hpp",
+      "bytes": 1013,
+      "sha256": "a8568d729efea023d11f2852fa4bdb26d3f430152bb538014450146f32f22643"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Surface.hpp",
+      "bytes": 545,
+      "sha256": "8442d5d0a978789466ab7e0d79ea511a3178f9ec6edd566f901d4459f67dd5e8"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/SwapChain.hpp",
+      "bytes": 604,
+      "sha256": "a0a8a171c818ac9f9f6ed7c0b8b74a3e5ae537bde8ee3345860f54705cc3f6a5"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/include/graphics/Types.hpp",
+      "bytes": 3083,
+      "sha256": "506c93e2babddd1fa241d8108339049158611c9f13cf0af14da7161ec62f1761"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/licenses/policy.json",
+      "bytes": 5349,
+      "sha256": "e778c798a822b3f3ea2b4f7d4b1f043ce5b687c0ca6b4b1685692c544f57b296"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/licenses/vulkan-presentation-policy.json",
+      "bytes": 4938,
+      "sha256": "13d40bff332d7da4ff57e0610a202095adcfbc8d1dee4a96cc4dca4799cc47e8"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+      "bytes": 3187712,
+      "sha256": "9509a52bea9d2e12d3d1527affab151496dd1e7bbe648da4e389d8d9b7d55efc"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/out/phase3-current-draw-qualification-20261027/receipt.json",
+      "bytes": 271647,
+      "sha256": "d3a202ce4619d802de426208dc8e9702b3394e5cdbb1bb6e1e5cce3e0616e202"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/out/phase3-current-pso-20261027/settings/vk_layer_settings.txt",
+      "bytes": 272,
+      "sha256": "135d599717608d3314194a7c61f7a64b417cbb8bb775611cfd4b41bc8630a3fe"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+      "bytes": 43569664,
+      "sha256": "39fb7e8398408c9bdecb4400ea7217350610c48ebbbfca908922ea805654b0aa"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.json",
+      "bytes": 97706,
+      "sha256": "df2884286cea8583ad9fbd0bb0fe3a1132ef40b83a9c22a3dfeb2a23134fe3d7"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/receipt.json",
+      "bytes": 2221,
+      "sha256": "1e99c43946a7cc97c6567d1ac05a71e537d6cb6a463026296d3daf7c376f1a2f"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/d3d12/D3D12.cpp",
+      "bytes": 83706,
+      "sha256": "f13ad0cd41839ebd0e5f8a94909cebc80366d9e08fcad5f8d56e8cc4dd2985d3"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/d3d12/FenceWait.hpp",
+      "bytes": 2958,
+      "sha256": "1aee58bc9765885a62e79e4fd0e3665e9fed3ed44ba497c61c80fa9815b293b4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Creation.hpp",
+      "bytes": 567,
+      "sha256": "4beec8947912a160a3686427f075628922c55a249193dad1266db54d491aa0b2"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Presentation.hpp",
+      "bytes": 23814,
+      "sha256": "0cbe6e3b88d7783056cb45de1dd2a9d591388b09797d6b4774420eb7b698f044"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Spirv.hpp",
+      "bytes": 14703,
+      "sha256": "3a302edb3a59f9bdde09085033023819242c799573e9b532fc8b8aa619ed99f1"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Timestamp.hpp",
+      "bytes": 1492,
+      "sha256": "f68693d9d213123b314a384cf7da7cffb731d72d2425b189ddb6795740cd8bdc"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Vulkan.cpp",
+      "bytes": 116740,
+      "sha256": "62b6b249f25c001b466e16dca8616826a6388cda51c9acec1979774c5ae6dc75"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/VulkanValidation.hpp",
+      "bytes": 2733,
+      "sha256": "44465bed7347812efdfa5e50d7909fb6fd8a690df0dab887dae19b50234a7a22"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/backends/vulkan/Xcb.hpp",
+      "bytes": 2647,
+      "sha256": "053b1c0e710ef0df09266c7ed6134712d37a7dd78a6984b6da491fc1d37af567"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/Backend.cpp",
+      "bytes": 1658,
+      "sha256": "62b89e781ef343d8f01651c786aee471bcabe747013072ab742b44b9c4d9bd24"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/Bindings.cpp",
+      "bytes": 2221,
+      "sha256": "db8a3fc712356cc461d739e7a859d83fedd86988a3c7bfe7f7ff55b34410ffbc"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/RenderPass.cpp",
+      "bytes": 3200,
+      "sha256": "460d174271531b8b06ae9afa28763b58e0739e85e50a9158f86f5ee1bcd82845"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/foundation/VertexInput.cpp",
+      "bytes": 2167,
+      "sha256": "0090fbf38888198967d729abe55635180eba99f0226a4360c2b131e399e6656c"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/src/shader/Shader.cpp",
+      "bytes": 4120,
+      "sha256": "6626d4a2445e5058e136b587bbd228551703f06a34812da96fc606e17027d0f3"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/spirv/fullscreen.spvasm",
+      "bytes": 1382,
+      "sha256": "27ab8191fb5734885eea0ae0a96830ae0e16e4c72fa5e91cb75033ee03b374b5"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/spirv/green.spvasm",
+      "bytes": 587,
+      "sha256": "8ca2c7ee7133761ee6939dc8af8b5e20acf24dd9a1a1376aeab65a74ec3a6d41"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/spirv/red.spvasm",
+      "bytes": 587,
+      "sha256": "6932bef401f705e3b89a08713d438043e18da5f1efc43cdb5c96e697d372e84e"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/fixtures/SpirvFixtures.hpp",
+      "bytes": 20695,
+      "sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tests/test_current_vulkan_pso.py",
+      "bytes": 9127,
+      "sha256": "37eb0109dd800c7c51a300ad19d717808b3fe3494f3fd7edbe893e40896e301d"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/audit_licenses.py",
+      "bytes": 30690,
+      "sha256": "b5a9d7914a6de25166bb59680e9393903deb256cb934048d105b0cd173c321f4"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/audit_vulkan.py",
+      "bytes": 16762,
+      "sha256": "bbdae297fc477623f34c6dc7acc1d507bb4815ff0c1210cc249267466eb337d8"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/prepare_vulkan_comparison.py",
+      "bytes": 21079,
+      "sha256": "26c2426e7dafe2876b051d0239dad0caac78fd8838ce4dc924c7fff9a6087f23"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_current_vulkan_pso.py",
+      "bytes": 16138,
+      "sha256": "3feef1d0493851338b7cda004d013e90df0babf35dfb0cb98a3bf47d4a426f0f"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_allocation.py",
+      "bytes": 13459,
+      "sha256": "95c87bb088dba4cde3150a1b65467c3a1d75fcc50c40b42d1a59f28ccbf693fa"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_comparison.py",
+      "bytes": 19973,
+      "sha256": "e04185ba08a808397f4a36a22f6ce24814bb8eb46ecf8f8efe043d4211c8a4d6"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_draw.py",
+      "bytes": 13584,
+      "sha256": "b6c926568e1d73d966be7711ad2df30bfa33b8c020cbd5955d727b0c638f6310"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_pso.py",
+      "bytes": 13059,
+      "sha256": "bb53a90bc37023ac7566128286af817e5350b3357e2bf6d70e62e8ee918cf002"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/run_vulkan_upload.py",
+      "bytes": 12047,
+      "sha256": "fe5f3a09292399461f8bf47ad3e5834980e3a190c7319a0b07cc51b073958321"
+    },
+    {
+      "path": "D:/source/GraphicsSDK/tools/vulkan-validation.lock.json",
+      "bytes": 1628,
+      "sha256": "227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"
+    }
+  ],
+  "validation_timings_excluded": true,
+  "historical_timings_reused": false,
+  "overall_SDK_ranking": false,
+  "SDL_native_handle_verified": false,
+  "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+  "GPU_use_in_timing": false,
+  "GPU_memory_reclamation_verified": false,
+  "native_pipeline_count_verified": false,
+  "driver_cache_state_known": false,
+  "completed_workload_tasks": [
+    "P3-BEN-05"
+  ],
+  "runs": [
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "validation",
+        "repetition": 0,
+        "name": "000-validation-graphicssdk-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "1",
+        "3",
+        "1",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 37760,
+      "started": 5856.562,
+      "finished": 5858.015,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\settings",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+        "GFX_EXPECT_VULKAN_LAYER": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll",
+        "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+        "VK_LOADER_DEBUG": "layer"
+      },
+      "stdout": "commands/000-validation-graphicssdk-pso1-0.stdout",
+      "stdout_sha256": "7ec516c65d655ec8a29917f803841abbada562e7b793cb2be4170486092fd610",
+      "stderr": "commands/000-validation-graphicssdk-pso1-0.stderr",
+      "stderr_sha256": "59d278b3cf5b09631d0731a3938fae3902e0da624460d1585ddef53b335e5c0f",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": true,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "warmup": 1,
+        "sample_count": 3,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 4,
+        "released_pipeline_handles": 4,
+        "used_pipeline_regions": 4,
+        "verified_images": 4,
+        "verified_bytes": 38480,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            4.5157,
+            0.0443
+          ],
+          [
+            0.5295,
+            0.0338
+          ],
+          [
+            0.5497,
+            0.0313
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "validation",
+        "repetition": 0,
+        "name": "001-validation-sdl-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "1",
+        "3",
+        "1",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 38264,
+      "started": 5858.312,
+      "finished": 5859.718,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\settings",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+        "GFX_EXPECT_VULKAN_LAYER": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll",
+        "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+        "VK_LOADER_DEBUG": "layer"
+      },
+      "stdout": "commands/001-validation-sdl-pso1-0.stdout",
+      "stdout_sha256": "12848e794abcb66eb15d81a0ef60f8a42ccd2ea6f438e6e90c2349d3b0390907",
+      "stderr": "commands/001-validation-sdl-pso1-0.stderr",
+      "stderr_sha256": "9a0afbe412326accdba028e9104ffb4b39dc22d50bee74cba603a1a391353380",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": true,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "warmup": 1,
+        "sample_count": 3,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 4,
+        "released_pipeline_handles": 4,
+        "used_pipeline_regions": 4,
+        "verified_images": 4,
+        "verified_bytes": 38480,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            3.5764,
+            0.0002
+          ],
+          [
+            0.4383,
+            0.0001
+          ],
+          [
+            0.3569,
+            0.0002
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso8",
+        "kind": "validation",
+        "repetition": 0,
+        "name": "002-validation-graphicssdk-pso8-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso8",
+        "high",
+        "1",
+        "3",
+        "1",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 35356,
+      "started": 5859.875,
+      "finished": 5861.046,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\settings",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+        "GFX_EXPECT_VULKAN_LAYER": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll",
+        "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+        "VK_LOADER_DEBUG": "layer"
+      },
+      "stdout": "commands/002-validation-graphicssdk-pso8-0.stdout",
+      "stdout_sha256": "0c91cc72df560a3aa16faca0f22df12928a5f6f7693d47b1daebdc7a110ffc14",
+      "stderr": "commands/002-validation-graphicssdk-pso8-0.stderr",
+      "stderr_sha256": "59d278b3cf5b09631d0731a3938fae3902e0da624460d1585ddef53b335e5c0f",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": true,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "warmup": 1,
+        "sample_count": 3,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 32,
+        "released_pipeline_handles": 32,
+        "used_pipeline_regions": 32,
+        "verified_images": 4,
+        "verified_bytes": 38480,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            2.0902,
+            0.1563
+          ],
+          [
+            2.1806,
+            0.279
+          ],
+          [
+            2.199,
+            0.145
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso8",
+        "kind": "validation",
+        "repetition": 0,
+        "name": "003-validation-sdl-pso8-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso8",
+        "high",
+        "1",
+        "3",
+        "1",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 35136,
+      "started": 5861.406,
+      "finished": 5862.562,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\settings",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+        "GFX_EXPECT_VULKAN_LAYER": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll",
+        "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+        "VK_LOADER_DEBUG": "layer"
+      },
+      "stdout": "commands/003-validation-sdl-pso8-0.stdout",
+      "stdout_sha256": "8f7af724847a77e03bd98a4aedd08fce7d6e420527a963f8464a6c46d21d9c8f",
+      "stderr": "commands/003-validation-sdl-pso8-0.stderr",
+      "stderr_sha256": "9a0afbe412326accdba028e9104ffb4b39dc22d50bee74cba603a1a391353380",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": true,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "D:/source/GraphicsSDK/out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+        "warmup": 1,
+        "sample_count": 3,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 32,
+        "released_pipeline_handles": 32,
+        "used_pipeline_regions": 32,
+        "verified_images": 4,
+        "verified_bytes": 38480,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            1.6473,
+            0.0003
+          ],
+          [
+            1.7205,
+            0.0002
+          ],
+          [
+            1.5184,
+            0.0003
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "missing-layer",
+        "repetition": 0,
+        "name": "004-missing-layer-graphicssdk-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "1",
+        "3",
+        "1",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 39236,
+      "started": 5862.859,
+      "finished": 5863.437,
+      "returncode": 1,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\missing",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\settings",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+        "GFX_EXPECT_VULKAN_LAYER": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll",
+        "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+        "VK_LOADER_DEBUG": "layer"
+      },
+      "stdout": "commands/004-missing-layer-graphicssdk-pso1-0.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "commands/004-missing-layer-graphicssdk-pso1-0.stderr",
+      "stderr_sha256": "a23e0d77a52b85e85be244313e8fad9c71829a161e9eced12752a458befaf84e"
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "wrong-target",
+        "repetition": 0,
+        "name": "005-wrong-target-graphicssdk-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "GraphicsSDK BEN05 absent GPU"
+      ],
+      "pid": 1924,
+      "started": 5863.625,
+      "finished": 5863.968,
+      "returncode": 1,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/005-wrong-target-graphicssdk-pso1-0.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "commands/005-wrong-target-graphicssdk-pso1-0.stderr",
+      "stderr_sha256": "0fca265cf78b8721caea05e6f53b374099000c2309ce5a03e06dff339fbec1c0"
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "missing-layer",
+        "repetition": 0,
+        "name": "006-missing-layer-sdl-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "1",
+        "3",
+        "1",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 4192,
+      "started": 5864.187,
+      "finished": 5864.656,
+      "returncode": 1,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\missing",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\settings",
+        "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+        "GFX_EXPECT_VULKAN_LAYER": "D:\\source\\GraphicsSDK\\out\\vulkan-validation-runtime\\build\\Vulkan-ValidationLayers\\layers\\Release\\VkLayer_khronos_validation.dll",
+        "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+        "VK_LOADER_DEBUG": "layer"
+      },
+      "stdout": "commands/006-missing-layer-sdl-pso1-0.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "commands/006-missing-layer-sdl-pso1-0.stderr",
+      "stderr_sha256": "a23e0d77a52b85e85be244313e8fad9c71829a161e9eced12752a458befaf84e"
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "wrong-target",
+        "repetition": 0,
+        "name": "007-wrong-target-sdl-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "GraphicsSDK BEN05 absent GPU"
+      ],
+      "pid": 34644,
+      "started": 5864.859,
+      "finished": 5865.718,
+      "returncode": 1,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/007-wrong-target-sdl-pso1-0.stdout",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "commands/007-wrong-target-sdl-pso1-0.stderr",
+      "stderr_sha256": "625bd303ce6243deb2d9b77f708770f96dc336d26169d0031334c168164cfe4f"
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 0,
+        "name": "008-measurement-graphicssdk-pso8-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 15396,
+      "started": 5865.859,
+      "finished": 5866.328,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/008-measurement-graphicssdk-pso8-0.stdout",
+      "stdout_sha256": "20555c538c4851c7db6683ebf71ced99e7998cc2f1b6bbc28a6c48e7d80e1e0d",
+      "stderr": "commands/008-measurement-graphicssdk-pso8-0.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.2346,
+            0.0133
+          ],
+          [
+            0.2426,
+            0.0121
+          ],
+          [
+            0.2429,
+            0.0074
+          ],
+          [
+            0.2386,
+            0.0073
+          ],
+          [
+            0.2085,
+            0.0085
+          ],
+          [
+            0.2065,
+            0.0088
+          ],
+          [
+            0.2463,
+            0.0086
+          ],
+          [
+            0.2218,
+            0.0069
+          ],
+          [
+            0.2147,
+            0.0063
+          ],
+          [
+            0.213,
+            0.0061
+          ],
+          [
+            0.2399,
+            0.007
+          ],
+          [
+            0.2241,
+            0.0064
+          ],
+          [
+            0.2364,
+            0.0071
+          ],
+          [
+            0.2319,
+            0.0107
+          ],
+          [
+            0.2493,
+            0.0091
+          ],
+          [
+            0.4061,
+            0.0098
+          ],
+          [
+            0.2835,
+            0.0071
+          ],
+          [
+            0.2436,
+            0.0087
+          ],
+          [
+            0.2424,
+            0.0077
+          ],
+          [
+            0.2403,
+            0.0068
+          ],
+          [
+            0.218,
+            0.0088
+          ],
+          [
+            0.3018,
+            0.0088
+          ],
+          [
+            0.264,
+            0.013
+          ],
+          [
+            0.2174,
+            0.0087
+          ],
+          [
+            0.2404,
+            0.0068
+          ],
+          [
+            0.2161,
+            0.0065
+          ],
+          [
+            0.2102,
+            0.0066
+          ],
+          [
+            0.2379,
+            0.0088
+          ],
+          [
+            0.2145,
+            0.0092
+          ],
+          [
+            0.2489,
+            0.009
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 0,
+        "name": "009-measurement-sdl-pso8-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 39408,
+      "started": 5866.578,
+      "finished": 5867.39,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/009-measurement-sdl-pso8-0.stdout",
+      "stdout_sha256": "5354b873b2b89adb9b97052375157f9a9c17a0af1fed1545ec9c44b47c936c3f",
+      "stderr": "commands/009-measurement-sdl-pso8-0.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1266,
+            0.0003
+          ],
+          [
+            0.1374,
+            0.0003
+          ],
+          [
+            0.1292,
+            0.0003
+          ],
+          [
+            0.1269,
+            0.0003
+          ],
+          [
+            0.2022,
+            0.0005
+          ],
+          [
+            0.1885,
+            0.0003
+          ],
+          [
+            0.1877,
+            0.0003
+          ],
+          [
+            0.1299,
+            0.0002
+          ],
+          [
+            0.1227,
+            0.0003
+          ],
+          [
+            0.131,
+            0.0002
+          ],
+          [
+            0.1224,
+            0.0002
+          ],
+          [
+            0.1967,
+            0.0003
+          ],
+          [
+            0.1807,
+            0.0004
+          ],
+          [
+            0.1835,
+            0.0002
+          ],
+          [
+            0.132,
+            0.0003
+          ],
+          [
+            0.2058,
+            0.0002
+          ],
+          [
+            0.1764,
+            0.0004
+          ],
+          [
+            0.1967,
+            0.0003
+          ],
+          [
+            0.127,
+            0.0004
+          ],
+          [
+            0.1966,
+            0.0002
+          ],
+          [
+            0.1921,
+            0.0003
+          ],
+          [
+            0.1274,
+            0.0003
+          ],
+          [
+            0.1262,
+            0.0002
+          ],
+          [
+            0.1318,
+            0.0002
+          ],
+          [
+            0.1889,
+            0.0004
+          ],
+          [
+            0.2928,
+            0.0002
+          ],
+          [
+            0.1997,
+            0.0003
+          ],
+          [
+            0.1306,
+            0.0003
+          ],
+          [
+            0.1997,
+            0.0002
+          ],
+          [
+            0.1273,
+            0.0003
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 0,
+        "name": "010-measurement-graphicssdk-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 644,
+      "started": 5867.578,
+      "finished": 5868.171,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/010-measurement-graphicssdk-pso1-0.stdout",
+      "stdout_sha256": "5cda70424dd4110024bf6c2eac4236611361ae9aee86cee6a2a7b3c61b57b1b4",
+      "stderr": "commands/010-measurement-graphicssdk-pso1-0.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1215,
+            0.0049
+          ],
+          [
+            0.17,
+            0.0048
+          ],
+          [
+            0.1202,
+            0.0067
+          ],
+          [
+            0.1145,
+            0.0263
+          ],
+          [
+            0.1122,
+            0.0047
+          ],
+          [
+            0.1144,
+            0.0054
+          ],
+          [
+            0.2447,
+            0.0047
+          ],
+          [
+            0.1689,
+            0.005
+          ],
+          [
+            0.1226,
+            0.0047
+          ],
+          [
+            0.1701,
+            0.0051
+          ],
+          [
+            0.1656,
+            0.0049
+          ],
+          [
+            0.1198,
+            0.008
+          ],
+          [
+            0.1867,
+            0.0144
+          ],
+          [
+            0.1906,
+            0.0045
+          ],
+          [
+            0.1332,
+            0.0055
+          ],
+          [
+            0.1143,
+            0.0043
+          ],
+          [
+            0.1242,
+            0.0059
+          ],
+          [
+            0.108,
+            0.004
+          ],
+          [
+            0.1332,
+            0.0188
+          ],
+          [
+            0.1093,
+            0.0044
+          ],
+          [
+            0.1621,
+            0.0047
+          ],
+          [
+            0.1583,
+            0.0046
+          ],
+          [
+            0.1095,
+            0.0055
+          ],
+          [
+            0.1494,
+            0.0044
+          ],
+          [
+            0.1104,
+            0.0248
+          ],
+          [
+            0.1493,
+            0.0043
+          ],
+          [
+            0.1114,
+            0.0045
+          ],
+          [
+            0.1094,
+            0.0053
+          ],
+          [
+            0.1109,
+            0.0046
+          ],
+          [
+            0.1188,
+            0.0055
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 0,
+        "name": "011-measurement-sdl-pso1-0"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 15760,
+      "started": 5868.343,
+      "finished": 5868.843,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/011-measurement-sdl-pso1-0.stdout",
+      "stdout_sha256": "0272401fd7c45f0a0d11ebe10cd6508847b440072b2a26d8e5a5a50e2ee7039e",
+      "stderr": "commands/011-measurement-sdl-pso1-0.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.0801,
+            0.0002
+          ],
+          [
+            0.0793,
+            0.0001
+          ],
+          [
+            0.073,
+            0.0002
+          ],
+          [
+            0.0803,
+            0.0001
+          ],
+          [
+            0.0703,
+            0.0001
+          ],
+          [
+            0.0669,
+            0.0001
+          ],
+          [
+            0.068,
+            0.0002
+          ],
+          [
+            0.0788,
+            0.0001
+          ],
+          [
+            0.0762,
+            0.0002
+          ],
+          [
+            0.0624,
+            0.0002
+          ],
+          [
+            0.0812,
+            0.0001
+          ],
+          [
+            0.0772,
+            0.0001
+          ],
+          [
+            0.0714,
+            0.0001
+          ],
+          [
+            0.0751,
+            0.0001
+          ],
+          [
+            0.0846,
+            0.0002
+          ],
+          [
+            0.0864,
+            0.0002
+          ],
+          [
+            0.0861,
+            0.0002
+          ],
+          [
+            0.0808,
+            0.0001
+          ],
+          [
+            0.0824,
+            0.0001
+          ],
+          [
+            0.1133,
+            0.0004
+          ],
+          [
+            0.0803,
+            0.0004
+          ],
+          [
+            0.0851,
+            0.0001
+          ],
+          [
+            0.0839,
+            0.0001
+          ],
+          [
+            0.0861,
+            0.0002
+          ],
+          [
+            0.0832,
+            0.0002
+          ],
+          [
+            0.0873,
+            0.0001
+          ],
+          [
+            0.0788,
+            0.0001
+          ],
+          [
+            0.1073,
+            0.0003
+          ],
+          [
+            0.0861,
+            0.0002
+          ],
+          [
+            0.0838,
+            0.0002
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 1,
+        "name": "012-measurement-sdl-pso8-1"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 38152,
+      "started": 5869.062,
+      "finished": 5869.64,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/012-measurement-sdl-pso8-1.stdout",
+      "stdout_sha256": "2fae1e4f8d567e08eb6892769374ee8670275301b3a71462448c0ce008502289",
+      "stderr": "commands/012-measurement-sdl-pso8-1.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1381,
+            0.0003
+          ],
+          [
+            0.1141,
+            0.0003
+          ],
+          [
+            0.1293,
+            0.0002
+          ],
+          [
+            0.1162,
+            0.0001
+          ],
+          [
+            0.1161,
+            0.0002
+          ],
+          [
+            0.1222,
+            0.0002
+          ],
+          [
+            0.1176,
+            0.0002
+          ],
+          [
+            0.1329,
+            0.0002
+          ],
+          [
+            0.1425,
+            0.0003
+          ],
+          [
+            0.1424,
+            0.0002
+          ],
+          [
+            0.1256,
+            0.0002
+          ],
+          [
+            0.1202,
+            0.0002
+          ],
+          [
+            0.14,
+            0.0002
+          ],
+          [
+            0.1274,
+            0.0002
+          ],
+          [
+            0.1404,
+            0.0003
+          ],
+          [
+            0.1407,
+            0.0002
+          ],
+          [
+            0.1287,
+            0.0003
+          ],
+          [
+            0.1397,
+            0.0002
+          ],
+          [
+            0.1287,
+            0.0002
+          ],
+          [
+            0.1211,
+            0.0003
+          ],
+          [
+            0.1167,
+            0.0003
+          ],
+          [
+            0.1264,
+            0.0002
+          ],
+          [
+            0.109,
+            0.0003
+          ],
+          [
+            0.1406,
+            0.0003
+          ],
+          [
+            0.1254,
+            0.0002
+          ],
+          [
+            0.1385,
+            0.0002
+          ],
+          [
+            0.1202,
+            0.0002
+          ],
+          [
+            0.1237,
+            0.0003
+          ],
+          [
+            0.1378,
+            0.0002
+          ],
+          [
+            0.1209,
+            0.0002
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 1,
+        "name": "013-measurement-graphicssdk-pso8-1"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 36848,
+      "started": 5869.765,
+      "finished": 5870.406,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/013-measurement-graphicssdk-pso8-1.stdout",
+      "stdout_sha256": "13189ef0faa3b85b1a01b91de20b77437988e4b1782ac5ff8d6a033f9a702dec",
+      "stderr": "commands/013-measurement-graphicssdk-pso8-1.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.3756,
+            0.0083
+          ],
+          [
+            0.2506,
+            0.0075
+          ],
+          [
+            0.266,
+            0.0073
+          ],
+          [
+            0.2535,
+            0.0064
+          ],
+          [
+            0.2372,
+            0.0067
+          ],
+          [
+            0.241,
+            0.0221
+          ],
+          [
+            0.236,
+            0.0085
+          ],
+          [
+            0.2113,
+            0.0092
+          ],
+          [
+            0.2431,
+            0.0087
+          ],
+          [
+            0.2892,
+            0.0106
+          ],
+          [
+            0.2442,
+            0.0082
+          ],
+          [
+            0.2455,
+            0.007
+          ],
+          [
+            0.236,
+            0.0087
+          ],
+          [
+            0.2325,
+            0.0066
+          ],
+          [
+            0.2371,
+            0.0083
+          ],
+          [
+            0.2779,
+            0.0069
+          ],
+          [
+            0.2136,
+            0.0067
+          ],
+          [
+            0.236,
+            0.007
+          ],
+          [
+            0.2259,
+            0.0079
+          ],
+          [
+            0.2315,
+            0.0067
+          ],
+          [
+            0.2246,
+            0.0085
+          ],
+          [
+            0.2087,
+            0.0121
+          ],
+          [
+            0.2381,
+            0.0092
+          ],
+          [
+            0.4332,
+            0.0075
+          ],
+          [
+            0.2433,
+            0.0096
+          ],
+          [
+            0.4102,
+            0.0136
+          ],
+          [
+            0.2429,
+            0.0115
+          ],
+          [
+            0.2489,
+            0.0067
+          ],
+          [
+            0.368,
+            0.0085
+          ],
+          [
+            0.377,
+            0.0084
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 1,
+        "name": "014-measurement-sdl-pso1-1"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 34768,
+      "started": 5870.593,
+      "finished": 5871.343,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/014-measurement-sdl-pso1-1.stdout",
+      "stdout_sha256": "da690acd95d44e503d1235d24b96bf43967c057768fdb6999a9ea8180257601a",
+      "stderr": "commands/014-measurement-sdl-pso1-1.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.0862,
+            0.0001
+          ],
+          [
+            0.0748,
+            0.0002
+          ],
+          [
+            0.0852,
+            0.0001
+          ],
+          [
+            0.0846,
+            0.0001
+          ],
+          [
+            0.0787,
+            0.0001
+          ],
+          [
+            0.0747,
+            0.0001
+          ],
+          [
+            0.0986,
+            0.0002
+          ],
+          [
+            0.0858,
+            0.0002
+          ],
+          [
+            0.0833,
+            0.0002
+          ],
+          [
+            0.0865,
+            0.0001
+          ],
+          [
+            0.0874,
+            0.0001
+          ],
+          [
+            0.0802,
+            0.0001
+          ],
+          [
+            0.1159,
+            0.0002
+          ],
+          [
+            0.1354,
+            0.0001
+          ],
+          [
+            0.0866,
+            0.0002
+          ],
+          [
+            0.086,
+            0.0002
+          ],
+          [
+            0.1368,
+            0.0001
+          ],
+          [
+            0.1258,
+            0.0002
+          ],
+          [
+            0.0804,
+            0.0002
+          ],
+          [
+            0.0827,
+            0.0002
+          ],
+          [
+            0.0836,
+            0.0001
+          ],
+          [
+            0.0819,
+            0.0001
+          ],
+          [
+            0.0838,
+            0.0001
+          ],
+          [
+            0.0986,
+            0.0001
+          ],
+          [
+            0.1032,
+            0.0002
+          ],
+          [
+            0.0826,
+            0.0002
+          ],
+          [
+            0.083,
+            0.0003
+          ],
+          [
+            0.0767,
+            0.0001
+          ],
+          [
+            0.0851,
+            0.0001
+          ],
+          [
+            0.0802,
+            0.0001
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 1,
+        "name": "015-measurement-graphicssdk-pso1-1"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 5668,
+      "started": 5871.531,
+      "finished": 5872.093,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/015-measurement-graphicssdk-pso1-1.stdout",
+      "stdout_sha256": "ce852e8efc5b4f56118ad016d9d2992b509ed366f616d0744324a049c2af25a3",
+      "stderr": "commands/015-measurement-graphicssdk-pso1-1.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1129,
+            0.0034
+          ],
+          [
+            0.1102,
+            0.004
+          ],
+          [
+            0.1166,
+            0.0044
+          ],
+          [
+            0.1113,
+            0.0033
+          ],
+          [
+            0.1092,
+            0.004
+          ],
+          [
+            0.1024,
+            0.0039
+          ],
+          [
+            0.0985,
+            0.0033
+          ],
+          [
+            0.0983,
+            0.0042
+          ],
+          [
+            0.1119,
+            0.0045
+          ],
+          [
+            0.1119,
+            0.0034
+          ],
+          [
+            0.1018,
+            0.0032
+          ],
+          [
+            0.1087,
+            0.0047
+          ],
+          [
+            0.1068,
+            0.0039
+          ],
+          [
+            0.1041,
+            0.0042
+          ],
+          [
+            0.102,
+            0.0034
+          ],
+          [
+            0.1091,
+            0.0041
+          ],
+          [
+            0.1111,
+            0.0045
+          ],
+          [
+            0.1072,
+            0.0044
+          ],
+          [
+            0.1015,
+            0.0038
+          ],
+          [
+            0.1039,
+            0.0043
+          ],
+          [
+            0.103,
+            0.0045
+          ],
+          [
+            0.1086,
+            0.0044
+          ],
+          [
+            0.1092,
+            0.0038
+          ],
+          [
+            0.1021,
+            0.0037
+          ],
+          [
+            0.1009,
+            0.0032
+          ],
+          [
+            0.096,
+            0.003
+          ],
+          [
+            0.0945,
+            0.0045
+          ],
+          [
+            0.1035,
+            0.0044
+          ],
+          [
+            0.1056,
+            0.0041
+          ],
+          [
+            0.1073,
+            0.0043
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 2,
+        "name": "016-measurement-graphicssdk-pso8-2"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 5624,
+      "started": 5872.234,
+      "finished": 5872.828,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/016-measurement-graphicssdk-pso8-2.stdout",
+      "stdout_sha256": "52c3c7a9e923943b7c47476407793225328723cbd554e2c6afa26c3c26ecafeb",
+      "stderr": "commands/016-measurement-graphicssdk-pso8-2.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.2468,
+            0.0069
+          ],
+          [
+            0.2136,
+            0.0079
+          ],
+          [
+            0.2259,
+            0.0063
+          ],
+          [
+            0.2062,
+            0.0094
+          ],
+          [
+            0.2498,
+            0.0086
+          ],
+          [
+            0.3875,
+            0.0079
+          ],
+          [
+            0.2135,
+            0.0086
+          ],
+          [
+            0.2456,
+            0.007
+          ],
+          [
+            0.2296,
+            0.0097
+          ],
+          [
+            0.203,
+            0.0078
+          ],
+          [
+            0.2158,
+            0.0068
+          ],
+          [
+            0.2347,
+            0.0063
+          ],
+          [
+            0.2411,
+            0.007
+          ],
+          [
+            0.2217,
+            0.0069
+          ],
+          [
+            0.2443,
+            0.0087
+          ],
+          [
+            0.2358,
+            0.0084
+          ],
+          [
+            0.2378,
+            0.0079
+          ],
+          [
+            0.2048,
+            0.0087
+          ],
+          [
+            0.2462,
+            0.0064
+          ],
+          [
+            0.2451,
+            0.0092
+          ],
+          [
+            0.2637,
+            0.0073
+          ],
+          [
+            0.2453,
+            0.0085
+          ],
+          [
+            0.2413,
+            0.0088
+          ],
+          [
+            0.2429,
+            0.0086
+          ],
+          [
+            0.246,
+            0.0068
+          ],
+          [
+            0.2514,
+            0.0086
+          ],
+          [
+            0.2013,
+            0.0083
+          ],
+          [
+            0.2489,
+            0.0101
+          ],
+          [
+            0.2388,
+            0.0064
+          ],
+          [
+            0.2147,
+            0.0062
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 2,
+        "name": "017-measurement-sdl-pso8-2"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 9832,
+      "started": 5872.984,
+      "finished": 5873.578,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/017-measurement-sdl-pso8-2.stdout",
+      "stdout_sha256": "e4f97badbc344126b62f66256bac7ff3cb6002fe375f36bd7aeba731cd2d547d",
+      "stderr": "commands/017-measurement-sdl-pso8-2.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1289,
+            0.0003
+          ],
+          [
+            0.1265,
+            0.0003
+          ],
+          [
+            0.1278,
+            0.0002
+          ],
+          [
+            0.1184,
+            0.0003
+          ],
+          [
+            0.1214,
+            0.0003
+          ],
+          [
+            0.1284,
+            0.0002
+          ],
+          [
+            0.1295,
+            0.0003
+          ],
+          [
+            0.1203,
+            0.0004
+          ],
+          [
+            0.1587,
+            0.0004
+          ],
+          [
+            0.2144,
+            0.0003
+          ],
+          [
+            0.2567,
+            0.0003
+          ],
+          [
+            0.1356,
+            0.0003
+          ],
+          [
+            0.1309,
+            0.0003
+          ],
+          [
+            0.2082,
+            0.0003
+          ],
+          [
+            0.1831,
+            0.0003
+          ],
+          [
+            0.1246,
+            0.0003
+          ],
+          [
+            0.1302,
+            0.0003
+          ],
+          [
+            0.1306,
+            0.0003
+          ],
+          [
+            0.1288,
+            0.0003
+          ],
+          [
+            0.161,
+            0.0003
+          ],
+          [
+            0.1221,
+            0.0003
+          ],
+          [
+            0.1312,
+            0.0002
+          ],
+          [
+            0.1196,
+            0.0002
+          ],
+          [
+            0.1454,
+            0.0002
+          ],
+          [
+            0.1318,
+            0.0003
+          ],
+          [
+            0.139,
+            0.0002
+          ],
+          [
+            0.1311,
+            0.0003
+          ],
+          [
+            0.1281,
+            0.0002
+          ],
+          [
+            0.1312,
+            0.0002
+          ],
+          [
+            0.1214,
+            0.0004
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 2,
+        "name": "018-measurement-graphicssdk-pso1-2"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 39232,
+      "started": 5873.718,
+      "finished": 5874.156,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/018-measurement-graphicssdk-pso1-2.stdout",
+      "stdout_sha256": "2e561c69edfc62ab5bedc5dc26b4ea62f840f6cd9d6358d999e40acb3e01abcf",
+      "stderr": "commands/018-measurement-graphicssdk-pso1-2.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1217,
+            0.0042
+          ],
+          [
+            0.1173,
+            0.0042
+          ],
+          [
+            0.1164,
+            0.0047
+          ],
+          [
+            0.1149,
+            0.0218
+          ],
+          [
+            0.1297,
+            0.005
+          ],
+          [
+            0.1157,
+            0.0039
+          ],
+          [
+            0.1111,
+            0.0047
+          ],
+          [
+            0.1113,
+            0.0043
+          ],
+          [
+            0.1907,
+            0.0045
+          ],
+          [
+            0.1081,
+            0.004
+          ],
+          [
+            0.1537,
+            0.0049
+          ],
+          [
+            0.1509,
+            0.0048
+          ],
+          [
+            0.1111,
+            0.005
+          ],
+          [
+            0.18,
+            0.0068
+          ],
+          [
+            0.1248,
+            0.006
+          ],
+          [
+            0.1224,
+            0.0059
+          ],
+          [
+            0.1103,
+            0.004
+          ],
+          [
+            0.1113,
+            0.0036
+          ],
+          [
+            0.1109,
+            0.0044
+          ],
+          [
+            0.1103,
+            0.0045
+          ],
+          [
+            0.1085,
+            0.0047
+          ],
+          [
+            0.1091,
+            0.0046
+          ],
+          [
+            0.1517,
+            0.0049
+          ],
+          [
+            0.1119,
+            0.0045
+          ],
+          [
+            0.1104,
+            0.0045
+          ],
+          [
+            0.1093,
+            0.0042
+          ],
+          [
+            0.1232,
+            0.0046
+          ],
+          [
+            0.1097,
+            0.0046
+          ],
+          [
+            0.1466,
+            0.0048
+          ],
+          [
+            0.1111,
+            0.0045
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 2,
+        "name": "019-measurement-sdl-pso1-2"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 34328,
+      "started": 5874.359,
+      "finished": 5874.906,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/019-measurement-sdl-pso1-2.stdout",
+      "stdout_sha256": "49bcb28610cddeea619a72403c6c3ae07a10e5856a07a9ae6a55f31bd7244dd8",
+      "stderr": "commands/019-measurement-sdl-pso1-2.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.0652,
+            0.0002
+          ],
+          [
+            0.1228,
+            0.0001
+          ],
+          [
+            0.0846,
+            0.0001
+          ],
+          [
+            0.0754,
+            0.0001
+          ],
+          [
+            0.0834,
+            0.0002
+          ],
+          [
+            0.0842,
+            0.0001
+          ],
+          [
+            0.0741,
+            0.0001
+          ],
+          [
+            0.0686,
+            0.0001
+          ],
+          [
+            0.082,
+            0.0001
+          ],
+          [
+            0.075,
+            0.0002
+          ],
+          [
+            0.0981,
+            0.0002
+          ],
+          [
+            0.0876,
+            0.0001
+          ],
+          [
+            0.086,
+            0.0001
+          ],
+          [
+            0.1203,
+            0.0001
+          ],
+          [
+            0.085,
+            0.0002
+          ],
+          [
+            0.092,
+            0.0002
+          ],
+          [
+            0.0737,
+            0.0002
+          ],
+          [
+            0.0686,
+            0.0001
+          ],
+          [
+            0.1182,
+            0.0002
+          ],
+          [
+            0.0591,
+            0.0001
+          ],
+          [
+            0.0651,
+            0.0001
+          ],
+          [
+            0.0785,
+            0.0002
+          ],
+          [
+            0.0821,
+            0.0001
+          ],
+          [
+            0.0819,
+            0.0002
+          ],
+          [
+            0.0778,
+            0.0002
+          ],
+          [
+            0.073,
+            0.0002
+          ],
+          [
+            0.0609,
+            0.0001
+          ],
+          [
+            0.0652,
+            0.0001
+          ],
+          [
+            0.0651,
+            0.0001
+          ],
+          [
+            0.0753,
+            0.0001
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 3,
+        "name": "020-measurement-sdl-pso1-3"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 4660,
+      "started": 5875.156,
+      "finished": 5875.718,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/020-measurement-sdl-pso1-3.stdout",
+      "stdout_sha256": "6b261e7378914198590813b7134edf8b00bc55bec420e4473fc9a892b137210f",
+      "stderr": "commands/020-measurement-sdl-pso1-3.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.0773,
+            0.0001
+          ],
+          [
+            0.0927,
+            0.0001
+          ],
+          [
+            0.0769,
+            0.0001
+          ],
+          [
+            0.0817,
+            0.0001
+          ],
+          [
+            0.0839,
+            0.0001
+          ],
+          [
+            0.0765,
+            0.0001
+          ],
+          [
+            0.0823,
+            0.0001
+          ],
+          [
+            0.0764,
+            0.0001
+          ],
+          [
+            0.0704,
+            0.0001
+          ],
+          [
+            0.0707,
+            0.0001
+          ],
+          [
+            0.0676,
+            0.0001
+          ],
+          [
+            0.0817,
+            0.0001
+          ],
+          [
+            0.073,
+            0.0001
+          ],
+          [
+            0.0831,
+            0.0001
+          ],
+          [
+            0.0739,
+            0.0001
+          ],
+          [
+            0.0718,
+            0.0001
+          ],
+          [
+            0.0776,
+            0.0001
+          ],
+          [
+            0.0853,
+            0.0002
+          ],
+          [
+            0.0815,
+            0.0002
+          ],
+          [
+            0.081,
+            0.0001
+          ],
+          [
+            0.0847,
+            0.0001
+          ],
+          [
+            0.0747,
+            0.0001
+          ],
+          [
+            0.0706,
+            0.0001
+          ],
+          [
+            0.0626,
+            0.0001
+          ],
+          [
+            0.0928,
+            0.0001
+          ],
+          [
+            0.0624,
+            0.0001
+          ],
+          [
+            0.0745,
+            0.0001
+          ],
+          [
+            0.0683,
+            0.0001
+          ],
+          [
+            0.0679,
+            0.0001
+          ],
+          [
+            0.0825,
+            0.0001
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 3,
+        "name": "021-measurement-graphicssdk-pso1-3"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 8884,
+      "started": 5875.859,
+      "finished": 5876.281,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/021-measurement-graphicssdk-pso1-3.stdout",
+      "stdout_sha256": "840b884e6d8d82dc9c57c0e8919cdc487549bf8120c9b29f34d7d228e4c6035a",
+      "stderr": "commands/021-measurement-graphicssdk-pso1-3.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1035,
+            0.0043
+          ],
+          [
+            0.1026,
+            0.0031
+          ],
+          [
+            0.0982,
+            0.0029
+          ],
+          [
+            0.1046,
+            0.0042
+          ],
+          [
+            0.1032,
+            0.0032
+          ],
+          [
+            0.1041,
+            0.0033
+          ],
+          [
+            0.0994,
+            0.0043
+          ],
+          [
+            0.1064,
+            0.0042
+          ],
+          [
+            0.0974,
+            0.0038
+          ],
+          [
+            0.0945,
+            0.0042
+          ],
+          [
+            0.1063,
+            0.0031
+          ],
+          [
+            0.1006,
+            0.0031
+          ],
+          [
+            0.1091,
+            0.0037
+          ],
+          [
+            0.0971,
+            0.0028
+          ],
+          [
+            0.095,
+            0.0031
+          ],
+          [
+            0.1158,
+            0.0035
+          ],
+          [
+            0.1244,
+            0.0045
+          ],
+          [
+            0.105,
+            0.0034
+          ],
+          [
+            0.0973,
+            0.0044
+          ],
+          [
+            0.1036,
+            0.0029
+          ],
+          [
+            0.0963,
+            0.003
+          ],
+          [
+            0.0967,
+            0.0032
+          ],
+          [
+            0.0946,
+            0.0029
+          ],
+          [
+            0.0939,
+            0.0048
+          ],
+          [
+            0.0944,
+            0.0033
+          ],
+          [
+            0.0917,
+            0.0034
+          ],
+          [
+            0.0989,
+            0.0031
+          ],
+          [
+            0.0929,
+            0.0028
+          ],
+          [
+            0.0918,
+            0.0029
+          ],
+          [
+            0.0908,
+            0.0041
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 3,
+        "name": "022-measurement-sdl-pso8-3"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 5296,
+      "started": 5876.421,
+      "finished": 5877.031,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/022-measurement-sdl-pso8-3.stdout",
+      "stdout_sha256": "0a35e3ac64c451c9e07591eacf080fb70a507a1e4ba830a31964fad3631d8b37",
+      "stderr": "commands/022-measurement-sdl-pso8-3.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1277,
+            0.0003
+          ],
+          [
+            0.131,
+            0.0002
+          ],
+          [
+            0.1281,
+            0.0002
+          ],
+          [
+            0.1308,
+            0.0003
+          ],
+          [
+            0.142,
+            0.0003
+          ],
+          [
+            0.1282,
+            0.0003
+          ],
+          [
+            0.1307,
+            0.0003
+          ],
+          [
+            0.1278,
+            0.0002
+          ],
+          [
+            0.1272,
+            0.0003
+          ],
+          [
+            0.1337,
+            0.0003
+          ],
+          [
+            0.302,
+            0.0003
+          ],
+          [
+            0.1273,
+            0.0002
+          ],
+          [
+            0.204,
+            0.0003
+          ],
+          [
+            0.1288,
+            0.0003
+          ],
+          [
+            0.1272,
+            0.0002
+          ],
+          [
+            0.1967,
+            0.0003
+          ],
+          [
+            0.1311,
+            0.0003
+          ],
+          [
+            0.118,
+            0.0003
+          ],
+          [
+            0.1266,
+            0.0002
+          ],
+          [
+            0.2183,
+            0.0002
+          ],
+          [
+            0.1984,
+            0.0003
+          ],
+          [
+            0.1449,
+            0.0003
+          ],
+          [
+            0.1475,
+            0.0003
+          ],
+          [
+            0.175,
+            0.0003
+          ],
+          [
+            0.1301,
+            0.0002
+          ],
+          [
+            0.1324,
+            0.0002
+          ],
+          [
+            0.1192,
+            0.0002
+          ],
+          [
+            0.1191,
+            0.0002
+          ],
+          [
+            0.1155,
+            0.0004
+          ],
+          [
+            0.1288,
+            0.0003
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 3,
+        "name": "023-measurement-graphicssdk-pso8-3"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 36700,
+      "started": 5877.234,
+      "finished": 5878.015,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/023-measurement-graphicssdk-pso8-3.stdout",
+      "stdout_sha256": "e269ac20a16de2b4c0e5024992fb7736669e07b6772d87531951bb101069a2a5",
+      "stderr": "commands/023-measurement-graphicssdk-pso8-3.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.2485,
+            0.0082
+          ],
+          [
+            0.242,
+            0.03
+          ],
+          [
+            0.2434,
+            0.0087
+          ],
+          [
+            0.2421,
+            0.009
+          ],
+          [
+            0.2474,
+            0.0066
+          ],
+          [
+            0.2415,
+            0.0087
+          ],
+          [
+            0.2582,
+            0.0078
+          ],
+          [
+            0.2421,
+            0.0085
+          ],
+          [
+            0.4114,
+            0.0082
+          ],
+          [
+            0.2457,
+            0.0077
+          ],
+          [
+            0.2422,
+            0.0083
+          ],
+          [
+            0.2382,
+            0.0087
+          ],
+          [
+            0.3759,
+            0.0101
+          ],
+          [
+            0.2597,
+            0.0091
+          ],
+          [
+            0.2239,
+            0.0088
+          ],
+          [
+            0.2427,
+            0.008
+          ],
+          [
+            0.2498,
+            0.0118
+          ],
+          [
+            0.2405,
+            0.0072
+          ],
+          [
+            0.2187,
+            0.0087
+          ],
+          [
+            0.4906,
+            0.0108
+          ],
+          [
+            0.2552,
+            0.0092
+          ],
+          [
+            0.2615,
+            0.0105
+          ],
+          [
+            0.2452,
+            0.0089
+          ],
+          [
+            0.2186,
+            0.0088
+          ],
+          [
+            0.2392,
+            0.0094
+          ],
+          [
+            0.24,
+            0.0084
+          ],
+          [
+            0.2448,
+            0.008
+          ],
+          [
+            0.2443,
+            0.0085
+          ],
+          [
+            0.2407,
+            0.0089
+          ],
+          [
+            0.2249,
+            0.0094
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 4,
+        "name": "024-measurement-graphicssdk-pso8-4"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 38040,
+      "started": 5878.171,
+      "finished": 5878.609,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/024-measurement-graphicssdk-pso8-4.stdout",
+      "stdout_sha256": "1fc34b90603d3d5f4e5e072b8e123c25009ba0a526287d4b52550b3d609e8b92",
+      "stderr": "commands/024-measurement-graphicssdk-pso8-4.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.2451,
+            0.0076
+          ],
+          [
+            0.2429,
+            0.0071
+          ],
+          [
+            0.2269,
+            0.0084
+          ],
+          [
+            0.2405,
+            0.0079
+          ],
+          [
+            0.2222,
+            0.0085
+          ],
+          [
+            0.2002,
+            0.0084
+          ],
+          [
+            0.2476,
+            0.0083
+          ],
+          [
+            0.2333,
+            0.0085
+          ],
+          [
+            0.2411,
+            0.0094
+          ],
+          [
+            0.237,
+            0.0069
+          ],
+          [
+            0.2157,
+            0.0079
+          ],
+          [
+            0.2406,
+            0.0071
+          ],
+          [
+            0.2175,
+            0.0065
+          ],
+          [
+            0.2136,
+            0.0067
+          ],
+          [
+            0.2316,
+            0.0076
+          ],
+          [
+            0.2266,
+            0.0084
+          ],
+          [
+            0.2168,
+            0.0086
+          ],
+          [
+            0.2023,
+            0.0066
+          ],
+          [
+            0.2297,
+            0.0062
+          ],
+          [
+            0.205,
+            0.0081
+          ],
+          [
+            0.2381,
+            0.0091
+          ],
+          [
+            0.2189,
+            0.0084
+          ],
+          [
+            0.2085,
+            0.008
+          ],
+          [
+            0.2345,
+            0.0075
+          ],
+          [
+            0.2319,
+            0.0081
+          ],
+          [
+            0.2232,
+            0.0068
+          ],
+          [
+            0.2077,
+            0.0083
+          ],
+          [
+            0.2322,
+            0.0076
+          ],
+          [
+            0.2129,
+            0.0067
+          ],
+          [
+            0.2551,
+            0.0069
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso8",
+        "kind": "measurement",
+        "repetition": 4,
+        "name": "025-measurement-sdl-pso8-4"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso8",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 31800,
+      "started": 5878.75,
+      "finished": 5879.359,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/025-measurement-sdl-pso8-4.stdout",
+      "stdout_sha256": "bbc39d9f53e5c89f07c0277af337d24620d3e5113164fc626e092d662dc88653",
+      "stderr": "commands/025-measurement-sdl-pso8-4.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso8",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 8,
+        "created_pipelines": 280,
+        "released_pipeline_handles": 280,
+        "used_pipeline_regions": 280,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.1291,
+            0.0002
+          ],
+          [
+            0.234,
+            0.0002
+          ],
+          [
+            0.1684,
+            0.0003
+          ],
+          [
+            0.1544,
+            0.0003
+          ],
+          [
+            0.1325,
+            0.0002
+          ],
+          [
+            0.2021,
+            0.0003
+          ],
+          [
+            0.1284,
+            0.0002
+          ],
+          [
+            0.13,
+            0.0003
+          ],
+          [
+            0.1183,
+            0.0002
+          ],
+          [
+            0.1337,
+            0.0003
+          ],
+          [
+            0.1191,
+            0.0003
+          ],
+          [
+            0.1165,
+            0.0002
+          ],
+          [
+            0.1268,
+            0.0003
+          ],
+          [
+            0.1303,
+            0.0002
+          ],
+          [
+            0.1239,
+            0.0002
+          ],
+          [
+            0.1211,
+            0.0003
+          ],
+          [
+            0.1723,
+            0.0002
+          ],
+          [
+            0.1252,
+            0.0002
+          ],
+          [
+            0.1279,
+            0.0003
+          ],
+          [
+            0.1301,
+            0.0003
+          ],
+          [
+            0.1286,
+            0.0003
+          ],
+          [
+            0.1279,
+            0.0002
+          ],
+          [
+            0.128,
+            0.0002
+          ],
+          [
+            0.1302,
+            0.0003
+          ],
+          [
+            0.1281,
+            0.0003
+          ],
+          [
+            0.1211,
+            0.0003
+          ],
+          [
+            0.1162,
+            0.0002
+          ],
+          [
+            0.1315,
+            0.0003
+          ],
+          [
+            0.1331,
+            0.0002
+          ],
+          [
+            0.1293,
+            0.0002
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "graphicssdk",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 4,
+        "name": "026-measurement-graphicssdk-pso1-4"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "graphicssdk",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 39648,
+      "started": 5879.562,
+      "finished": 5880.156,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/026-measurement-graphicssdk-pso1-4.stdout",
+      "stdout_sha256": "9a40408c8d015a9089d3776491b0263f5e968edb3345b4d3ef5bdaada8445ccf",
+      "stderr": "commands/026-measurement-graphicssdk-pso1-4.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "graphicssdk",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.0936,
+            0.0037
+          ],
+          [
+            0.1145,
+            0.0044
+          ],
+          [
+            0.1078,
+            0.0042
+          ],
+          [
+            0.1164,
+            0.0046
+          ],
+          [
+            0.1112,
+            0.0043
+          ],
+          [
+            0.1092,
+            0.0033
+          ],
+          [
+            0.1053,
+            0.0034
+          ],
+          [
+            0.1112,
+            0.0041
+          ],
+          [
+            0.1046,
+            0.0032
+          ],
+          [
+            0.0988,
+            0.0033
+          ],
+          [
+            0.112,
+            0.0045
+          ],
+          [
+            0.1099,
+            0.0035
+          ],
+          [
+            0.1007,
+            0.0043
+          ],
+          [
+            0.1125,
+            0.0043
+          ],
+          [
+            0.111,
+            0.0041
+          ],
+          [
+            0.1092,
+            0.0033
+          ],
+          [
+            0.1054,
+            0.0034
+          ],
+          [
+            0.0989,
+            0.0032
+          ],
+          [
+            0.0968,
+            0.0031
+          ],
+          [
+            0.1066,
+            0.0035
+          ],
+          [
+            0.1061,
+            0.0035
+          ],
+          [
+            0.0995,
+            0.0042
+          ],
+          [
+            0.1056,
+            0.0048
+          ],
+          [
+            0.1138,
+            0.0052
+          ],
+          [
+            0.113,
+            0.005
+          ],
+          [
+            0.1092,
+            0.0036
+          ],
+          [
+            0.1254,
+            0.0041
+          ],
+          [
+            0.1089,
+            0.0035
+          ],
+          [
+            0.1058,
+            0.0034
+          ],
+          [
+            0.1034,
+            0.0035
+          ]
+        ]
+      }
+    },
+    {
+      "job": {
+        "profile": "pso",
+        "sdk": "sdl",
+        "scenario": "pso1",
+        "kind": "measurement",
+        "repetition": 4,
+        "name": "027-measurement-sdl-pso1-4"
+      },
+      "argv": [
+        "D:/source/GraphicsSDK/out/phase3-current-draw-inputs-20261027/consumers/pso/Release/vulkan_pso.exe",
+        "sdl",
+        "pso1",
+        "high",
+        "5",
+        "30",
+        "0",
+        "NVIDIA GeForce GTX 1660 SUPER"
+      ],
+      "pid": 39892,
+      "started": 5880.296,
+      "finished": 5880.734,
+      "returncode": 0,
+      "overrides": {
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+        "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty",
+        "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-current-pso-20261027\\empty"
+      },
+      "stdout": "commands/027-measurement-sdl-pso1-4.stdout",
+      "stdout_sha256": "cf4f1770150aec9302f76438352c459c6a0d391c35ff3427a9214a44ffc77529",
+      "stderr": "commands/027-measurement-sdl-pso1-4.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": {
+        "schema_version": 1,
+        "sdk": "sdl",
+        "api": "vulkan",
+        "category": "cpu_api",
+        "contract": "vulkan_pipeline_create_public_release_use_checked_v1",
+        "probe": false,
+        "scenario": "pso1",
+        "preference": "high",
+        "configuration": "Release",
+        "validation": false,
+        "source_fingerprint": "55798297f03fb380dd48d96260c1fe2160abc7037dd643a950c2250cb24a29ea",
+        "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+        "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+        "shader_header_sha256": "5da606968101ff8eb75b967f5eb215640664d679c9462a0c291406d23ac266b7",
+        "requested_instance_api_version": 4198400,
+        "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+        "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+        "device_luid": "287e010000000000",
+        "native_vendor_id": 4318,
+        "native_device_id": 8644,
+        "native_driver_version": 2604679168,
+        "native_api_version": 4211045,
+        "identity_attribution": "unique_exact_name_to_native_vulkan_and_dxgi_not_SDL_native_handle",
+        "environment": {
+          "cpu": "Intel(R) Core(TM) i7-14700K",
+          "ram_bytes": 68473667584,
+          "os": "Windows 10.0.26220",
+          "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+          "vendor_id": 4318,
+          "device_id": 8644,
+          "luid": "0:97832",
+          "driver": "32.0.16.2101",
+          "driver_query_available": true,
+          "software_renderer": false,
+          "compiler": "MSVC 194435228",
+          "pointer_bits": 64
+        },
+        "loaded_validation_layer": "",
+        "warmup": 5,
+        "sample_count": 30,
+        "width": 65,
+        "height": 37,
+        "texel_bytes": 4,
+        "pipelines_per_iteration": 1,
+        "created_pipelines": 35,
+        "released_pipeline_handles": 35,
+        "used_pipeline_regions": 35,
+        "verified_images": 35,
+        "verified_bytes": 336700,
+        "readback_verified": true,
+        "includes_shader_object_create_release": true,
+        "GPU_use_in_timing": false,
+        "GPU_memory_reclamation_verified": false,
+        "gpu_ms": null,
+        "cache_state": "uncontrolled_driver_cache_repeated_public_creation",
+        "columns": [
+          "create_ms",
+          "public_release_ms"
+        ],
+        "samples_ms": [
+          [
+            0.0692,
+            0.0001
+          ],
+          [
+            0.0696,
+            0.0001
+          ],
+          [
+            0.0669,
+            0.0001
+          ],
+          [
+            0.0646,
+            0.0001
+          ],
+          [
+            0.0828,
+            0.0001
+          ],
+          [
+            0.0824,
+            0.0002
+          ],
+          [
+            0.0865,
+            0.0001
+          ],
+          [
+            0.0849,
+            0.0002
+          ],
+          [
+            0.0788,
+            0.0001
+          ],
+          [
+            0.0836,
+            0.0001
+          ],
+          [
+            0.0751,
+            0.0001
+          ],
+          [
+            0.0681,
+            0.0001
+          ],
+          [
+            0.0674,
+            0.0001
+          ],
+          [
+            0.0653,
+            0.0001
+          ],
+          [
+            0.0829,
+            0.0001
+          ],
+          [
+            0.0768,
+            0.0001
+          ],
+          [
+            0.0731,
+            0
+          ],
+          [
+            0.0936,
+            0.0001
+          ],
+          [
+            0.1041,
+            0.0001
+          ],
+          [
+            0.074,
+            0.0001
+          ],
+          [
+            0.0857,
+            0.0001
+          ],
+          [
+            0.0782,
+            0.0001
+          ],
+          [
+            0.0714,
+            0.0001
+          ],
+          [
+            0.0909,
+            0.0002
+          ],
+          [
+            0.0902,
+            0.0001
+          ],
+          [
+            0.0817,
+            0.0001
+          ],
+          [
+            0.0777,
+            0.0001
+          ],
+          [
+            0.0774,
+            0.0001
+          ],
+          [
+            0.0842,
+            0.0001
+          ],
+          [
+            0.0843,
+            0.0001
+          ]
+        ]
+      }
+    }
+  ],
+  "groups": [
+    {
+      "scenario": "pso1",
+      "sdk": "graphicssdk",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": 1,
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.1093,
+          "p95_ms": 0.16741499999999995,
+          "p99_ms": 0.190651,
+          "min_ms": 0.0908,
+          "max_ms": 0.2447,
+          "MAD_ms": 0.0059999999999999915,
+          "process_medians_ms": [
+            0.12204999999999999,
+            0.1062,
+            0.1134,
+            0.09855,
+            0.10835
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0043,
+          "p95_ms": 0.006384999999999988,
+          "p99_ms": 0.023329999999999972,
+          "min_ms": 0.0028,
+          "max_ms": 0.0263,
+          "MAD_ms": 0.0004999999999999998,
+          "process_medians_ms": [
+            0.0049,
+            0.00405,
+            0.0046,
+            0.0033,
+            0.00365
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "pso1",
+      "sdk": "sdl",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": 1,
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.08135,
+          "p95_ms": 0.11059999999999989,
+          "p99_ms": 0.1306959999999999,
+          "min_ms": 0.0591,
+          "max_ms": 0.1368,
+          "MAD_ms": 0.0050000000000000044,
+          "process_medians_ms": [
+            0.08055,
+            0.08485,
+            0.07815,
+            0.07669999999999999,
+            0.0785
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0001,
+          "p95_ms": 0.0002,
+          "p99_ms": 0.0003509999999999991,
+          "min_ms": 0,
+          "max_ms": 0.0004,
+          "MAD_ms": 0.0,
+          "process_medians_ms": [
+            0.00015000000000000001,
+            0.0001,
+            0.0001,
+            0.0001,
+            0.0001
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "pso8",
+      "sdk": "graphicssdk",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": 8,
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.24015,
+          "p95_ms": 0.375765,
+          "p99_ms": 0.4225179999999998,
+          "min_ms": 0.2002,
+          "max_ms": 0.4906,
+          "MAD_ms": 0.00895,
+          "process_medians_ms": [
+            0.23825000000000002,
+            0.243,
+            0.23995,
+            0.24305,
+            0.2283
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0083,
+          "p95_ms": 0.011664999999999995,
+          "p99_ms": 0.017934999999999923,
+          "min_ms": 0.0061,
+          "max_ms": 0.03,
+          "MAD_ms": 0.0008000000000000004,
+          "process_medians_ms": [
+            0.00855,
+            0.0083,
+            0.0079,
+            0.0087,
+            0.0079
+          ],
+          "samples_removed": 0
+        }
+      }
+    },
+    {
+      "scenario": "pso8",
+      "sdk": "sdl",
+      "shape": [
+        65,
+        37,
+        4
+      ],
+      "work": 8,
+      "category": "cpu_api",
+      "statistics": {
+        "create_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.13005,
+          "p95_ms": 0.20498999999999998,
+          "p99_ms": 0.27511099999999966,
+          "min_ms": 0.109,
+          "max_ms": 0.302,
+          "MAD_ms": 0.0075,
+          "process_medians_ms": [
+            0.15689999999999998,
+            0.1269,
+            0.13040000000000002,
+            0.13040000000000002,
+            0.12885
+          ],
+          "samples_removed": 0
+        },
+        "public_release_ms": {
+          "processes": 5,
+          "samples": 150,
+          "p50_ms": 0.0003,
+          "p95_ms": 0.0004,
+          "p99_ms": 0.0004,
+          "min_ms": 0.0001,
+          "max_ms": 0.0005,
+          "MAD_ms": 0.0,
+          "process_medians_ms": [
+            0.0003,
+            0.0002,
+            0.0003,
+            0.0003,
+            0.00025
+          ],
+          "samples_removed": 0
+        }
+      }
+    }
+  ],
+  "measurement_samples": 600,
+  "verified_images": 716,
+  "verified_bytes": 6887920,
+  "environment_sha256": "ab39b3e1d0dccc58cec45739b6f001070fad108b51c498557ee9de3f0e0a45c2",
+  "inputs_unchanged": true
+}
