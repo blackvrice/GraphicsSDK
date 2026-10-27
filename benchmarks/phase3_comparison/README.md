@@ -132,3 +132,23 @@ descriptor preparation, GPU use, fences/idle waits and readback are untimed.
 Public release time does not prove physical reclamation or native pipeline
 counts. Driver caches remain uncontrolled; cold/hit/miss labels and GPU-time
 inferences are rejected. See `docs/PHASE3_PSO_SCOPE.md` for acceptance boundaries.
+
+## Full resource creation/public release campaign (P3-BEN-06)
+
+`allocation.json` freezes four cases: buffer1 / buffer1000 (4,096 bytes each),
+texture1 / texture1000 (65x37 RGBA8). Eight required validation processes and four
+layer/target controls precede forty timing processes. Five repetitions with
+5 warmups + 30 retained paired intervals yield 1,200 pairs, 150 per case/SDK.
+Every created resource receives a changing payload and full GPU copy/readback.
+
+```powershell
+python tools/run_current_vulkan_allocation.py run --qualification out/current-qualification --runtime-receipt out/vulkan-validation-runtime/receipt.json --output out/current-allocation-new
+python tools/run_current_vulkan_allocation.py check --output out/current-allocation-new --live
+```
+
+Only public resource creation and public-handle release are timed. Staging
+allocation/release, payload setup/write, GPU copies, fences/idle waits and full
+readback are excluded. Keep the SDK general-buffer/SDL vertex-buffer usage
+difference explicit. Public release does not prove native allocation counts or
+physical reclamation; allocator/cache state is unclassified. See
+`docs/PHASE3_ALLOCATION_SCOPE.md` for acceptance boundaries.

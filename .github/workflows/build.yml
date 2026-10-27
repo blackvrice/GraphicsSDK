@@ -26,6 +26,9 @@ jobs:
       - name: Independently replay saved current PSO evidence
         if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-current-pso/verify.py') != '' }}
         run: python benchmarks/reports/validation/2026-10-27-phase3-current-pso/verify.py
+      - name: Independently replay saved current resource evidence
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-current-allocation/verify.py') != '' }}
+        run: python benchmarks/reports/validation/2026-10-27-phase3-current-allocation/verify.py
       - name: Preserve complete Python contracts and checkout identities
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,6 +52,9 @@ jobs:
       - name: Independently replay saved current PSO evidence
         if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-current-pso/verify.py') != '' }}
         run: python3 benchmarks/reports/validation/2026-10-27-phase3-current-pso/verify.py
+      - name: Independently replay saved current resource evidence
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-current-allocation/verify.py') != '' }}
+        run: python3 benchmarks/reports/validation/2026-10-27-phase3-current-allocation/verify.py
       - name: Preserve complete Python contracts and checkout identities
         if: always()
         uses: actions/upload-artifact@v4
