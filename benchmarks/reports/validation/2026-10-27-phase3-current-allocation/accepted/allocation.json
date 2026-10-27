@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "task": "P3-BEN-06",
+  "prerequisite": "P3-BEN-02",
+  "scope": "windows-nvidia-vulkan-current-allocation-CPU",
+  "profile": "allocation",
+  "scenarios": [
+    "buffer1",
+    "buffer1000",
+    "texture1",
+    "texture1000"
+  ],
+  "work": {
+    "buffer1": 1,
+    "buffer1000": 1000,
+    "texture1": 1,
+    "texture1000": 1000
+  },
+  "validation": {
+    "warmup": 1,
+    "samples": 3,
+    "required_core_and_sync": true
+  },
+  "performance": {
+    "warmup": 5,
+    "samples": 30,
+    "repetitions": 5,
+    "seed": 20261027,
+    "order": "seeded_scenario_blocks_alternating_adjacent_SDK_pairs_each_repetition"
+  },
+  "controls": [
+    "missing-layer",
+    "wrong-target"
+  ],
+  "timing": {
+    "category": "cpu_api",
+    "columns": [
+      "create_ms",
+      "public_release_ms"
+    ],
+    "includes": [
+      "public_device_resource_create",
+      "public_resource_handle_release"
+    ],
+    "excludes": [
+      "descriptor_payload_setup",
+      "staging_resource_create_release",
+      "payload_write",
+      "GPU_copy_use",
+      "completed_fence_and_idle",
+      "full_changing_readback",
+      "teardown",
+      "warmup",
+      "validation"
+    ],
+    "GPU_timestamp_measurement": false
+  },
+  "statistics": {
+    "quantile": "linear_interpolation_at_(N-1)*q",
+    "retain_all_raw_samples": true,
+    "samples_removed": 0,
+    "process_medians": true
+  },
+  "historical_timings_reused": false,
+  "overall_SDK_ranking": false,
+  "SDL_native_handle_verified": false,
+  "completed_workload_tasks": [
+    "P3-BEN-06"
+  ],
+  "next_gate": "P3-BEN-07",
+  "GPU_memory_reclamation_verified": false,
+  "resources": {
+    "buffer_bytes": 4096,
+    "texture_shape": [
+      65,
+      37,
+      4
+    ],
+    "reference": "full_payload_changes_with_iteration_resource_and_byte",
+    "usage_policy": {
+      "buffer": {
+        "graphicssdk": "sdk_general_device_buffer",
+        "sdl": "sdl_vertex_buffer"
+      },
+      "texture": "sampled_rgba8_2d"
+    }
+  },
+  "allocation_policy": "public_device_resource_default_policy",
+  "native_allocation_count_verified": false,
+  "allocator_cache_state_known": false
+}

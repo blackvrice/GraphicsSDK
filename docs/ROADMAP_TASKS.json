@@ -1496,14 +1496,21 @@
       "phase": 3,
       "group": "P3-BEN",
       "title": "현재 제품/SDL 자원 생성 재측정",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-BEN-02"
       ],
       "work": "동일 buffer/texture 크기·개수와 공개 해제 범위를 맞춘다.",
       "done_when": "전체 자원 readback·현재 제품의 반복 생성/해제 측정. 물리 회수 주장 제외.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_CURRENT_ALLOCATION_REPORT.md",
+        "docs/PHASE3_ALLOCATION_SCOPE.md",
+        "benchmarks/phase3_comparison/allocation.json",
+        "tools/run_current_vulkan_allocation.py",
+        "benchmarks/reports/2026-10-27-phase3-current-allocation/summary.json",
+        "benchmarks/reports/validation/2026-10-27-phase3-current-allocation/accepted/receipt.json"
+      ],
       "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
     },
     {
