@@ -1219,15 +1219,18 @@
       "phase": 3,
       "group": "P3-WSI",
       "title": "Linux 출력 자동 참조·validation",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-WSI-06",
         "P3-LNX-11"
       ],
-      "work": "다중 창·홀수 크기·padding·vsync와 출력 자원 수명 회귀.",
-      "done_when": "전체 이미지 참조 및 core/sync validation 오류 0, 미지원 조합 명시.",
-      "evidence": [],
+      "work": "같은 설치 Core에서 present·lifetime·resize·events·새 다중 창 소비자를 통합했다. 한 device에서 두 창을 동시 acquire하고 독립 resize/퇴역·서로 다른 전체 이미지 참조를 검증한다. private Openbox 시작 완료·생존 확인과 정규화한 실제 계층 로드 경로 판정을 추가했다.",
+      "done_when": "실제 XCB/software ICD 일반·고정 core/sync validation의 다섯 suite 모두 성공. 구성마다 전체 참조 218개·native present 202회와 완료 wait, 새 두 창 matrix의 102개 이미지·24개 거부·모든 native 자원 회수 확인. 별도 core VUID 32개·sync hazard 1개·sync 비활성 비교·counter callback 1025개 검출, 잘못된 GPU 제출 0. Python 736 통과. 초기 WM 대기·계층 경로 판정 실패 원본 보존. 물리 GPU·사람의 Linux 표시·자연 driver 소실과 구분.",
+      "evidence": [
+        "docs/PHASE3_LINUX_XCB_MATRIX_REPORT.md",
+        "benchmarks/reports/2026-10-27-phase3-linux-xcb-matrix/summary.json"
+      ],
       "requires": "선택한 Linux window system·GPU·표시 환경"
     },
     {

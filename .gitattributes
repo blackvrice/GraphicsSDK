@@ -446,3 +446,8 @@
 /tools/run_linux_xcb_campaign.py text eol=lf
 /tests/test_linux_xcb_matrix.py text eol=lf
 /.github/workflows/linux-xcb-matrix.yml text eol=lf
+
+# Preserve integrated output matrix and startup-failure evidence exactly.
+/benchmarks/reports/2026-10-27-phase3-linux-xcb-matrix/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/validation/2026-10-27-phase3-linux-xcb-matrix/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+/benchmarks/reports/sources/linux-xcb-matrix-*.zip -text

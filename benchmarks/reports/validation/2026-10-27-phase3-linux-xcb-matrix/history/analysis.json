@@ -1,0 +1,41 @@
+{
+  "accepted": false,
+  "SDK_product_changed": false,
+  "initial_symptom": "WM readiness property present, but no MapNotify or NormalState within native deadline; diagnostic mapped=0 WM_STATE=0 managed=1 connection_error=0 events=2",
+  "limit": "Initial logs did not record WM exit status; do not assert a driver fault or identify an Openbox internal root cause",
+  "correction": "Wait for the documented Openbox --startup acknowledgement and check WM liveness before and after native clients; finish independent suites; normalize actual LD_DEBUG /./ loader paths while retaining original failed campaign receipts",
+  "artifacts": [
+    {
+      "path": "history/first-normal-artifact.zip",
+      "artifact_id": 12669570852,
+      "run_id": 40360703097,
+      "sha256": "369a4e1306c29f1d998c416b184f1c3b5ba17a5ac01fc2d234f69ad83d569fb9",
+      "extracted": "history/first-normal",
+      "expected_failure": "WM-deadline"
+    },
+    {
+      "path": "history/first-validation-artifact.zip",
+      "artifact_id": 12668122896,
+      "run_id": 40360703097,
+      "sha256": "3a58fbeda2fc8efe80534d0aa00353ea6c6c78ef2bdedb30b92542e10bb91430",
+      "extracted": "history/first-validation",
+      "expected_failure": "WM-deadline"
+    },
+    {
+      "path": "history/diagnostic-normal-artifact.zip",
+      "artifact_id": 12669935869,
+      "run_id": 40363179673,
+      "sha256": "b14291bf9fc4f745a327b98e83aa95b603f383532bc7e4070941c901754759af",
+      "extracted": "history/diagnostic-normal",
+      "expected_failure": "WM-deadline"
+    },
+    {
+      "path": "history/startup-validation-artifact.zip",
+      "artifact_id": 12670316932,
+      "run_id": 40364252212,
+      "sha256": "2e21293a19ca9911aaa96a8078e2776ada3b0968a06dde64e76c71420dbb07b6",
+      "extracted": "history/startup-validation",
+      "expected_failure": "control-load-text"
+    }
+  ]
+}

@@ -102,7 +102,12 @@ The [installed-SDK example](../examples/xcb_presentation/README.md) owns its eve
 loop and pauses on unmap/iconify; WM_DELETE drains before window destruction.
 Private Xvfb/Openbox tests exercise real WM/events/disconnection and separately
 controlled Vulkan loss statuses. They do not accept human display, natural driver
-loss, other window managers or the remaining WSI-07 integrated matrix.
+loss or other window managers. The [integrated WSI-07 matrix](PHASE3_LINUX_XCB_MATRIX_REPORT.md)
+runs all five consumers against the same installed Core in normal and pinned
+core/sync validation modes, including two simultaneously acquired windows,
+independent resize/retirement, full references and isolated detection controls.
+Private WM startup uses an explicit acknowledgement and liveness checks. Human
+Linux display acceptance remains WSI-08.
 
 ## Upload CPU diagnostics
 

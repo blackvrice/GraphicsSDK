@@ -127,3 +127,7 @@ Python cache를 source ZIP/저장소에 배포하지 않는다.
 
 수정 전 창 검사 누락은 source 분석이다. 수정 전 native 실패를 재실행한 결과로 바꾸지 않는다.
 기존 WSI-05 결과와 fingerprint는 당시 소스로 유지한다. 이 작업은 `P3-WSI-06`만 완료 처리한다.
+
+후속 [WSI-07 통합 검증](PHASE3_LINUX_XCB_MATRIX_REPORT.md)은 같은 SDK 소스에서 다섯 소비자와
+다중 창을 실행하고, private WM 시작 완료 확인을 보강했다. 이 보고서의 당시 원본·source
+identity는 유지하며 이후 harness 실행과 초기 실패 원본은 후속 보고서에 별도로 보존한다.
