@@ -100,4 +100,6 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 
 [Linux 비교 probe 이식·software 준비 검증](PHASE3_LINUX_COMPARISON_PROBE_REPORT.md)은 native SDK/SDL probe 8개와 거부 확인 6개를 통과했다. P3-BEN-07의 실제 물리 GPU 수용은 환경 부재로 미완료이며, software 결과를 완료·성능 표본으로 합산하지 않는다. 수동 physical probe workflow만 준비했다.
 
+[Linux benchmark 4종 이식·software 준비 검증](PHASE3_LINUX_WORKLOAD_BUILD_REPORT.md)은 probe 8개·대표 validation smoke 8개·거부 확인 24개를 통과했다. P3-BEN-08은 선행 물리 GPU qualification 부재로 todo를 유지한다. 진단 시간값은 성능 표본으로 합산하지 않으며 전체 Linux 사례 수용도 별개다.
+
 `P3-SCP-01`의 완료는 이 지원표·필수/조건부 이유·후속 검사 연결의 완료다. `P3-SCP-02`, marker 구현, Linux 실행, 새 성능 측정이나 Phase 3 최종 수용을 대신 완료하지 않는다. 다음 자동 권장 작업은 로드맵의 선행 조건과 `next_order`로 결정한다.

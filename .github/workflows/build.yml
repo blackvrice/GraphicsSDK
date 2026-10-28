@@ -32,6 +32,9 @@ jobs:
       - name: Independently replay saved Linux software probe evidence
         if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-linux-comparison-probe/verify.py') != '' }}
         run: python benchmarks/reports/validation/2026-10-27-phase3-linux-comparison-probe/verify.py
+      - name: Independently replay saved Linux workload preparation evidence
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-10-28-phase3-linux-workloads/verify.py') != '' }}
+        run: python benchmarks/reports/validation/2026-10-28-phase3-linux-workloads/verify.py
       - name: Preserve complete Python contracts and checkout identities
         if: always()
         uses: actions/upload-artifact@v4
@@ -61,6 +64,9 @@ jobs:
       - name: Independently replay saved Linux software probe evidence
         if: ${{ hashFiles('benchmarks/reports/validation/2026-10-27-phase3-linux-comparison-probe/verify.py') != '' }}
         run: python3 benchmarks/reports/validation/2026-10-27-phase3-linux-comparison-probe/verify.py
+      - name: Independently replay saved Linux workload preparation evidence
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-10-28-phase3-linux-workloads/verify.py') != '' }}
+        run: python3 benchmarks/reports/validation/2026-10-28-phase3-linux-workloads/verify.py
       - name: Preserve complete Python contracts and checkout identities
         if: always()
         uses: actions/upload-artifact@v4
