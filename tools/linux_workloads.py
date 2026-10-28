@@ -94,6 +94,15 @@ def check(folder,live=False):
     r=read(folder/'receipt.json');require(r['task']=='P3-BEN-08' and r['status']=='completed' and r['inputs_unchanged'] is True,'Incomplete Linux workload build')
     require(sha(folder/'qualification/receipt.json')==r['qualification_sha256'] and read(folder/'qualification/receipt.json')==r['qualification'],'Qualification changed')
     q.check(folder/'qualification');validate_scope(r)
+    require((folder/'settings/vk_layer_settings.txt').read_bytes()==(folder/'qualification/settings/vk_layer_settings.txt').read_bytes(),'Required synchronization settings changed')
+    prefix=next(x['path'][:-len('tools/linux_workloads.py')] for x in r['source_inputs'] if x['path'].endswith('/tools/linux_workloads.py'))
+    inputs={x['path'][len(prefix):]:x['sha256'] for x in r['source_inputs']}
+    for profile in port.PROFILES:
+        generated=folder/'generated'/(profile+'.cpp');manifest=read(folder/'generated'/(profile+'.json'))
+        require(manifest['profile']==profile and manifest['generated_sha256']==sha(generated) and manifest['source_fingerprint']==r['profile_fingerprints'][profile]
+                and manifest['workload_bodies_changed'] is False and len(manifest['adaptations'])==5,'Generated adaptation changed')
+        require(all(x['path'] in inputs and inputs[x['path']]==x['sha256'] for x in manifest['inputs'])
+                and hashlib.sha256(''.join(x['path']+'|'+x['sha256']+'\n' for x in manifest['inputs']).encode()).hexdigest()==r['profile_fingerprints'][profile],'Generated source provenance changed')
     expected=schedule();require(len(r['runs'])==len(expected),'Missing/extra native process');last=0;images=buffers=verified=0
     for row,job in zip(r['runs'],expected):
         require(row['job']==job and row['argv']==arguments(job,r) and type(row['pid']) is int and row['pid']>0 and last<=row['started']<=row['finished'],'Native command/order/process changed');last=row['finished']
@@ -138,7 +147,7 @@ def run(a):
     for p in port.PROFILES:
         for suffix in ('.cpp','.json'):
             shutil.copyfile(build/(p+suffix),out/'generated'/(p+suffix));require(sha(build/(p+suffix))==sha(out/'generated'/(p+suffix)),'Generated source copy differs')
-    frozen=before+[record(build/n) for n in ('CMakeCache.txt','compile_commands.json','build.ninja')]+[record(build/(p+suffix)) for p in port.PROFILES for suffix in ('.cpp','.json')]+list(binaries.values())
+    frozen=before+[record(out/'settings/vk_layer_settings.txt')]+[record(build/n) for n in ('CMakeCache.txt','compile_commands.json','build.ninja')]+[record(build/(p+suffix)) for p in port.PROFILES for suffix in ('.cpp','.json')]+[record(out/'generated'/(p+suffix)) for p in port.PROFILES for suffix in ('.cpp','.json')]+list(binaries.values())
     r=dict(task='P3-BEN-08',status='running',source_commit=q.git(ROOT,'rev-parse','HEAD'),qualification_evidence=str(qualification),qualification_sha256=sha(out/'qualification/receipt.json'),qualification=prior,output_directory=str(out),
         binaries=binaries,profile_fingerprints={p:port.fingerprint(p) for p in port.PROFILES},shader_header_sha256=sha(ROOT/'tests/fixtures/SpirvFixtures.hpp'),frozen_inputs=frozen,source_inputs=before,
         P3_BEN_08_completed=False,physical_GPU_accepted=False,performance_accepted=False,all_workload_scenarios_accepted=False,performance_samples=0,validation_timings_excluded=True,verified_images=0,verified_buffers=0,verified_bytes=0,runs=[])
