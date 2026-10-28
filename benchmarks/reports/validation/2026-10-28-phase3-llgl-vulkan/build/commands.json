@@ -1,0 +1,60 @@
+[
+  {
+    "name": "loader-exports",
+    "argv": [
+      "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\dumpbin.exe",
+      "/nologo",
+      "/exports",
+      "C:\\WINDOWS\\System32\\vulkan-1.dll"
+    ],
+    "returncode": 0,
+    "seconds": 0.125
+  },
+  {
+    "name": "loader-import",
+    "argv": [
+      "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\lib.exe",
+      "/nologo",
+      "/machine:x64",
+      "/def:D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\vulkan-1.def",
+      "/out:D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\vulkan-1.lib"
+    ],
+    "returncode": 0,
+    "seconds": 0.09400000000005093
+  },
+  {
+    "name": "configure",
+    "argv": [
+      "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+      "-S",
+      "D:\\source\\GraphicsSDK\\benchmarks\\llgl_vulkan_probe",
+      "-B",
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\build",
+      "-G",
+      "Visual Studio 17 2022",
+      "-A",
+      "x64",
+      "-DCMAKE_CONFIGURATION_TYPES=Release",
+      "-DVulkan_INCLUDE_DIR=D:\\source\\GraphicsSDK\\.deps\\Vulkan-Headers\\include",
+      "-DVulkan_LIBRARY=D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\vulkan-1.lib"
+    ],
+    "returncode": 0,
+    "seconds": 110.57799999999952
+  },
+  {
+    "name": "build",
+    "argv": [
+      "C:\\Users\\black\\AppData\\Local\\Programs\\CLion\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+      "--build",
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\build",
+      "--config",
+      "Release",
+      "--target",
+      "llgl_vulkan_probe",
+      "--parallel",
+      "1"
+    ],
+    "returncode": 0,
+    "seconds": 217.59400000000005
+  }
+]

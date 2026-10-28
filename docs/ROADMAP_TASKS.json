@@ -1601,14 +1601,18 @@
       "phase": 3,
       "group": "P3-CMP",
       "title": "LLGL Vulkan build·장치 probe",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-CMP-01"
       ],
       "work": "고정 원본으로 독립 Vulkan adapter를 구성한다.",
       "done_when": "실제 backend/GPU 식별, 입력 감사·최소 참조 실행.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_LLGL_VULKAN_PROBE_REPORT.md",
+        "benchmarks/reports/validation/2026-10-28-phase3-llgl-vulkan/summary.json",
+        "benchmarks/reports/validation/2026-10-28-phase3-llgl-vulkan/verify.py"
+      ],
       "requires": "LLGL Vulkan 지원 native 환경"
     },
     {

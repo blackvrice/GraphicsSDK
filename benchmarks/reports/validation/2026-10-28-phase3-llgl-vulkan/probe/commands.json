@@ -1,0 +1,69 @@
+[
+  {
+    "name": "plain-identity",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\build\\Release\\llgl_vulkan_probe.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "plain",
+      "identity"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.5780000000004293,
+    "overrides": {}
+  },
+  {
+    "name": "plain-smoke",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\build\\Release\\llgl_vulkan_probe.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "plain",
+      "smoke"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.4070000000001528,
+    "overrides": {}
+  },
+  {
+    "name": "validation-smoke",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\build\\Release\\llgl_vulkan_probe.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "smoke"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 0.5630000000001019,
+    "overrides": {}
+  },
+  {
+    "name": "wrong-target",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\build\\Release\\llgl_vulkan_probe.exe",
+      "NVIDIA GeForce GTX 1660 SUPER invalid target",
+      "plain",
+      "smoke"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.4070000000001528,
+    "overrides": {}
+  },
+  {
+    "name": "missing-layer",
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-vulkan-20261028-2\\build\\Release\\llgl_vulkan_probe.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "smoke"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.07799999999951979,
+    "overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-llgl-probe-20261028-final\\empty"
+    }
+  }
+]

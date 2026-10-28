@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C427FD08-C49E-3385-B96D-50AE4A7011D0}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>LLGL_Vulkan</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\phase3-llgl-vulkan-20261028-2\build\llgl\build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LLGL_Vulkan.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LLGL_Vulkan</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DisableSpecificWarnings>4250;4251;4290;4103</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;CMAKE_INTDIR="Release";LLGL_Vulkan_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;CMAKE_INTDIR=\"Release\";LLGL_Vulkan_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;D:\source\GraphicsSDK\.deps\Vulkan-Headers\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\build\Release\LLGL.lib;D:\source\GraphicsSDK\out\phase3-llgl-vulkan-20261028-2\vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/phase3-llgl-vulkan-20261028-2/build/llgl/build/Release/LLGL_Vulkan.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/phase3-llgl-vulkan-20261028-2/build/llgl/build/Release/LLGL_Vulkan.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/source/GraphicsSDK/.deps/LLGL/sources/Renderer/Vulkan/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/benchmarks/llgl_vulkan_probe -BD:/source/GraphicsSDK/out/phase3-llgl-vulkan-20261028-2/build --check-stamp-file D:/source/GraphicsSDK/out/phase3-llgl-vulkan-20261028-2/build/llgl/sources/Renderer/Vulkan/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\FindVulkan.cmake;D:\source\GraphicsSDK\out\phase3-llgl-vulkan-20261028-2\build\CMakeFiles\cmake.verify_globs;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\phase3-llgl-vulkan-20261028-2\build\llgl\sources\Renderer\Vulkan\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKCore.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKCore.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKDevice.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKDevice.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKInitializers.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKInitializers.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKModuleInterface.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKPhysicalDevice.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKPhysicalDevice.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKPtr.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKRenderSystem.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKRenderSystem.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKStaticLimits.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKSwapChain.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKSwapChain.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKTypes.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\VKTypes.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Vulkan.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKBufferArray.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKBufferArray.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKDeviceBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKDeviceBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKStagingBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKStagingBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKStagingBufferPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Buffer\VKStagingBufferPool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandBufferRegistry.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandBufferRegistry.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandBufferRing.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandBufferRing.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandContext.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandContext.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandQueue.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Command\VKCommandQueue.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Ext\VKExtensionLoader.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Ext\VKExtensionLoader.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Ext\VKExtensionRegistry.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Ext\VKExtensionRegistry.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Ext\VKExtensions.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Ext\VKExtensions.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Ext\VKExtensionsDecl.inl" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Memory\VKDeviceMemory.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Memory\VKDeviceMemory.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Memory\VKDeviceMemoryManager.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Memory\VKDeviceMemoryManager.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Memory\VKDeviceMemoryRegion.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Memory\VKDeviceMemoryRegion.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKComputePSO.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKComputePSO.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKDescriptorCache.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKDescriptorCache.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKDescriptorSetLayout.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKDescriptorSetLayout.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKDescriptorSetWriter.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKDescriptorSetWriter.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKFence.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKFence.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKGraphicsPSO.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKGraphicsPSO.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineBarrier.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineBarrier.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineCache.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineCache.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineLayout.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineLayout.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineLayoutPermutation.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineLayoutPermutation.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineLayoutPermutationPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineLayoutPermutationPool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineState.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPipelineState.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPoolSizeAccumulator.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPoolSizeAccumulator.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPredicateQueryHeap.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKPredicateQueryHeap.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKQueryHeap.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKQueryHeap.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKRenderPass.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKRenderPass.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKResourceHeap.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKResourceHeap.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKSanitizeBindingSlotContext.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKSanitizeBindingSlotContext.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKStagingDescriptorPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKStagingDescriptorPool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKStagingDescriptorSetPool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKStagingDescriptorSetPool.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\RenderState\VKVertexInputLayout.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Shader\VKShader.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Shader\VKShader.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Shader\VKShaderBindingLayout.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Shader\VKShaderBindingLayout.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Shader\VKShaderModulePool.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Shader\VKShaderModulePool.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKColorBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKColorBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKDepthStencilBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKDepthStencilBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKDeviceImage.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKDeviceImage.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKImageUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKImageUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKRenderBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKRenderBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKRenderTarget.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKRenderTarget.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKSampler.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKSampler.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKTexture.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Vulkan\Texture\VKTexture.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Vulkan\NativeHandle.h" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\source\GraphicsSDK\out\phase3-llgl-vulkan-20261028-2\build\ZERO_CHECK.vcxproj">
+      <Project>{8B5A6B37-2043-33C9-9495-C45F6CCD9B0B}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\source\GraphicsSDK\out\phase3-llgl-vulkan-20261028-2\build\llgl\LLGL.vcxproj">
+      <Project>{0B35C391-0C9C-39CD-9A33-B7642CD2DDCE}</Project>
+      <Name>LLGL</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
