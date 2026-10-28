@@ -1,0 +1,26 @@
+--- a/sources/Renderer/Vulkan/Command/VKCommandContext.cpp
++++ b/sources/Renderer/Vulkan/Command/VKCommandContext.cpp
+@@ -138,6 +138,11 @@
+             srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+             break;
+ 
++        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
++            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
++            srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
++            break;
++
+         case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+             barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+             srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+@@ -151,6 +156,11 @@
+     {
+         case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
++            dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
++            break;
++
++        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
++            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+             dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+             break;
+ 

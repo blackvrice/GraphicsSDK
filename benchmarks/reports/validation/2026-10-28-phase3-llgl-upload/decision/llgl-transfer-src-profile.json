@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "profile_id": "llgl-fixed-pin-transfer-src-v1",
+  "status": "approved_for_explicit_comparisons",
+  "display_name": "LLGL 649c0cc + transfer-src patch v1",
+  "runtime_evidence_profile": "transfer-src-candidate",
+  "upstream_commit": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+  "unmodified_upstream": false,
+  "unmodified_upstream_correctness_accepted": false,
+  "performance_accepted": false,
+  "human_decision": "명시적 패치 프로필을 허용해 계속 진행",
+  "decision_date": "2026-10-28",
+  "changed_upstream_files": [
+    "sources/Renderer/Vulkan/Command/VKCommandContext.cpp"
+  ],
+  "added_lines": 10,
+  "verified_correctness": [
+    "upload"
+  ],
+  "correctness_tasks": {
+    "upload": "P3-CMP-03",
+    "draw": "P3-CMP-04",
+    "pso": "P3-CMP-05",
+    "allocation": "P3-CMP-06"
+  },
+  "pending_performance_tasks": [
+    "P3-CMP-07",
+    "P3-CMP-08",
+    "P3-CMP-09",
+    "P3-CMP-10"
+  ],
+  "GPU_timestamp_pending_task": "P3-BEN-09",
+  "evidence": {
+    "scope_decision": {
+      "path": "docs/PHASE3_LLGL_UPLOAD_SCOPE.md",
+      "sha256": "ba9ff7fa3eefbd0494873db236ffcc75f9aa580be49798ed3b1a79ee99b39726"
+    },
+    "patch": {
+      "path": "benchmarks/reports/validation/2026-10-28-phase3-llgl-upload/patch/transfer-src.patch",
+      "sha256": "86d0630d635e674b16eaf6da273600abc9e5d0824d6813ee2d03737a25ed993d"
+    },
+    "original_source": {
+      "path": "benchmarks/reports/validation/2026-10-28-phase3-llgl-upload/patch/VKCommandContext.original.cpp",
+      "sha256": "a78fa27a648d16f6cf84ab36df3fd30722089328714e0bc882f76c33e9928528"
+    },
+    "modified_source": {
+      "path": "benchmarks/reports/validation/2026-10-28-phase3-llgl-upload/patch/VKCommandContext.cpp",
+      "sha256": "dffe590bef67895aec86673085be59df45cd9291ad814d691530e6dff24b8d7d"
+    },
+    "upstream_failure": {
+      "path": "benchmarks/reports/validation/2026-10-28-phase3-llgl-upload/upstream/receipt.json",
+      "sha256": "34087fa210904ab683828b09ce96e185770f0fd71674f054dbabb1e44f48d5ff"
+    },
+    "candidate_correctness": {
+      "path": "benchmarks/reports/validation/2026-10-28-phase3-llgl-upload/candidate/receipt.json",
+      "sha256": "56905d89aaee7ab9d26fa3fd91b13561cc5f68ea16d5970f68fee293b108bc20"
+    }
+  }
+}

@@ -1,0 +1,403 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9E8C4369-39E2-35DF-AE9C-4921FAC7550E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>LLGL</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\phase3-llgl-transfer-src-candidate-final\build\llgl\build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LLGL.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LLGL</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DisableSpecificWarnings>4250;4251;4290;4103</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LLGL_BUILD_RENDERER_VULKAN;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;CMAKE_INTDIR="Release";LLGL_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LLGL_BUILD_RENDERER_VULKAN;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;UNICODE;NOMINMAX;_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR;CMAKE_INTDIR=\"Release\";LLGL_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\source\GraphicsSDK\.deps\LLGL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>D:/source/GraphicsSDK/out/phase3-llgl-transfer-src-candidate-final/build/llgl/build/Release/LLGL.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>D:/source/GraphicsSDK/out/phase3-llgl-transfer-src-candidate-final/build/llgl/build/Release/LLGL.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\source\GraphicsSDK\.deps\LLGL\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/source/GraphicsSDK/.deps/LLGL/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -SD:/source/GraphicsSDK/benchmarks/llgl_vulkan_upload/candidate -BD:/source/GraphicsSDK/out/phase3-llgl-transfer-src-candidate-final/build --check-stamp-file D:/source/GraphicsSDK/out/phase3-llgl-transfer-src-candidate-final/build/llgl/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCSharpCompiler.cmake.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCSharpInformation.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeCompilerIdDetection.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCSharpCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeDetermineCompilerId.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakePackageConfigHelpers.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCSharpCompiler.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CMakeTestCompilerCommon.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\CompilerId\VS-10.csproj.in;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\FindPython\Support.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\FindPython3.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\GNUInstallDirs.cmake;C:\Users\black\AppData\Local\Programs\CLion\bin\cmake\win\x64\share\cmake-4.3\Modules\WriteBasicConfigVersionFile.cmake;D:\source\GraphicsSDK\.deps\LLGL\cmake\Config.cmake.in;D:\source\GraphicsSDK\.deps\LLGL\cmake\FindGaussianLib.cmake;D:\source\GraphicsSDK\out\phase3-llgl-transfer-src-candidate-final\build\CMakeFiles\4.3.1\CMakeCSharpCompiler.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\source\GraphicsSDK\out\phase3-llgl-transfer-src-candidate-final\build\llgl\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Blob.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Buffer.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\BufferArray.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\BufferFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Canvas.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\CanvasFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\CommandBuffer.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\CommandBufferFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\CommandBufferTier1.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\CommandQueue.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Constants.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Deprecated.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Display.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\DisplayFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Export.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Fence.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Format.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\ForwardDecls.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\FragmentAttribute.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\ImageFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\IncludeHandler.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\IndirectArguments.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Interface.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\InterfaceID.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Key.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\LLGL.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Log.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\NonCopyable.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\PipelineCache.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\PipelineLayout.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\PipelineLayoutFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\PipelineState.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\PipelineStateFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\QueryHeap.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\QueryHeapFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderPass.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderPassFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderSystem.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderSystemChild.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderSystemFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderTarget.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderTargetFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RendererConfiguration.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderingDebugger.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\RenderingDebuggerFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Report.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Resource.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\ResourceFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\ResourceHeap.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\ResourceHeapFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Sampler.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\SamplerFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Shader.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\ShaderFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\ShaderReflection.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\StaticLimits.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Surface.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\SwapChain.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\SwapChainFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\SystemValue.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Tags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Texture.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\TextureFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Timer.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Trap.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\TypeInfo.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Types.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Version.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\VertexAttribute.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Window.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\WindowFlags.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Buffer.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Canvas.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Blitting.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Compute.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Debugging.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Drawing.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Encoding.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Extensions.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.InputAssembly.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.PipelineStates.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Queries.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.RenderPasses.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.Resources.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.StreamOutput.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.ViewportsAndScissors.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBuffer.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandBufferTier1.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\CommandQueue.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\PipelineLayout.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.Buffer.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.CommandBuffer.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.CommandQueue.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.Extensions.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.Fence.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.Internal.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.PipelineCache.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.PipelineLayout.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.PipelineState.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.QueryHeap.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.RenderPass.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.RenderTarget.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.ResourceHeap.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.Sampler.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.Shader.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.SwapChain.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.Texture.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderSystem.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\RenderTarget.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Sampler.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Shader.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\SwapChain.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Texture.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Backend\Window.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\AlignedArray.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\ArrayView.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\DynamicArray.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\DynamicVector.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\Memory.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\SmallVector.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\StringLiteral.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\StringView.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\Strings.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Container\UTF8String.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\Color.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\ColorRGB.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\ColorRGBA.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\ForRange.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\Image.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\Input.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\Parse.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\TypeNames.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\Utility.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Utils\VertexFormat.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Platform\NativeHandle.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Platform\Platform.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\include\LLGL\Platform\Win32\Win32NativeHandle.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Assertion.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\BCDecompressor.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\BCDecompressor.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Barrier.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Barrier.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Blob.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\ByteBufferIterator.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\CiStringView.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\CompilerExtensions.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\CoreUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Exception.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Exception.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\FieldIterator.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Float16Compressor.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Float16Compressor.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Image.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\ImageFlags.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\ImageUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\ImageUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Input.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Interface.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\LinearStringContainer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Log.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\MacroUtils.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\PackStructPop.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\PackStructPush.inl" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\PackedPermutation.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Parse.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\PrintfUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Report.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\ReportUtils.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\SparseForwardIterator.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\StringUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\StringUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Threading.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Threading.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\TypeNames.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Types.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\UTF8String.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Utility.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Vendor.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Vendor.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\Version.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Core\VersionMacros.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Canvas.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\ConsoleManip.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\ConsoleManip.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Debug.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Debug.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\DebugBreakOnError.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Display.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\DisplayFlags.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Module.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Path.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Path.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\PlatformUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\PlatformUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Window.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\MapKey.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\MapKey.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32ConsoleManip.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32ConsoleState.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32ConsoleState.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Debug.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Debug.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Display.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Display.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32LeanAndMean.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Module.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Module.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Path.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32RawInputRegistry.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32RawInputRegistry.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Timer.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Window.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32Window.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32WindowCallback.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32WindowCallback.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32WindowClass.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Platform\Win32\Win32WindowClass.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\BindingIterator.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\BindingIterator.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Buffer.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\BufferArray.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\BufferFlags.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\BufferUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\BufferUtils.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\BuildID.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\CheckedCast.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\CommandBufferFlags.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\ContainerTypes.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\DynamicModuleInterface.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Format.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\ModuleInterface.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\PipelineStateFlags.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\PipelineStateUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\PipelineStateUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\ProxyPipelineCache.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\ProxyPipelineCache.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\QueryHeap.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderPassUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderPassUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderSystem.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderSystemFlags.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderSystemModule.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderSystemModule.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderSystemRegistry.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderSystemRegistry.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderSystemUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderTarget.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderTargetUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderTargetUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\RenderingDebugger.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\ResourceUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\ResourceUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Sampler.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\SegmentedBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Shader.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\ShaderFlags.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\StaticAssertions.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\StaticAssertions.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\StaticModuleInterface.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\StaticModuleInterface.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\StaticStateBuffer.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\StaticStateBuffer.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\SwapChain.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\Texture.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\TextureFlags.cpp" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\TextureUtils.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\TextureUtils.h" />
+    <ClCompile Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\VertexAttribute.cpp" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\VideoAdapter.h" />
+    <ClInclude Include="D:\source\GraphicsSDK\.deps\LLGL\sources\Renderer\VirtualCommandBuffer.h" />
+    <Natvis Include="D:\source\GraphicsSDK\.deps\LLGL\LLGL.natvis">
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="D:\source\GraphicsSDK\out\phase3-llgl-transfer-src-candidate-final\build\ZERO_CHECK.vcxproj">
+      <Project>{9041D400-54E0-3F0F-9BEC-0FEE6E3F5EAD}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

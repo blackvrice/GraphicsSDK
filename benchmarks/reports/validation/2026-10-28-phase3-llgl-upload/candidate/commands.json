@@ -1,0 +1,217 @@
+[
+  {
+    "name": "odd-plain",
+    "scenario": "odd",
+    "validation": false,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "plain",
+      "odd"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.2029999999995198,
+    "overrides": {}
+  },
+  {
+    "name": "odd-validation",
+    "scenario": "odd",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "odd"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.0619999999998981,
+    "overrides": {}
+  },
+  {
+    "name": "upload1080-plain",
+    "scenario": "upload1080",
+    "validation": false,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "plain",
+      "upload1080"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.25,
+    "overrides": {}
+  },
+  {
+    "name": "upload1080-validation",
+    "scenario": "upload1080",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "upload1080"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.3439999999991414,
+    "overrides": {}
+  },
+  {
+    "name": "upload4k-plain",
+    "scenario": "upload4k",
+    "validation": false,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "plain",
+      "upload4k"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 2.2659999999996217,
+    "overrides": {}
+  },
+  {
+    "name": "upload4k-validation",
+    "scenario": "upload4k",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "upload4k"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 2.42200000000048,
+    "overrides": {}
+  },
+  {
+    "name": "upload4k16f-plain",
+    "scenario": "upload4k16f",
+    "validation": false,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "plain",
+      "upload4k16f"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 3.375,
+    "overrides": {}
+  },
+  {
+    "name": "upload4k16f-validation",
+    "scenario": "upload4k16f",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "upload4k16f"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 3.7180000000007567,
+    "overrides": {}
+  },
+  {
+    "name": "core-control",
+    "scenario": "core-control",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "core-control"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 43.85900000000038,
+    "overrides": {}
+  },
+  {
+    "name": "sync-control",
+    "scenario": "sync-control",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "sync-control"
+    ],
+    "returncode": 0,
+    "expected": 0,
+    "seconds": 1.139999999999418,
+    "overrides": {}
+  },
+  {
+    "name": "missing-layer",
+    "scenario": "odd",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "odd"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.11000000000058208,
+    "overrides": {
+      "VK_LAYER_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-correctness\\empty"
+    }
+  },
+  {
+    "name": "wrong-target",
+    "scenario": "odd",
+    "validation": false,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER invalid target",
+      "plain",
+      "odd"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 1.0159999999996217,
+    "overrides": {}
+  },
+  {
+    "name": "corrupt-readback",
+    "scenario": "corrupt-readback",
+    "validation": false,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "plain",
+      "corrupt-readback"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 1.0789999999997235,
+    "overrides": {}
+  },
+  {
+    "name": "sync-disabled",
+    "scenario": "sync-control",
+    "validation": true,
+    "argv": [
+      "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-consumer\\build\\Release\\llgl_vulkan_upload.exe",
+      "NVIDIA GeForce GTX 1660 SUPER",
+      "validation",
+      "sync-control"
+    ],
+    "returncode": 1,
+    "expected": 1,
+    "seconds": 0.9220000000004802,
+    "overrides": {
+      "VK_LAYER_SETTINGS_PATH": "D:\\source\\GraphicsSDK\\out\\phase3-llgl-upload-candidate-correctness\\sync-off",
+      "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "false"
+    }
+  }
+]
