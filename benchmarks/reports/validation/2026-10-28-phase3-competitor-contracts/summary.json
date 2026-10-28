@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "task": "P3-CMP-01",
+  "reviewed_on": "2026-10-28",
+  "base_commit": "62ed984d7167c38269554372b44e82fa85ce9a29",
+  "result": "source_contract_review_complete",
+  "primary_additional_comparator": "llgl",
+  "next_task": "P3-CMP-02",
+  "candidates": 8,
+  "reviewed_files": 30,
+  "clean_pinned_checkouts": 5,
+  "unchanged_scenarios": 13,
+  "full_python_tests": 908,
+  "new_regression_tests": 19,
+  "failures": 0,
+  "skips": 0,
+  "native_GPU_executed": false,
+  "performance_samples": 0,
+  "root_license_review_is_build_input_approval": false,
+  "automatic_requirement_reduction": false,
+  "task_change": "only P3-CMP-01 status/evidence; all other tasks, dependencies and gates unchanged",
+  "inputs": [
+    {
+      "path": "benchmarks/phase3_comparison/competitors/selection.json",
+      "sha256": "93fba2681646df01fd8de8a005eaf8f6fad1aaa185c38161d3fc3c57e9b312b5"
+    },
+    {
+      "path": "benchmarks/phase3_comparison/competitors/source-review.json",
+      "sha256": "5500da813442bd8f7ccf6b93f1e89997198f28dd3acab6448b8d392a451fd427"
+    },
+    {
+      "path": "tools/check_vulkan_competitors.py",
+      "sha256": "1379a40f033afc5ee8df64ae79e02bc925172fe73b4616388e9c51fa760e323d"
+    },
+    {
+      "path": "tests/test_vulkan_competitors.py",
+      "sha256": "d8a74300c5210c43292ae239d20eb9e9a50995478d10b0b7f79672cc3bd00034"
+    }
+  ],
+  "logs": [
+    {
+      "path": "unittest.log",
+      "sha256": "ee15e8618d7ea34c7886bec56a5f39ceb7a4c35d26fab6d6246db1fa6e6db941"
+    },
+    {
+      "path": "live-review.log",
+      "sha256": "f21c00dcbbfee46feee3399581ee06bd28f9184969bfa01947022d3d6b51fceb"
+    },
+    {
+      "path": "python-receipt.json",
+      "sha256": "b2ae4f0b8d8f4f5d4d04bc7aa4cf9744cbdd7ee66346b38fe64fc73a585f09fc"
+    },
+    {
+      "path": "python-unittest.log",
+      "sha256": "2823e59f08f7d06bc069d6c4c54b93cf6055b0eb0b3730c368602a471d94cf84"
+    }
+  ],
+  "checks": [
+    "complete unittest discovery without exclusions",
+    "live pinned source hashes and API locations",
+    "immutable candidate pins and four existing workload contracts"
+  ],
+  "offline_limit": "metadata/contract checks only, not independent source acquisition or runtime/GPU acceptance",
+  "complete_discovery_receipt": "python-receipt.json",
+  "complete_discovery_inputs_unchanged": true,
+  "receipt_provenance": "Base commit plus explicitly recorded staged source inputs/status; CI independently reruns the committed checkout"
+}

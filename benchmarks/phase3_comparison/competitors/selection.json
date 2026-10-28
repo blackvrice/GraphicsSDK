@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "task": "P3-CMP-01",
+  "primary_additional_comparator": "llgl",
+  "baseline_comparators": [
+    "graphicssdk",
+    "sdl"
+  ],
+  "next_task": "P3-CMP-02",
+  "policy": {
+    "source_review_only": true,
+    "native_build_accepted": false,
+    "correctness_accepted": false,
+    "performance_accepted": false,
+    "historical_timings_reused": false,
+    "overall_SDK_ranking": false,
+    "root_license_is_complete_build_audit": false,
+    "automatic_requirement_reduction": false,
+    "GPU_timestamp_pending_task": "P3-BEN-09"
+  },
+  "required_before_measurement": [
+    "fresh_pinned_build_input_license_audit",
+    "exact_backend_device_driver_queue_identity",
+    "actual_core_and_sync_layer_load",
+    "missing_layer_and_wrong_target_negative_controls",
+    "separate_validation_and_performance_processes",
+    "full_changing_readback_every_sample",
+    "public_API_only_workload_operations",
+    "no_native_Vulkan_workload_shortcuts",
+    "same_SPIRV_target_formats_geometry_and_payload",
+    "record_API_version_and_layout_differences",
+    "fresh_three_SDK_interleaved_runs_same_GPU_driver",
+    "retain_all_samples_and_process_medians",
+    "no_physical_memory_or_native_allocation_claim_from_public_release"
+  ],
+  "source_review_sha256": "5366e57383ac11a1c290b71b01228dd4eda0b1aa7128584cf08cb9e88c16325d",
+  "common_contract_semantic_sha256": "3986f065bdfac3cfcd8a0d21897a0448ca4e67037577092b63ef96d4e301daee",
+  "LLGL_build_requirements": {
+    "LLGL_BUILD_RENDERER_VULKAN": "ON",
+    "LLGL_VK_ENABLE_GPU_ASSISTED_VALIDATION": "OFF",
+    "LLGL_VK_ENABLE_SPIRV_REFLECT": "OFF",
+    "other_renderers": "OFF",
+    "Release": true,
+    "input_audit_task": "P3-CMP-02"
+  },
+  "candidates": {
+    "llgl": {
+      "repository": "LukasBanana/LLGL",
+      "commit": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+      "root_license": "BSD-3-Clause",
+      "selection": "selected_next",
+      "reason": "Native Vulkan physical-device/queue handles and explicit command/fence/resource APIs map to all four contracts. Existing CMP-02..10 roadmap selects LLGL.",
+      "workload_caveat": "Vulkan is experimental/opt-in. Required layers may be ignored if absent; verify actual load. GPU-assisted validation defaults ON; force OFF. Default internal suballocation is not native-allocation equivalence.",
+      "task_ids": [
+        "P3-CMP-02",
+        "P3-CMP-03",
+        "P3-CMP-04",
+        "P3-CMP-05",
+        "P3-CMP-06",
+        "P3-CMP-07",
+        "P3-CMP-08",
+        "P3-CMP-09",
+        "P3-CMP-10"
+      ],
+      "build_inputs_approved": false,
+      "evidence": [
+        "llgl-license",
+        "llgl-build",
+        "llgl-vulkan-build",
+        "llgl-native",
+        "llgl-native-implementation",
+        "llgl-config",
+        "llgl-resources",
+        "llgl-commands",
+        "llgl-command-implementation",
+        "llgl-queue"
+      ]
+    },
+    "sdl": {
+      "repository": "libsdl-org/SDL",
+      "commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+      "root_license": "Zlib",
+      "selection": "baseline",
+      "reason": "Existing baseline comparator; current Vulkan CPU contracts and separate validation protocol retained.",
+      "workload_caveat": "Public GPU timestamp gap remains required P3-BEN-09; native-handle attribution is not independently verified. Preserve existing per-profile API-version/layout/usage differences.",
+      "task_ids": [
+        "P3-BEN-01",
+        "P3-BEN-02",
+        "P3-BEN-03",
+        "P3-BEN-04",
+        "P3-BEN-05",
+        "P3-BEN-06",
+        "P3-BEN-07",
+        "P3-BEN-08",
+        "P3-BEN-09"
+      ],
+      "build_inputs_approved": false,
+      "evidence": [
+        "sdl-license",
+        "sdl-vulkan",
+        "sdl-API"
+      ]
+    },
+    "diligent_core": {
+      "repository": "DiligentGraphics/DiligentCore",
+      "commit": "4678e4393cd0194f3c56e5d6611221d46497cc95",
+      "root_license": "Apache-2.0",
+      "selection": "deferred_review",
+      "reason": "Real Vulkan Win32/Linux build branch and device/resource/PSO APIs confirmed. Additional comparison deferred to conditional CMP-11, not excluded.",
+      "workload_caveat": "Independently pinned Core implementation, not a claim that Engine parent submodule matches this Core pin. Need explicit transfer/fence/shader lifecycle and Vulkan dependency audit.",
+      "task_ids": [
+        "P3-CMP-11"
+      ],
+      "build_inputs_approved": false,
+      "evidence": [
+        "diligent_core-license",
+        "diligent-build",
+        "diligent-vulkan",
+        "diligent-resources"
+      ]
+    },
+    "bgfx": {
+      "repository": "bkaradzic/bgfx",
+      "commit": "d8d6acd94b64e01da3c4d1bc869df2dc2a8eb1ba",
+      "root_license": "BSD-2-Clause",
+      "selection": "deferred_review",
+      "reason": "Real Vulkan backend and Windows/Linux configuration confirmed. Additional comparison deferred to conditional CMP-12, not excluded.",
+      "workload_caveat": "Pinned public read(TextureRegion, data) completes at a future frame. Frame/render-thread scheduling and shader/program versus native-PSO semantics need a dedicated equivalence adapter.",
+      "task_ids": [
+        "P3-CMP-12"
+      ],
+      "build_inputs_approved": false,
+      "evidence": [
+        "bgfx-license",
+        "bgfx-config",
+        "bgfx-vulkan",
+        "bgfx-API"
+      ]
+    },
+    "the_forge": {
+      "repository": "ConfettiFX/The-Forge",
+      "commit": "cd5046893faba2dc7869243873bf01f02a6f0df9",
+      "root_license": "Apache-2.0",
+      "selection": "deferred_review",
+      "reason": "Actual Vulkan.c backend and Windows/Linux config confirmed. Additional comparison deferred to conditional CMP-13, not excluded.",
+      "workload_caveat": "RHI queue/fence/draw APIs exist; ResourceLoader/shader construction and vendor branches require explicit timing boundaries and a fresh Vulkan input audit. Vulkan.c references NOTICE, but no project-root NOTICE exists at this pin; resolve applicable notices before redistribution.",
+      "task_ids": [
+        "P3-CMP-13"
+      ],
+      "build_inputs_approved": false,
+      "evidence": [
+        "the_forge-license",
+        "forge-config",
+        "forge-vulkan",
+        "forge-API"
+      ]
+    },
+    "nvrhi": {
+      "repository": "NVIDIA-RTX/NVRHI",
+      "commit": "6b96fb03e07539f08327aea76c56d55f1de9d906",
+      "root_license": "MIT",
+      "selection": "deferred_review",
+      "reason": "Pinned README declares Vulkan 1.3 on Windows/Linux; full Vulkan backend/build not reviewed here. Retain as a follow-up candidate, no new acceptance task selected.",
+      "workload_caveat": "Higher declared API floor than current Vulkan 1.1 baseline; caller-native device integration and hidden upload/lifetime policies require separate workload and dependency review.",
+      "task_ids": [],
+      "build_inputs_approved": false,
+      "evidence": [
+        "nvrhi-license",
+        "nvrhi-declared"
+      ]
+    },
+    "dawn": {
+      "repository": "google/dawn",
+      "commit": "f7b0358d022045bca67dda4127e5790d3fd1ae7b",
+      "root_license": "BSD-3-Clause",
+      "selection": "deferred_review",
+      "reason": "Pinned README declares native Vulkan WebGPU backend; full platform/backend build not reviewed here. Retain as a follow-up candidate, no new acceptance task selected.",
+      "workload_caveat": "WebGPU device/shader validation and asynchronous completion require a separate adapter review. No conclusion about SPIR-V/native extension or timestamp equivalence from README alone.",
+      "task_ids": [],
+      "build_inputs_approved": false,
+      "evidence": [
+        "dawn-license",
+        "dawn-declared"
+      ]
+    },
+    "sandbox": {
+      "repository": "blackvrice/Sandbox",
+      "commit": "afe563557367a0f2b5cef88488708da36f578b70",
+      "root_license": "unconfirmed_project_root",
+      "selection": "deferred_review",
+      "reason": "Pinned complete tree and cached Vulkan implementation blob confirmed. Retain as a follow-up candidate; not classified as lacking Vulkan.",
+      "workload_caveat": "No project-root LICENSE/COPYING in pinned complete tree. Dependency licenses do not grant project-wide redistribution rights; permission and complete workload/build review required before integration.",
+      "task_ids": [],
+      "build_inputs_approved": false,
+      "evidence": [
+        "sandbox-vulkan"
+      ]
+    }
+  },
+  "workloads": {
+    "upload": {
+      "baseline_path": "benchmarks/phase3_comparison/upload.json",
+      "baseline_semantic_sha256": "e5d52e55925715b14f3c197d44ac5c4cfb74c0de2847eaeace1946b3038e1db2",
+      "correctness_task": "P3-CMP-03",
+      "measurement_task": "P3-CMP-07",
+      "LLGL_API_plan": [
+        "CreateBuffer/MapBuffer/UnmapBuffer",
+        "CreateTexture",
+        "CopyTextureFromBuffer",
+        "Submit(command), Submit(fence), WaitFence",
+        "CopyBufferFromTexture/ReadBuffer or ReadTexture outside timer"
+      ],
+      "differences_to_record": [
+        "Explicit staging layout, row/layer stride and format conversion; payload copy through completed upload fence must remain inside timer. Old D3D12 layout findings are not Vulkan correctness evidence."
+      ],
+      "evidence": [
+        "llgl-resources",
+        "llgl-commands",
+        "llgl-command-implementation",
+        "llgl-queue"
+      ]
+    },
+    "draw": {
+      "baseline_path": "benchmarks/phase3_comparison/draw.json",
+      "baseline_semantic_sha256": "073b92d6db7107c16ed97737620406e479dcf109389554aa2b5748697dff8d78",
+      "correctness_task": "P3-CMP-04",
+      "measurement_task": "P3-CMP-08",
+      "LLGL_API_plan": [
+        "CreateShader/CreatePipelineState outside timer",
+        "BeginRenderPass/SetScissor/Draw/DrawInstanced",
+        "Submit(command), Submit(fence), WaitFence",
+        "Full target readback outside timer"
+      ],
+      "differences_to_record": [
+        "Same SPIR-V, first vertex/instance 0, triangle and clear colors, scissor, 1/1000 draws and 1000 instances; CPU record/submit/wait/total only. GPU timestamp remains P3-BEN-09."
+      ],
+      "evidence": [
+        "llgl-resources",
+        "llgl-commands",
+        "llgl-command-implementation",
+        "llgl-queue"
+      ]
+    },
+    "pso": {
+      "baseline_path": "benchmarks/phase3_comparison/pso.json",
+      "baseline_semantic_sha256": "65109fdb6b5e6c023545e962384a85dcb1b7ce6daf1bb3775b5f6ab645777f26",
+      "correctness_task": "P3-CMP-05",
+      "measurement_task": "P3-CMP-09",
+      "LLGL_API_plan": [
+        "CreateShader and CreatePipelineState in public create timer",
+        "Release shader handles as part of create scope",
+        "GPU use/fence/full readback outside timer",
+        "Release pipeline in public_release timer"
+      ],
+      "differences_to_record": [
+        "1/8 pipelines, same shaders/target/regions; driver cache uncontrolled and native creation count unknown. Public release does not prove physical reclamation."
+      ],
+      "evidence": [
+        "llgl-resources",
+        "llgl-commands",
+        "llgl-command-implementation",
+        "llgl-queue"
+      ]
+    },
+    "allocation": {
+      "baseline_path": "benchmarks/phase3_comparison/allocation.json",
+      "baseline_semantic_sha256": "a5b369fc95524f5cfd31e942582ce19e14b918dedfdf8f5eabc5feba857bad21",
+      "correctness_task": "P3-CMP-06",
+      "measurement_task": "P3-CMP-10",
+      "LLGL_API_plan": [
+        "CreateBuffer/CreateTexture in create timer",
+        "Staging setup and GPU copy/use/readback outside timers",
+        "Release in public_release timer"
+      ],
+      "differences_to_record": [
+        "4096-byte buffers and 65x37 RGBA8 textures, counts 1/1000; preserve all-changing per-resource/byte reference. Record LLGL bind/usage and default internal suballocation policy versus SDK general/SDL vertex buffers."
+      ],
+      "evidence": [
+        "llgl-resources",
+        "llgl-commands",
+        "llgl-command-implementation",
+        "llgl-queue"
+      ]
+    }
+  }
+}
