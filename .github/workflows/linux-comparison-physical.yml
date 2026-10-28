@@ -56,6 +56,10 @@ jobs:
         run: |
           python3 tools/linux_comparison.py run --mode physical --icd "$GFX_COMPARISON_ICD" --device-uuid "$GFX_COMPARISON_UUID" --runtime-receipt out/linux-vulkan-validation-evidence/runtime/receipt.json --output out/linux-comparison-physical
           python3 tools/linux_comparison.py check --output out/linux-comparison-physical --live
+      - name: Build and exercise qualified Linux workload consumers
+        run: |
+          python3 tools/linux_workloads.py run --mode physical --qualification out/linux-comparison-physical --output out/linux-workloads-physical
+          python3 tools/linux_workloads.py check --output out/linux-workloads-physical --live
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -63,5 +67,6 @@ jobs:
           path: |
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-comparison-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-vulkan-validation-evidence/runtime/
+            comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-workloads-physical/
           if-no-files-found: error
           retention-days: 14

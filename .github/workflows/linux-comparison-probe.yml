@@ -1,9 +1,9 @@
 name: Linux comparison probe (software diagnostic)
 on:
   push:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py']
   pull_request:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -43,6 +43,10 @@ jobs:
           assert r['status']=='completed' and not r['P3_BEN_07_completed'] and not r['physical_probe_qualified'] and not r['performance_accepted']
           subprocess.run(['python3','tools/linux_comparison.py','check','--output','out/linux-comparison-evidence','--live'],check=True)
           PY
+      - name: Build and exercise four Linux workload consumers with required validation
+        run: |
+          python3 tools/linux_workloads.py run --mode software-diagnostic --qualification out/linux-comparison-evidence --output out/linux-workloads-evidence
+          python3 tools/linux_workloads.py check --output out/linux-workloads-evidence --live
       - name: Preserve diagnostics without external binaries
         if: always()
         uses: actions/upload-artifact@v4
@@ -51,5 +55,6 @@ jobs:
           path: |
             out/linux-comparison-evidence/
             out/linux-vulkan-validation-evidence/runtime/
+            out/linux-workloads-evidence/
           if-no-files-found: error
           retention-days: 14
