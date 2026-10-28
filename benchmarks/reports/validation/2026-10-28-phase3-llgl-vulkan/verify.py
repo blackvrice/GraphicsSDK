@@ -22,6 +22,7 @@ def verify(root=HERE):
     for item in manifest['files']:
         p=pathlib.PurePosixPath(item['path'])
         require(not p.is_absolute() and '..' not in p.parts and ':' not in str(p) and '\\' not in str(p),'Unsafe archive path')
+        require('__pycache__' not in p.parts and p.suffix!='.pyc','Interpreter cache is not archived evidence')
         data=(root/p).read_bytes()
         require(sha(data)==item['sha256'] and len(data)==item['bytes'],'Archived input hash differs: '+str(p))
     receipt=read(root/'probe/receipt.json')
