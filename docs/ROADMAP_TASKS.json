@@ -1641,7 +1641,7 @@
       "phase": 3,
       "group": "P3-CMP",
       "title": "LLGL draw/instancing correctness adapter",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-CMP-02",
@@ -1649,7 +1649,11 @@
       ],
       "work": "기존 GraphicsSDK/SDL의 draw/instancing 작업 의미·완료 범위를 맞춘다.",
       "done_when": "전체 참조·native validation·지원 차이와 정당한 비교 가능 여부 기록.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_LLGL_DRAW_REPORT.md",
+        "benchmarks/phase3_comparison/competitors/llgl-transfer-src-draw.json",
+        "benchmarks/reports/validation/2026-10-28-phase3-llgl-draw/summary.json"
+      ],
       "requires": "LLGL Vulkan 실제 GPU"
     },
     {
