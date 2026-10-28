@@ -1526,8 +1526,16 @@
       ],
       "work": "Windows DXGI 중심 helper와 환경 식별을 Linux native 방식으로 분리한다.",
       "done_when": "Linux GPU/driver/compiler/validation의 실제 receipt와 동일 장치 검증.",
-      "evidence": [],
-      "requires": "해당 플랫폼의 실제 비교 GPU·고정 의존성"
+      "evidence": [
+        "docs/PHASE3_LINUX_COMPARISON_PROBE_REPORT.md",
+        "benchmarks/linux_comparison/README.md",
+        "tools/linux_comparison.py",
+        ".github/workflows/linux-comparison-probe.yml",
+        ".github/workflows/linux-comparison-physical.yml",
+        "benchmarks/reports/2026-10-27-phase3-linux-comparison-probe/summary.json",
+        "benchmarks/reports/validation/2026-10-27-phase3-linux-comparison-probe/native/linux-comparison-evidence/receipt.json"
+      ],
+      "requires": "Linux native probe 이식·실제 software/VVL·거부 대조 준비 검증 완료. 실제 Linux 물리 GPU/ICD·정확한 UUID와 SDK/SDL 동일 장치·driver/compiler·필수 validation 원본이 필요. software 성공은 최종 완료로 합산하지 않음."
     },
     {
       "id": "P3-BEN-08",
