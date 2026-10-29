@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "task": "P3-CMP-10",
+  "kind": "static_source_semantics_not_native_call_count_measurement",
+  "files": [
+    {
+      "inspected_source": ".deps/LLGL/sources/Renderer/Vulkan/VKRenderSystem.cpp",
+      "sha256": "eaf799a29fcee46880bead5603ef85a98ffc84c7d15921e8175b97abd99ad0d9",
+      "matching_frozen_inputs": [
+        "D:/source/GraphicsSDK/.deps/LLGL/sources/Renderer/Vulkan/VKRenderSystem.cpp"
+      ],
+      "functions": [
+        "VKRenderSystem::CreateTexture",
+        "VKRenderSystem::Release(Buffer&)",
+        "VKRenderSystem::Release(Texture&)",
+        "VKRenderSystem::SyncGPU"
+      ]
+    },
+    {
+      "inspected_source": ".deps/LLGL/sources/Renderer/Vulkan/VKDevice.cpp",
+      "sha256": "233fa6125effbef18e1ccd6b59e33356852103bdd5d5936b5cba43f300d6685e",
+      "matching_frozen_inputs": [
+        "D:/source/GraphicsSDK/.deps/LLGL/sources/Renderer/Vulkan/VKDevice.cpp"
+      ],
+      "functions": [
+        "VKDevice::FlushCommandBuffer"
+      ]
+    },
+    {
+      "inspected_source": ".deps/SDL/src/gpu/vulkan/SDL_gpu_vulkan.c",
+      "sha256": "d07c403e6e723e2a343b775ea114c7f4cbd7973255d4893a2edaa41448c8a1c7",
+      "matching_frozen_inputs": [
+        "D:/source/GraphicsSDK/.deps/SDL/src/gpu/vulkan/SDL_gpu_vulkan.c"
+      ],
+      "functions": [
+        "VULKAN_INTERNAL_ReleaseTexture",
+        "VULKAN_INTERNAL_ReleaseBuffer",
+        "VULKAN_INTERNAL_PerformPendingDestroys"
+      ]
+    }
+  ],
+  "LLGL_pin": "649c0cc8fa608312c5e4b94dae409a5859fc7553",
+  "SDL_pin": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "native_allocation_count_verified": false,
+  "GPU_memory_reclamation_verified": false
+}
