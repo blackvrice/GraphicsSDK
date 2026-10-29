@@ -23,6 +23,9 @@ jobs:
       - run: python tools/check_vulkan_competitors.py
       - run: python tools/check_llgl_transfer_profile.py
       - run: python tools/check_llgl_draw_profile.py
+      - run: python tools/check_llgl_pso_profile.py
+      - name: Independently replay LLGL PSO lifecycle observations
+        run: python benchmarks/reports/validation/2026-10-28-phase3-llgl-pso/verify.py
       - name: Independently replay LLGL draw native observations
         run: python benchmarks/reports/validation/2026-10-28-phase3-llgl-draw/verify.py
       - name: Independently replay LLGL upload defect and explicit patch profile
@@ -64,6 +67,9 @@ jobs:
       - run: python3 tools/check_vulkan_competitors.py
       - run: python3 tools/check_llgl_transfer_profile.py
       - run: python3 tools/check_llgl_draw_profile.py
+      - run: python3 tools/check_llgl_pso_profile.py
+      - name: Independently replay LLGL PSO lifecycle observations
+        run: python3 benchmarks/reports/validation/2026-10-28-phase3-llgl-pso/verify.py
       - name: Independently replay LLGL draw native observations
         run: python3 benchmarks/reports/validation/2026-10-28-phase3-llgl-draw/verify.py
       - name: Independently replay LLGL upload defect and explicit patch profile
