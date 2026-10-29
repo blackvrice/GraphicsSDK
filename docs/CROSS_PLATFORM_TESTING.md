@@ -262,7 +262,7 @@ jobs:
           if ! command -v ninja >/dev/null; then brew install ninja; fi
       - run: cmake --preset portable-core -DCMAKE_CXX_COMPILER=clang++ -DGFX_ENABLE_D3D12=OFF -DGFX_ENABLE_VULKAN=OFF
       - run: cmake --build --preset portable-core --parallel 1
-      - run: ctest --preset portable-core --no-tests=error --output-junit out/macos-cpu.xml
+      - run: ctest --preset portable-core --no-tests=error --output-junit "$PWD/out/macos-cpu.xml"
       - run: python3 tools/check_python_contracts.py --output out/python-contracts
       - uses: actions/upload-artifact@v4
         if: always()
