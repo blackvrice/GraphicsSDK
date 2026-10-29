@@ -1,0 +1,2328 @@
+{
+  "schema_version": 1,
+  "task": "P3-LNX-14",
+  "source_commit": "a6b93b524d8db6e63e35ddc40ea060a62b9f13d9",
+  "github_run_id": null,
+  "platform": {
+    "system": "Windows",
+    "release": "11",
+    "machine": "AMD64",
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]"
+  },
+  "execution": "complete unittest discovery, no test exclusion or source/fixture rewriting",
+  "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+  "inputs": [
+    {
+      "path": ".gitattributes",
+      "bytes": 38433,
+      "sha256": "2c8acc47fc460b82eaa337507e0b91df0afcec80f04c4292d0706f8fe8a56ee8"
+    },
+    {
+      "path": ".github/workflows/build.yml",
+      "bytes": 7487,
+      "sha256": "a1442cf5e8639ab4c84d761fd015a51c59aa3cf727449cd98b7b2416bf098589"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 18463,
+      "sha256": "137a2a1bc4499717426d0cb8ac65174dd25e54107608e687ed2eb6adb17de682"
+    },
+    {
+      "path": "include/graphics/Backend.hpp",
+      "bytes": 533,
+      "sha256": "bbcd4b9b74732a18c70652788ec161e39c67c7ecb5e5afb81f9d409ad73cbdb4"
+    },
+    {
+      "path": "include/graphics/Bindings.hpp",
+      "bytes": 1504,
+      "sha256": "de4f5896b55e65cf31f27b2122ca4307f7a1f7bffee7ee316a881a72a2866762"
+    },
+    {
+      "path": "include/graphics/CommandList.hpp",
+      "bytes": 2840,
+      "sha256": "5ce778322e916ab5e15d6832aef5f7d1cc166fbeb2744237a45e0e20eea56f16"
+    },
+    {
+      "path": "include/graphics/CommandQueue.hpp",
+      "bytes": 725,
+      "sha256": "c6d978c5db58d90fd236436233dac460cd781c35276bd9ad3a1e677b03644045"
+    },
+    {
+      "path": "include/graphics/Device.hpp",
+      "bytes": 2470,
+      "sha256": "3049da402abbd901ef412ac108bad2c3fdfb0aceb264e13ea7ef9b7cfb359f8f"
+    },
+    {
+      "path": "include/graphics/Graphics.hpp",
+      "bytes": 58,
+      "sha256": "7f97f91e653ea4ec08f371384094eaf63879e746c765b4afed3c45eae09aed27"
+    },
+    {
+      "path": "include/graphics/Pipeline.hpp",
+      "bytes": 1262,
+      "sha256": "3f036387d9ae65f465f38c092a7c0726ffa49679c7f1d657a9d9542d5cc30cac"
+    },
+    {
+      "path": "include/graphics/RenderPass.hpp",
+      "bytes": 1025,
+      "sha256": "ec3d89ef60c7cc1bf546149843677961e682bcbcc6cf3e7af375e0ce2da0c5e4"
+    },
+    {
+      "path": "include/graphics/Resources.hpp",
+      "bytes": 719,
+      "sha256": "c8c30dcecb670863b883fc4aac6d7ce9171ed210445e39334604f76950513dde"
+    },
+    {
+      "path": "include/graphics/Shader.hpp",
+      "bytes": 1013,
+      "sha256": "a8568d729efea023d11f2852fa4bdb26d3f430152bb538014450146f32f22643"
+    },
+    {
+      "path": "include/graphics/Surface.hpp",
+      "bytes": 545,
+      "sha256": "8442d5d0a978789466ab7e0d79ea511a3178f9ec6edd566f901d4459f67dd5e8"
+    },
+    {
+      "path": "include/graphics/SwapChain.hpp",
+      "bytes": 604,
+      "sha256": "a0a8a171c818ac9f9f6ed7c0b8b74a3e5ae537bde8ee3345860f54705cc3f6a5"
+    },
+    {
+      "path": "include/graphics/Types.hpp",
+      "bytes": 3083,
+      "sha256": "506c93e2babddd1fa241d8108339049158611c9f13cf0af14da7161ec62f1761"
+    },
+    {
+      "path": "src/backends/d3d12/D3D12.cpp",
+      "bytes": 83706,
+      "sha256": "f13ad0cd41839ebd0e5f8a94909cebc80366d9e08fcad5f8d56e8cc4dd2985d3"
+    },
+    {
+      "path": "src/backends/d3d12/FenceWait.hpp",
+      "bytes": 2958,
+      "sha256": "1aee58bc9765885a62e79e4fd0e3665e9fed3ed44ba497c61c80fa9815b293b4"
+    },
+    {
+      "path": "src/backends/vulkan/Creation.hpp",
+      "bytes": 567,
+      "sha256": "4beec8947912a160a3686427f075628922c55a249193dad1266db54d491aa0b2"
+    },
+    {
+      "path": "src/backends/vulkan/Presentation.hpp",
+      "bytes": 23814,
+      "sha256": "0cbe6e3b88d7783056cb45de1dd2a9d591388b09797d6b4774420eb7b698f044"
+    },
+    {
+      "path": "src/backends/vulkan/Spirv.hpp",
+      "bytes": 14703,
+      "sha256": "3a302edb3a59f9bdde09085033023819242c799573e9b532fc8b8aa619ed99f1"
+    },
+    {
+      "path": "src/backends/vulkan/Timestamp.hpp",
+      "bytes": 1492,
+      "sha256": "f68693d9d213123b314a384cf7da7cffb731d72d2425b189ddb6795740cd8bdc"
+    },
+    {
+      "path": "src/backends/vulkan/Vulkan.cpp",
+      "bytes": 116740,
+      "sha256": "62b6b249f25c001b466e16dca8616826a6388cda51c9acec1979774c5ae6dc75"
+    },
+    {
+      "path": "src/backends/vulkan/VulkanValidation.hpp",
+      "bytes": 2733,
+      "sha256": "44465bed7347812efdfa5e50d7909fb6fd8a690df0dab887dae19b50234a7a22"
+    },
+    {
+      "path": "src/backends/vulkan/Xcb.hpp",
+      "bytes": 2647,
+      "sha256": "053b1c0e710ef0df09266c7ed6134712d37a7dd78a6984b6da491fc1d37af567"
+    },
+    {
+      "path": "src/foundation/Backend.cpp",
+      "bytes": 1658,
+      "sha256": "62b89e781ef343d8f01651c786aee471bcabe747013072ab742b44b9c4d9bd24"
+    },
+    {
+      "path": "src/foundation/Bindings.cpp",
+      "bytes": 2221,
+      "sha256": "db8a3fc712356cc461d739e7a859d83fedd86988a3c7bfe7f7ff55b34410ffbc"
+    },
+    {
+      "path": "src/foundation/RenderPass.cpp",
+      "bytes": 3200,
+      "sha256": "460d174271531b8b06ae9afa28763b58e0739e85e50a9158f86f5ee1bcd82845"
+    },
+    {
+      "path": "src/foundation/VertexInput.cpp",
+      "bytes": 2167,
+      "sha256": "0090fbf38888198967d729abe55635180eba99f0226a4360c2b131e399e6656c"
+    },
+    {
+      "path": "src/shader/Shader.cpp",
+      "bytes": 4120,
+      "sha256": "6626d4a2445e5058e136b587bbd228551703f06a34812da96fc606e17027d0f3"
+    },
+    {
+      "path": "tests/recorded_sources.json",
+      "bytes": 7029,
+      "sha256": "63980524042d99e513ca846cb3d271b9df3bdf0b89dd900e8689d69b81a5623f"
+    },
+    {
+      "path": "tests/recorded_sources.py",
+      "bytes": 2748,
+      "sha256": "40a03192c77f887ccab0295fd9486fa0450b49116ae81a3c78e7f328d627a0e5"
+    },
+    {
+      "path": "tests/test_adapter_validation.py",
+      "bytes": 3768,
+      "sha256": "20910a047f2acb90cde5c868a1275b63fcafe813197a1f415c7f0073c5964bfa"
+    },
+    {
+      "path": "tests/test_benchmarks.py",
+      "bytes": 6874,
+      "sha256": "efc7af99e1a616141aa94b70f6d59271012f6199a5b5a997ea5a4c23f2ad7880"
+    },
+    {
+      "path": "tests/test_bounded_gbv.py",
+      "bytes": 5927,
+      "sha256": "6e996b1cf808264c0858dd1617366c28a10ab759b8606efd3b995dd9cb8cb1ff"
+    },
+    {
+      "path": "tests/test_capture_memory_failure.py",
+      "bytes": 3846,
+      "sha256": "7da5e794d3ff2324359e8a7c1518147c4f96b4147201326a9d5fc2e6c82069d1"
+    },
+    {
+      "path": "tests/test_crash_capture.py",
+      "bytes": 7941,
+      "sha256": "9c44ca9e5564e008f2389bb7032dfdd0d2b9e61e7fe657c47c21fc42dd3f7a24"
+    },
+    {
+      "path": "tests/test_current_vulkan_allocation.py",
+      "bytes": 10447,
+      "sha256": "2295dfdc384d33b5c479f4ae7c7fe1b47a0ac12af26fa154fba9416e2d72bda2"
+    },
+    {
+      "path": "tests/test_current_vulkan_draw.py",
+      "bytes": 9627,
+      "sha256": "b56a75522e1863ffdefd6d8cf8645795eab62e37c06a60ee4778893c7eb572f6"
+    },
+    {
+      "path": "tests/test_current_vulkan_pso.py",
+      "bytes": 9127,
+      "sha256": "37eb0109dd800c7c51a300ad19d717808b3fe3494f3fd7edbe893e40896e301d"
+    },
+    {
+      "path": "tests/test_current_vulkan_upload.py",
+      "bytes": 8232,
+      "sha256": "70bea7c7214bc432c95c6013b92f53ed71bb527635a174d5be34adfcb37823b8"
+    },
+    {
+      "path": "tests/test_device_lifetime.py",
+      "bytes": 6708,
+      "sha256": "d5f19fcca378a56de8f1568658a47c2408af5a92ef6324fffb4a6295df9bd9b5"
+    },
+    {
+      "path": "tests/test_fixed_memory.py",
+      "bytes": 11628,
+      "sha256": "4dac25f4c31052d68ed14b792d3a444b31294ee45a99988d03da3624a3cb82a5"
+    },
+    {
+      "path": "tests/test_forge_benchmarks.py",
+      "bytes": 3204,
+      "sha256": "0483efda1e23210dd01f6f2ab4ca6b47848ca95820cb97d0c96d860ebcdcc940"
+    },
+    {
+      "path": "tests/test_gpu_memory_trace.py",
+      "bytes": 4863,
+      "sha256": "268e186893d0f8c6bd8e3639daab5f243050ee694262a6e45a4ba5c2d53b694a"
+    },
+    {
+      "path": "tests/test_gpu_timestamps.py",
+      "bytes": 4001,
+      "sha256": "f1276d23f5923d23b9b1ae74bdce643d9984071bc42fd59bbe61f983a6ac62db"
+    },
+    {
+      "path": "tests/test_license_audit.py",
+      "bytes": 8933,
+      "sha256": "2c25a29dca9fd58bc1e1b4a88bf38011214f82c61c9de80aabaf839f28772b56"
+    },
+    {
+      "path": "tests/test_linux_comparison.py",
+      "bytes": 9199,
+      "sha256": "f2afc46956e7e32d1557292a450b8ccfdc7d0018e0ba9d4a841543b97df54c92"
+    },
+    {
+      "path": "tests/test_linux_hardware.py",
+      "bytes": 3714,
+      "sha256": "68de86b53c64aae91d111d2382ef8c550700e28fd2785c5ca4b31007768724b2"
+    },
+    {
+      "path": "tests/test_linux_package_audit.py",
+      "bytes": 4192,
+      "sha256": "b3906aae5ff6c3474308ecad8650446d578f9a845bd01fd4b83e91bd3a853e03"
+    },
+    {
+      "path": "tests/test_linux_workloads.py",
+      "bytes": 9703,
+      "sha256": "b1466b620c70b231df4ba95bc4186901b498d054d8fd60dee3b24ae9d615b966"
+    },
+    {
+      "path": "tests/test_linux_wsi_scope.py",
+      "bytes": 3857,
+      "sha256": "a260f7dc19902d70ce88460d92b1cb1d6a2f5b05b337ef30464d9437bba23229"
+    },
+    {
+      "path": "tests/test_linux_xcb_events.py",
+      "bytes": 3312,
+      "sha256": "4111e3543f05497253b94ada492b01e597e73138d617b2908bc67e9fa582f0f2"
+    },
+    {
+      "path": "tests/test_linux_xcb_lifetime.py",
+      "bytes": 2491,
+      "sha256": "ce0525ad211d80acd47a546b11ef45dca79eec102a61ab144bccc0247fdeaea6"
+    },
+    {
+      "path": "tests/test_linux_xcb_manual.py",
+      "bytes": 9143,
+      "sha256": "7792c92aeb64e1e74785503aa052896747de48c73c4986a713debacd98be74da"
+    },
+    {
+      "path": "tests/test_linux_xcb_matrix.py",
+      "bytes": 6648,
+      "sha256": "212d9e0d21f51a0569f2107a7c081f626bf78de51df6507101ddfa8dc8946669"
+    },
+    {
+      "path": "tests/test_linux_xcb_present.py",
+      "bytes": 4010,
+      "sha256": "c8ddef4b314f01ecaf49fc88f7d6c7427f7d90b071cdb3653e3244e0599390cc"
+    },
+    {
+      "path": "tests/test_linux_xcb_resize.py",
+      "bytes": 3302,
+      "sha256": "90a8ac03313b13b608d0ce9f7b8c2d6e98e9527eac00888349e13121c821498e"
+    },
+    {
+      "path": "tests/test_linux_xcb_surface.py",
+      "bytes": 2710,
+      "sha256": "9008844b77977450abd028bc5c92213a3b4e48986d320231b990f8993f132953"
+    },
+    {
+      "path": "tests/test_llgl_upload.py",
+      "bytes": 1923,
+      "sha256": "881dec5811b7e7f1fe5e7dca1f68968bc962c56a5079847a40201191baaca544"
+    },
+    {
+      "path": "tests/test_llgl_upload_comparison.py",
+      "bytes": 10878,
+      "sha256": "2f1604ed72f42f3915baeb4005a9ebde8809a472707f8c0a3e5a3b88e13f86c7"
+    },
+    {
+      "path": "tests/test_llgl_vulkan_allocation.py",
+      "bytes": 11142,
+      "sha256": "9d2e43826459157d4e3193b2020cf7917bf7a7efb3b6c845060c845c21737019"
+    },
+    {
+      "path": "tests/test_llgl_vulkan_draw.py",
+      "bytes": 12141,
+      "sha256": "d4b2587a98636066d267625e4a6a4c61a0958074ac6aad1989f631d26fc3a290"
+    },
+    {
+      "path": "tests/test_llgl_vulkan_probe.py",
+      "bytes": 6952,
+      "sha256": "9433934bd6a757a430fd5a10f70f4e92038d132abbfbd2103675df935e97ab80"
+    },
+    {
+      "path": "tests/test_llgl_vulkan_pso.py",
+      "bytes": 10907,
+      "sha256": "cc81c14c1c5282172904f26e8237dd0a6b845d6dfa0de0521a5dca314b1dc191"
+    },
+    {
+      "path": "tests/test_llgl_vulkan_upload.py",
+      "bytes": 10406,
+      "sha256": "dbf82c35a85fd8abcad15ac412f59e25584c36537029ba25819ed8b08473e305"
+    },
+    {
+      "path": "tests/test_manual_presentation_evidence.py",
+      "bytes": 4006,
+      "sha256": "8b6f7cafa437429327910e357076b4e2f3b0748fe01399dfe92942c3b08a72ca"
+    },
+    {
+      "path": "tests/test_memory_budget_campaign.py",
+      "bytes": 6799,
+      "sha256": "4b94fe6ccbc83b4a806e49f9c107747143f878625c0a267996496855e38d816e"
+    },
+    {
+      "path": "tests/test_memory_campaign.py",
+      "bytes": 12115,
+      "sha256": "0081c66df83a8c651e6f8e7ccbf58b7df511cb92475c09073afa035a652690f0"
+    },
+    {
+      "path": "tests/test_memory_environment.py",
+      "bytes": 15460,
+      "sha256": "e9a9b47f8b19cd46b3a0e29496bcc2a7f4cdbe45176e1e70883f790fdc9f2e56"
+    },
+    {
+      "path": "tests/test_memory_stress.py",
+      "bytes": 7151,
+      "sha256": "513092858031b0be7f5d3a1f094406e52e45120b5382236715ab2cb5c33626f2"
+    },
+    {
+      "path": "tests/test_phase1.py",
+      "bytes": 9330,
+      "sha256": "c325008635d0f941015d670c9d3e0fdb36822b41f52597e7173f8626457a9eef"
+    },
+    {
+      "path": "tests/test_phase3_comparison.py",
+      "bytes": 8227,
+      "sha256": "3f9688bf1302102580474e4ca8e4fc764051657a453d1dbf2ee7ef91a0d3831f"
+    },
+    {
+      "path": "tests/test_presentation.py",
+      "bytes": 8149,
+      "sha256": "6ad16c703d89bd0b8bc22f5e39ea53fff7f10ea1b7f1b5be247da58acaa61c7a"
+    },
+    {
+      "path": "tests/test_recorded_sources.py",
+      "bytes": 3697,
+      "sha256": "960ad02db2e1e73940c0bee69a67899b53acc7488869e1ded0197c4775861d08"
+    },
+    {
+      "path": "tests/test_runtime_comparison.py",
+      "bytes": 7352,
+      "sha256": "439347941ca84a3d6be7802d10fe09cdb8776572fcc97dd1f7c803a181b05ff5"
+    },
+    {
+      "path": "tests/test_telemetry.py",
+      "bytes": 6076,
+      "sha256": "321fffa175170eac5417b5cb36a53f16fa9c43dcc5e1b2376f822b18c5269f3a"
+    },
+    {
+      "path": "tests/test_virtual_ranges.py",
+      "bytes": 11434,
+      "sha256": "6493da3e78b41143c456ff3a1b8e740386905fc7a43bab6720951772f362a270"
+    },
+    {
+      "path": "tests/test_vulkan_adaptive_buffer_pool.py",
+      "bytes": 7051,
+      "sha256": "5c433657fc3b44a3a9cbbf4ff8902824ebcf95a4e483fa4f1314df2fbe50ce22"
+    },
+    {
+      "path": "tests/test_vulkan_allocation.py",
+      "bytes": 8288,
+      "sha256": "c2931fbd857edc30fae7615d16caae2b7538582765af02261ac83326ef317ade"
+    },
+    {
+      "path": "tests/test_vulkan_allocation_trace.py",
+      "bytes": 6429,
+      "sha256": "96bca162975361dd3c8ae5aee5daa439a4ab4ef1f80a7b65588497f735233c13"
+    },
+    {
+      "path": "tests/test_vulkan_buffer_pool.py",
+      "bytes": 6041,
+      "sha256": "2aecc99d40ceaaa18db5bc969ea8e30b628750de534fc1d88bfc136cc9fadda1"
+    },
+    {
+      "path": "tests/test_vulkan_buffer_pool_fault.py",
+      "bytes": 7594,
+      "sha256": "8a0380b1edce3d5a9f757b962f0455b3b873d7f2416b612d5a446ecb74108bea"
+    },
+    {
+      "path": "tests/test_vulkan_comparison_protocol.py",
+      "bytes": 9977,
+      "sha256": "b86f71c9bddbca262c5410380f2c196dccd0a62c0892632c39b3c289f21ff33a"
+    },
+    {
+      "path": "tests/test_vulkan_competitors.py",
+      "bytes": 5420,
+      "sha256": "d8a74300c5210c43292ae239d20eb9e9a50995478d10b0b7f79672cc3bd00034"
+    },
+    {
+      "path": "tests/test_vulkan_creation_ownership.py",
+      "bytes": 4049,
+      "sha256": "692d76a2c6178b02ebe9cfd7c8ff97943633ab8926d2233d9e113d4fd670b7e4"
+    },
+    {
+      "path": "tests/test_vulkan_draw.py",
+      "bytes": 6793,
+      "sha256": "4dafdcfbb9a16d5dd400782a3af3d7a4c5758cbace9ca91eed9ad6e62a333879"
+    },
+    {
+      "path": "tests/test_vulkan_loader_fault.py",
+      "bytes": 3959,
+      "sha256": "3fdccc4f28a24bc82768346bc75220fd872b30cf8f3f90dc04440d35c5d29a36"
+    },
+    {
+      "path": "tests/test_vulkan_markers.py",
+      "bytes": 3149,
+      "sha256": "a0077ac5778af67ad8701fb3c63eb4db55046c2a2f751d27246fb82be7d3ab83"
+    },
+    {
+      "path": "tests/test_vulkan_pool_churn.py",
+      "bytes": 4479,
+      "sha256": "b3e6e97a53daa1f0fe30749091f6e41237477407dceb27cdb97770246292ed7d"
+    },
+    {
+      "path": "tests/test_vulkan_pool_rebase_fault.py",
+      "bytes": 5002,
+      "sha256": "bf95051734f15e69d10f6de62ae3e93b425f43397490e8b57af4ac3f4b034094"
+    },
+    {
+      "path": "tests/test_vulkan_pso.py",
+      "bytes": 6987,
+      "sha256": "5e103c9975455b1cb9641dc487a5f86116f271a3323401ad910103cdfa49874b"
+    },
+    {
+      "path": "tests/test_vulkan_recovery.py",
+      "bytes": 3321,
+      "sha256": "a6adfb7d07ca8cf1b0499a972af2f82839e518e53f8ce001c7be747bfe43b061"
+    },
+    {
+      "path": "tests/test_vulkan_upload.py",
+      "bytes": 4907,
+      "sha256": "036c623ea424207e902f31945f8b91eb92d23f1a41cc3df1c5fa37692ccb4d2a"
+    },
+    {
+      "path": "tests/test_vulkan_upload_compare.py",
+      "bytes": 2325,
+      "sha256": "47d2860948719ff243f72a6389d8349f6e865266318da8ab52e6cb5e5923bcdb"
+    },
+    {
+      "path": "tests/test_xcb_window_manager.py",
+      "bytes": 1773,
+      "sha256": "53b6da4d2efab273b24cf766d13cbbb823b849c3f182f35b89713627369c9027"
+    },
+    {
+      "path": "tools/analyze_bounded_gbv.py",
+      "bytes": 6830,
+      "sha256": "e782403235842cc7dd88a729619a7feeb85a0b96eac2dbe0b3981b5b42c3045e"
+    },
+    {
+      "path": "tools/analyze_gpu_memory_trace.py",
+      "bytes": 16988,
+      "sha256": "035df66107c289075daea6abd8f9a1d794101b7391833c9c3c65f0993cf97486"
+    },
+    {
+      "path": "tools/analyze_memory_stress.py",
+      "bytes": 16432,
+      "sha256": "1a8380c9e0f18684c7769cd53d02a2e7cb95f0e0a8ab27c982721ab994fca095"
+    },
+    {
+      "path": "tools/analyze_virtual_ranges.py",
+      "bytes": 14746,
+      "sha256": "1a8809112ee84a5e1f4084761a3ddc47730c0e80a6eefe9500e3b6143bfa32ed"
+    },
+    {
+      "path": "tools/archive_measured_sources.py",
+      "bytes": 2766,
+      "sha256": "d5467f253a14885d017244c20942d37235911501421f6cd656e236a7e3536dcf"
+    },
+    {
+      "path": "tools/audit_licenses.py",
+      "bytes": 30690,
+      "sha256": "b5a9d7914a6de25166bb59680e9393903deb256cb934048d105b0cd173c321f4"
+    },
+    {
+      "path": "tools/audit_linux_package.py",
+      "bytes": 4603,
+      "sha256": "5fb6807e3a74f7b91645f0c9c6e558a43ee5ec3d3da082200806fee4ef5bc07f"
+    },
+    {
+      "path": "tools/audit_vulkan.py",
+      "bytes": 16762,
+      "sha256": "bbdae297fc477623f34c6dc7acc1d507bb4815ff0c1210cc249267466eb337d8"
+    },
+    {
+      "path": "tools/audit_vulkan_adaptive_buffer_pool.py",
+      "bytes": 6887,
+      "sha256": "a337c280a5d7eaba4d497c4620d8e0dfbf88a70cb24627558eb2a7c3a1749761"
+    },
+    {
+      "path": "tools/audit_vulkan_allocation.py",
+      "bytes": 8853,
+      "sha256": "9f239b2fdc5fa39820daa74f812f1f36a52e4314cc17d5026f9d9c9b0c3d4ac0"
+    },
+    {
+      "path": "tools/audit_vulkan_allocation_trace.py",
+      "bytes": 9948,
+      "sha256": "95443a2035035a9ba5422fd11bcc41d4969d1f00848d81fdf849d96a1f41cc0c"
+    },
+    {
+      "path": "tools/audit_vulkan_buffer_pool.py",
+      "bytes": 6827,
+      "sha256": "458eb1013692e6df5b83d10a2aca73338ad1d2837bcc069d4316c6ee17cb09dd"
+    },
+    {
+      "path": "tools/audit_vulkan_buffer_pool_fault.py",
+      "bytes": 6827,
+      "sha256": "b4e7c3b84143a53896ad88e9b25b434c88d1ae217f3032ba710f0e980aafe92a"
+    },
+    {
+      "path": "tools/audit_vulkan_creation_ownership.py",
+      "bytes": 7411,
+      "sha256": "4da1750cc95a143ee2dc1d244202c6b8e66f434b5c79e1c40eb25ead5412a54b"
+    },
+    {
+      "path": "tools/audit_vulkan_draw.py",
+      "bytes": 8814,
+      "sha256": "cd71aba25fa691f4580fc08db4650a5be27e45af39c06291ccd8dea8fe8a4f60"
+    },
+    {
+      "path": "tools/audit_vulkan_loader_fault.py",
+      "bytes": 5288,
+      "sha256": "391250380365c8314d6af6764c1a76562d86a51572571754b017b3fb5fbeff4f"
+    },
+    {
+      "path": "tools/audit_vulkan_pool_churn.py",
+      "bytes": 6317,
+      "sha256": "d14b760ee1b0a0728ce5f24b48753638cf27dce08b3ef2d6fad19f7f1e421333"
+    },
+    {
+      "path": "tools/audit_vulkan_pool_rebase_fault.py",
+      "bytes": 4764,
+      "sha256": "f7554d7a3ddf47156a868702729159c1b65554ee6367fb7b9075b87a8c4319df"
+    },
+    {
+      "path": "tools/audit_vulkan_pso.py",
+      "bytes": 8799,
+      "sha256": "be2400e3fc8970cff2f35ca2373d86f54d5c1e672802c1b731c0a9dfe6885fad"
+    },
+    {
+      "path": "tools/audit_vulkan_upload.py",
+      "bytes": 8283,
+      "sha256": "0e96867b3ded933a40d2145c9493788ba15856dd72516de3da6acfc483cecce7"
+    },
+    {
+      "path": "tools/audit_vulkan_upload_compare.py",
+      "bytes": 8372,
+      "sha256": "39e0995c74760c181bfd0d81e2053f73c841117d63329b8ffeaa478d28ed6f30"
+    },
+    {
+      "path": "tools/audit_xcb_surface_inputs.py",
+      "bytes": 3497,
+      "sha256": "b061cadb912172e23801cbb069191eea12563ebb9f427d62af71b35f201c7463"
+    },
+    {
+      "path": "tools/benchmark_telemetry.py",
+      "bytes": 4633,
+      "sha256": "5aea148ec945595a06f961e411ee8e99df0ee4253330883c5cad61288304ab36"
+    },
+    {
+      "path": "tools/bgfx_license_profile.py",
+      "bytes": 3175,
+      "sha256": "da2ac7eaf0de6450222929dffcf6359773588134090070298b570ef6b3180b30"
+    },
+    {
+      "path": "tools/bounded_gbv_policy.json",
+      "bytes": 428,
+      "sha256": "eb1e3fbc6a42111de7b38f048fb7465729825d8c99aa8252893fc7fc100d41fa"
+    },
+    {
+      "path": "tools/capture_memory_failure.py",
+      "bytes": 7170,
+      "sha256": "3f7f647fa16b27f824291627a4afc9d260d002f067b658aed706543053475a92"
+    },
+    {
+      "path": "tools/check_llgl_allocation_profile.py",
+      "bytes": 2865,
+      "sha256": "539fe74bc9a41814e881010c3a63885c7246adca07643cafc9b66200c9d28b21"
+    },
+    {
+      "path": "tools/check_llgl_draw_profile.py",
+      "bytes": 2637,
+      "sha256": "31bf07934d6f00441ea5a8e10a74b9d0196769a468358c8bc83a5838dfe7720f"
+    },
+    {
+      "path": "tools/check_llgl_pso_profile.py",
+      "bytes": 3158,
+      "sha256": "86aeb5f15477abe97d0ea253e4828a07f2a78c8eae83266b5586732f44f1840a"
+    },
+    {
+      "path": "tools/check_llgl_transfer_profile.py",
+      "bytes": 3634,
+      "sha256": "026f27fb71f825c9d4bcc44f326b3b84b85ceade4f304fc64f5becfafb3a4ba5"
+    },
+    {
+      "path": "tools/check_llgl_upload_comparison.py",
+      "bytes": 2467,
+      "sha256": "ef4112949fdf7b7c7c2d1adb68e47c7bad8d0b3852324f2f92b6429d36c62fa5"
+    },
+    {
+      "path": "tools/check_python_contracts.py",
+      "bytes": 4295,
+      "sha256": "a70ecf19a78bdf0262980b8a0c275cea2fd53d63bec767cb921fa6758f1b8c89"
+    },
+    {
+      "path": "tools/check_vulkan_competitors.py",
+      "bytes": 9953,
+      "sha256": "1379a40f033afc5ee8df64ae79e02bc925172fe73b4616388e9c51fa760e323d"
+    },
+    {
+      "path": "tools/compare_llgl_upload.py",
+      "bytes": 24665,
+      "sha256": "63f605a5fb04235dc861842bcf0bbd68d002905f59a922039c37ead9d5c9c7be"
+    },
+    {
+      "path": "tools/compare_results.py",
+      "bytes": 3446,
+      "sha256": "96c3e27ae87f6ef31e7390b7a8e05be62f03d8d312acf5504cbce701010fe91a"
+    },
+    {
+      "path": "tools/compare_vulkan_upload.py",
+      "bytes": 8999,
+      "sha256": "a376885cd016183f2f86f1c373f398deb2d0720d2799b8fe3a1dc65090073b96"
+    },
+    {
+      "path": "tools/crash_capture/evidence.py",
+      "bytes": 8754,
+      "sha256": "aecc80e68ab3f78b6f42f6413c6b15cea7a54cc8fed9d545e0252dc15372309e"
+    },
+    {
+      "path": "tools/crash_capture/validate.py",
+      "bytes": 5648,
+      "sha256": "8e2ef7acd1e64e1eff49a740f2b4f0a1b4a6fde4ca3d42813fe035122dec1033"
+    },
+    {
+      "path": "tools/diligent_license_profile.py",
+      "bytes": 5587,
+      "sha256": "d04d056dce28fb6d8640a282dfa3d44b748b87980fd8a685878411fb2bc28c1b"
+    },
+    {
+      "path": "tools/fetch_references.py",
+      "bytes": 2890,
+      "sha256": "60859eb1219f1f389820ba86417a4191d4944dc4e0a250c3beafb153a3dd24c3"
+    },
+    {
+      "path": "tools/forge_license_profile.py",
+      "bytes": 6340,
+      "sha256": "08efa5ae00d577140aecfe27c320b5847c10bccce9062e80f206b9cfd6587f6e"
+    },
+    {
+      "path": "tools/linux-vulkan-validation.json",
+      "bytes": 459,
+      "sha256": "dce8d2443045ac57e377bc7549474a01c0712e778d004d0523335ca2694a548d"
+    },
+    {
+      "path": "tools/linux-xcb-validation.json",
+      "bytes": 454,
+      "sha256": "3891d710961dcb3859211d9730057b09374b8b59171dcbe302d6d5ca509f965a"
+    },
+    {
+      "path": "tools/linux_build_capture.py",
+      "bytes": 1873,
+      "sha256": "363ff4f0713e929073bf03961bafbe6ac768bae3404171df0e20b3e8aae38f1a"
+    },
+    {
+      "path": "tools/linux_comparison.py",
+      "bytes": 22990,
+      "sha256": "6c4ba932d6df905a89df27d9d3ae930e0dc2a7f257b9ba396be0bed77af3d518"
+    },
+    {
+      "path": "tools/linux_hardware.py",
+      "bytes": 15524,
+      "sha256": "e547616047bb0f8afcf5161edb4007bbe68591fdda682a5e77095d0d38c4b02f"
+    },
+    {
+      "path": "tools/linux_package.py",
+      "bytes": 16806,
+      "sha256": "d74893d5587f4d72fcbe982c4f930407a2b868f8527415bc0cb0774103577fa5"
+    },
+    {
+      "path": "tools/linux_workloads.py",
+      "bytes": 18608,
+      "sha256": "e68f1a9982ee15d673409893575224a38011a473fd64d9611e1831e1518377bd"
+    },
+    {
+      "path": "tools/linux_xcb_manual.py",
+      "bytes": 14070,
+      "sha256": "b2566bb97f5db565b89311bb493526ac9b91bfe26b4cd6d1478487d9f967f536"
+    },
+    {
+      "path": "tools/llgl_vulkan_allocation.py",
+      "bytes": 17629,
+      "sha256": "07eb1efd5852c258182013fd638f2cc56fd07cfaa1cd5dbc03f2990cc4b3816d"
+    },
+    {
+      "path": "tools/llgl_vulkan_draw.py",
+      "bytes": 15466,
+      "sha256": "6babf0d982c56d40a5d74389975179ddf0e1c4f8b06c066ff563e15805fb3b89"
+    },
+    {
+      "path": "tools/llgl_vulkan_probe.py",
+      "bytes": 14416,
+      "sha256": "f7a3c233226101e880065a42378c825f9b8ef925c43708f8322cfa56f0f035ef"
+    },
+    {
+      "path": "tools/llgl_vulkan_pso.py",
+      "bytes": 17196,
+      "sha256": "0e757a7da474e9fa33c4f7fd8fe17ec06d6f0bec45ee1070804fc1b54733953a"
+    },
+    {
+      "path": "tools/llgl_vulkan_upload.py",
+      "bytes": 18933,
+      "sha256": "4a77851340729c5f2667e11a464797e045dbbd0bbd79620b53975e20d9f51725"
+    },
+    {
+      "path": "tools/manual_presentation_evidence.py",
+      "bytes": 4326,
+      "sha256": "98b360eec3046d01107db19974d1cf56e90dedc46330ef3273cfbacee52698bd"
+    },
+    {
+      "path": "tools/memory_environment.py",
+      "bytes": 22376,
+      "sha256": "8d79582da70e65f01ac838a44ce8d666d543ddefa289639327e6cea03081f2f8"
+    },
+    {
+      "path": "tools/memory_stress_policy.json",
+      "bytes": 897,
+      "sha256": "377e0136d26f15f2262d624ca4cee0d1fb629fff4ebee7d34ba031f5919233ba"
+    },
+    {
+      "path": "tools/memory_validation_probe/agility-runtime.lock.json",
+      "bytes": 1106,
+      "sha256": "9c45802131d485759c885592a2526f0df27708bc4050bf256504f55f261ed279"
+    },
+    {
+      "path": "tools/memory_validation_probe/lifetime.py",
+      "bytes": 11940,
+      "sha256": "002f3c01487d089a18ea1a0b3b5cb5f4f1a88e0e31b258ab988b35c3f077b3c1"
+    },
+    {
+      "path": "tools/memory_validation_probe/prepare_runtime.py",
+      "bytes": 3057,
+      "sha256": "6816184b549f340019ed0456c7d71a5b3a119f1f927720e0f8e5564a6c3d0a1d"
+    },
+    {
+      "path": "tools/memory_validation_probe/run.py",
+      "bytes": 5413,
+      "sha256": "80a7575d43a6b703f1a58299422118e0571c002ecbde96304b9958b05755a453"
+    },
+    {
+      "path": "tools/memory_validation_probe/runtime_compare.py",
+      "bytes": 11331,
+      "sha256": "64424d47ee04ef91d82b3e2935d4948385719060c47c39d2933046f1193f3aef"
+    },
+    {
+      "path": "tools/phase1_acceptance.py",
+      "bytes": 1762,
+      "sha256": "ffac45922b661e0fc6b2f40f6482361659b3f6c9b501c062ebf547c6f1074dbe"
+    },
+    {
+      "path": "tools/port_linux_benchmarks.py",
+      "bytes": 3569,
+      "sha256": "06ba8d30fd23c289188c55f3b96271203a03ca82ece628ff7092c45fe13536c6"
+    },
+    {
+      "path": "tools/prepare_linux_validation.py",
+      "bytes": 6165,
+      "sha256": "6fd146fc70f1711b23b7ba528879615ebcc705565352cf8a3c75f5d2a3bcbc6d"
+    },
+    {
+      "path": "tools/prepare_llgl_transfer_src_candidate.py",
+      "bytes": 3846,
+      "sha256": "480e02e2b5368e2a12407fd062381c37e23829b07f19119a3377d9824d41afca"
+    },
+    {
+      "path": "tools/prepare_llgl_vulkan.py",
+      "bytes": 3677,
+      "sha256": "661f116bbed7c89483fc7b2942b4ea2a2363992b42edafd057d3e6c5301342eb"
+    },
+    {
+      "path": "tools/prepare_vulkan_adaptive_buffer_pool.py",
+      "bytes": 8075,
+      "sha256": "8197c45a1fc1250ec3295360beb9a7ca4d9cccbc60944a8277f3b8df6db893fc"
+    },
+    {
+      "path": "tools/prepare_vulkan_buffer_pool.py",
+      "bytes": 7897,
+      "sha256": "a6a9f091f9c68d3f0e13d62eb283f84adaf9b747185c9439335fe611363f989f"
+    },
+    {
+      "path": "tools/prepare_vulkan_buffer_pool_fault.py",
+      "bytes": 2790,
+      "sha256": "906958993ca451687f7089e415f3b2a17d97bdda535ba9e9abdc61156c58d7c1"
+    },
+    {
+      "path": "tools/prepare_vulkan_comparison.py",
+      "bytes": 21079,
+      "sha256": "26c2426e7dafe2876b051d0239dad0caac78fd8838ce4dc924c7fff9a6087f23"
+    },
+    {
+      "path": "tools/prepare_vulkan_pool_churn.py",
+      "bytes": 7160,
+      "sha256": "12f66f46390ccc78daa64e4a00524c96d0ea2741d0470ce51082baf06c0ab335"
+    },
+    {
+      "path": "tools/prepare_vulkan_validation.py",
+      "bytes": 5088,
+      "sha256": "612a8eb1e2c40c63242b025d479d6eee1418b8be588862fdfcc7799d38894295"
+    },
+    {
+      "path": "tools/report_benchmarks.py",
+      "bytes": 11006,
+      "sha256": "cd62813ef83d3d6ab2cda1e874370e18778a33d8d7d8603dcecf855efe9a51a8"
+    },
+    {
+      "path": "tools/report_bgfx_benchmarks.py",
+      "bytes": 12025,
+      "sha256": "c6d2106d35c5b3806723d7ad9389561066d692c824877e2a561c91ebca01bada"
+    },
+    {
+      "path": "tools/report_diligent_benchmarks.py",
+      "bytes": 9513,
+      "sha256": "349582b742359fa44e22c0729f6e165f2e910f5f123c1277740be8d763895d02"
+    },
+    {
+      "path": "tools/report_forge_benchmarks.py",
+      "bytes": 13487,
+      "sha256": "c1e32c1ad8ca77f78ce1b3cd71b3b3f53945eeb6daa3a610274761891fd0c1b0"
+    },
+    {
+      "path": "tools/report_llgl_upload.py",
+      "bytes": 5991,
+      "sha256": "ef9eb104b374d180c9a8b058f0aced5f75dda1689d55bf4f68a6ca45c9ef97f4"
+    },
+    {
+      "path": "tools/report_memory_stress.py",
+      "bytes": 6225,
+      "sha256": "8e70c87d7ac5f9df0a7c5adfe516b7bc1544cf8b32d6525f3aee5651c0226692"
+    },
+    {
+      "path": "tools/report_phase1.py",
+      "bytes": 5885,
+      "sha256": "37301345c0e4b8db4aae1478599d2dd142b0fe7ac76b086c8885ac92dee754c4"
+    },
+    {
+      "path": "tools/report_phase1_comparison.py",
+      "bytes": 11838,
+      "sha256": "a3b2c721913f18c902e50efacb5df2127cb3eabf44ba60a65ed2fc660243b7b7"
+    },
+    {
+      "path": "tools/report_telemetry_benchmarks.py",
+      "bytes": 6911,
+      "sha256": "e04d6340a1e377f95bab50c68b814e5e1d19db651dc4d272094429ee3571361e"
+    },
+    {
+      "path": "tools/report_timestamp_benchmarks.py",
+      "bytes": 16757,
+      "sha256": "0a82061c4f02caed49f854c5917df3edbe5e2e070103598cbee8e87f97dc3f77"
+    },
+    {
+      "path": "tools/report_vulkan_adaptive_buffer_pool.py",
+      "bytes": 7227,
+      "sha256": "3a913b31c44198a40cc59969f1c1ba805e9e5c9e857835fc29edc84e27733957"
+    },
+    {
+      "path": "tools/report_vulkan_allocation.py",
+      "bytes": 7814,
+      "sha256": "708fd9a80417a31d575fcf53303907bbd8e5fed7afc7f1ab493fa23b1190d7be"
+    },
+    {
+      "path": "tools/report_vulkan_allocation_trace.py",
+      "bytes": 5925,
+      "sha256": "330101b6c20ee8926e783d4301dbc8eadf0ed464aa6e6ed803d6ef6ddf10e7a1"
+    },
+    {
+      "path": "tools/report_vulkan_buffer_pool.py",
+      "bytes": 7033,
+      "sha256": "e8657b948b44336b1674008e2d00186562731ff504f0fbc378244921ee25cd44"
+    },
+    {
+      "path": "tools/report_vulkan_buffer_pool_fault.py",
+      "bytes": 5650,
+      "sha256": "f3f9d8b3d0b78537160fdb8a5af227246b39695c86c90256f59a2c4c18565496"
+    },
+    {
+      "path": "tools/report_vulkan_creation_ownership.py",
+      "bytes": 5795,
+      "sha256": "e8858896a53bd6e34f935c2e03520cf6bddc5a1e8340fd1519f242274e85212c"
+    },
+    {
+      "path": "tools/report_vulkan_draw.py",
+      "bytes": 7735,
+      "sha256": "ee5bb9aad3a022227e59fe1bf9d960cf9903f0b2cee52127c040a83e8a5a0052"
+    },
+    {
+      "path": "tools/report_vulkan_loader_fault.py",
+      "bytes": 6549,
+      "sha256": "23d2874f2509f84c3a7a5c4fdd9af43ddeda8bab00f41647678b4733fb0ed62c"
+    },
+    {
+      "path": "tools/report_vulkan_pool_churn.py",
+      "bytes": 6162,
+      "sha256": "cb1b2b052338baee19847987633d45dd1b37f3b773f6dedbd728a92574b282b1"
+    },
+    {
+      "path": "tools/report_vulkan_pool_rebase_fault.py",
+      "bytes": 6924,
+      "sha256": "b8fff3a0cf53c345d518368b63653f32380441e28099361de7f02b67a7e054a2"
+    },
+    {
+      "path": "tools/report_vulkan_pso.py",
+      "bytes": 7444,
+      "sha256": "8dc156a0c60505ec25fcb059d73a25fd604713709dcf465d614759aeaead7fe4"
+    },
+    {
+      "path": "tools/report_vulkan_upload.py",
+      "bytes": 13240,
+      "sha256": "c8aca43db2b120491f688d2a6dd8126d1e0d3287a57482f097591ebaaa399288"
+    },
+    {
+      "path": "tools/report_vulkan_upload_compare.py",
+      "bytes": 8002,
+      "sha256": "aee28dfce49554493f3c977fe35d024d3555f9c24c67f1a630932668c26d484a"
+    },
+    {
+      "path": "tools/roadmap.py",
+      "bytes": 14258,
+      "sha256": "1bd69a674dad50a59f0282b80f49f73b5135e9bcedb9602c4eafcdee4d2d49d0"
+    },
+    {
+      "path": "tools/run_adapter_validation.py",
+      "bytes": 6505,
+      "sha256": "529117b694f2d8ea1f6cae00f802d534c6b46cc00e51a01514bf2f97217ac8bb"
+    },
+    {
+      "path": "tools/run_benchmarks.py",
+      "bytes": 21566,
+      "sha256": "8f8e0d38fc1300bbedd6025481ab59a475a94acdeabbbebbfdef79b9353c3486"
+    },
+    {
+      "path": "tools/run_current_vulkan_allocation.py",
+      "bytes": 16843,
+      "sha256": "20f657bb89e5465af7c3ab53c8aee04d1c1ecdd31e44a71ee4d251e31cabaf17"
+    },
+    {
+      "path": "tools/run_current_vulkan_draw.py",
+      "bytes": 15795,
+      "sha256": "fd6793228102407caea335eeb3178753938d3e86169d5642b229abffe563c9c7"
+    },
+    {
+      "path": "tools/run_current_vulkan_pso.py",
+      "bytes": 16138,
+      "sha256": "3feef1d0493851338b7cda004d013e90df0babf35dfb0cb98a3bf47d4a426f0f"
+    },
+    {
+      "path": "tools/run_current_vulkan_upload.py",
+      "bytes": 14808,
+      "sha256": "850c38873808d63293c053f5ea6a79b18f39287b3962d382145ff92ac9a069b9"
+    },
+    {
+      "path": "tools/run_fixed_memory.py",
+      "bytes": 15943,
+      "sha256": "256ded9f463b6a965e60da9ea40b02251fcb65cb3af6ef0c13fbea19816d8ffe"
+    },
+    {
+      "path": "tools/run_linux_compile.py",
+      "bytes": 7787,
+      "sha256": "7e9b875a7791af775f23296b667609fdf1508ba7c0dad5f7f9e9e7db1a38d51e"
+    },
+    {
+      "path": "tools/run_linux_depth.py",
+      "bytes": 10455,
+      "sha256": "cd916f297bb701d56a3c52df4fe6eb4f57dd349561d543b90a2254b07c28eef4"
+    },
+    {
+      "path": "tools/run_linux_device.py",
+      "bytes": 8620,
+      "sha256": "0ab9c9c74c32c65a07bab471997b453c582ffbd2991c35cc34da4e94326ac1ed"
+    },
+    {
+      "path": "tools/run_linux_draw.py",
+      "bytes": 10911,
+      "sha256": "2eb4b876795bbffe820c7257fb301630334b8fb6b39c1897cb2bfd6505d559bd"
+    },
+    {
+      "path": "tools/run_linux_input.py",
+      "bytes": 11264,
+      "sha256": "f310d44e8a06e94186152cd02b87d14b2f3b6cdee678964323539cff79182baa"
+    },
+    {
+      "path": "tools/run_linux_texture.py",
+      "bytes": 10064,
+      "sha256": "0430c0f4cb2dcf0d1066a10eab3fd70b98479a31c023d40b607f71cea911c724"
+    },
+    {
+      "path": "tools/run_linux_timestamp.py",
+      "bytes": 13089,
+      "sha256": "2fd19c1dacfb1235e06c4a47728bbf6ba69bbbd69dfcca7608cd14fa8f9a3567"
+    },
+    {
+      "path": "tools/run_linux_transfer.py",
+      "bytes": 9196,
+      "sha256": "fcc89bcec53e5957f80df225994916f14e659521d6df4fefc498c2ea67c1b3aa"
+    },
+    {
+      "path": "tools/run_linux_validation.py",
+      "bytes": 11548,
+      "sha256": "9283b929d1871b27a68a5f2750cf3a38460dc0aca7d8aad4e307b3cd7d090a89"
+    },
+    {
+      "path": "tools/run_linux_wsi_scope.py",
+      "bytes": 7342,
+      "sha256": "c4c44d3df31cb2664699219b6282180998afdadf4ff50d75a2d5f5a1c86d6537"
+    },
+    {
+      "path": "tools/run_linux_xcb_campaign.py",
+      "bytes": 7364,
+      "sha256": "9fb75451579183594a696dee411b937921fc482d5c1246a8feb880af8c63c13b"
+    },
+    {
+      "path": "tools/run_linux_xcb_events.py",
+      "bytes": 7124,
+      "sha256": "e97ab582e214d2097efbd04c09aab89a52fca2ced57812216ba71d0ff47f7e2b"
+    },
+    {
+      "path": "tools/run_linux_xcb_lifetime.py",
+      "bytes": 5541,
+      "sha256": "d2a0aea782ff155be90cb443f7f97ab3b1eee7c9e0a4665331bfa72d91e1f907"
+    },
+    {
+      "path": "tools/run_linux_xcb_matrix.py",
+      "bytes": 7493,
+      "sha256": "cfc19f38e3339762480570b0ded68d64afb514798e7fd96ea928610d9820f8fa"
+    },
+    {
+      "path": "tools/run_linux_xcb_present.py",
+      "bytes": 6775,
+      "sha256": "00368a91d6a8f16645579baa0f583e613ca3d2a96b76444623044bf3418bf9d9"
+    },
+    {
+      "path": "tools/run_linux_xcb_resize.py",
+      "bytes": 6376,
+      "sha256": "f868a329182787c4bcb8a934e4e33127ee55408ac553c370f259322fd5ae59fd"
+    },
+    {
+      "path": "tools/run_linux_xcb_surface.py",
+      "bytes": 5379,
+      "sha256": "8d47a948271e16b394f07122b8a6706206d24591411bfcf3dabcbf16e6487f15"
+    },
+    {
+      "path": "tools/run_memory_stress.py",
+      "bytes": 9981,
+      "sha256": "9bb48a27f46d392e040f4f8a8cf3a3f8e178389c83ffc55f41b4f65267449619"
+    },
+    {
+      "path": "tools/run_phase1.py",
+      "bytes": 11983,
+      "sha256": "8c8a3857755a7a926032e736bee8ac9ade426c9b40a1c2b363daf2635fea316b"
+    },
+    {
+      "path": "tools/run_presentation_validation.py",
+      "bytes": 13891,
+      "sha256": "44b1457979b244e95f8cedc84da13cd0e610071ad00e57f3d27f846746370139"
+    },
+    {
+      "path": "tools/run_vulkan_adaptive_buffer_pool.py",
+      "bytes": 13038,
+      "sha256": "7a6fcf3455e5272873585a734dfb103d856015b13f63854404a038370ae1581a"
+    },
+    {
+      "path": "tools/run_vulkan_allocation.py",
+      "bytes": 13459,
+      "sha256": "95c87bb088dba4cde3150a1b65467c3a1d75fcc50c40b42d1a59f28ccbf693fa"
+    },
+    {
+      "path": "tools/run_vulkan_allocation_trace.py",
+      "bytes": 12622,
+      "sha256": "4588b1eccc3189c6f8810645c676cfd54d3a42447970b8a368a0bb7b0b559eef"
+    },
+    {
+      "path": "tools/run_vulkan_buffer_pool.py",
+      "bytes": 12251,
+      "sha256": "3dc986258fc5c34764e4167734f80dd6673c7a9ff704afb990801ddecdfd216f"
+    },
+    {
+      "path": "tools/run_vulkan_buffer_pool_fault.py",
+      "bytes": 12979,
+      "sha256": "a41256c52db7bfb3f8ed35d4d2a149a6ccd7910eead3ccc18e1b908b72c9c1ad"
+    },
+    {
+      "path": "tools/run_vulkan_comparison.py",
+      "bytes": 19973,
+      "sha256": "e04185ba08a808397f4a36a22f6ce24814bb8eb46ecf8f8efe043d4211c8a4d6"
+    },
+    {
+      "path": "tools/run_vulkan_creation_ownership.py",
+      "bytes": 7466,
+      "sha256": "c6340f10f50cdc37ed52a0d784077edec287989326f3681b0f83c433e2cc849d"
+    },
+    {
+      "path": "tools/run_vulkan_draw.py",
+      "bytes": 13584,
+      "sha256": "b6c926568e1d73d966be7711ad2df30bfa33b8c020cbd5955d727b0c638f6310"
+    },
+    {
+      "path": "tools/run_vulkan_loader_fault.py",
+      "bytes": 9654,
+      "sha256": "a11349a23b0a887cad3996286eb81695bf509e04ac2bfe1b22744a9c554df201"
+    },
+    {
+      "path": "tools/run_vulkan_markers.py",
+      "bytes": 6016,
+      "sha256": "0b27ad4ebe47c51ef229183934ccd371c1508fb95cbe86fb8a9d558745cde9c8"
+    },
+    {
+      "path": "tools/run_vulkan_pool_churn.py",
+      "bytes": 14490,
+      "sha256": "52a192f1c6745ed7951cda317757bb93c363042777227b3c016e9c41ddc7413e"
+    },
+    {
+      "path": "tools/run_vulkan_pool_rebase_fault.py",
+      "bytes": 16360,
+      "sha256": "3d577945a4ae0f7f8365345113b25e4e9e835ce8cf3712e79a76a63b828914ad"
+    },
+    {
+      "path": "tools/run_vulkan_pso.py",
+      "bytes": 13059,
+      "sha256": "bb53a90bc37023ac7566128286af817e5350b3357e2bf6d70e62e8ee918cf002"
+    },
+    {
+      "path": "tools/run_vulkan_recovery.py",
+      "bytes": 5981,
+      "sha256": "82d61e3e945d94964df1e961c0a36ee83d5979b68fb78757467e2bbd4bf30d0b"
+    },
+    {
+      "path": "tools/run_vulkan_upload.py",
+      "bytes": 12047,
+      "sha256": "fe5f3a09292399461f8bf47ad3e5834980e3a190c7319a0b07cc51b073958321"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate.py",
+      "bytes": 7407,
+      "sha256": "e9c14040f0d21b4c28ac66d400ab7e6b5284245bf4fca9e4b9c64312fc77d9c1"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate_bindings.py",
+      "bytes": 7664,
+      "sha256": "e026202e01496ce3b08688fffefbabc1f8a4215503b75951ab98253de1ae53d3"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate_depth.py",
+      "bytes": 5009,
+      "sha256": "b71919689890487f77561f8040865feb5244ded85286e53590898e950bed44b3"
+    },
+    {
+      "path": "tools/spirv_fixtures/generate_vertex.py",
+      "bytes": 5666,
+      "sha256": "dacfafebca51a2ac563e416baa9d8026af5ed25c00608c52673d038237eed9b6"
+    },
+    {
+      "path": "tools/vulkan-validation.lock.json",
+      "bytes": 1628,
+      "sha256": "227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"
+    },
+    {
+      "path": "tools/vulkan_creation_provenance.py",
+      "bytes": 1241,
+      "sha256": "0cf170f2966720f3594480b450acd1f2960e9fdf32f0ded5cdc92fb61c1e89e5"
+    },
+    {
+      "path": "tools/vulkan_upload_experiment.py",
+      "bytes": 2622,
+      "sha256": "93c98aadbc935863d54911321bc9e837a82f346e408d69d25b14b772156afe8c"
+    },
+    {
+      "path": "tools/xcb_window_manager.py",
+      "bytes": 1849,
+      "sha256": "b7202490c1a3512a08262ea2afb7cac009335a96b30d061cf443d9a052b3cd9c"
+    }
+  ],
+  "inputs_unchanged": true,
+  "tracked_status_before": "M  .gitattributes\nM  .github/workflows/build.yml\nA  benchmarks/llgl_vulkan_upload_compare/CMakeLists.txt\nA  benchmarks/llgl_vulkan_upload_compare/Upload.hpp\nA  benchmarks/llgl_vulkan_upload_compare/main.cpp\nA  benchmarks/phase3_comparison/competitors/llgl-transfer-src-upload-performance.json\nA  benchmarks/phase3_comparison/competitors/llgl-upload-comparison.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/CMakeCache.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/VkLayer_gfx_llgl_draw.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/cmp07-build.log\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/cmp07-configure.log\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/cmp07-preflight.log\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.dir/Release/llgl_vul.101AE570.tlog/CL.command.1.tlog\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.dir/Release/llgl_vul.101AE570.tlog/CL.read.1.tlog\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.dir/Release/llgl_vul.101AE570.tlog/link.read.1.tlog\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.vcxproj\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/source-identity.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/GraphicsSDK-MIT.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/LLGL-BSD-3-Clause.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/SDL-zlib.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/Vulkan-Headers-Apache-2.0.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/prior-SDK-SDL-conservative-closure-notices.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/manifest.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/metrics.csv\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/000-probe-graphicssdk-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/000-probe-graphicssdk-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/001-probe-sdl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/001-probe-sdl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/002-probe-llgl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/002-probe-llgl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/003-observe-llgl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/003-observe-llgl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/004-validation-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/004-validation-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/005-validation-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/005-validation-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/006-validation-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/006-validation-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/007-validation-graphicssdk-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/007-validation-graphicssdk-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/008-validation-sdl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/008-validation-sdl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/009-validation-llgl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/009-validation-llgl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/010-validation-graphicssdk-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/010-validation-graphicssdk-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/011-validation-sdl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/011-validation-sdl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/012-validation-llgl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/012-validation-llgl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/013-validation-graphicssdk-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/013-validation-graphicssdk-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/014-validation-sdl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/014-validation-sdl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/015-validation-llgl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/015-validation-llgl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/016-missing-layer-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/016-missing-layer-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/017-wrong-target-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/017-wrong-target-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/018-missing-layer-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/018-missing-layer-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/019-wrong-target-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/019-wrong-target-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/020-missing-layer-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/020-missing-layer-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/021-wrong-target-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/021-wrong-target-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/022-core-control-llgl-core-control-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/022-core-control-llgl-core-control-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/023-sync-control-llgl-sync-control-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/023-sync-control-llgl-sync-control-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/024-sync-disabled-llgl-sync-control-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/024-sync-disabled-llgl-sync-control-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/025-corrupt-readback-llgl-corrupt-readback-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/025-corrupt-readback-llgl-corrupt-readback-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/026-observer-disabled-llgl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/026-observer-disabled-llgl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/027-measurement-sdl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/027-measurement-sdl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/028-measurement-graphicssdk-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/028-measurement-graphicssdk-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/029-measurement-llgl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/029-measurement-llgl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/030-measurement-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/030-measurement-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/031-measurement-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/031-measurement-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/032-measurement-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/032-measurement-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/033-measurement-llgl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/033-measurement-llgl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/034-measurement-sdl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/034-measurement-sdl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/035-measurement-graphicssdk-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/035-measurement-graphicssdk-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/036-measurement-graphicssdk-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/036-measurement-graphicssdk-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/037-measurement-llgl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/037-measurement-llgl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/038-measurement-sdl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/038-measurement-sdl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/039-measurement-sdl-odd-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/039-measurement-sdl-odd-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/040-measurement-graphicssdk-odd-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/040-measurement-graphicssdk-odd-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/041-measurement-llgl-odd-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/041-measurement-llgl-odd-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/042-measurement-graphicssdk-upload4k-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/042-measurement-graphicssdk-upload4k-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/043-measurement-sdl-upload4k-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/043-measurement-sdl-upload4k-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/044-measurement-llgl-upload4k-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/044-measurement-llgl-upload4k-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/045-measurement-llgl-upload4k16f-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/045-measurement-llgl-upload4k16f-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/046-measurement-sdl-upload4k16f-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/046-measurement-sdl-upload4k16f-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/047-measurement-graphicssdk-upload4k16f-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/047-measurement-graphicssdk-upload4k16f-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/048-measurement-sdl-upload1080-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/048-measurement-sdl-upload1080-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/049-measurement-graphicssdk-upload1080-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/049-measurement-graphicssdk-upload1080-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/050-measurement-llgl-upload1080-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/050-measurement-llgl-upload1080-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/051-measurement-sdl-upload4k-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/051-measurement-sdl-upload4k-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/052-measurement-graphicssdk-upload4k-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/052-measurement-graphicssdk-upload4k-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/053-measurement-llgl-upload4k-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/053-measurement-llgl-upload4k-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/054-measurement-llgl-upload1080-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/054-measurement-llgl-upload1080-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/055-measurement-graphicssdk-upload1080-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/055-measurement-graphicssdk-upload1080-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/056-measurement-sdl-upload1080-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/056-measurement-sdl-upload1080-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/057-measurement-llgl-odd-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/057-measurement-llgl-odd-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/058-measurement-graphicssdk-odd-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/058-measurement-graphicssdk-odd-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/059-measurement-sdl-odd-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/059-measurement-sdl-odd-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/060-measurement-llgl-upload4k16f-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/060-measurement-llgl-upload4k16f-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/061-measurement-graphicssdk-upload4k16f-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/061-measurement-graphicssdk-upload4k16f-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/062-measurement-sdl-upload4k16f-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/062-measurement-sdl-upload4k16f-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/063-measurement-graphicssdk-upload4k16f-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/063-measurement-graphicssdk-upload4k16f-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/064-measurement-llgl-upload4k16f-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/064-measurement-llgl-upload4k16f-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/065-measurement-sdl-upload4k16f-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/065-measurement-sdl-upload4k16f-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/066-measurement-llgl-odd-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/066-measurement-llgl-odd-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/067-measurement-sdl-odd-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/067-measurement-sdl-odd-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/068-measurement-graphicssdk-odd-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/068-measurement-graphicssdk-odd-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/069-measurement-graphicssdk-upload1080-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/069-measurement-graphicssdk-upload1080-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/070-measurement-llgl-upload1080-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/070-measurement-llgl-upload1080-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/071-measurement-sdl-upload1080-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/071-measurement-sdl-upload1080-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/072-measurement-llgl-upload4k-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/072-measurement-llgl-upload4k-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/073-measurement-graphicssdk-upload4k-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/073-measurement-graphicssdk-upload4k-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/074-measurement-sdl-upload4k-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/074-measurement-sdl-upload4k-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/075-measurement-graphicssdk-upload1080-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/075-measurement-graphicssdk-upload1080-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/076-measurement-sdl-upload1080-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/076-measurement-sdl-upload1080-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/077-measurement-llgl-upload1080-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/077-measurement-llgl-upload1080-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/078-measurement-llgl-upload4k-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/078-measurement-llgl-upload4k-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/079-measurement-sdl-upload4k-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/079-measurement-sdl-upload4k-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/080-measurement-graphicssdk-upload4k-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/080-measurement-graphicssdk-upload4k-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/081-measurement-sdl-upload4k16f-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/081-measurement-sdl-upload4k16f-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/082-measurement-llgl-upload4k16f-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/082-measurement-llgl-upload4k16f-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/083-measurement-graphicssdk-upload4k16f-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/083-measurement-graphicssdk-upload4k16f-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/084-measurement-graphicssdk-odd-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/084-measurement-graphicssdk-odd-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/085-measurement-sdl-odd-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/085-measurement-sdl-odd-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/086-measurement-llgl-odd-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/086-measurement-llgl-odd-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/environment.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/payload-reference.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/plan.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/prepared-inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/prepared-receipt.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/profile-inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/receipt.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/runtime-inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/runtime-receipt.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/settings/vk_layer_settings.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/sync-off/vk_layer_settings.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/profile/llgl-transfer-src-allocation.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/profile/llgl-transfer-src-profile.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/profile/llgl-transfer-src-upload-performance.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/source.zip\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/summary.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/verify.py\nM  docs/PHASE3_SCOPE.md\nA  docs/PHASE3_THREE_SDK_UPLOAD_REPORT.md\nM  docs/ROADMAP.md\nM  docs/ROADMAP_TASKS.json\n M tests/VulkanAllocationBenchmarkTests.cpp\nA  tests/test_llgl_upload_comparison.py\nA  tools/check_llgl_upload_comparison.py\nA  tools/compare_llgl_upload.py",
+  "tracked_status_after": "M  .gitattributes\nM  .github/workflows/build.yml\nA  benchmarks/llgl_vulkan_upload_compare/CMakeLists.txt\nA  benchmarks/llgl_vulkan_upload_compare/Upload.hpp\nA  benchmarks/llgl_vulkan_upload_compare/main.cpp\nA  benchmarks/phase3_comparison/competitors/llgl-transfer-src-upload-performance.json\nA  benchmarks/phase3_comparison/competitors/llgl-upload-comparison.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/CMakeCache.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/VkLayer_gfx_llgl_draw.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/cmp07-build.log\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/cmp07-configure.log\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/cmp07-preflight.log\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.dir/Release/llgl_vul.101AE570.tlog/CL.command.1.tlog\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.dir/Release/llgl_vul.101AE570.tlog/CL.read.1.tlog\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.dir/Release/llgl_vul.101AE570.tlog/link.read.1.tlog\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/llgl_vulkan_upload_compare.vcxproj\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/build/source-identity.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/GraphicsSDK-MIT.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/LLGL-BSD-3-Clause.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/SDL-zlib.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/Vulkan-Headers-Apache-2.0.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/licenses/prior-SDK-SDL-conservative-closure-notices.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/manifest.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/metrics.csv\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/000-probe-graphicssdk-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/000-probe-graphicssdk-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/001-probe-sdl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/001-probe-sdl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/002-probe-llgl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/002-probe-llgl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/003-observe-llgl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/003-observe-llgl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/004-validation-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/004-validation-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/005-validation-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/005-validation-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/006-validation-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/006-validation-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/007-validation-graphicssdk-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/007-validation-graphicssdk-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/008-validation-sdl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/008-validation-sdl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/009-validation-llgl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/009-validation-llgl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/010-validation-graphicssdk-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/010-validation-graphicssdk-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/011-validation-sdl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/011-validation-sdl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/012-validation-llgl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/012-validation-llgl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/013-validation-graphicssdk-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/013-validation-graphicssdk-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/014-validation-sdl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/014-validation-sdl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/015-validation-llgl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/015-validation-llgl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/016-missing-layer-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/016-missing-layer-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/017-wrong-target-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/017-wrong-target-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/018-missing-layer-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/018-missing-layer-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/019-wrong-target-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/019-wrong-target-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/020-missing-layer-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/020-missing-layer-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/021-wrong-target-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/021-wrong-target-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/022-core-control-llgl-core-control-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/022-core-control-llgl-core-control-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/023-sync-control-llgl-sync-control-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/023-sync-control-llgl-sync-control-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/024-sync-disabled-llgl-sync-control-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/024-sync-disabled-llgl-sync-control-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/025-corrupt-readback-llgl-corrupt-readback-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/025-corrupt-readback-llgl-corrupt-readback-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/026-observer-disabled-llgl-probe-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/026-observer-disabled-llgl-probe-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/027-measurement-sdl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/027-measurement-sdl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/028-measurement-graphicssdk-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/028-measurement-graphicssdk-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/029-measurement-llgl-upload4k16f-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/029-measurement-llgl-upload4k16f-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/030-measurement-sdl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/030-measurement-sdl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/031-measurement-llgl-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/031-measurement-llgl-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/032-measurement-graphicssdk-odd-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/032-measurement-graphicssdk-odd-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/033-measurement-llgl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/033-measurement-llgl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/034-measurement-sdl-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/034-measurement-sdl-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/035-measurement-graphicssdk-upload1080-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/035-measurement-graphicssdk-upload1080-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/036-measurement-graphicssdk-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/036-measurement-graphicssdk-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/037-measurement-llgl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/037-measurement-llgl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/038-measurement-sdl-upload4k-0.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/038-measurement-sdl-upload4k-0.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/039-measurement-sdl-odd-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/039-measurement-sdl-odd-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/040-measurement-graphicssdk-odd-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/040-measurement-graphicssdk-odd-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/041-measurement-llgl-odd-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/041-measurement-llgl-odd-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/042-measurement-graphicssdk-upload4k-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/042-measurement-graphicssdk-upload4k-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/043-measurement-sdl-upload4k-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/043-measurement-sdl-upload4k-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/044-measurement-llgl-upload4k-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/044-measurement-llgl-upload4k-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/045-measurement-llgl-upload4k16f-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/045-measurement-llgl-upload4k16f-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/046-measurement-sdl-upload4k16f-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/046-measurement-sdl-upload4k16f-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/047-measurement-graphicssdk-upload4k16f-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/047-measurement-graphicssdk-upload4k16f-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/048-measurement-sdl-upload1080-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/048-measurement-sdl-upload1080-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/049-measurement-graphicssdk-upload1080-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/049-measurement-graphicssdk-upload1080-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/050-measurement-llgl-upload1080-1.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/050-measurement-llgl-upload1080-1.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/051-measurement-sdl-upload4k-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/051-measurement-sdl-upload4k-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/052-measurement-graphicssdk-upload4k-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/052-measurement-graphicssdk-upload4k-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/053-measurement-llgl-upload4k-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/053-measurement-llgl-upload4k-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/054-measurement-llgl-upload1080-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/054-measurement-llgl-upload1080-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/055-measurement-graphicssdk-upload1080-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/055-measurement-graphicssdk-upload1080-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/056-measurement-sdl-upload1080-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/056-measurement-sdl-upload1080-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/057-measurement-llgl-odd-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/057-measurement-llgl-odd-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/058-measurement-graphicssdk-odd-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/058-measurement-graphicssdk-odd-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/059-measurement-sdl-odd-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/059-measurement-sdl-odd-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/060-measurement-llgl-upload4k16f-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/060-measurement-llgl-upload4k16f-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/061-measurement-graphicssdk-upload4k16f-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/061-measurement-graphicssdk-upload4k16f-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/062-measurement-sdl-upload4k16f-2.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/062-measurement-sdl-upload4k16f-2.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/063-measurement-graphicssdk-upload4k16f-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/063-measurement-graphicssdk-upload4k16f-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/064-measurement-llgl-upload4k16f-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/064-measurement-llgl-upload4k16f-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/065-measurement-sdl-upload4k16f-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/065-measurement-sdl-upload4k16f-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/066-measurement-llgl-odd-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/066-measurement-llgl-odd-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/067-measurement-sdl-odd-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/067-measurement-sdl-odd-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/068-measurement-graphicssdk-odd-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/068-measurement-graphicssdk-odd-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/069-measurement-graphicssdk-upload1080-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/069-measurement-graphicssdk-upload1080-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/070-measurement-llgl-upload1080-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/070-measurement-llgl-upload1080-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/071-measurement-sdl-upload1080-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/071-measurement-sdl-upload1080-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/072-measurement-llgl-upload4k-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/072-measurement-llgl-upload4k-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/073-measurement-graphicssdk-upload4k-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/073-measurement-graphicssdk-upload4k-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/074-measurement-sdl-upload4k-3.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/074-measurement-sdl-upload4k-3.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/075-measurement-graphicssdk-upload1080-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/075-measurement-graphicssdk-upload1080-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/076-measurement-sdl-upload1080-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/076-measurement-sdl-upload1080-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/077-measurement-llgl-upload1080-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/077-measurement-llgl-upload1080-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/078-measurement-llgl-upload4k-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/078-measurement-llgl-upload4k-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/079-measurement-sdl-upload4k-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/079-measurement-sdl-upload4k-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/080-measurement-graphicssdk-upload4k-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/080-measurement-graphicssdk-upload4k-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/081-measurement-sdl-upload4k16f-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/081-measurement-sdl-upload4k16f-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/082-measurement-llgl-upload4k16f-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/082-measurement-llgl-upload4k16f-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/083-measurement-graphicssdk-upload4k16f-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/083-measurement-graphicssdk-upload4k16f-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/084-measurement-graphicssdk-odd-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/084-measurement-graphicssdk-odd-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/085-measurement-sdl-odd-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/085-measurement-sdl-odd-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/086-measurement-llgl-odd-4.stderr\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/commands/086-measurement-llgl-odd-4.stdout\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/environment.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/payload-reference.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/plan.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/prepared-inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/prepared-receipt.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/profile-inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/receipt.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/runtime-inputs.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/runtime-receipt.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/settings/vk_layer_settings.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/sync-off/vk_layer_settings.txt\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/profile/llgl-transfer-src-allocation.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/profile/llgl-transfer-src-profile.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/profile/llgl-transfer-src-upload-performance.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/source.zip\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/summary.json\nA  benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/verify.py\nM  docs/PHASE3_SCOPE.md\nA  docs/PHASE3_THREE_SDK_UPLOAD_REPORT.md\nM  docs/ROADMAP.md\nM  docs/ROADMAP_TASKS.json\n M tests/VulkanAllocationBenchmarkTests.cpp\nA  tests/test_llgl_upload_comparison.py\nA  tools/check_llgl_upload_comparison.py\nA  tools/compare_llgl_upload.py",
+  "tests": 1075,
+  "test_ids": [
+    "test_adapter_validation.AdapterEvidenceTests.test_duplicate_identity_fails",
+    "test_adapter_validation.AdapterEvidenceTests.test_hardware_and_warp_exact_selection",
+    "test_adapter_validation.AdapterEvidenceTests.test_initial_and_final_wrong_id_fail",
+    "test_adapter_validation.AdapterEvidenceTests.test_malformed_id_and_unavailable_metadata_are_not_zero",
+    "test_adapter_validation.AdapterEvidenceTests.test_missing_or_stale_list_footer_fails",
+    "test_adapter_validation.AdapterEvidenceTests.test_missing_recovery_receipt_fails",
+    "test_adapter_validation.AdapterEvidenceTests.test_recovery_fallback_is_rejected",
+    "test_adapter_validation.AdapterEvidenceTests.test_same_name_is_not_identity",
+    "test_adapter_validation.AdapterEvidenceTests.test_unique_metadata_with_real_zero_id",
+    "test_adapter_validation.AdapterEvidenceTests.test_wrong_validation_or_software_mode_fails",
+    "test_benchmarks.StatisticsTests.test_bgfx_fingerprint_includes_build_options_and_fixed_dependency_commits",
+    "test_benchmarks.StatisticsTests.test_bgfx_lazy_program_is_not_a_measured_pso",
+    "test_benchmarks.StatisticsTests.test_bgfx_pool_policy_cannot_enter_default_allocation_comparison",
+    "test_benchmarks.StatisticsTests.test_bgfx_unsupported_request_fails_before_creating_measurements",
+    "test_benchmarks.StatisticsTests.test_diligent_fingerprint_detects_source_and_dependency_changes",
+    "test_benchmarks.StatisticsTests.test_incomparable_hardware_and_validation",
+    "test_benchmarks.StatisticsTests.test_noise_and_repeatability",
+    "test_benchmarks.StatisticsTests.test_tail_and_run_medians",
+    "test_benchmarks.StatisticsTests.test_workload_and_readback_must_match_the_request",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_accepts_only_fixed_working_set",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_cpu_and_gpu_retention_controls_are_required",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_error_count_cannot_be_filtered_or_omitted",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_missing_footer_and_samples_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_missing_memory_and_failed_dxgi_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_pending_or_changed_pool_and_final_leaks_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_private_gpu_and_handle_growth_cannot_pass",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_reference_work_duration_and_checkpoint_gap_fail",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_sdk_identity_and_adapter_are_required",
+    "test_bounded_gbv.BoundedAcceptanceTests.test_short_or_disabled_validation_is_rejected",
+    "test_capture_memory_failure.SelectedLibraryTests.test_selected_library_mutation_rejects_completed_child",
+    "test_capture_memory_failure.SelectedLibraryTests.test_separate_symbol_library_needs_no_default_core_library",
+    "test_crash_capture.CrashEvidenceTests.test_application_breakpoint_not_labelled_as_loader_event",
+    "test_crash_capture.CrashEvidenceTests.test_child_exit_and_collector_exit_must_agree",
+    "test_crash_capture.CrashEvidenceTests.test_completed_and_crashed_capture_never_accept_memory",
+    "test_crash_capture.CrashEvidenceTests.test_missing_counter_debug_text_overflow_and_dump_failure_rejected",
+    "test_crash_capture.CrashEvidenceTests.test_second_chance_and_fault_context_cannot_disappear",
+    "test_crash_capture.CrashEvidenceTests.test_timeout_requires_matching_native_exit_and_receipt",
+    "test_crash_capture.CrashEvidenceTests.test_truncated_capture_not_complete",
+    "test_crash_capture.CrashEvidenceTests.test_wrong_scope_or_nondiagnostic_result_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_complete_and_explicitly_truncated_sets",
+    "test_crash_capture.ThreadSnapshotTests.test_downgraded_or_orphan_receipts_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_duplicate_threads_and_fault_misclassification_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_missing_worker_context_or_pc",
+    "test_crash_capture.ThreadSnapshotTests.test_snapshot_correlation_and_order_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_thread_and_frame_limits_cannot_be_relaxed",
+    "test_crash_capture.ThreadSnapshotTests.test_truncation_and_false_completeness_rejected",
+    "test_crash_capture.ThreadSnapshotTests.test_unavailable_context_cannot_have_frames",
+    "test_crash_capture.ThreadSnapshotTests.test_unavailable_context_is_explicit_and_not_complete",
+    "test_crash_capture.ThreadSnapshotTests.test_unbounded_or_discontinuous_stacks_rejected",
+    "test_current_vulkan_allocation.CurrentAllocation.test_all_scenarios_have_five_repetitions_for_both_sdks",
+    "test_current_vulkan_allocation.CurrentAllocation.test_both_columns_keep_150_samples_and_process_medians",
+    "test_current_vulkan_allocation.CurrentAllocation.test_buffer_usage_difference_and_full_buffer_readback",
+    "test_current_vulkan_allocation.CurrentAllocation.test_cpu_and_allocation_boundaries_are_explicit",
+    "test_current_vulkan_allocation.CurrentAllocation.test_every_created_resource_is_released_and_used",
+    "test_current_vulkan_allocation.CurrentAllocation.test_exact_native_arguments",
+    "test_current_vulkan_allocation.CurrentAllocation.test_four_scenarios_modes_and_sdks",
+    "test_current_vulkan_allocation.CurrentAllocation.test_frozen_samples_and_columns",
+    "test_current_vulkan_allocation.CurrentAllocation.test_full_resource_scope_and_sample_budget",
+    "test_current_vulkan_allocation.CurrentAllocation.test_invalid_intervals_and_zero_creation_rejected",
+    "test_current_vulkan_allocation.CurrentAllocation.test_missing_duplicate_repetitions_rejected",
+    "test_current_vulkan_allocation.CurrentAllocation.test_no_timing_or_cache_or_reclamation_promotion",
+    "test_current_vulkan_allocation.CurrentAllocation.test_resource_sizes_counts_and_usage_cannot_drift",
+    "test_current_vulkan_allocation.CurrentAllocation.test_seeded_adjacent_sdk_pairs_alternate",
+    "test_current_vulkan_allocation.CurrentAllocation.test_source_driver_and_validation_contamination",
+    "test_current_vulkan_allocation.CurrentAllocation.test_validation_and_controls_finish_before_timing",
+    "test_current_vulkan_allocation.CurrentAllocation.test_validation_warmup_exclusion_and_outlier_retention",
+    "test_current_vulkan_allocation.CurrentAllocation.test_zero_release_allowed_without_reclamation_claim",
+    "test_current_vulkan_draw.CurrentDraw.test_all_four_columns_keep_150_samples_and_process_medians",
+    "test_current_vulkan_draw.CurrentDraw.test_cpu_wall_wait_is_not_gpu_timestamp",
+    "test_current_vulkan_draw.CurrentDraw.test_each_cpu_interval_partitions_primary_total",
+    "test_current_vulkan_draw.CurrentDraw.test_every_scenario_has_five_repetitions_for_both_sdks",
+    "test_current_vulkan_draw.CurrentDraw.test_full_draw_scope_and_sample_budget",
+    "test_current_vulkan_draw.CurrentDraw.test_geometry_work_and_shader_contract_cannot_drift",
+    "test_current_vulkan_draw.CurrentDraw.test_missing_or_duplicate_independent_repetition_rejected",
+    "test_current_vulkan_draw.CurrentDraw.test_native_argv_has_correct_profile_mode_and_target",
+    "test_current_vulkan_draw.CurrentDraw.test_nonfinite_negative_boolean_and_wrong_primary_rejected",
+    "test_current_vulkan_draw.CurrentDraw.test_roadmap_keeps_separate_required_gpu_gate",
+    "test_current_vulkan_draw.CurrentDraw.test_sample_budget_and_column_order_are_frozen",
+    "test_current_vulkan_draw.CurrentDraw.test_scope_cannot_drop_instancing_or_hide_gpu_pending",
+    "test_current_vulkan_draw.CurrentDraw.test_sdk_pairs_alternate_and_schedule_reproduces",
+    "test_current_vulkan_draw.CurrentDraw.test_source_driver_and_validation_contamination_rejected",
+    "test_current_vulkan_draw.CurrentDraw.test_three_scenarios_two_modes_two_sdks",
+    "test_current_vulkan_draw.CurrentDraw.test_validation_and_controls_finish_before_timing",
+    "test_current_vulkan_draw.CurrentDraw.test_validation_and_warmup_not_part_of_statistics",
+    "test_current_vulkan_draw.CurrentDraw.test_wrong_draw_instance_counts_and_reference_bytes_rejected",
+    "test_current_vulkan_draw.CurrentDraw.test_zero_component_can_be_valid_but_not_zero_total",
+    "test_current_vulkan_pso.CurrentPso.test_all_scenarios_have_five_repetitions_for_both_sdks",
+    "test_current_vulkan_pso.CurrentPso.test_both_columns_keep_150_samples_and_process_medians",
+    "test_current_vulkan_pso.CurrentPso.test_cpu_and_cache_boundaries_are_explicit",
+    "test_current_vulkan_pso.CurrentPso.test_every_created_pipeline_is_released_and_used",
+    "test_current_vulkan_pso.CurrentPso.test_exact_native_arguments",
+    "test_current_vulkan_pso.CurrentPso.test_frozen_samples_and_columns",
+    "test_current_vulkan_pso.CurrentPso.test_full_pipeline_scope_and_sample_budget",
+    "test_current_vulkan_pso.CurrentPso.test_geometry_and_pipeline_counts_cannot_drift",
+    "test_current_vulkan_pso.CurrentPso.test_invalid_intervals_and_zero_creation_rejected",
+    "test_current_vulkan_pso.CurrentPso.test_missing_duplicate_repetitions_rejected",
+    "test_current_vulkan_pso.CurrentPso.test_no_timing_or_cache_or_reclamation_promotion",
+    "test_current_vulkan_pso.CurrentPso.test_seeded_adjacent_sdk_pairs_alternate",
+    "test_current_vulkan_pso.CurrentPso.test_source_driver_and_validation_contamination",
+    "test_current_vulkan_pso.CurrentPso.test_two_scenarios_modes_and_sdks",
+    "test_current_vulkan_pso.CurrentPso.test_validation_and_controls_finish_before_timing",
+    "test_current_vulkan_pso.CurrentPso.test_validation_warmup_exclusion_and_outlier_retention",
+    "test_current_vulkan_pso.CurrentPso.test_zero_release_allowed_without_reclamation_claim",
+    "test_current_vulkan_upload.CurrentUpload.test_adjacent_sdk_pairs_alternate_and_order_is_repeatable",
+    "test_current_vulkan_upload.CurrentUpload.test_all_four_shapes_have_five_independent_repetitions",
+    "test_current_vulkan_upload.CurrentUpload.test_all_validation_and_controls_precede_timing",
+    "test_current_vulkan_upload.CurrentUpload.test_cannot_accept_other_workloads_or_reuse_history",
+    "test_current_vulkan_upload.CurrentUpload.test_controls_and_workload_arguments",
+    "test_current_vulkan_upload.CurrentUpload.test_duplicate_or_missing_process_repetition_rejected",
+    "test_current_vulkan_upload.CurrentUpload.test_full_image_each_shape_and_mode",
+    "test_current_vulkan_upload.CurrentUpload.test_full_upload_scope_and_sample_budget",
+    "test_current_vulkan_upload.CurrentUpload.test_group_statistics_are_all_150_raw_samples",
+    "test_current_vulkan_upload.CurrentUpload.test_incomplete_large_or_half_float_readback_rejected",
+    "test_current_vulkan_upload.CurrentUpload.test_no_timestamp_or_boundary_promotion",
+    "test_current_vulkan_upload.CurrentUpload.test_nonpositive_boolean_nonfinite_values_rejected",
+    "test_current_vulkan_upload.CurrentUpload.test_sample_counts_types_and_order_are_frozen",
+    "test_current_vulkan_upload.CurrentUpload.test_scope_does_not_drop_odd_or_half_float",
+    "test_current_vulkan_upload.CurrentUpload.test_validation_timing_contamination_rejected",
+    "test_current_vulkan_upload.CurrentUpload.test_validation_values_excluded_from_statistics",
+    "test_current_vulkan_upload.CurrentUpload.test_warmup_and_reference_generation_not_samples",
+    "test_current_vulkan_upload.CurrentUpload.test_wrong_format_dimensions_sources_or_gpu_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_changed_source_order_or_final_callback_totals_are_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_early_resource_or_device_destruction_is_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_failed_or_reduced_validation_cannot_pass",
+    "test_device_lifetime.LifetimeParserTests.test_missing_footer_cycle_or_callback_is_rejected",
+    "test_device_lifetime.LifetimeParserTests.test_missing_identity_module_or_failed_hardware_observation",
+    "test_device_lifetime.LifetimeParserTests.test_post_device_statistics_cannot_be_fabricated",
+    "test_device_lifetime.LifetimeParserTests.test_sdk_ownership_and_full_references_are_required",
+    "test_device_lifetime.LifetimeParserTests.test_valid_native_and_sdk_scopes_remain_observations",
+    "test_device_lifetime.LifetimeParserTests.test_warp_unsupported_dxgi_is_explicit",
+    "test_fixed_memory.FixedMemoryContracts.test_abort_requires_observed_threshold_and_no_later_work",
+    "test_fixed_memory.FixedMemoryContracts.test_bad_types_ranges_and_timing_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_case_artifact_reference_command_and_frozen_identity_cannot_change",
+    "test_fixed_memory.FixedMemoryContracts.test_command_paths_and_argument_order_remain_bound",
+    "test_fixed_memory.FixedMemoryContracts.test_different_work_or_binary_does_not_produce_memory_comparison",
+    "test_fixed_memory.FixedMemoryContracts.test_equivalent_output_path_preserves_original_command",
+    "test_fixed_memory.FixedMemoryContracts.test_exact_warmup_measurement_and_remainder_checkpoint",
+    "test_fixed_memory.FixedMemoryContracts.test_fixed_work_cannot_enter_timed_acceptance",
+    "test_fixed_memory.FixedMemoryContracts.test_guard_and_wall_deadline_preserve_verified_prefix",
+    "test_fixed_memory.FixedMemoryContracts.test_identity_public_budget_and_drain_contracts_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_incomplete_oversized_and_wrong_split_counts_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_matched_comparison_uses_work_coordinates",
+    "test_fixed_memory.FixedMemoryContracts.test_missing_duplicate_and_out_of_order_work_checkpoints_reject",
+    "test_fixed_memory.FixedMemoryContracts.test_zero_warmup_and_one_round_are_valid",
+    "test_forge_benchmarks.ForgeContracts.test_external_configuration_is_part_of_the_compiled_identity",
+    "test_forge_benchmarks.ForgeContracts.test_legacy_nvapi_is_rejected_but_forge_fallback_helper_is_allowed",
+    "test_forge_benchmarks.ForgeContracts.test_runtime_and_gpu_configuration_copies_must_match_pinned_bytes",
+    "test_forge_benchmarks.ForgeContracts.test_vendor_terms_are_distinguished_from_forge_root_license",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_loss_decode_error_or_unknown_clock_cannot_pass",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_missing_or_inconsistent_lifetime_or_usage_is_rejected",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_system_thread_destruction_is_joined_by_allocation_handle",
+    "test_gpu_memory_trace.GpuMemoryTraceContracts.test_transient_positive_control_requires_overlap_inside_checkpoint_gap_and_missed_peak",
+    "test_gpu_timestamps.TimestampContracts.test_completed_gpu_query_is_required_and_finite",
+    "test_gpu_timestamps.TimestampContracts.test_diligent_start_resolve_inside_interval_cannot_enter_common_comparison",
+    "test_gpu_timestamps.TimestampContracts.test_missing_or_different_interval_and_cpu_wait_masquerade_are_rejected",
+    "test_gpu_timestamps.TimestampContracts.test_statistics_preserve_gpu_query_values_and_contract_separation",
+    "test_gpu_timestamps.TimestampContracts.test_unsupported_adapters_fail_before_output_creation",
+    "test_license_audit.CompilerEvidenceTests.test_bgfx_vendored_notices_are_not_replaced_by_root_bsd",
+    "test_license_audit.CompilerEvidenceTests.test_d3dx12_origin_accepts_only_recorded_body",
+    "test_license_audit.CompilerEvidenceTests.test_diligent_checksum_keeps_rsa_terms_and_nvapi_binary_is_explicit",
+    "test_license_audit.CompilerEvidenceTests.test_missing_trace_is_not_empty_success",
+    "test_license_audit.CompilerEvidenceTests.test_notices_inside_amalgamated_header_and_at_end",
+    "test_license_audit.CompilerEvidenceTests.test_pin_refresh_requires_new_review",
+    "test_license_audit.CompilerEvidenceTests.test_private_backend_headers_are_part_of_sdk_source_identity",
+    "test_license_audit.CompilerEvidenceTests.test_specific_license_precedes_project_default",
+    "test_license_audit.CompilerEvidenceTests.test_unknown_linked_library_is_not_covered_by_header_inventory",
+    "test_license_audit.CompilerEvidenceTests.test_utf16_batched_sources_and_headers",
+    "test_license_audit.PackageTests.test_archive_traversal_and_windows_aliases",
+    "test_license_audit.PackageTests.test_competitor_dll_cannot_hide_in_sdk_package",
+    "test_license_audit.PackageTests.test_known_sdk_payload",
+    "test_license_audit.PackageTests.test_missing_or_changed_license_and_library",
+    "test_license_audit.PackageTests.test_unreviewed_header_cannot_hide_under_public_include",
+    "test_license_audit.PackageTests.test_unsafe_directory_cannot_be_skipped_by_zip_reader",
+    "test_license_audit.SnapshotTests.test_changed_notice_is_detected_without_overwriting",
+    "test_linux_comparison.LinuxComparison.test_both_sdks_and_validation_modes",
+    "test_linux_comparison.LinuxComparison.test_controls_need_specific_failure_and_no_result",
+    "test_linux_comparison.LinuxComparison.test_duplicate_public_names_rejected",
+    "test_linux_comparison.LinuxComparison.test_exact_software_selection",
+    "test_linux_comparison.LinuxComparison.test_invalid_native_metadata_rejected",
+    "test_linux_comparison.LinuxComparison.test_large_id_requires_exact_string",
+    "test_linux_comparison.LinuxComparison.test_linux_uuid_without_windows_luid",
+    "test_linux_comparison.LinuxComparison.test_missing_and_duplicate_uuid_rejected",
+    "test_linux_comparison.LinuxComparison.test_packages_must_resolve_to_fresh_roots",
+    "test_linux_comparison.LinuxComparison.test_physical_model_requires_pci_driver",
+    "test_linux_comparison.LinuxComparison.test_real_cmake_cache_syntax",
+    "test_linux_comparison.LinuxComparison.test_schedule_has_two_fresh_repeats_and_six_controls",
+    "test_linux_comparison.LinuxComparison.test_software_never_physical",
+    "test_linux_comparison.LinuxComparison.test_software_receipt_cannot_promote_completion",
+    "test_linux_comparison.LinuxComparison.test_sources_driver_and_environment_must_match",
+    "test_linux_comparison.LinuxComparison.test_timing_and_hardware_claims_rejected",
+    "test_linux_comparison.LinuxComparison.test_validation_contamination_and_wrong_layer",
+    "test_linux_comparison.LinuxComparison.test_validation_environment_is_child_only_and_plain_is_clean",
+    "test_linux_comparison.LinuxComparison.test_virtual_and_other_devices_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_boolean_metadata_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_cpu_and_software_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_driver_uuid_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_exact_creation_controls_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_pci_provenance_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_missing_selection_rejections_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_numeric_large_adapter_id_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_source_mismatch_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_synthetic_gate_model",
+    "test_linux_hardware.PhysicalGateContracts.test_uuid_set_mismatch_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_virtual_and_other_kinds_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_virtual_pci_driver_rejected",
+    "test_linux_hardware.PhysicalGateContracts.test_workload_and_validation_are_required",
+    "test_linux_hardware.PhysicalGateContracts.test_wrong_exact_id_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_consumer_repository_header_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_consumer_vendor_header_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_exact_payload_zip",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_extra_runtime_binary_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_gnu_continuation_and_escaped_space",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_header_tamper_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_installed_header_accepted",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_missing_dependency_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_missing_notice_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_missing_target_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_notice_tamper_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_stale_archive_rejected",
+    "test_linux_package_audit.LinuxPackageAuditTests.test_unknown_external_input_rejected",
+    "test_linux_workloads.LinuxPort.test_adapter_rejects_missing_or_duplicate_contract_tokens",
+    "test_linux_workloads.LinuxPort.test_all_four_adapters_preserve_workload_bodies",
+    "test_linux_workloads.LinuxPort.test_generation_is_deterministic_and_confined_to_out",
+    "test_linux_workloads.LinuxWorkloadContracts.test_draw_partition_and_instancing_contract",
+    "test_linux_workloads.LinuxWorkloadContracts.test_four_profiles_both_sdks_probe_and_smoke",
+    "test_linux_workloads.LinuxWorkloadContracts.test_full_readback_and_validation_required",
+    "test_linux_workloads.LinuxWorkloadContracts.test_pipeline_and_allocation_use_and_release",
+    "test_linux_workloads.LinuxWorkloadContracts.test_platform_and_source_cannot_be_mixed",
+    "test_linux_workloads.LinuxWorkloadContracts.test_probe_must_not_execute_work",
+    "test_linux_workloads.LinuxWorkloadContracts.test_schedule_and_explicit_argv",
+    "test_linux_workloads.LinuxWorkloadContracts.test_shader_api_and_usage_boundaries",
+    "test_linux_workloads.LinuxWorkloadContracts.test_software_scope_cannot_be_promoted",
+    "test_linux_workloads.LinuxWorkloadContracts.test_zero_release_is_allowed_but_nonfinite_times_are_not",
+    "test_linux_wsi_scope.ScopeContracts.test_BGRA_is_explicit_and_requires_native_format",
+    "test_linux_wsi_scope.ScopeContracts.test_Wayland_and_software_are_not_inferred",
+    "test_linux_wsi_scope.ScopeContracts.test_honest_unsupported_prerequisite",
+    "test_linux_wsi_scope.ScopeContracts.test_limits_and_device_creation_are_required",
+    "test_linux_wsi_scope.ScopeContracts.test_missing_completion_or_format_or_usage",
+    "test_linux_wsi_scope.ScopeContracts.test_no_duplicate_or_unknown_native_identity",
+    "test_linux_wsi_scope.ScopeContracts.test_scope_is_not_SDK_presentation",
+    "test_linux_wsi_scope.ScopeContracts.test_stale_or_incomplete_source",
+    "test_linux_wsi_scope.ScopeContracts.test_wrong_selected_queue_or_surface_support",
+    "test_linux_xcb_events.LifecycleContracts.test_complete_campaign",
+    "test_linux_xcb_events.LifecycleContracts.test_error_or_boolean_counters_fail",
+    "test_linux_xcb_events.LifecycleContracts.test_full_images_and_padding",
+    "test_linux_xcb_events.LifecycleContracts.test_loss_recovery_is_bounded_and_covers_queries",
+    "test_linux_xcb_events.LifecycleContracts.test_native_closure",
+    "test_linux_xcb_events.LifecycleContracts.test_pending_close_is_actual_and_completed",
+    "test_linux_xcb_events.LifecycleContracts.test_real_hide_iconify_restore_idle_and_close",
+    "test_linux_xcb_events.LifecycleContracts.test_wrong_case_order_source_validation_or_scope",
+    "test_linux_xcb_lifetime.LifetimeContracts.test_all_native_objects_and_order_required",
+    "test_linux_xcb_lifetime.LifetimeContracts.test_complete_campaign",
+    "test_linux_xcb_lifetime.LifetimeContracts.test_missing_or_reordered_cases_fail",
+    "test_linux_xcb_lifetime.LifetimeContracts.test_no_source_validation_or_scope_substitution",
+    "test_linux_xcb_lifetime.LifetimeContracts.test_real_pending_gate_and_completion_required",
+    "test_linux_xcb_lifetime.LifetimeContracts.test_references_rejections_faults_and_errors",
+    "test_linux_xcb_manual.ManualPreparation.test_bounded_smoke_and_actual_close_are_distinct",
+    "test_linux_xcb_manual.ManualPreparation.test_captured_reference_required_for_every_smoke_frame",
+    "test_linux_xcb_manual.ManualPreparation.test_changed_native_log_is_rejected",
+    "test_linux_xcb_manual.ManualPreparation.test_completion_closure_errors_and_recovery_fail",
+    "test_linux_xcb_manual.ManualPreparation.test_exact_selection_no_fallback_and_uuid_binding",
+    "test_linux_xcb_manual.ManualPreparation.test_failed_exit_changed_inputs_and_acceptance_flag_fail",
+    "test_linux_xcb_manual.ManualPreparation.test_filled_human_claims_are_still_not_acceptance",
+    "test_linux_xcb_manual.ManualPreparation.test_human_form_bound_to_exact_session_and_device",
+    "test_linux_xcb_manual.ManualPreparation.test_layer_dot_path_and_teardown_errors",
+    "test_linux_xcb_manual.ManualPreparation.test_motion_scissor_and_frame_order",
+    "test_linux_xcb_manual.ManualPreparation.test_smoke_and_real_close_records_never_accept_display",
+    "test_linux_xcb_manual.ManualPreparation.test_smoke_cannot_choose_physical_or_multiple_candidates",
+    "test_linux_xcb_manual.ManualPreparation.test_source_validation_and_automated_scope_match",
+    "test_linux_xcb_manual.ManualPreparation.test_wrong_platform_is_rejected_without_creating_output",
+    "test_linux_xcb_matrix.IntegratedContracts.test_all_three_control_instances_use_pinned_layer",
+    "test_linux_xcb_matrix.IntegratedContracts.test_complete_campaigns",
+    "test_linux_xcb_matrix.IntegratedContracts.test_control_loader_dot_segments_and_wrong_runtime",
+    "test_linux_xcb_matrix.IntegratedContracts.test_missing_suite_or_changed_install",
+    "test_linux_xcb_matrix.IntegratedContracts.test_unsupported_controls_must_run_and_match_scope",
+    "test_linux_xcb_matrix.IntegratedContracts.test_validation_must_detect_core_and_sync_without_gpu_submission",
+    "test_linux_xcb_matrix.MultiWindowContracts.test_complete_modes_and_references",
+    "test_linux_xcb_matrix.MultiWindowContracts.test_missing_pair_or_image",
+    "test_linux_xcb_matrix.MultiWindowContracts.test_native_mode_format_and_image_bounds",
+    "test_linux_xcb_matrix.MultiWindowContracts.test_peer_output_sequence_not_interchangeable",
+    "test_linux_xcb_matrix.MultiWindowContracts.test_pixel_padding_rejections_and_boolean_counters",
+    "test_linux_xcb_matrix.MultiWindowContracts.test_present_completion_and_resource_closure",
+    "test_linux_xcb_matrix.MultiWindowContracts.test_scope_and_source_identity",
+    "test_linux_xcb_present.PresentContracts.test_all_declared_controls",
+    "test_linux_xcb_present.PresentContracts.test_format_mode_extent_are_native",
+    "test_linux_xcb_present.PresentContracts.test_full_images_transfers_and_padding_required",
+    "test_linux_xcb_present.PresentContracts.test_mailbox_has_stricter_native_image_count",
+    "test_linux_xcb_present.PresentContracts.test_missing_presents_or_completion",
+    "test_linux_xcb_present.PresentContracts.test_native_stderr_survives_outer_stderr_stdout_merge",
+    "test_linux_xcb_present.PresentContracts.test_no_fake_coverage_or_human_acceptance",
+    "test_linux_xcb_present.PresentContracts.test_no_native_leak_or_validation_errors",
+    "test_linux_xcb_present.PresentContracts.test_stale_source_or_wrong_validation",
+    "test_linux_xcb_resize.ResizeContracts.test_complete_campaign",
+    "test_linux_xcb_resize.ResizeContracts.test_errors_and_boolean_counters_rejected",
+    "test_linux_xcb_resize.ResizeContracts.test_full_pixels_and_padding",
+    "test_linux_xcb_resize.ResizeContracts.test_missing_cases_and_wrong_order",
+    "test_linux_xcb_resize.ResizeContracts.test_native_closure_and_completion",
+    "test_linux_xcb_resize.ResizeContracts.test_no_wrong_source_validation_or_scope",
+    "test_linux_xcb_resize.ResizeContracts.test_pending_work_really_blocked_and_released",
+    "test_linux_xcb_resize.ResizeContracts.test_retirement_failure_retry_and_status_coverage",
+    "test_linux_xcb_surface.XcbContracts.test_GPU_reference_and_origin",
+    "test_linux_xcb_surface.XcbContracts.test_all_control_modes_and_builds",
+    "test_linux_xcb_surface.XcbContracts.test_missing_and_disabled_paths_never_synthesize_support",
+    "test_linux_xcb_surface.XcbContracts.test_native_closure_and_both_queries",
+    "test_linux_xcb_surface.XcbContracts.test_no_presentation_or_missing_result",
+    "test_linux_xcb_surface.XcbContracts.test_source_and_mode_are_bound",
+    "test_llgl_upload.LLGLUploadContracts.test_adapter_identity_changes_with_pin_harness_or_copy_layout",
+    "test_llgl_upload.LLGLUploadContracts.test_new_upload_and_telemetry_contracts_stay_separate_from_historical_data",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_actual_llgl_observation_is_separate_from_timing",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_all_87_raw_processes_and_statistics_reproduce",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_all_validation_rows_use_current_identity_and_exact_work",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_changed_luid_or_driver_is_rejected",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_control_cannot_succeed_or_produce_samples",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_current_source_text_and_original_native_bytes_match",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_duplicate_json_keys_and_unsafe_paths_rejected",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_extension_cannot_grant_other_workloads_or_drop_required_gates",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_extension_requires_prior_contracts_and_exact_native_receipt",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_five_process_statistics_preserve_all_outliers",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_historical_samples_or_overall_ranking_cannot_be_promoted",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_independent_replay_does_not_execute_zip_or_gpu",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_independent_statistics_reject_nan_infinity_boolean_and_zero",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_llgl_full_changing_reference_cannot_be_truncated",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_llgl_observer_and_validation_modules_absent_in_measurements",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_llgl_raw_fingerprint_and_device_metadata_are_bound",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_narrow_profile_accepts_only_upload_performance",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_no_overlapping_process_intervals",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_observer_cannot_be_injected_into_performance",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_parsed_samples_must_match_raw_output",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_plan_cannot_reduce_work_or_accept_gpu_timestamp",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_readback_totals_cannot_omit_validation_or_warmup",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_rebound_statistic_still_fails_independent_replay",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_saved_output_tampering_is_rejected",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_schedule_rejects_order_changes_and_extra_process",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_seeded_schedule_matches_independent_implementation",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_statistics_reject_changed_p50_or_missing_process",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_three_adjacent_sdks_and_five_distinct_orders_per_scenario",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_validation_and_controls_precede_measurement",
+    "test_llgl_upload_comparison.ThreeSDKUpload.test_validation_cannot_be_injected_into_performance",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_actual_native_identity_and_queue_are_required",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_all_full_bytes_and_resource_types_are_counted",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_all_public_creates_uses_releases_and_verifications_required",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_all_resource_sizes_and_validation_modes",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_buffer_and_texture_geometry_must_remain_exact",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_core_and_sync_diagnostics_are_delivered",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_count_and_native_numeric_fields_reject_boolean",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_current_source_text_and_archived_native_bytes_match",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_diagnostic_control_cannot_submit_or_count_as_resource_work",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_distinct_live_native_resource_identity_required",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_explicit_profile_accepts_only_resource_correctness",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_full_saved_evidence_replays_without_gpu",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_independent_reference_bytes_and_native_payload_hashes",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_last_resource_last_byte_is_part_of_full_reference",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_matrix_contains_all_twelve_intended_rejections",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_native_identity_stays_stable_between_processes",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_native_memory_allocation_reclamation_and_cache_remain_unverified",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_no_timing_or_native_workload_shortcut_acceptance",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_observer_identity_and_teardown_are_required",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_payload_changes_with_iteration_resource_and_byte_offset",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_payload_table_cannot_omit_resource_or_iteration",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_payload_table_cannot_reuse_another_resource_or_iteration",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_profile_does_not_grant_performance_or_native_memory_claims",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_profile_keeps_all_performance_gates",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_profile_preserves_prior_contracts_and_receipt",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_rebound_release_count_still_rejected_independently",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_rebound_source_zip_still_requires_executed_source",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_saved_output_tampering_rejected",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_staging_and_gpu_use_cannot_enter_creation_release_boundary",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_usage_policy_and_submission_difference_are_declared",
+    "test_llgl_vulkan_allocation.LLGLVulkanAllocation.test_validation_mode_and_zero_normal_errors",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_actual_native_identity_and_queue_required",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_all_workloads_and_validation_modes",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_controls_cannot_submit_or_count_as_workload",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_core_and_sync_diagnostics_required",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_exact_geometry_and_clear_policy_required",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_explicit_draw_extension_accepts_bound_native_evidence",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_extension_cannot_claim_performance_or_unmodified_upstream",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_extension_cannot_complete_other_correctness_or_drop_gates",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_extension_requires_unchanged_base_contract_and_receipt",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_fingerprint_uses_CMake_case_sensitive_order",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_identity_stable_between_processes",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_instance_request_must_be_actually_observed",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_native_call_count_detects_visually_identical_missing_draw",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_native_instance_count_detects_visually_identical_missing_instance",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_native_vertices_and_arguments_verified",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_no_partial_or_unchanging_reference",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_no_timing_or_native_shortcut_acceptance",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_numeric_native_fields_reject_bool",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_observer_manifest_uses_loader_compatible_string_version",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_observer_must_forward_actual_calls",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_observer_retirement_and_module_required",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_rebound_source_zip_still_requires_original_fingerprint",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_reference_alternates_clear_and_triangle_colors",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_reference_covers_entire_image_and_scissor_edges",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_saved_native_draw_observations_replay_without_GPU",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_saved_output_tampering_rejected",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_validation_mode_and_delivered_errors",
+    "test_llgl_vulkan_draw.LLGLVulkanDraw.test_wrong_backend_profile_or_source_rejected",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_accepts_native_minimal_reference_without_performance",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_all_native_identifiers_required",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_copy_rounds_and_full_reference_required",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_delivered_native_errors_rejected",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_identity_must_not_claim_reference_work",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_invalid_native_field_types_rejected",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_minimal_reference_is_not_workload_or_performance_acceptance",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_missing_runtime_snapshot_rejected",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_no_graphics_queue_rejected",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_plain_probe_cannot_load_validation_layer",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_processes_must_match_exact_native_identity",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_queue_index_not_assumed",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_rebound_manifest_cannot_promote_receipt_to_performance",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_saved_native_evidence_replays_without_GPU",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_saved_native_output_tamper_rejected",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_source_review_or_name_match_does_not_prove_native_handles",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_validation_requires_actual_loaded_layer",
+    "test_llgl_vulkan_probe.LLGLVulkanProbe.test_wrong_backend_target_or_source_rejected",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_actual_identity_and_queue_required",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_all_scenarios_and_validation_modes",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_core_and_sync_diagnostics_are_delivered",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_current_source_text_and_archived_native_bytes_match",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_diagnostic_control_cannot_submit_or_count_workload",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_each_iteration_changes_pipeline_regions_and_clear",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_extension_accepts_only_bound_pso_evidence",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_extension_cannot_complete_allocation_or_drop_pending_gates",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_extension_does_not_grant_performance_or_upstream_status",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_extension_preserves_historical_contracts_and_receipt",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_full_saved_native_evidence_replay_without_gpu",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_geometry_and_public_mapping_must_match",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_identity_stable_between_processes",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_independent_references_match_native_full_readbacks",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_instance_api_request_is_observed",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_native_count_detects_visually_equivalent_missing_draw",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_native_matrix_rejects_missing_release_and_wrong_pipeline",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_native_vertices_and_first_arguments",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_no_partial_or_unchanging_reference",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_no_performance_or_native_workload_shortcut_acceptance",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_no_physical_native_allocation_or_cache_claims",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_numeric_counts_and_native_fields_reject_boolean",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_observer_must_be_active_and_teardown_complete",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_rebound_release_count_still_rejected_by_independent_replay",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_rebound_source_zip_still_requires_executed_source",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_requires_all_public_creates_uses_and_releases",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_saved_output_tampering_rejected",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_shader_creation_and_release_are_in_declared_create_boundary",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_uneven_eight_stripe_boundaries_and_outer_clear",
+    "test_llgl_vulkan_pso.LLGLVulkanPSO.test_validation_is_required_and_normal_errors_zero",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_accepts_all_four_full_changing_workloads",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_all_native_identifiers_required",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_approved_patch_cannot_be_labeled_upstream_or_performance",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_approved_patch_does_not_complete_other_workloads",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_approved_profile_rejects_changed_patch_evidence",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_byte_exact_reference_RGBA16F_first_pixel",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_byte_exact_reference_RGBA8_first_pixel",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_controls_cannot_count_as_verified_images",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_controls_must_not_submit_GPU_work",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_core_and_sync_controls_require_specific_diagnostic",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_delivered_errors_in_normal_upload_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_each_process_must_match_native_identity",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_exact_reviewed_patch_and_upstream_guard",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_fingerprint_orders_paths_like_CMake",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_human_approved_profile_accepts_only_upload_correctness",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_modified_candidate_cannot_pass_as_unmodified_upstream",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_native_handles_cannot_be_inferred_from_name",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_native_numeric_identity_fields_reject_booleans",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_native_workload_shortcut_or_performance_claim_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_partial_readback_or_missing_iteration_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_payload_body_matches_existing_SDK_and_SDL",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_profile_requires_actual_human_scope_choice",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_reference_changes_with_seed_and_includes_all_pixels",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_saved_native_output_tamper_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_saved_original_failure_and_modified_success_replay",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_unchanging_or_modified_payload_hash_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_wrong_format_or_shape_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_wrong_or_missing_layer_mode_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_wrong_sdk_backend_or_pinned_source_rejected",
+    "test_llgl_vulkan_upload.LLGLVulkanUpload.test_zero_error_control_rejected",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_failed_exit_changed_inputs_or_mismatched_receipt_rejected",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_frames_during_minimize_and_after_close_rejected",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_human_cannot_replace_missing_native_minimize",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_native_events_alone_do_not_grant_human_acceptance",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_native_self_acceptance_loss_or_missing_shutdown_rejected",
+    "test_manual_presentation_evidence.ManualPresentationEvidenceTests.test_negative_unbound_or_automated_observation_rejected",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_all_four_stable_mapping_fields_are_checked",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_current_receipts_count_both_segments_and_legacy_makes_no_claim",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_dynamic_bracket_is_counted_without_asserting_equality",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_guard_abort_still_retains_budget_receipts_without_acceptance",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_identity_segment_status_and_native_code_cannot_be_changed",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_missing_null_negative_boolean_float_and_overflow_bytes_are_rejected",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_native_failure_malformed_after_and_fake_zero_cannot_pass",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_sdk_positive_control_cannot_be_replaced_by_native_only_success",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_unsupported_warp_requires_explicit_nulls_and_matching_failure",
+    "test_memory_budget_campaign.BudgetCampaignTests.test_zero_and_over_budget_uint64_snapshots_are_not_clamped",
+    "test_memory_campaign.CampaignReceiptsTests.test_canonical_root_alias_preserves_source_receipts",
+    "test_memory_campaign.CampaignReceiptsTests.test_changed_input_invalidates_campaign",
+    "test_memory_campaign.CampaignReceiptsTests.test_guard_failure_receipt_survives_and_warp_still_runs",
+    "test_memory_campaign.CampaignReceiptsTests.test_native_crash_retains_exit_code_and_runs_remaining_mode",
+    "test_memory_campaign.CampaignReceiptsTests.test_old_executable_or_corrupt_budget_cannot_pass_current_runner",
+    "test_memory_campaign.CampaignReceiptsTests.test_timeout_is_preserved_and_child_is_reaped",
+    "test_memory_campaign.MemoryIdentityTests.test_adapter_cli_rejects_sign_trailing_text_unicode_and_overflow",
+    "test_memory_campaign.MemoryIdentityTests.test_campaign_cannot_mix_hardware_or_warp_ids",
+    "test_memory_campaign.MemoryIdentityTests.test_exit_code_threshold_and_guard_record_must_agree",
+    "test_memory_campaign.MemoryIdentityTests.test_guard_abort_stays_rejected_even_with_full_soak_shape",
+    "test_memory_campaign.MemoryIdentityTests.test_historical_record_cannot_prove_new_explicit_request",
+    "test_memory_campaign.MemoryIdentityTests.test_invalid_luid_and_missing_guard_rejected",
+    "test_memory_campaign.MemoryIdentityTests.test_kind_and_full_gbv_cannot_be_reduced",
+    "test_memory_campaign.MemoryIdentityTests.test_missing_explicit_request_and_boolean_identity_rejected",
+    "test_memory_campaign.MemoryIdentityTests.test_sdk_observer_request_and_footer_cannot_disagree",
+    "test_memory_campaign.MemoryIdentityTests.test_short_diagnostics_never_accept_soak",
+    "test_memory_campaign.MemoryIdentityTests.test_zero_unsigned_high_bits_and_all_modes",
+    "test_memory_environment.MemoryEnvironmentContracts.test_case_metadata_cannot_override_native_command_or_results",
+    "test_memory_environment.MemoryEnvironmentContracts.test_cases_bind_workload_settings_and_functional_references",
+    "test_memory_environment.MemoryEnvironmentContracts.test_collect_snapshot_requires_unique_hardware_and_exact_pci_name",
+    "test_memory_environment.MemoryEnvironmentContracts.test_compare_cli_never_overwrites_existing_result",
+    "test_memory_environment.MemoryEnvironmentContracts.test_cpu_bios_microcode_policy_sdk_binary_gpu_and_os_changes_reject",
+    "test_memory_environment.MemoryEnvironmentContracts.test_driver_change_requires_real_change_and_all_other_controls_equal",
+    "test_memory_environment.MemoryEnvironmentContracts.test_missing_or_malformed_control_is_rejected",
+    "test_memory_environment.MemoryEnvironmentContracts.test_partial_crash_is_recorded_as_native_failed_without_invented_references",
+    "test_memory_environment.MemoryEnvironmentContracts.test_reboot_allows_fresh_id_only_between_runs",
+    "test_memory_environment.MemoryEnvironmentContracts.test_record_rejects_command_binding_error_before_reporting_recorded",
+    "test_memory_environment.MemoryEnvironmentContracts.test_record_wrapper_records_normal_run_and_rejects_environment_drift",
+    "test_memory_environment.MemoryEnvironmentContracts.test_runner_exception_is_preserved_and_existing_output_not_probed",
+    "test_memory_environment.MemoryEnvironmentContracts.test_same_environment_ignores_observation_time_but_never_accepts_memory",
+    "test_memory_environment.MemoryEnvironmentContracts.test_tampered_artifact_and_outside_path_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_fake_cpu_control_and_missing_release_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_fake_gpu_control_and_missing_release_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_inconsistent_dxgi_status_and_fake_zero_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_missing_and_nonfinite_process_counter_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_missing_checkpoint_pair_or_large_gap_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_missing_footer_or_failed_process_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_monotonic_private_gpu_and_handle_leaks_fail_plateau",
+    "test_memory_stress.MemoryAcceptanceTests.test_native_gbv_error_cannot_pass",
+    "test_memory_stress.MemoryAcceptanceTests.test_no_validation_or_statistics_contract_result_is_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_no_work_and_partial_image_coverage_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_resources_pending_references_and_objects_must_drain",
+    "test_memory_stress.MemoryAcceptanceTests.test_smoke_cannot_satisfy_soak_gate",
+    "test_memory_stress.MemoryAcceptanceTests.test_stable_observations_accept_all_modes",
+    "test_memory_stress.MemoryAcceptanceTests.test_stale_sdk_cannot_reuse_old_campaign",
+    "test_memory_stress.MemoryAcceptanceTests.test_truncated_and_duplicate_json_fields_are_rejected",
+    "test_memory_stress.MemoryAcceptanceTests.test_warp_unsupported_dxgi_is_null_and_explicit",
+    "test_phase1.Phase1Contracts.test_both_cpu_references_and_real_completed_gpu_results_are_mandatory",
+    "test_phase1.Phase1Contracts.test_cache_counters_prove_actual_application_layer_and_include_warmup",
+    "test_phase1.Phase1Contracts.test_comparison_report_rejects_missing_duplicate_or_mixed_evidence",
+    "test_phase1.Phase1Contracts.test_matched_contract_retains_public_binding_abi_difference",
+    "test_phase1.Phase1Contracts.test_other_sdk_adapters_are_not_silently_replaced_with_llgl_or_native",
+    "test_phase1.Phase1Contracts.test_registry_matches_compiled_cli_and_ctest_scenarios",
+    "test_phase1.Phase1Contracts.test_sampled_memory_or_trace_filename_cannot_complete_phase1",
+    "test_phase1.Phase1Contracts.test_sdl_requires_cpu_only_and_rejects_llgl_results_and_instrumentation",
+    "test_phase1.Phase1Contracts.test_video_composition_rejects_a_solid_overlay_or_wrong_plane_payload",
+    "test_phase3_comparison.ComparisonInputs.test_actual_sdk_and_sdl_target_errors_accept",
+    "test_phase3_comparison.ComparisonInputs.test_all_eight_metadata_probes_accept",
+    "test_phase3_comparison.ComparisonInputs.test_build_and_workload_drift_rejected",
+    "test_phase3_comparison.ComparisonInputs.test_cache_requires_new_packages_and_release_flags",
+    "test_phase3_comparison.ComparisonInputs.test_contract_matches_existing_thirteen_workloads",
+    "test_phase3_comparison.ComparisonInputs.test_cross_profile_driver_and_environment_stable",
+    "test_phase3_comparison.ComparisonInputs.test_enabled_ltcg_or_debug_runtime_rejected",
+    "test_phase3_comparison.ComparisonInputs.test_expected_gpu_and_no_software_fallback",
+    "test_phase3_comparison.ComparisonInputs.test_frozen_inputs_detect_content_changes_and_removal",
+    "test_phase3_comparison.ComparisonInputs.test_native_dxgi_identity_must_agree",
+    "test_phase3_comparison.ComparisonInputs.test_probe_stage_cannot_promote_results",
+    "test_phase3_comparison.ComparisonInputs.test_sample_or_workload_contamination",
+    "test_phase3_comparison.ComparisonInputs.test_sdl_explicitly_disabled_ltcg_is_accepted",
+    "test_phase3_comparison.ComparisonInputs.test_stale_sources_and_pins",
+    "test_phase3_comparison.ComparisonInputs.test_unrelated_failure_is_not_target_rejection",
+    "test_phase3_comparison.ComparisonInputs.test_validation_mode_cannot_contaminate_probe",
+    "test_presentation.InstalledConsumerAuditTests.test_installed_header_matches_exact_reviewed_public_source",
+    "test_presentation.InstalledConsumerAuditTests.test_stale_or_missing_installed_library_fails",
+    "test_presentation.LifecycleEvidenceTests.test_errors_unavailable_validation_and_wrong_mode_fail",
+    "test_presentation.LifecycleEvidenceTests.test_minimized_frames_stale_extent_and_missing_padding_fail",
+    "test_presentation.LifecycleEvidenceTests.test_missing_footer_image_or_loss_is_not_success",
+    "test_presentation.LifecycleEvidenceTests.test_retained_objects_destroyed_hwnd_and_fake_loss_fail",
+    "test_presentation.LifecycleEvidenceTests.test_scope_cannot_be_upgraded_to_interactive_or_unexpected_loss",
+    "test_presentation.LifecycleEvidenceTests.test_six_modes_and_null_for_unavailable_validation",
+    "test_presentation.LifecycleEvidenceTests.test_tiny_extent_coverage_cannot_be_dropped",
+    "test_presentation.PacingEvidenceTests.test_early_frames_no_wait_wrong_cap_and_claimed_acceptance_fail",
+    "test_presentation.PacingEvidenceTests.test_missing_ready_or_injected_recovery_cannot_pass_normal_loop",
+    "test_presentation.PacingEvidenceTests.test_real_clock_lower_bound_and_readiness",
+    "test_recorded_sources.RecordedSourceContracts.test_aggregate_fingerprint_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_archive_digest_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_churn_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_duplicate_source_path_rejected",
+    "test_recorded_sources.RecordedSourceContracts.test_empty_source_set_rejected",
+    "test_recorded_sources.RecordedSourceContracts.test_loader_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_member_digest_is_required",
+    "test_recorded_sources.RecordedSourceContracts.test_missing_archive_fails_without_skip",
+    "test_recorded_sources.RecordedSourceContracts.test_rebase_replay_and_current_byte_change_rejection",
+    "test_recorded_sources.RecordedSourceContracts.test_source_path_escape_rejected",
+    "test_runtime_comparison.PinnedPackageTests.test_duplicate_case_alias_members_are_rejected",
+    "test_runtime_comparison.PinnedPackageTests.test_modified_package_is_rejected_before_extraction",
+    "test_runtime_comparison.RuntimeComparisonTests.test_all_nine_combinations_are_observations",
+    "test_runtime_comparison.RuntimeComparisonTests.test_fallback_or_wrong_provider_cannot_pass",
+    "test_runtime_comparison.RuntimeComparisonTests.test_hardware_counter_failures_and_incomplete_footer_fail",
+    "test_runtime_comparison.RuntimeComparisonTests.test_matrix_cannot_mix_adapters_or_versions",
+    "test_runtime_comparison.RuntimeComparisonTests.test_missing_checkpoints_and_native_alias_errors_fail",
+    "test_runtime_comparison.RuntimeComparisonTests.test_missing_error_control_or_unexpected_error_fails",
+    "test_runtime_comparison.RuntimeComparisonTests.test_mixed_missing_and_duplicate_modules_fail",
+    "test_runtime_comparison.RuntimeComparisonTests.test_reduced_or_misreported_validation_fails",
+    "test_runtime_comparison.RuntimeComparisonTests.test_warp_missing_dxgi_is_explicit",
+    "test_telemetry.TelemetryContracts.test_cpu_percent_is_one_core_and_process_aggregate_not_frame_samples",
+    "test_telemetry.TelemetryContracts.test_live_allocations_are_observed_before_release_and_order_is_required",
+    "test_telemetry.TelemetryContracts.test_llgl_upload_is_restored_only_with_the_new_public_buffer_copy_model",
+    "test_telemetry.TelemetryContracts.test_missing_invalid_or_inconsistent_cpu_counters_fail",
+    "test_telemetry.TelemetryContracts.test_missing_memory_is_never_zero_and_lifetime_peaks_cannot_reverse",
+    "test_telemetry.TelemetryContracts.test_opt_in_and_scope_and_gpu_identity_cannot_be_silently_changed",
+    "test_telemetry.TelemetryContracts.test_telemetry_comparisons_cannot_mix_with_original_uninstrumented_contract",
+    "test_virtual_ranges.VirtualRangeContracts.test_disjoint_tied_free_and_commit_report_peak_bounds_not_export_order",
+    "test_virtual_ranges.VirtualRangeContracts.test_disjoint_timestamp_ties_allowed_overlapping_ties_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_frees_need_no_allocation_origin_symbol",
+    "test_virtual_ranges.VirtualRangeContracts.test_interval_results_match_independent_page_oracle",
+    "test_virtual_ranges.VirtualRangeContracts.test_invalid_target_time_range_flags_and_stack_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_json_duplicate_truncation_and_existing_output_are_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_malformed_document_containers_rejected",
+    "test_virtual_ranges.VirtualRangeContracts.test_manifest_requires_lossless_frozen_target_and_exact_counters",
+    "test_virtual_ranges.VirtualRangeContracts.test_recommit_does_not_double_count_or_reassign_origin",
+    "test_virtual_ranges.VirtualRangeContracts.test_reservation_is_not_commit_and_combined_reserve_commit_is",
+    "test_virtual_ranges.VirtualRangeContracts.test_sparse_64bit_ranges_do_not_require_page_sized_storage",
+    "test_virtual_ranges.VirtualRangeContracts.test_split_partial_free_release_and_reused_hole",
+    "test_virtual_ranges.VirtualRangeContracts.test_symbol_identity_conflict_missing_or_duplicate_frame_rejected",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_1000_buffers_66_blocks",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_candidate_fingerprint",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_changed_gpu",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_cross_phase_continuity",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_empty_block_release",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_exact_anchor_required",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fewer_blocks_than_required",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_final_live_bytes",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fixed_1000_control",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fixed_candidate_identity",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_fixed_single_control",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_boolean_policy",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_type",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_value",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_policy_variant",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_invalid_zero_policy",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_layer_schema_revision",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_logical_release_count",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_missing_anchor_rejected",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_missing_byte_readback",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_missing_phase",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_native_dropped_event",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_native_implicit_teardown",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_native_ledger_error",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_no_physical_reclamation_claim",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_no_trace_timings",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_original_dedicated_control",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_outside_source_root_rejected",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_policy_boundaries",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_required_validation_layer",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_reserved_byte_accounting",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_single_buffer_reservation",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_trace_source_identity",
+    "test_vulkan_adaptive_buffer_pool.BufferPoolTrialContracts.test_unique_patch",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_GPU_use_untimed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_actual_memory_not_claimed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_allocation_policy",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_api_separation",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_buffer_shape_and_usage",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_category_separation",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_contract_revision",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_cpu_changed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_created_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_dependency_pin_stale",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_driver_changed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_every_byte_verified",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_every_iteration_verified",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_every_resource_verified",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_full_readback_required",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_gpu_changed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_harness_source_stale",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_instance_request",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_interval_values",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_invalid_identity",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_invalid_percentile",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_invalid_times",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_large_texture_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_matching_completed_payload",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_native_allocation_not_claimed",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_no_buffer_claim_for_texture",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_no_timestamp_inference",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_no_total_interval",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_not_probe",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_percentile_interpolation",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_release_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_release_only",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_required_null_field",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_required_validation_layer",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_sample_count",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_sample_count_boolean",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_sdk_source_stale",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_shape",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_software_rejected",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_usage_policy",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_used_regions",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_validation_contamination",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_validation_errors_on_stdout",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_warmup_contract",
+    "test_vulkan_allocation.VulkanAllocationContracts.test_zero_release_allowed",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_accounting_errors",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_actual_interception_required",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_byte_conservation",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_category_separation",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_complete_balanced_trace",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_counter_boolean_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_counter_negative_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_counter_overflow_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_cross_scope_continuity",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_dropped_events",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_duplicate_scope",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_final_live_resources",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_full_readback",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_gpu_identity",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_implicit_cleanup_bytes",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_implicit_cleanup_not_counted_as_free",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_missing_scope",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_more_successes_than_calls",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_native_call_failure",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_no_gpu_timestamp",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_no_memory_reclamation_claim",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_object_conservation",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_old_contract_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_performance_samples_rejected",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_phase_errors",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_snapshot_boolean",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_stale_layer",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_timings_must_be_excluded",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_unknown_call",
+    "test_vulkan_allocation_trace.VulkanAllocationTraceContracts.test_validation_contamination",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_1000_buffers_63_blocks",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_candidate_fingerprint",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_changed_gpu",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_cross_phase_continuity",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_empty_block_release",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_exact_anchor_required",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_fewer_blocks_than_required",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_final_live_bytes",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_type",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_invalid_native_counter_value",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_layer_schema_revision",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_logical_release_count",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_missing_anchor_rejected",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_missing_byte_readback",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_missing_phase",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_native_dropped_event",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_native_implicit_teardown",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_native_ledger_error",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_no_physical_reclamation_claim",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_no_trace_timings",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_original_dedicated_control",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_outside_source_root_rejected",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_required_validation_layer",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_reserved_byte_accounting",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_single_buffer_reservation",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_trace_source_identity",
+    "test_vulkan_buffer_pool.BufferPoolTrialContracts.test_unique_patch",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_all_clean_case_models",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_all_guard_readbacks_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_boolean_guard_counter_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_continuity_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_fallback_size_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_full_byte_readback_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_gpu_luid_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_guard_failure_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_invalid_free_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_layer_identity_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_leaked_shared_slot_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_missing_failed_buffer_destroy",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_missing_trace_frame",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_accounting_errors",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_dropped_events",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_implicit_device_cleanup",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_no_silent_null_only_injection",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_pending_fault_rejected",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_poisoned_output_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_recorded_bind_offset_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_regression_must_be_explicit",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_reused_bind_offset_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_sdk_identity_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_two_guarded_regressions",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_unknown_error_must_not_fallback",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_valid_counter_types",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_validation_layer_required",
+    "test_vulkan_buffer_pool_fault.BufferFaultContracts.test_wrong_error_rejected",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_adjacent_pairs_and_alternation_each_repetition",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_all_four_shapes_validate_in_both_process_modes",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_control_cannot_accept_crash_or_results",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_cross_platform_path_evidence_and_exact_nonpath_values",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_exact_target_control",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_fixed_qualification_plan",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_full_readback_and_current_sources_required",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_incomplete_independent_process_group_rejected",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_inherited_validation_and_gpu_selection_removed",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_linear_percentiles_mad_and_all_outliers_retained",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_no_boolean_counts_or_historical_promotion",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_nonfinite_negative_boolean_or_empty_samples_rejected",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_performance_cannot_load_validation",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_required_loader_trace_not_just_nonempty_layer_field",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_schedule_gates_before_any_measurement",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_schedule_reproducible_and_unique",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_summary_excludes_validation_and_preserves_each_column",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_validation_error_not_accepted_as_clean_reference",
+    "test_vulkan_comparison_protocol.ComparisonProtocol.test_validation_library_must_be_the_pinned_path",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_build_validation_mode_cannot_silently_change",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_empty_deferral_reason_rejected",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_live_check_rejects_wrong_source_bytes",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_modified_review_requires_reinspection",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_no_candidate_can_be_silently_removed",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_no_equivalence_requirement_can_be_removed",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_offline_review_without_dependency_checkouts",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_old_build_license_audit_does_not_transfer",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_pin_drift_rejected",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_primary_selection_does_not_select_conditional_tasks",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_rebound_review_cannot_change_provenance",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_rebound_review_cannot_use_mutable_source_URL",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_rebound_review_cannot_use_path_traversal",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_sandbox_dependency_license_is_not_project_license",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_source_locations_required_even_with_rebound_digest",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_source_review_cannot_grant_runtime_acceptance",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_workload_or_timing_baseline_drift_rejected",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_workload_task_mapping_cannot_skip_correctness",
+    "test_vulkan_competitors.VulkanCompetitorContract.test_wrong_API_evidence_rejected",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_absolute_path",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_changed_snapshot_bytes",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_matching_current_is_preferred",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_traversal_path",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_unchanged_current_input",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_unreviewed_historical_path",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_verified_snapshot_resolution",
+    "test_vulkan_creation_ownership.HistoricalOwnershipContracts.test_wrong_snapshot_identity",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_boolean_gpu_calls",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_counter_aggregate",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_cpu_is_not_gpu",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_duplicate_case",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_invalid_cleanup",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_leaked_object",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_masked_regression",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_missing_case",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_undestroyed_object",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_valid_clean_matrix",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_valid_regression_matrix",
+    "test_vulkan_creation_ownership.ProductOwnershipContracts.test_wrong_sdk",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_boundaries",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_nonfinite",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_partition",
+    "test_vulkan_draw.VulkanDrawContracts.test_CPU_total",
+    "test_vulkan_draw.VulkanDrawContracts.test_api_separation",
+    "test_vulkan_draw.VulkanDrawContracts.test_category_separation",
+    "test_vulkan_draw.VulkanDrawContracts.test_clean_process_output",
+    "test_vulkan_draw.VulkanDrawContracts.test_contract_revision",
+    "test_vulkan_draw.VulkanDrawContracts.test_cpu_changed",
+    "test_vulkan_draw.VulkanDrawContracts.test_dependency_pin_stale",
+    "test_vulkan_draw.VulkanDrawContracts.test_driver_changed",
+    "test_vulkan_draw.VulkanDrawContracts.test_every_byte_verified",
+    "test_vulkan_draw.VulkanDrawContracts.test_every_iteration_verified",
+    "test_vulkan_draw.VulkanDrawContracts.test_first_vertex",
+    "test_vulkan_draw.VulkanDrawContracts.test_full_readback_required",
+    "test_vulkan_draw.VulkanDrawContracts.test_geometry",
+    "test_vulkan_draw.VulkanDrawContracts.test_gpu_changed",
+    "test_vulkan_draw.VulkanDrawContracts.test_harness_source_stale",
+    "test_vulkan_draw.VulkanDrawContracts.test_instancing_contract",
+    "test_vulkan_draw.VulkanDrawContracts.test_invalid_identity",
+    "test_vulkan_draw.VulkanDrawContracts.test_invalid_percentile",
+    "test_vulkan_draw.VulkanDrawContracts.test_invalid_times",
+    "test_vulkan_draw.VulkanDrawContracts.test_matching_completed_payload",
+    "test_vulkan_draw.VulkanDrawContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_draw.VulkanDrawContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_draw.VulkanDrawContracts.test_no_timestamp_inference",
+    "test_vulkan_draw.VulkanDrawContracts.test_not_probe",
+    "test_vulkan_draw.VulkanDrawContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_draw.VulkanDrawContracts.test_percentile_interpolation",
+    "test_vulkan_draw.VulkanDrawContracts.test_release_only",
+    "test_vulkan_draw.VulkanDrawContracts.test_required_null_field",
+    "test_vulkan_draw.VulkanDrawContracts.test_required_validation_layer",
+    "test_vulkan_draw.VulkanDrawContracts.test_sample_count",
+    "test_vulkan_draw.VulkanDrawContracts.test_sample_count_boolean",
+    "test_vulkan_draw.VulkanDrawContracts.test_scissor_contract",
+    "test_vulkan_draw.VulkanDrawContracts.test_sdk_source_stale",
+    "test_vulkan_draw.VulkanDrawContracts.test_shader_identity",
+    "test_vulkan_draw.VulkanDrawContracts.test_shape",
+    "test_vulkan_draw.VulkanDrawContracts.test_software_rejected",
+    "test_vulkan_draw.VulkanDrawContracts.test_submitted_work",
+    "test_vulkan_draw.VulkanDrawContracts.test_validation_contamination",
+    "test_vulkan_draw.VulkanDrawContracts.test_validation_errors_on_either_stream",
+    "test_vulkan_draw.VulkanDrawContracts.test_warmup_contract",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_counter",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_error",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_poison",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_boolean_schema",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_duplicate_cycle",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_every_recorded_profile",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_extra_injection",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_failed_creation_adopts_output",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_hidden_regression",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_invalid_cleanup",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_json_scalar_identity",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_leaked_native_instance",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_missing_cycle",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_missing_frame",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_missing_guard_data",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_retry_not_observed",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_trace_errors",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_unaccounted_device_destruction",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_unconsumed_error",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_unknown_snapshot_field",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_byte_count",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_layer",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_profile",
+    "test_vulkan_loader_fault.LoaderEvidenceContracts.test_wrong_sdk",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_hardware_not_accepted_as_software_and_denial_cannot_hide_calls",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_label_truncation_reordering_and_unforwarded_calls_rejected",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_single_adapter_native_count_and_multi_adapter_minimum",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_stale_source_missing_observer_or_incomplete_result_rejected",
+    "test_vulkan_markers.VulkanMarkerReceiptTests.test_supported_and_missing_proc_are_separate_complete_contracts",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_all_recorded_profiles",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_baseline_sharing_claim",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_boolean_native_error",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_boolean_schema",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_duplicate_checkpoint",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_held_retention",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_implicit_cleanup",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_invalid_free",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_checkpoint",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_injection",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_model_checks",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_native_class",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_native_frame",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_missing_readback",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_native_live_leak",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_native_trace_drop",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_no_actual_reuse",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_nonempty_cache",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_pending_fault",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_singleton_reset",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_sparse_survivor_count",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_unaccounted_growth",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_unique_rebase_anchor",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_unsafe_range",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_injected_error",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_native_counter",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_occupancy",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_payload",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_readback_bytes",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_sdk",
+    "test_vulkan_pool_churn.PoolChurnEvidenceContracts.test_wrong_source",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_all_fresh_mixed_profiles",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_binding_guard",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_boolean_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_boolean_schema",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_boolean_trace_error",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_failed_target_changes_growth",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_failed_target_changes_owners",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_fault_consumed_on_reuse",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_hidden_empty_block",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_implicit_cleanup",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_invalid_free",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_invalid_memory_type",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_cycle",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_fallback_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_phase",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_readback",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_missing_second_oom",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_native_final_leak",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_pending_fault",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_trace_drop",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_unaligned_binding",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_unknown_error_retried_as_oom",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_unpoisoned_allocation",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_assertions",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_binding_error",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_block_request",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_bytes",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_growth_after_reuse",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_memory_bytes",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_reuse_offset",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_sdk",
+    "test_vulkan_pool_rebase_fault.RebasedFallbackContracts.test_wrong_source",
+    "test_vulkan_pso.VulkanPsoContracts.test_GPU_use_untimed",
+    "test_vulkan_pso.VulkanPsoContracts.test_actual_memory_not_claimed",
+    "test_vulkan_pso.VulkanPsoContracts.test_api_separation",
+    "test_vulkan_pso.VulkanPsoContracts.test_cache_not_classified",
+    "test_vulkan_pso.VulkanPsoContracts.test_category_separation",
+    "test_vulkan_pso.VulkanPsoContracts.test_contract_revision",
+    "test_vulkan_pso.VulkanPsoContracts.test_cpu_changed",
+    "test_vulkan_pso.VulkanPsoContracts.test_created_count",
+    "test_vulkan_pso.VulkanPsoContracts.test_dependency_pin_stale",
+    "test_vulkan_pso.VulkanPsoContracts.test_driver_changed",
+    "test_vulkan_pso.VulkanPsoContracts.test_every_byte_verified",
+    "test_vulkan_pso.VulkanPsoContracts.test_every_iteration_verified",
+    "test_vulkan_pso.VulkanPsoContracts.test_full_readback_required",
+    "test_vulkan_pso.VulkanPsoContracts.test_gpu_changed",
+    "test_vulkan_pso.VulkanPsoContracts.test_harness_source_stale",
+    "test_vulkan_pso.VulkanPsoContracts.test_instance_request",
+    "test_vulkan_pso.VulkanPsoContracts.test_interval_values",
+    "test_vulkan_pso.VulkanPsoContracts.test_invalid_identity",
+    "test_vulkan_pso.VulkanPsoContracts.test_invalid_percentile",
+    "test_vulkan_pso.VulkanPsoContracts.test_invalid_times",
+    "test_vulkan_pso.VulkanPsoContracts.test_matching_completed_payload",
+    "test_vulkan_pso.VulkanPsoContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_pso.VulkanPsoContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_pso.VulkanPsoContracts.test_no_timestamp_inference",
+    "test_vulkan_pso.VulkanPsoContracts.test_no_total_interval",
+    "test_vulkan_pso.VulkanPsoContracts.test_not_probe",
+    "test_vulkan_pso.VulkanPsoContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_pso.VulkanPsoContracts.test_percentile_interpolation",
+    "test_vulkan_pso.VulkanPsoContracts.test_release_count",
+    "test_vulkan_pso.VulkanPsoContracts.test_release_only",
+    "test_vulkan_pso.VulkanPsoContracts.test_required_null_field",
+    "test_vulkan_pso.VulkanPsoContracts.test_required_validation_layer",
+    "test_vulkan_pso.VulkanPsoContracts.test_sample_count",
+    "test_vulkan_pso.VulkanPsoContracts.test_sample_count_boolean",
+    "test_vulkan_pso.VulkanPsoContracts.test_sdk_source_stale",
+    "test_vulkan_pso.VulkanPsoContracts.test_shader_identity",
+    "test_vulkan_pso.VulkanPsoContracts.test_shader_objects_included",
+    "test_vulkan_pso.VulkanPsoContracts.test_shape",
+    "test_vulkan_pso.VulkanPsoContracts.test_software_rejected",
+    "test_vulkan_pso.VulkanPsoContracts.test_used_regions",
+    "test_vulkan_pso.VulkanPsoContracts.test_validation_contamination",
+    "test_vulkan_pso.VulkanPsoContracts.test_validation_errors_on_stdout",
+    "test_vulkan_pso.VulkanPsoContracts.test_warmup_contract",
+    "test_vulkan_pso.VulkanPsoContracts.test_zero_release_allowed",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_cleanup_order_and_failed_retry_counts_cannot_be_dropped",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_fault_modes_automatic_policy_and_reorder_must_be_exercised",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_full_gpu_image_and_buffer_references_required",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_generations_cannot_alias_or_be_reused",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_single_and_multiple_adapter_recovery",
+    "test_vulkan_recovery.VulkanRecoveryReceiptTests.test_stale_source_actual_tdr_claim_and_software_alias_rejected",
+    "test_vulkan_upload.VulkanUploadContracts.test_api_separation",
+    "test_vulkan_upload.VulkanUploadContracts.test_category_separation",
+    "test_vulkan_upload.VulkanUploadContracts.test_contract_revision",
+    "test_vulkan_upload.VulkanUploadContracts.test_cpu_changed",
+    "test_vulkan_upload.VulkanUploadContracts.test_dependency_pin_stale",
+    "test_vulkan_upload.VulkanUploadContracts.test_driver_changed",
+    "test_vulkan_upload.VulkanUploadContracts.test_every_byte_verified",
+    "test_vulkan_upload.VulkanUploadContracts.test_every_iteration_verified",
+    "test_vulkan_upload.VulkanUploadContracts.test_full_readback_required",
+    "test_vulkan_upload.VulkanUploadContracts.test_gpu_changed",
+    "test_vulkan_upload.VulkanUploadContracts.test_harness_source_stale",
+    "test_vulkan_upload.VulkanUploadContracts.test_invalid_identity",
+    "test_vulkan_upload.VulkanUploadContracts.test_invalid_percentile",
+    "test_vulkan_upload.VulkanUploadContracts.test_invalid_times",
+    "test_vulkan_upload.VulkanUploadContracts.test_matching_completed_payload",
+    "test_vulkan_upload.VulkanUploadContracts.test_native_dxgi_luid_disagree",
+    "test_vulkan_upload.VulkanUploadContracts.test_native_dxgi_vendor_disagree",
+    "test_vulkan_upload.VulkanUploadContracts.test_no_timestamp_inference",
+    "test_vulkan_upload.VulkanUploadContracts.test_not_probe",
+    "test_vulkan_upload.VulkanUploadContracts.test_outliers_retained_and_process_medians",
+    "test_vulkan_upload.VulkanUploadContracts.test_percentile_interpolation",
+    "test_vulkan_upload.VulkanUploadContracts.test_release_only",
+    "test_vulkan_upload.VulkanUploadContracts.test_required_null_field",
+    "test_vulkan_upload.VulkanUploadContracts.test_required_validation_layer",
+    "test_vulkan_upload.VulkanUploadContracts.test_sample_count",
+    "test_vulkan_upload.VulkanUploadContracts.test_sample_count_boolean",
+    "test_vulkan_upload.VulkanUploadContracts.test_sdk_source_stale",
+    "test_vulkan_upload.VulkanUploadContracts.test_shape",
+    "test_vulkan_upload.VulkanUploadContracts.test_software_rejected",
+    "test_vulkan_upload.VulkanUploadContracts.test_validation_contamination",
+    "test_vulkan_upload.VulkanUploadContracts.test_warmup_contract",
+    "test_vulkan_upload_compare.CPUStageContracts.test_bad_intervals",
+    "test_vulkan_upload_compare.CPUStageContracts.test_boundary_order",
+    "test_vulkan_upload_compare.CPUStageContracts.test_byte_count",
+    "test_vulkan_upload_compare.CPUStageContracts.test_changed_device",
+    "test_vulkan_upload_compare.CPUStageContracts.test_changed_driver",
+    "test_vulkan_upload_compare.CPUStageContracts.test_changed_sdk",
+    "test_vulkan_upload_compare.CPUStageContracts.test_end_to_end_is_separate",
+    "test_vulkan_upload_compare.CPUStageContracts.test_incomplete_reference",
+    "test_vulkan_upload_compare.CPUStageContracts.test_missing_rows",
+    "test_vulkan_upload_compare.CPUStageContracts.test_not_GPU_time",
+    "test_vulkan_upload_compare.CPUStageContracts.test_partition",
+    "test_vulkan_upload_compare.CPUStageContracts.test_sum_does_not_match",
+    "test_vulkan_upload_compare.CPUStageContracts.test_validation_excluded",
+    "test_xcb_window_manager.WindowManagerHandshake.test_exit_before_startup_is_failure",
+    "test_xcb_window_manager.WindowManagerHandshake.test_live_but_unready_manager_is_bounded_failure",
+    "test_xcb_window_manager.WindowManagerHandshake.test_native_client_waits_for_startup_acknowledgement",
+    "test_xcb_window_manager.WindowManagerHandshake.test_stale_marker_does_not_hide_dead_manager"
+  ],
+  "subtests": 1336,
+  "failures": [],
+  "errors": [],
+  "skipped": [],
+  "expected_failures": [],
+  "unexpected_successes": [],
+  "successful": true,
+  "seconds": 84.90599999999995,
+  "log": {
+    "path": "out/cmp07-python/unittest.log",
+    "bytes": 143008,
+    "sha256": "b5c006b32d2da2a6e51188b2a2404fc114255748f8d3ce429b3f3942662db7c2"
+  },
+  "historical_replay": "three pinned source ZIPs restored byte-for-byte by test fixtures; runtime validators still check their selected current source",
+  "native_GPU_executed_by_this_Python_suite": false,
+  "memory_or_Intel_investigation_resumed": false
+}

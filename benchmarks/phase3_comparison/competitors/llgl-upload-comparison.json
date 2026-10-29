@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "task": "P3-CMP-07",
+  "profile": "upload",
+  "profile_id": "llgl-fixed-pin-transfer-src-v1",
+  "sdks": ["graphicssdk", "sdl", "llgl"],
+  "scenarios": ["odd", "upload1080", "upload4k", "upload4k16f"],
+  "validation": {"warmup": 1, "samples": 3, "required_core_and_sync": true},
+  "performance": {"warmup": 5, "samples": 30, "repetitions": 5, "seed": 20261027, "order": "seeded_scenario_blocks_five_distinct_three_SDK_permutations"},
+  "timing": {
+    "category": "end_to_end", "column": "total_ms",
+    "includes": ["staging_map_and_CPU_payload_copy", "record", "submit", "completed_upload_fence"],
+    "excludes": ["payload_generation", "full_changing_readback", "resource_setup", "teardown", "warmup", "validation"],
+    "GPU_timestamp_measurement": false,
+    "layout_difference": "SDK padded staging versus SDL and LLGL tight transfer layout"
+  },
+  "statistics": {"quantile": "linear_interpolation_at_(N-1)*q", "retain_all_raw_samples": true, "samples_removed": 0, "process_medians": true},
+  "serialized_processes": true,
+  "observer_free_performance_required": true,
+  "historical_timings_reused": false,
+  "overall_SDK_ranking": false,
+  "SDL_native_handle_verified": false,
+  "native_allocation_count_verified": false,
+  "GPU_memory_reclamation_verified": false,
+  "next_task": "P3-CMP-08"
+}

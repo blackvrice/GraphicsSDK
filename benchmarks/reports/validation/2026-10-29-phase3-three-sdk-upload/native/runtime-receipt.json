@@ -1,0 +1,66 @@
+{
+  "lock_sha256": "227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20",
+  "components": [
+    {
+      "name": "Vulkan-ValidationLayers",
+      "url": "https://github.com/KhronosGroup/Vulkan-ValidationLayers.git",
+      "commit": "79f4759c2c492c1be37e18c0318330f2959327cb",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "Vulkan-Headers",
+      "url": "https://github.com/KhronosGroup/Vulkan-Headers.git",
+      "commit": "b379292b2ab6df5771ba9870d53cf8b2c9295daf",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "Vulkan-Utility-Libraries",
+      "url": "https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git",
+      "commit": "5f26cf65a18bc89a8e3d6569c14314b6fdac8d4d",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "SPIRV-Headers",
+      "url": "https://github.com/KhronosGroup/SPIRV-Headers.git",
+      "commit": "2acb319af38d43be3ea76bfabf3998e5281d8d12",
+      "ref": "2acb319af38d43be3ea76bfabf3998e5281d8d12"
+    },
+    {
+      "name": "SPIRV-Tools",
+      "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+      "commit": "0cfe9e7219148716dfd30b37f4d21753f098707a",
+      "ref": "0cfe9e7219148716dfd30b37f4d21753f098707a"
+    },
+    {
+      "name": "robin-hood-hashing",
+      "url": "https://github.com/martinus/robin-hood-hashing.git",
+      "commit": "9145f963d80d6a02f0f96a47758050a89184a3ed",
+      "ref": "3.11.5"
+    }
+  ],
+  "environment_overrides": {
+    "CMAKE_BUILD_PARALLEL_LEVEL": "1",
+    "_CL_": "/MP1"
+  },
+  "configuration": {
+    "platform": "windows-x64",
+    "build_type": "Release",
+    "parallel": 1,
+    "mimalloc": false,
+    "upstream_tests": false,
+    "SPIRV_executables": false,
+    "layer_release_flags": "/MD /Od /Ob0 /DNDEBUG"
+  },
+  "artifacts": [
+    {
+      "path": "out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.dll",
+      "sha256": "39fb7e8398408c9bdecb4400ea7217350610c48ebbbfca908922ea805654b0aa",
+      "bytes": 43569664
+    },
+    {
+      "path": "out/vulkan-validation-runtime/build/Vulkan-ValidationLayers/layers/Release/VkLayer_khronos_validation.json",
+      "sha256": "df2884286cea8583ad9fbd0bb0fe3a1132ef40b83a9c22a3dfeb2a23134fe3d7",
+      "bytes": 97706
+    }
+  ]
+}
