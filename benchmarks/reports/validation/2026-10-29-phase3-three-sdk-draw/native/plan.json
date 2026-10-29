@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "task": "P3-CMP-08",
+  "profile": "draw",
+  "profile_id": "llgl-fixed-pin-transfer-src-v1",
+  "sdks": [
+    "graphicssdk",
+    "sdl",
+    "llgl"
+  ],
+  "scenarios": [
+    "draw1",
+    "draw1000",
+    "instanced1000"
+  ],
+  "validation": {
+    "warmup": 1,
+    "samples": 3,
+    "required_core_and_sync": true
+  },
+  "performance": {
+    "warmup": 5,
+    "samples": 30,
+    "repetitions": 5,
+    "seed": 20261027,
+    "order": "seeded_scenario_blocks_five_distinct_three_SDK_permutations"
+  },
+  "timing": {
+    "category": "end_to_end",
+    "columns": [
+      "record_ms",
+      "submit_ms",
+      "wait_ms",
+      "total_ms"
+    ],
+    "includes": [
+      "record_render_pass_pipeline_scissor_draws",
+      "submit",
+      "completed_fence"
+    ],
+    "excludes": [
+      "resource_shader_pipeline_setup",
+      "full_changing_readback",
+      "teardown",
+      "warmup",
+      "validation"
+    ],
+    "GPU_timestamp_measurement": false
+  },
+  "statistics": {
+    "quantile": "linear_interpolation_at_(N-1)*q",
+    "retain_all_raw_samples": true,
+    "samples_removed": 0,
+    "process_medians": true
+  },
+  "serialized_processes": true,
+  "observer_free_performance_required": true,
+  "historical_timings_reused": false,
+  "overall_SDK_ranking": false,
+  "SDL_native_handle_verified": false,
+  "native_allocation_count_verified": false,
+  "GPU_memory_reclamation_verified": false,
+  "next_task": "P3-CMP-09",
+  "work": {
+    "draw1": [
+      1,
+      1
+    ],
+    "draw1000": [
+      1000,
+      1
+    ],
+    "instanced1000": [
+      1,
+      1000
+    ]
+  },
+  "geometry": {
+    "shape": [
+      65,
+      37,
+      4
+    ],
+    "scissor": [
+      5,
+      3,
+      55,
+      31
+    ],
+    "vertices_per_instance": 3,
+    "first_vertex": 0,
+    "first_instance": 0,
+    "reference": "full_changing_red_green_triangle_blue_cyan_clear"
+  },
+  "GPU_timestamp_pending_task": "P3-BEN-09"
+}
