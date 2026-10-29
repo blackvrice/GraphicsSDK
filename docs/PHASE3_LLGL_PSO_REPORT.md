@@ -40,6 +40,8 @@ PSO consumer compiler/linker read 각 1개와 실제 `/O2 /MD` no-LTO command 1�
 
 외부 DLL/EXE/driver를 재배포하지 않고 source ZIP·라이선스·build/runtime 해시와 raw 출력을 보존한다. offline verifier는 ZIP 내부 코드를 실행하지 않고 저장한 전체 stripe 참조·native 인수·공개 lifecycle 횟수·원본 해시를 독립 재검사한다. offline 검사는 GPU 재실행이나 dependency 재획득을 대신하지 않으며 metadata 해시는 외부 신뢰 서명이 아니다.
 
+native fingerprint와 보존 원본 검사는 실제 Windows 빌드 바이트를 정확히 유지한다. Git의 운영체제별 줄바꿈 변환 때문에 현재 checkout의 raw hash를 Linux에서 같은 값으로 요구하지 않는다. 현재 소스는 줄바꿈만 정규화한 내용으로 대조하고, 별도 임시 폴더에 ZIP 원본 바이트를 복원해 실제 실행 fingerprint를 재계산한다. checkout이나 GPU 기록은 재작성하지 않는다.
+
 ```text
 python tools/llgl_vulkan_pso.py --build-root out/NEW_PSO/build --output out/NEW_RESULT --gpu-name "NVIDIA GeForce GTX 1660 SUPER"
 python tools/check_llgl_pso_profile.py

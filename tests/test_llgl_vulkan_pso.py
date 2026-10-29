@@ -101,8 +101,17 @@ class LLGLVulkanPSO(unittest.TestCase):
     def test_no_physical_native_allocation_or_cache_claims(self):
         self.invalid(dict(GPU_memory_reclamation_verified=True,native_pipeline_count_verified=True,driver_cache_state_known=True,cache_state='cold_driver_cache'))
 
-    def test_current_sources_match_executed_fingerprint(self):
-        receipt=self.saved().read(self.saved().HERE/'native/receipt.json');self.assertEqual(v.fingerprint(),receipt['source_fingerprint']);names=[p.relative_to(v.ROOT).as_posix() for p in v.source_files()];self.assertEqual(names,sorted(names))
+    def test_current_source_text_and_archived_native_bytes_match(self):
+        # Runtime fingerprints stay byte-exact. Git may change only checkout EOLs
+        # across platforms, so compare current text and fingerprint a separate
+        # restoration of the executed bytes, without rewriting the checkout.
+        receipt=self.saved().read(self.saved().HERE/'native/receipt.json');names=[p.relative_to(v.ROOT).as_posix() for p in v.source_files()];self.assertEqual(names,sorted(names))
+        with zipfile.ZipFile(self.saved().HERE/'source.zip') as z,tempfile.TemporaryDirectory() as directory:
+            restored=pathlib.Path(directory)
+            for p,name in zip(v.source_files(),names):
+                original=z.read(name);self.assertEqual(p.read_bytes().replace(b'\r\n',b'\n'),original.replace(b'\r\n',b'\n'))
+                destination=restored/name;destination.parent.mkdir(parents=True,exist_ok=True);destination.write_bytes(original)
+            self.assertEqual(v.fingerprint(restored),receipt['source_fingerprint'])
 
     def test_full_saved_native_evidence_replay_without_gpu(self):self.assertEqual(self.saved().verify()['created_pipelines'],72)
 
