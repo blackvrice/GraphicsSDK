@@ -1,5 +1,9 @@
 # Build
 
+Windows에서 Docker·GitHub CLI로 Linux 검사·CI 실행·원본 수집을 하려면
+[다른 OS 검사 가이드](CROSS_PLATFORM_TESTING.md)를 따른다. macOS CPU workflow 추가 예시와
+software/물리 GPU·사람의 화면 확인 범위도 구분한다.
+
 Linux XCB native surface 연결은 `-DGFX_ENABLE_VULKAN=ON -DGFX_VULKAN_XCB=ON`으로 켠다.
 pkg-config와 `libxcb1-dev`가 private compile 입력이며 Core는 필요한 호출에서만 libxcb를 동적 로드한다.
 기본 OFF는 headless 구성을 유지한다. 설치 소비자·입력/고지 감사·정확한 결과와 제한은

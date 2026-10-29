@@ -34,6 +34,7 @@ target_link_libraries(MyApplication PRIVATE GraphicsSDK::Core)
 See [build and benchmark commands](docs/BUILD.md), [actual measurements and limitations](docs/BENCHMARK_REPORT.md),
 [API](docs/PUBLIC_API.md), [architecture](docs/ARCHITECTURE.md), [competitor analysis](docs/COMPETITOR_ANALYSIS.md),
 [testing](docs/TESTING.md), [optimization log](docs/OPTIMIZATION_LOG.md), and [remaining roadmap](docs/ROADMAP.md).
+For Linux checks from Windows, see [Docker and GitHub CLI cross-platform testing](docs/CROSS_PLATFORM_TESTING.md), including existing CI workflows, artifact collection, and a separate macOS CPU workflow example.
 The roadmap tracks individual task IDs, dependencies, acceptance criteria and evidence.
 Use `python tools/roadmap.py --next` or request a task such as `P3-LNX-01`.
 Edit [the task status source](docs/ROADMAP_TASKS.json), regenerate with `--write`, and
