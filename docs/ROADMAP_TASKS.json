@@ -1564,7 +1564,7 @@
       "phase": 3,
       "group": "P3-BEN",
       "title": "SDK/SDL 동일 draw GPU timestamp 비교",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-BEN-04"
@@ -1572,9 +1572,12 @@
       "work": "사용자 선택으로 P3-BEN-04에서 분리한 GPU 계측. 같은 draw 구간의 native GPU timestamp 경로와 정확한 장치/queue 귀속을 양 SDK에서 검증한다.",
       "done_when": "GPU 전용 process의 실제 counter·valid bits/period·availability/fence·동일 구간과 계측 영향/참조 검증. CPU wait/total을 GPU 시간으로 대체하지 않음.",
       "evidence": [
-        "docs/PHASE3_DRAW_SCOPE.md"
+        "docs/PHASE3_DRAW_SCOPE.md",
+        "docs/PHASE3_DRAW_GPU_TIMESTAMP_REPORT.md",
+        "benchmarks/phase3_comparison/draw-gpu.json",
+        "benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/summary.json"
       ],
-      "requires": "고정 SDL 공개 API에 timestamp가 없어 별도 native 계측 경로와 실제 GPU가 필요"
+      "requires": "Windows NVIDIA에서 실제 native renderer/queue·2-slot counter·period/valid bits·availability/fence·동일 render-pass 구간과 계측 영향/전체 이미지 검증 완료. 고정 SDL 공개 API와 기존 CPU 캠페인은 보존. Linux 물리 GPU 수용은 별도 미완료."
     },
     {
       "id": "P3-CMP-01",

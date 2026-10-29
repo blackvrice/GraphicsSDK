@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "task": "P3-BEN-09",
+  "profile": "draw_gpu",
+  "sdks": [
+    "graphicssdk",
+    "sdl"
+  ],
+  "scenarios": [
+    "draw1",
+    "draw1000",
+    "instanced1000"
+  ],
+  "work": {
+    "draw1": [
+      1,
+      1
+    ],
+    "draw1000": [
+      1000,
+      1
+    ],
+    "instanced1000": [
+      1,
+      1000
+    ]
+  },
+  "geometry": {
+    "shape": [
+      65,
+      37,
+      4
+    ],
+    "scissor": [
+      5,
+      3,
+      55,
+      31
+    ],
+    "vertices_per_instance": 3,
+    "first_vertex": 0,
+    "first_instance": 0,
+    "reference": "full_changing_red_green_triangle_blue_cyan_clear"
+  },
+  "validation": {
+    "warmup": 1,
+    "samples": 3,
+    "required_core_and_sync": true
+  },
+  "performance": {
+    "warmup": 5,
+    "samples": 30,
+    "repetitions": 5,
+    "seed": 20261029,
+    "modes": [
+      "baseline",
+      "audit",
+      "timestamp"
+    ],
+    "order": "seeded_scenario_blocks_five_distinct_six_SDK_mode_orders"
+  },
+  "interval": {
+    "start": "TOP_OF_PIPE immediately before native vkCmdBeginRenderPass",
+    "end": "BOTTOM_OF_PIPE immediately after native vkCmdEndRenderPass",
+    "includes": [
+      "render_pass_clear",
+      "pipeline_scissor_draws",
+      "render_pass_end"
+    ],
+    "excludes": [
+      "resource_setup",
+      "transitions_before_pass",
+      "readback",
+      "query_result_read",
+      "CPU_record_submit_wait"
+    ]
+  },
+  "query": {
+    "type": "timestamp",
+    "slots": 2,
+    "reset": "GPU vkCmdResetQueryPool outside render pass",
+    "results": "64_bit_with_availability_without_WAIT_or_PARTIAL",
+    "completion": "actual_submission_fence_observed_signaled",
+    "counter_encoding": "unsigned_decimal_strings",
+    "mask": "(end-start)&((1<<valid_bits)-1)",
+    "milliseconds": "masked_delta*timestampPeriod/1e6"
+  },
+  "statistics": {
+    "quantile": "linear_interpolation_at_(N-1)*q",
+    "retain_all_raw_samples": true,
+    "samples_removed": 0,
+    "process_medians": true
+  },
+  "CPU_draw_campaigns_unchanged": true,
+  "serialized_processes": true,
+  "historical_timings_reused": false,
+  "overall_SDK_ranking": false,
+  "uninstrumented_GPU_time_claimed": false,
+  "Linux_hardware_accepted": false
+}
