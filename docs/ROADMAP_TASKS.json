@@ -1741,7 +1741,7 @@
       "phase": 3,
       "group": "P3-CMP",
       "title": "LLGL PSO 비교 실행",
-      "status": "todo",
+      "status": "done",
       "gate": "required",
       "depends_on": [
         "P3-CMP-05",
@@ -1749,7 +1749,11 @@
       ],
       "work": "승인된 PSO 계약을 같은 환경에서 반복 측정한다.",
       "done_when": "현재 제품/SDL/LLGL의 fresh 원본·통계·환경 일치 및 차이 분석.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE3_THREE_SDK_PSO_REPORT.md",
+        "benchmarks/phase3_comparison/competitors/llgl-transfer-src-pso-performance.json",
+        "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-pso/summary.json"
+      ],
       "requires": "세 SDK가 같은 GPU/driver/workload를 실행하는 환경"
     },
     {
