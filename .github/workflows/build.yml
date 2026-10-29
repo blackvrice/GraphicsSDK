@@ -24,6 +24,9 @@ jobs:
       - run: python tools/check_llgl_transfer_profile.py
       - run: python tools/check_llgl_draw_profile.py
       - run: python tools/check_llgl_pso_profile.py
+      - run: python tools/check_llgl_allocation_profile.py
+      - name: Independently replay LLGL resource lifecycle and full payloads
+        run: python benchmarks/reports/validation/2026-10-29-phase3-llgl-allocation/verify.py
       - name: Independently replay LLGL PSO lifecycle observations
         run: python benchmarks/reports/validation/2026-10-28-phase3-llgl-pso/verify.py
       - name: Independently replay LLGL draw native observations
@@ -68,6 +71,9 @@ jobs:
       - run: python3 tools/check_llgl_transfer_profile.py
       - run: python3 tools/check_llgl_draw_profile.py
       - run: python3 tools/check_llgl_pso_profile.py
+      - run: python3 tools/check_llgl_allocation_profile.py
+      - name: Independently replay LLGL resource lifecycle and full payloads
+        run: python3 benchmarks/reports/validation/2026-10-29-phase3-llgl-allocation/verify.py
       - name: Independently replay LLGL PSO lifecycle observations
         run: python3 benchmarks/reports/validation/2026-10-28-phase3-llgl-pso/verify.py
       - name: Independently replay LLGL draw native observations
