@@ -103,3 +103,5 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 [Linux benchmark 4종 이식·software 준비 검증](PHASE3_LINUX_WORKLOAD_BUILD_REPORT.md)은 probe 8개·대표 validation smoke 8개·거부 확인 24개를 통과했다. P3-BEN-08은 선행 물리 GPU qualification 부재로 todo를 유지한다. 진단 시간값은 성능 표본으로 합산하지 않으며 전체 Linux 사례 수용도 별개다.
 
 `P3-SCP-01`의 완료는 이 지원표·필수/조건부 이유·후속 검사 연결의 완료다. `P3-SCP-02`, marker 구현, Linux 실행, 새 성능 측정이나 Phase 3 최종 수용을 대신 완료하지 않는다. 다음 자동 권장 작업은 로드맵의 선행 조건과 `next_order`로 결정한다.
+
+`P3-GATE-02`의 [Windows 비교 통합 보고서](PHASE3_COMPARISON_REPORT.md)는 완료된 5개 캠페인의 원본을 독립 재생해 CPU/GPU·계측 모드별 108개 통계 행과 현재 잔여 선행 조건을 생성한다. 기존 측정의 재검사이며 새 GPU 측정은 아니다. Linux 물리 GPU 비교·최종 감사가 남아 있으므로 GATE-02와 Phase 3는 미완료로 유지한다.

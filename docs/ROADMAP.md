@@ -1,6 +1,6 @@
 # GraphicsSDK 세부 개발 로드맵
 
-기준일: 2026-10-28 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
+기준일: 2026-10-30 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
 
 이 문서는 현재 작업 상태표다. 원본 요구사항의 Phase 순서와 기존 검증 범위를 유지하면서 큰 묶음을 독립 작업으로 분할했다. 초기 개발 snapshot 0.0.1이며, Phase 3 또는 v0.1 전체 완료를 의미하지 않는다.
 
@@ -245,7 +245,7 @@ P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/drive
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
 | [ ] `P3-GATE-01`<br>미완료 · 필수 | **현재 지원 구성 통합 회귀**<br>Windows/Linux 지원표·headless/WSI·공통 RHI·필수 debug marker·미지원 응답과 조건부 제외 이유를 현재 source로 검증한다.<br>완료: 필수 구성의 실제 참조·validation·수명·설치 소비자와 선택된 조건부 작업 처리 근거. | 선행: `P3-SCP-02`, `P3-LNX-12`, `P3-LNX-13`, `P3-WSI-08`, `P3-CAP-01`, `P3-LNX-14`, `P3-LNX-15` |
-| [ ] `P3-GATE-02`<br>미완료 · 필수 | **최종 비교·감사·한계 보고서**<br>현재 제품과 지원 경쟁 조합의 원본·통계·라이선스 입력을 종합한다.<br>완료: 새 측정과 과거 자료가 분리된 비교표, 미지원·미측정·환경 한계 및 재현 명령. | 선행: `P3-BEN-03`, `P3-BEN-04`, `P3-BEN-09`, `P3-BEN-05`, `P3-BEN-06`, `P3-CMP-07`, `P3-CMP-08`, `P3-CMP-09`, `P3-CMP-10`, `P3-LBEN-01`, `P3-LBEN-02`, `P3-LBEN-03`, `P3-LBEN-04` |
+| [ ] `P3-GATE-02`<br>미완료 · 필수 | **최종 비교·감사·한계 보고서**<br>현재 제품과 지원 경쟁 조합의 원본·통계·라이선스 입력을 종합한다. Windows 5개 완료 캠페인의 원본 재생·108개 CPU/GPU/계측 모드별 통계 통합과 현재 잔여 선행 조건 생성 도구를 준비했다. Linux 비교·최종 감사 수용은 미완료다.<br>완료: 새 측정과 과거 자료가 분리된 비교표, 미지원·미측정·환경 한계 및 재현 명령. | 선행: `P3-BEN-03`, `P3-BEN-04`, `P3-BEN-09`, `P3-BEN-05`, `P3-BEN-06`, `P3-CMP-07`, `P3-CMP-08`, `P3-CMP-09`, `P3-CMP-10`, `P3-LBEN-01`, `P3-LBEN-02`, `P3-LBEN-03`, `P3-LBEN-04`<br>근거: [PHASE3_COMPARISON_REPORT](PHASE3_COMPARISON_REPORT.md), [phase3-comparison.json](../benchmarks/reports/phase3-comparison.json), [phase3_comparison_report.py](../tools/phase3_comparison_report.py) |
 | [ ] `P3-GATE-03`<br>미완료 · 필수 | **Phase 3 완료 판정**<br>필수 작업·지원 범위·조건부 처리·근거를 확인하고 단계 수용을 기록한다.<br>완료: P3 필수 작업 완료와 선택 작업의 완료/지원 제외 근거. 보류 Phase 2·미채택 최적화를 완료로 바꾸지 않음. | 선행: `P3-GATE-01`, `P3-GATE-02` |
 
 ## Phase 4 — Metal

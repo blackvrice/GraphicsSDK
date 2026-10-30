@@ -1,0 +1,3128 @@
+{
+  "schema_version": 1,
+  "task": "P3-GATE-02",
+  "status": "partial_windows_inventory",
+  "Phase3_completed": false,
+  "final_comparison_accepted": false,
+  "Linux_hardware_accepted": false,
+  "new_measurements_collected": false,
+  "overall_SDK_ranking": false,
+  "identity": {
+    "device_name": "NVIDIA GeForce GTX 1660 SUPER",
+    "device_uuid": "be4ae3472ccd6deb68ccf2e33670e7bd",
+    "driver_uuid": "61fefcd074265598aa87bdd69012bf6a",
+    "device_luid": "3a82010000000000",
+    "native_vendor_id": 4318,
+    "native_device_id": 8644,
+    "native_driver_version": 2604679168,
+    "native_api_version": 4211045,
+    "environment": {
+      "cpu": "Intel(R) Core(TM) i7-14700K",
+      "ram_bytes": 68473667584,
+      "os": "Windows 10.0.26220",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "vendor_id": 4318,
+      "device_id": 8644,
+      "luid": "0:98874",
+      "driver": "32.0.16.2101",
+      "driver_query_available": true,
+      "software_renderer": false,
+      "compiler": "MSVC 194435228",
+      "pointer_bits": 64
+    }
+  },
+  "SDK_source_fingerprint": "197bd38300429ca10e77214bae33a269ec938cf78f112a66fb3182a37298582b",
+  "SDL_commit": "3b2bc951500ca6a1f428af77e036e732d9a8afe3",
+  "campaigns": [
+    {
+      "task": "P3-CMP-07",
+      "name": "three-sdk-upload",
+      "source_commit": "a6b93b524d8db6e63e35ddc40ea060a62b9f13d9",
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/native/receipt.json",
+          "sha256": "08fe601cff99a56917f9eb0a6cbc25b170200ca11e5a4c8f705da0a43fbae13a"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/summary.json",
+          "sha256": "d906cb46aae3cdba5e05d5f8372a0a5d92859b793014e07f7dd2f6f0f6f536eb"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/metrics.csv",
+          "sha256": "5c945634a2db59994b046f696dfaef66ce8175b8f8e839dc04a22abf7e15af08"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/source.zip",
+          "sha256": "1558a1ce7621a37c7130468c39ba9b38d0c45370472d2586067c30bfc52334f6"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/manifest.json",
+          "sha256": "ca1b6057d70ff5cd28e4bc9f39b52e3de9c2a06ae327831031674be5e99c2f56"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-upload/verify.py",
+          "sha256": "5406aa455611f663b8283480a55930cc6162f5fae8e73b61b6d3c069eb00b311"
+        }
+      ],
+      "counts": {
+        "measurement_samples": 1800
+      },
+      "processes": 87,
+      "readback": {
+        "verified_images": 2148,
+        "verified_bytes": 57908372340
+      },
+      "metrics": [
+        {
+          "scenario": "odd",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.19795000000000001,
+            "p95_ms": 0.8310299999999997,
+            "p99_ms": 1.9308019999999997,
+            "min_ms": 0.1278,
+            "max_ms": 2.2003,
+            "MAD_ms": 0.05105000000000001,
+            "process_medians_ms": [
+              0.29415,
+              0.2863,
+              0.1494,
+              0.1595,
+              0.22705
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "odd",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.11925,
+            "p95_ms": 0.7051099999999997,
+            "p99_ms": 1.2453969999999994,
+            "min_ms": 0.0839,
+            "max_ms": 1.5059,
+            "MAD_ms": 0.025699999999999994,
+            "process_medians_ms": [
+              0.1864,
+              0.34950000000000003,
+              0.093,
+              0.12375,
+              0.0995
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "odd",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.26034999999999997,
+            "p95_ms": 1.4774449999999983,
+            "p99_ms": 4.110215999999998,
+            "min_ms": 0.1692,
+            "max_ms": 7.4926,
+            "MAD_ms": 0.06059999999999997,
+            "process_medians_ms": [
+              0.78915,
+              0.3801,
+              0.23904999999999998,
+              0.20355,
+              0.2094
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload1080",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 2.42135,
+            "p95_ms": 10.462734999999968,
+            "p99_ms": 16.290185999999995,
+            "min_ms": 1.5561,
+            "max_ms": 20.1808,
+            "MAD_ms": 0.5508,
+            "process_medians_ms": [
+              7.7835,
+              2.33355,
+              2.4362,
+              2.3418,
+              1.8801
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload1080",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 2.2184,
+            "p95_ms": 10.85319999999992,
+            "p99_ms": 21.051546999999974,
+            "min_ms": 1.5604,
+            "max_ms": 33.1802,
+            "MAD_ms": 0.47319999999999995,
+            "process_medians_ms": [
+              6.677949999999999,
+              2.29145,
+              2.0593500000000002,
+              2.1981,
+              1.7847499999999998
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload1080",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 2.76775,
+            "p95_ms": 13.496814999999994,
+            "p99_ms": 18.19922299999995,
+            "min_ms": 1.9377,
+            "max_ms": 23.0759,
+            "MAD_ms": 0.6199000000000001,
+            "process_medians_ms": [
+              11.025400000000001,
+              2.4781,
+              2.9317,
+              2.65895,
+              2.1563499999999998
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload4k",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 19.48365,
+            "p95_ms": 41.909099999999995,
+            "p99_ms": 63.58726399999985,
+            "min_ms": 7.8605,
+            "max_ms": 124.1095,
+            "MAD_ms": 3.8534000000000006,
+            "process_medians_ms": [
+              31.9836,
+              24.7688,
+              18.724600000000002,
+              17.596850000000003,
+              17.22555
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload4k",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 9.9772,
+            "p95_ms": 31.021184999999996,
+            "p99_ms": 39.85269499999997,
+            "min_ms": 7.4265,
+            "max_ms": 51.8821,
+            "MAD_ms": 1.5227500000000003,
+            "process_medians_ms": [
+              27.336100000000002,
+              14.53415,
+              10.04875,
+              9.075949999999999,
+              8.749600000000001
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload4k",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 25.748800000000003,
+            "p95_ms": 41.11309,
+            "p99_ms": 44.23759899999998,
+            "min_ms": 8.7799,
+            "max_ms": 47.895,
+            "MAD_ms": 1.931949999999997,
+            "process_medians_ms": [
+              37.59855,
+              27.038400000000003,
+              25.916400000000003,
+              24.642899999999997,
+              24.42315
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload4k16f",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 42.818200000000004,
+            "p95_ms": 68.52232499999988,
+            "p99_ms": 108.28891599999973,
+            "min_ms": 32.5928,
+            "max_ms": 151.7509,
+            "MAD_ms": 5.46415,
+            "process_medians_ms": [
+              53.42835,
+              37.19785,
+              44.6171,
+              41.52275,
+              42.90625
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload4k16f",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 34.75975,
+            "p95_ms": 91.86328499999998,
+            "p99_ms": 150.0311279999998,
+            "min_ms": 15.5251,
+            "max_ms": 181.2037,
+            "MAD_ms": 12.751149999999999,
+            "process_medians_ms": [
+              79.40605,
+              26.31355,
+              47.125150000000005,
+              30.40365,
+              23.51515
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "upload4k16f",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 58.66605,
+            "p95_ms": 77.48693999999996,
+            "p99_ms": 92.12326499999992,
+            "min_ms": 19.6711,
+            "max_ms": 109.1589,
+            "MAD_ms": 7.200650000000003,
+            "process_medians_ms": [
+              69.7384,
+              50.94375,
+              59.0025,
+              54.8321,
+              58.172
+            ],
+            "samples_removed": 0
+          }
+        }
+      ],
+      "identity_attribution": "SDK_SDL_unique_name_native_DXGI; LLGL_actual_native_handles",
+      "LLGL_profile": "llgl-fixed-pin-transfer-src-v1"
+    },
+    {
+      "task": "P3-CMP-08",
+      "name": "three-sdk-draw",
+      "source_commit": "bc7e1c65ff6d3deb901be7444cb34f81cd213747",
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-draw/native/receipt.json",
+          "sha256": "c1985cbfb65c5fdef116da42c09b79ce1778d96ccb434b4a405213d7dc055fe2"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-draw/summary.json",
+          "sha256": "f1c40a3da90d431c9ff163c5d8ce0c9173ee5a7271f647054b1ba449f9082e08"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-draw/metrics.csv",
+          "sha256": "e1bb8475f7f21b5b410a340c11fb3cd2a5a0a33b11611fc016737324b187639e"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-draw/source.zip",
+          "sha256": "e5e89ea095d28ea1376c9c8e238db02edb7a9931535ea5af54db1126288e6d01"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-draw/manifest.json",
+          "sha256": "43f2581f6e9e6a3765379410e27349c20f7960004a5966eca5986b85453019d7"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-draw/verify.py",
+          "sha256": "b77eedaf115dc331932c68189879421424dbff67153d587664aef7647b935df2"
+        }
+      ],
+      "counts": {
+        "measurement_samples": 1350
+      },
+      "processes": 75,
+      "readback": {
+        "verified_images": 1623,
+        "verified_bytes": 15613260
+      },
+      "metrics": [
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.026250000000000002,
+            "p95_ms": 0.03947499999999999,
+            "p99_ms": 0.04532799999999997,
+            "min_ms": 0.0161,
+            "max_ms": 0.0481,
+            "MAD_ms": 0.005250000000000003,
+            "process_medians_ms": [
+              0.03005,
+              0.02535,
+              0.0224,
+              0.0224,
+              0.0329
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0215,
+            "p95_ms": 0.03170499999999998,
+            "p99_ms": 0.03702199999999998,
+            "min_ms": 0.0151,
+            "max_ms": 0.0539,
+            "MAD_ms": 0.00405,
+            "process_medians_ms": [
+              0.02525,
+              0.0222,
+              0.018349999999999998,
+              0.019799999999999998,
+              0.02635
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.04475,
+            "p95_ms": 0.059139999999999984,
+            "p99_ms": 0.13553099999999985,
+            "min_ms": 0.0405,
+            "max_ms": 0.1735,
+            "MAD_ms": 0.002199999999999997,
+            "process_medians_ms": [
+              0.04605,
+              0.04285,
+              0.0441,
+              0.04425,
+              0.048350000000000004
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.09465,
+            "p95_ms": 0.127455,
+            "p99_ms": 0.19289299999999998,
+            "min_ms": 0.0758,
+            "max_ms": 0.2141,
+            "MAD_ms": 0.010549999999999997,
+            "process_medians_ms": [
+              0.10064999999999999,
+              0.0895,
+              0.0866,
+              0.09,
+              0.11095
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0162,
+            "p95_ms": 0.02765999999999998,
+            "p99_ms": 0.0652159999999999,
+            "min_ms": 0.006,
+            "max_ms": 0.1091,
+            "MAD_ms": 0.0029,
+            "process_medians_ms": [
+              0.016050000000000002,
+              0.0164,
+              0.0159,
+              0.0072499999999999995,
+              0.021900000000000003
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.02225,
+            "p95_ms": 0.04157999999999997,
+            "p99_ms": 0.05715499999999991,
+            "min_ms": 0.0115,
+            "max_ms": 0.0966,
+            "MAD_ms": 0.00465,
+            "process_medians_ms": [
+              0.022,
+              0.022850000000000002,
+              0.02205,
+              0.013649999999999999,
+              0.03405
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0325,
+            "p95_ms": 0.05058499999999999,
+            "p99_ms": 0.09038499999999988,
+            "min_ms": 0.0165,
+            "max_ms": 0.0988,
+            "MAD_ms": 0.002400000000000003,
+            "process_medians_ms": [
+              0.0319,
+              0.03245,
+              0.03275,
+              0.0309,
+              0.0429
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.071,
+            "p95_ms": 0.11854999999999997,
+            "p99_ms": 0.16641599999999954,
+            "min_ms": 0.048,
+            "max_ms": 0.2577,
+            "MAD_ms": 0.008900000000000002,
+            "process_medians_ms": [
+              0.07095,
+              0.0716,
+              0.0714,
+              0.052750000000000005,
+              0.09915
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0115,
+            "p95_ms": 0.0167,
+            "p99_ms": 0.0187,
+            "min_ms": 0.0045,
+            "max_ms": 0.0211,
+            "MAD_ms": 0.00375,
+            "process_medians_ms": [
+              0.0058,
+              0.0081,
+              0.013000000000000001,
+              0.01325,
+              0.009049999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0149,
+            "p95_ms": 0.024519999999999993,
+            "p99_ms": 0.03355099999999991,
+            "min_ms": 0.0103,
+            "max_ms": 0.0466,
+            "MAD_ms": 0.00285,
+            "process_medians_ms": [
+              0.0117,
+              0.01355,
+              0.01715,
+              0.017849999999999998,
+              0.013250000000000001
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.02905,
+            "p95_ms": 0.03428499999999999,
+            "p99_ms": 0.05897699999999961,
+            "min_ms": 0.0004,
+            "max_ms": 0.151,
+            "MAD_ms": 0.0014000000000000002,
+            "process_medians_ms": [
+              0.0282,
+              0.029650000000000003,
+              0.02885,
+              0.0295,
+              0.0291
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.05665,
+            "p95_ms": 0.07153999999999999,
+            "p99_ms": 0.10159599999999973,
+            "min_ms": 0.0423,
+            "max_ms": 0.1754,
+            "MAD_ms": 0.006999999999999999,
+            "process_medians_ms": [
+              0.04625,
+              0.052500000000000005,
+              0.0596,
+              0.06105,
+              0.05285
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.06155,
+            "p95_ms": 0.07424499999999996,
+            "p99_ms": 0.07916899999999999,
+            "min_ms": 0.0469,
+            "max_ms": 0.083,
+            "MAD_ms": 0.0038500000000000027,
+            "process_medians_ms": [
+              0.06309999999999999,
+              0.058050000000000004,
+              0.062,
+              0.0586,
+              0.063
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.02565,
+            "p95_ms": 0.032594999999999985,
+            "p99_ms": 0.042260999999999986,
+            "min_ms": 0.0159,
+            "max_ms": 0.045,
+            "MAD_ms": 0.0029499999999999978,
+            "process_medians_ms": [
+              0.0267,
+              0.0248,
+              0.025849999999999998,
+              0.0229,
+              0.0263
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.09825,
+            "p95_ms": 0.114855,
+            "p99_ms": 0.11990799999999999,
+            "min_ms": 0.0814,
+            "max_ms": 0.1206,
+            "MAD_ms": 0.004599999999999993,
+            "process_medians_ms": [
+              0.0886,
+              0.09709999999999999,
+              0.09845,
+              0.09945000000000001,
+              0.10935
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.185,
+            "p95_ms": 0.21930499999999997,
+            "p99_ms": 0.238112,
+            "min_ms": 0.161,
+            "max_ms": 0.2423,
+            "MAD_ms": 0.0087,
+            "process_medians_ms": [
+              0.179,
+              0.17985,
+              0.18869999999999998,
+              0.18259999999999998,
+              0.19585
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.03655,
+            "p95_ms": 0.046119999999999994,
+            "p99_ms": 0.058363999999999944,
+            "min_ms": 0.0267,
+            "max_ms": 0.0641,
+            "MAD_ms": 0.003950000000000002,
+            "process_medians_ms": [
+              0.039650000000000005,
+              0.03205,
+              0.030850000000000002,
+              0.03695,
+              0.03775
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.01895,
+            "p95_ms": 0.030749999999999982,
+            "p99_ms": 0.04468099999999997,
+            "min_ms": 0.0112,
+            "max_ms": 0.0493,
+            "MAD_ms": 0.00455,
+            "process_medians_ms": [
+              0.02355,
+              0.0154,
+              0.014950000000000001,
+              0.01795,
+              0.019299999999999998
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.07235,
+            "p95_ms": 0.082565,
+            "p99_ms": 0.22478399999999985,
+            "min_ms": 0.055,
+            "max_ms": 0.2457,
+            "MAD_ms": 0.0020999999999999977,
+            "process_medians_ms": [
+              0.07455,
+              0.07064999999999999,
+              0.0713,
+              0.07375000000000001,
+              0.07264999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.12895,
+            "p95_ms": 0.16066999999999984,
+            "p99_ms": 0.30628099999999986,
+            "min_ms": 0.1088,
+            "max_ms": 0.3165,
+            "MAD_ms": 0.009299999999999989,
+            "process_medians_ms": [
+              0.13865,
+              0.11895,
+              0.11915,
+              0.12945,
+              0.13295
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.03065,
+            "p95_ms": 0.03912999999999999,
+            "p99_ms": 0.043417999999999984,
+            "min_ms": 0.0264,
+            "max_ms": 0.0446,
+            "MAD_ms": 0.002850000000000002,
+            "process_medians_ms": [
+              0.037000000000000005,
+              0.0284,
+              0.02835,
+              0.029,
+              0.031100000000000003
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0127,
+            "p95_ms": 0.024719999999999992,
+            "p99_ms": 0.02757299999999998,
+            "min_ms": 0.0107,
+            "max_ms": 0.0289,
+            "MAD_ms": 0.001299999999999999,
+            "process_medians_ms": [
+              0.019200000000000002,
+              0.0116,
+              0.0121,
+              0.012150000000000001,
+              0.013049999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.08005000000000001,
+            "p95_ms": 0.08677499999999999,
+            "p99_ms": 0.10220299999999986,
+            "min_ms": 0.0659,
+            "max_ms": 0.169,
+            "MAD_ms": 0.0040999999999999925,
+            "process_medians_ms": [
+              0.0695,
+              0.0809,
+              0.0803,
+              0.08235,
+              0.07185
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.1217,
+            "p95_ms": 0.14131499999999997,
+            "p99_ms": 0.15490199999999998,
+            "min_ms": 0.1112,
+            "max_ms": 0.242,
+            "MAD_ms": 0.0040999999999999925,
+            "process_medians_ms": [
+              0.1271,
+              0.12065000000000001,
+              0.12175,
+              0.12535000000000002,
+              0.1162
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.02505,
+            "p95_ms": 0.04778499999999999,
+            "p99_ms": 0.056004,
+            "min_ms": 0.0138,
+            "max_ms": 0.06,
+            "MAD_ms": 0.005149999999999998,
+            "process_medians_ms": [
+              0.02205,
+              0.023,
+              0.024149999999999998,
+              0.04125,
+              0.02155
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.01985,
+            "p95_ms": 0.03411999999999999,
+            "p99_ms": 0.04920999999999999,
+            "min_ms": 0.0137,
+            "max_ms": 0.0498,
+            "MAD_ms": 0.003349999999999999,
+            "process_medians_ms": [
+              0.018750000000000003,
+              0.0176,
+              0.0199,
+              0.0305,
+              0.01865
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0934,
+            "p95_ms": 0.10768999999999997,
+            "p99_ms": 0.14780499999999985,
+            "min_ms": 0.0779,
+            "max_ms": 0.2656,
+            "MAD_ms": 0.008300000000000002,
+            "process_medians_ms": [
+              0.08095,
+              0.09390000000000001,
+              0.0953,
+              0.1017,
+              0.08
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.137,
+            "p95_ms": 0.20291999999999996,
+            "p99_ms": 0.21980599999999992,
+            "min_ms": 0.1139,
+            "max_ms": 0.3732,
+            "MAD_ms": 0.014000000000000005,
+            "process_medians_ms": [
+              0.122,
+              0.1331,
+              0.1406,
+              0.1757,
+              0.1226
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.01625,
+            "p95_ms": 0.021064999999999993,
+            "p99_ms": 0.03166899999999998,
+            "min_ms": 0.0063,
+            "max_ms": 0.0332,
+            "MAD_ms": 0.0020499999999999997,
+            "process_medians_ms": [
+              0.0168,
+              0.016849999999999997,
+              0.0118,
+              0.0173,
+              0.008199999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.022449999999999998,
+            "p95_ms": 0.038524999999999976,
+            "p99_ms": 0.05302999999999997,
+            "min_ms": 0.0123,
+            "max_ms": 0.0551,
+            "MAD_ms": 0.00395,
+            "process_medians_ms": [
+              0.0234,
+              0.02395,
+              0.01695,
+              0.02475,
+              0.0144
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0694,
+            "p95_ms": 0.08078999999999997,
+            "p99_ms": 0.11429499999999977,
+            "min_ms": 0.0377,
+            "max_ms": 0.1415,
+            "MAD_ms": 0.0022999999999999965,
+            "process_medians_ms": [
+              0.0706,
+              0.06995,
+              0.0702,
+              0.07064999999999999,
+              0.06764999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.10835,
+            "p95_ms": 0.131655,
+            "p99_ms": 0.1562339999999998,
+            "min_ms": 0.0864,
+            "max_ms": 0.1842,
+            "MAD_ms": 0.007449999999999998,
+            "process_medians_ms": [
+              0.11149999999999999,
+              0.11465,
+              0.09970000000000001,
+              0.11275,
+              0.09125
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "record_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0151,
+            "p95_ms": 0.029664999999999993,
+            "p99_ms": 0.03374399999999996,
+            "min_ms": 0.0047,
+            "max_ms": 0.0359,
+            "MAD_ms": 0.003700000000000001,
+            "process_medians_ms": [
+              0.01415,
+              0.01385,
+              0.00835,
+              0.028200000000000003,
+              0.0169
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "submit_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.022150000000000003,
+            "p95_ms": 0.044804999999999984,
+            "p99_ms": 0.05186099999999999,
+            "min_ms": 0.011,
+            "max_ms": 0.0589,
+            "MAD_ms": 0.006450000000000003,
+            "process_medians_ms": [
+              0.019200000000000002,
+              0.0208,
+              0.01255,
+              0.04025,
+              0.0261
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "wait_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.07744999999999999,
+            "p95_ms": 0.10001,
+            "p99_ms": 0.10657099999999999,
+            "min_ms": 0.0573,
+            "max_ms": 0.1076,
+            "MAD_ms": 0.0076999999999999985,
+            "process_medians_ms": [
+              0.07894999999999999,
+              0.0777,
+              0.06789999999999999,
+              0.09335,
+              0.06634999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.11324999999999999,
+            "p95_ms": 0.174575,
+            "p99_ms": 0.182602,
+            "min_ms": 0.0806,
+            "max_ms": 0.1872,
+            "MAD_ms": 0.009749999999999995,
+            "process_medians_ms": [
+              0.11345,
+              0.1128,
+              0.09085,
+              0.16244999999999998,
+              0.10919999999999999
+            ],
+            "samples_removed": 0
+          }
+        }
+      ],
+      "identity_attribution": "SDK_SDL_unique_name_native_DXGI; LLGL_actual_native_handles",
+      "LLGL_profile": "llgl-fixed-pin-transfer-src-v1"
+    },
+    {
+      "task": "P3-CMP-09",
+      "name": "three-sdk-pso",
+      "source_commit": "ff49dcc66f37316a2bb596fb2d438b936b85e504",
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-pso/native/receipt.json",
+          "sha256": "77b1b6a82643a71e67adfae96d4b639d7ab8c77b0f2f423557a3ebf95f7e5a4f"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-pso/summary.json",
+          "sha256": "1faff34569727d60daebb639a354bc57b74d8f8ae027d0361247380c53d37089"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-pso/metrics.csv",
+          "sha256": "a0e6624ca6b0d78ab88dde3367af7d9625ad996910ca14890d477498494661d7"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-pso/source.zip",
+          "sha256": "464bdc63e32661d020c7c37bb894c60824c7b411da6c8dc70611ade9ae61a6d6"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-pso/manifest.json",
+          "sha256": "b71079f58bcaed2578cfc7f20733cdcc0cce3a4fc2f70164487fb1f43befc5cd"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-pso/verify.py",
+          "sha256": "38f625abda903879d628617b0fda8f69f12abb277f9924bd77c02c662d8f24d9"
+        }
+      ],
+      "counts": {
+        "measurement_samples": 900
+      },
+      "processes": 58,
+      "readback": {
+        "verified_images": 1082,
+        "verified_bytes": 10408840
+      },
+      "metrics": [
+        {
+          "scenario": "pso1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.10865,
+            "p95_ms": 0.11881,
+            "p99_ms": 0.14344799999999985,
+            "min_ms": 0.0921,
+            "max_ms": 0.1678,
+            "MAD_ms": 0.00485,
+            "process_medians_ms": [
+              0.0996,
+              0.10869999999999999,
+              0.11325,
+              0.11005000000000001,
+              0.10794999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0039,
+            "p95_ms": 0.004754999999999998,
+            "p99_ms": 0.0049,
+            "min_ms": 0.0028,
+            "max_ms": 0.005,
+            "MAD_ms": 0.0005000000000000004,
+            "process_medians_ms": [
+              0.00315,
+              0.0039,
+              0.0045,
+              0.00395,
+              0.00405
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.07995,
+            "p95_ms": 0.09461499999999998,
+            "p99_ms": 0.11972599999999997,
+            "min_ms": 0.0646,
+            "max_ms": 0.1646,
+            "MAD_ms": 0.005550000000000006,
+            "process_medians_ms": [
+              0.07999999999999999,
+              0.0713,
+              0.08435000000000001,
+              0.0842,
+              0.07585
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0001,
+            "p95_ms": 0.0002,
+            "p99_ms": 0.0003509999999999991,
+            "min_ms": 0,
+            "max_ms": 0.0004,
+            "MAD_ms": 0.0,
+            "process_medians_ms": [
+              0.0001,
+              0.0001,
+              0.0002,
+              0.0001,
+              0.0001
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0858,
+            "p95_ms": 0.100955,
+            "p99_ms": 0.10461599999999999,
+            "min_ms": 0.0597,
+            "max_ms": 0.1091,
+            "MAD_ms": 0.012150000000000001,
+            "process_medians_ms": [
+              0.0745,
+              0.06615,
+              0.09615,
+              0.0795,
+              0.09709999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.00285,
+            "p95_ms": 0.0037,
+            "p99_ms": 0.003850999999999999,
+            "min_ms": 0.0016,
+            "max_ms": 0.0039,
+            "MAD_ms": 0.00065,
+            "process_medians_ms": [
+              0.0022,
+              0.0018,
+              0.0035,
+              0.0026,
+              0.0035
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso8",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.232,
+            "p95_ms": 0.25585499999999994,
+            "p99_ms": 0.394612,
+            "min_ms": 0.1885,
+            "max_ms": 0.4033,
+            "MAD_ms": 0.014100000000000001,
+            "process_medians_ms": [
+              0.2468,
+              0.24755,
+              0.22815,
+              0.2177,
+              0.22265
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso8",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0079,
+            "p95_ms": 0.0091,
+            "p99_ms": 0.009550999999999999,
+            "min_ms": 0.0056,
+            "max_ms": 0.0098,
+            "MAD_ms": 0.0009000000000000002,
+            "process_medians_ms": [
+              0.0087,
+              0.0086,
+              0.00645,
+              0.0065,
+              0.0079
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso8",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.1282,
+            "p95_ms": 0.15950999999999999,
+            "p99_ms": 0.2393389999999998,
+            "min_ms": 0.1049,
+            "max_ms": 0.3783,
+            "MAD_ms": 0.004150000000000008,
+            "process_medians_ms": [
+              0.13095,
+              0.12445,
+              0.11135,
+              0.12985,
+              0.1295
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso8",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0002,
+            "p95_ms": 0.0003,
+            "p99_ms": 0.0004,
+            "min_ms": 0.0001,
+            "max_ms": 0.0006,
+            "MAD_ms": 0.0,
+            "process_medians_ms": [
+              0.0003,
+              0.0002,
+              0.0002,
+              0.0003,
+              0.0002
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso8",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.1274,
+            "p95_ms": 0.150355,
+            "p99_ms": 0.15417299999999998,
+            "min_ms": 0.1098,
+            "max_ms": 0.1563,
+            "MAD_ms": 0.010449999999999994,
+            "process_medians_ms": [
+              0.12935000000000002,
+              0.1211,
+              0.13265,
+              0.12714999999999999,
+              0.129
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "pso8",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0045,
+            "p95_ms": 0.0058,
+            "p99_ms": 0.006401999999999998,
+            "min_ms": 0.0034,
+            "max_ms": 0.009,
+            "MAD_ms": 0.0005999999999999998,
+            "process_medians_ms": [
+              0.0043,
+              0.004699999999999999,
+              0.00455,
+              0.0041,
+              0.0047
+            ],
+            "samples_removed": 0
+          }
+        }
+      ],
+      "identity_attribution": "SDK_SDL_unique_name_native_DXGI; LLGL_actual_native_handles",
+      "LLGL_profile": "llgl-fixed-pin-transfer-src-v1"
+    },
+    {
+      "task": "P3-CMP-10",
+      "name": "three-sdk-allocation",
+      "source_commit": "4f37f2030a712d206718b18d568206c63b9c7063",
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-allocation/native/receipt.json",
+          "sha256": "575bfdda675fef74090204c24b66e4c3fe31ef0a7d40dfae5143ce7dde3d9ba3"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-allocation/summary.json",
+          "sha256": "e3a0eea25ce3cb1161f7d91720642bece836bf1031914ffdb3251de2164a86fe"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-allocation/metrics.csv",
+          "sha256": "ce67d7adab287f4193736f01f68b6ac3805bea0d1f4563eeece86e718d05b50e"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-allocation/source.zip",
+          "sha256": "044dab24f68516b817d5ef8a0b3397fba7b86a716f7810b0accc42a495df304d"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-allocation/manifest.json",
+          "sha256": "317f5f9dd3deab1a3c6a465fc65f2682d3ebedb2d361f772df9d736f8cec3eab"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-three-sdk-allocation/verify.py",
+          "sha256": "e93238dcd7f1f048713897c15a296955b2d650504eefa2f6cea6c3d3d7317e43"
+        }
+      ],
+      "counts": {
+        "measurement_samples": 1800
+      },
+      "processes": 98,
+      "readback": {
+        "verified_images": 541541,
+        "verified_buffers": 541541,
+        "verified_bytes": 7427776356
+      },
+      "metrics": [
+        {
+          "scenario": "buffer1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.09455,
+            "p95_ms": 0.20917499999999978,
+            "p99_ms": 0.3622799999999998,
+            "min_ms": 0.059,
+            "max_ms": 0.4163,
+            "MAD_ms": 0.019549999999999998,
+            "process_medians_ms": [
+              0.0771,
+              0.08085,
+              0.15794999999999998,
+              0.12535000000000002,
+              0.0808
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.18355,
+            "p95_ms": 0.3909999999999994,
+            "p99_ms": 1.300592999999992,
+            "min_ms": 0.1353,
+            "max_ms": 1.8995,
+            "MAD_ms": 0.021699999999999997,
+            "process_medians_ms": [
+              0.15995,
+              0.18245,
+              0.23149999999999998,
+              0.18465,
+              0.17714999999999997
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0023,
+            "p95_ms": 0.0042,
+            "p99_ms": 0.00616099999999999,
+            "min_ms": 0.0009,
+            "max_ms": 0.0069,
+            "MAD_ms": 0.0006000000000000001,
+            "process_medians_ms": [
+              0.0023499999999999997,
+              0.0018,
+              0.0033,
+              0.0023499999999999997,
+              0.0015500000000000002
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0002,
+            "p95_ms": 0.0003,
+            "p99_ms": 0.0003509999999999991,
+            "min_ms": 0.0001,
+            "max_ms": 0.0005,
+            "MAD_ms": 0.0,
+            "process_medians_ms": [
+              0.0002,
+              0.0001,
+              0.0002,
+              0.0002,
+              0.0001
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.66255,
+            "p95_ms": 4.245469999999996,
+            "p99_ms": 6.479149999999988,
+            "min_ms": 0.4435,
+            "max_ms": 7.8908,
+            "MAD_ms": 0.13884999999999997,
+            "process_medians_ms": [
+              0.5870500000000001,
+              0.6681,
+              2.5000999999999998,
+              0.7899,
+              0.53155
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.20274999999999999,
+            "p95_ms": 3.1057349999999992,
+            "p99_ms": 4.400528999999999,
+            "min_ms": 0.1455,
+            "max_ms": 5.4115,
+            "MAD_ms": 0.02685,
+            "process_medians_ms": [
+              0.18259999999999998,
+              0.18805,
+              2.00905,
+              0.2419,
+              0.19640000000000002
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 101.8828,
+            "p95_ms": 145.06996999999996,
+            "p99_ms": 156.289668,
+            "min_ms": 41.0496,
+            "max_ms": 191.9728,
+            "MAD_ms": 24.5987,
+            "process_medians_ms": [
+              63.7428,
+              62.5357,
+              120.61930000000001,
+              104.81745000000001,
+              113.11955
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 266.12315,
+            "p95_ms": 424.36295,
+            "p99_ms": 486.7905409999998,
+            "min_ms": 148.0468,
+            "max_ms": 502.0213,
+            "MAD_ms": 59.60884999999999,
+            "process_medians_ms": [
+              175.19155,
+              205.3109,
+              316.8574,
+              283.73654999999997,
+              300.4211
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.56675,
+            "p95_ms": 1.0214249999999996,
+            "p99_ms": 1.756498999999995,
+            "min_ms": 0.3013,
+            "max_ms": 7.0196,
+            "MAD_ms": 0.20499999999999996,
+            "process_medians_ms": [
+              0.33104999999999996,
+              0.34240000000000004,
+              0.659,
+              0.5705,
+              0.70705
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.12475,
+            "p95_ms": 0.45101499999999994,
+            "p99_ms": 0.6087179999999994,
+            "min_ms": 0.0424,
+            "max_ms": 0.8722,
+            "MAD_ms": 0.06295,
+            "process_medians_ms": [
+              0.0663,
+              0.060950000000000004,
+              0.22665000000000002,
+              0.15865,
+              0.1928
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 759.83415,
+            "p95_ms": 948.0585599999999,
+            "p99_ms": 1128.6886409999995,
+            "min_ms": 392.3916,
+            "max_ms": 1681.7022,
+            "MAD_ms": 90.418,
+            "process_medians_ms": [
+              520.8398500000001,
+              824.4082,
+              801.6382000000001,
+              806.7862,
+              765.6947
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "buffer1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 2.3994999999999997,
+            "p95_ms": 4.611624999999988,
+            "p99_ms": 6.318041999999992,
+            "min_ms": 1.0088,
+            "max_ms": 7.3811,
+            "MAD_ms": 0.7165999999999999,
+            "process_medians_ms": [
+              1.3252000000000002,
+              3.2478,
+              2.48025,
+              2.3474500000000003,
+              2.6492500000000003
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.1445,
+            "p95_ms": 0.22295499999999993,
+            "p99_ms": 0.27456699999999995,
+            "min_ms": 0.0603,
+            "max_ms": 0.4104,
+            "MAD_ms": 0.03225,
+            "process_medians_ms": [
+              0.08365,
+              0.08835,
+              0.16595,
+              0.15835,
+              0.15885
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.19025,
+            "p95_ms": 0.2991799999999999,
+            "p99_ms": 0.38570199999999943,
+            "min_ms": 0.1284,
+            "max_ms": 0.5815,
+            "MAD_ms": 0.022400000000000003,
+            "process_medians_ms": [
+              0.14884999999999998,
+              0.17880000000000001,
+              0.2113,
+              0.2057,
+              0.20879999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.28654999999999997,
+            "p95_ms": 0.4385849999999999,
+            "p99_ms": 0.6227869999999995,
+            "min_ms": 0.1804,
+            "max_ms": 0.8748,
+            "MAD_ms": 0.03669999999999998,
+            "process_medians_ms": [
+              0.26225,
+              0.22910000000000003,
+              0.34075,
+              0.2939,
+              0.32015000000000005
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.0012,
+            "p95_ms": 0.0021549999999999985,
+            "p99_ms": 0.0028059999999999947,
+            "min_ms": 0.0007,
+            "max_ms": 0.0229,
+            "MAD_ms": 0.00019999999999999987,
+            "process_medians_ms": [
+              0.0011,
+              0.001,
+              0.00145,
+              0.0012,
+              0.0013
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 2.2723000000000004,
+            "p95_ms": 3.391979999999999,
+            "p99_ms": 4.040807999999994,
+            "min_ms": 1.3477,
+            "max_ms": 10.3994,
+            "MAD_ms": 0.38315000000000043,
+            "process_medians_ms": [
+              1.939,
+              1.91075,
+              2.31255,
+              2.5183999999999997,
+              2.1526
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.23070000000000002,
+            "p95_ms": 0.47784499999999924,
+            "p99_ms": 1.1673549999999961,
+            "min_ms": 0.1657,
+            "max_ms": 1.7121,
+            "MAD_ms": 0.03245000000000001,
+            "process_medians_ms": [
+              0.21944999999999998,
+              0.19815,
+              0.2661,
+              0.2792,
+              0.22605
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 80.5559,
+            "p95_ms": 148.37646499999994,
+            "p99_ms": 164.725825,
+            "min_ms": 44.7733,
+            "max_ms": 211.7785,
+            "MAD_ms": 26.525599999999994,
+            "process_medians_ms": [
+              68.54075,
+              63.705749999999995,
+              126.42805,
+              122.1817,
+              56.50385
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1000",
+          "sdk": "graphicssdk",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 201.38485,
+            "p95_ms": 377.49861999999996,
+            "p99_ms": 467.24251299999986,
+            "min_ms": 149.499,
+            "max_ms": 537.1676,
+            "MAD_ms": 40.33855,
+            "process_medians_ms": [
+              177.31615,
+              197.72140000000002,
+              298.03445,
+              315.73325,
+              168.97685
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 308.2464,
+            "p95_ms": 446.04243499999984,
+            "p99_ms": 532.7499739999998,
+            "min_ms": 210.1077,
+            "max_ms": 546.2815,
+            "MAD_ms": 44.02760000000001,
+            "process_medians_ms": [
+              245.46515,
+              243.72785,
+              327.08939999999996,
+              394.84825,
+              309.6366
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1000",
+          "sdk": "sdl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.5965,
+            "p95_ms": 1.1662949999999996,
+            "p99_ms": 2.674392999999987,
+            "min_ms": 0.1737,
+            "max_ms": 3.8353,
+            "MAD_ms": 0.28939999999999994,
+            "process_medians_ms": [
+              0.21165,
+              0.2033,
+              0.6271,
+              0.7960499999999999,
+              0.6536500000000001
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "create_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1856.0406,
+            "p95_ms": 2336.241625,
+            "p99_ms": 2415.8212289999997,
+            "min_ms": 995.0023,
+            "max_ms": 2455.0691,
+            "MAD_ms": 358.6758500000001,
+            "process_medians_ms": [
+              1483.9791,
+              1413.7558,
+              2111.4599,
+              2201.9582,
+              2087.5049
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "texture1000",
+          "sdk": "llgl",
+          "mode": "uninstrumented",
+          "column": "public_release_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 6.2848500000000005,
+            "p95_ms": 11.508139999999988,
+            "p99_ms": 17.219948999999957,
+            "min_ms": 3.4583,
+            "max_ms": 22.9428,
+            "MAD_ms": 1.2853500000000007,
+            "process_medians_ms": [
+              5.03525,
+              5.1489,
+              6.5853,
+              8.1641,
+              7.2442
+            ],
+            "samples_removed": 0
+          }
+        }
+      ],
+      "identity_attribution": "SDK_SDL_unique_name_native_DXGI; LLGL_actual_native_handles",
+      "LLGL_profile": "llgl-fixed-pin-transfer-src-v1"
+    },
+    {
+      "task": "P3-BEN-09",
+      "name": "draw-gpu",
+      "source_commit": "a2f10ee090b6aad90d131a5013dda815039537e2",
+      "evidence": [
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/native/receipt.json",
+          "sha256": "105b100188cd8f28d120e0e1789b4c96a3fe693af1e2ab8e1fcab3f8c1117287"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/summary.json",
+          "sha256": "ae3edcada21fd99e16971fd4b526a620681c89496f33806dd9681e9c4744c2ff"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/metrics.csv",
+          "sha256": "970ecdb7c70a9ba4e37c04ed5f7e5e535598194400899e0bd71d54b0580639db"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/source.zip",
+          "sha256": "aaf7d0c7ea8f799caa8a3a061ebedcd1dae7787c93309564ab4737c41a12c035"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/manifest.json",
+          "sha256": "cc97d884edbd0ac89c869491801567e5e293532dde22c37d7438eed181e4ff02"
+        },
+        {
+          "path": "benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py",
+          "sha256": "92c23f4cbd4cca7b0ab4ac7d0c642dac5e99be90cfeebb5aaef4c579722ff98f"
+        }
+      ],
+      "counts": {
+        "measurement_GPU_samples": 900,
+        "measurement_CPU_samples": 2700
+      },
+      "processes": 111,
+      "readback": {
+        "verified_images": 3206,
+        "verified_bytes": 30841720
+      },
+      "metrics": [
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "baseline",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1.9698,
+            "p95_ms": 5.896984999999999,
+            "p99_ms": 8.398067999999999,
+            "min_ms": 0.1247,
+            "max_ms": 8.6894,
+            "MAD_ms": 1.1938,
+            "process_medians_ms": [
+              1.4964,
+              2.2108499999999998,
+              2.14425,
+              1.94405,
+              2.00215
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "audit",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1.31685,
+            "p95_ms": 5.421994999999998,
+            "p99_ms": 6.966874999999997,
+            "min_ms": 0.1569,
+            "max_ms": 8.6223,
+            "MAD_ms": 1.0048500000000002,
+            "process_medians_ms": [
+              1.5191,
+              2.27665,
+              0.9440500000000001,
+              0.45840000000000003,
+              1.0699999999999998
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "timestamp",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1.0994,
+            "p95_ms": 5.483779999999996,
+            "p99_ms": 7.765054999999988,
+            "min_ms": 0.1547,
+            "max_ms": 8.881,
+            "MAD_ms": 0.83615,
+            "process_medians_ms": [
+              1.58365,
+              1.33075,
+              0.9209,
+              0.9780499999999999,
+              0.8647
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "graphicssdk",
+          "mode": "timestamp",
+          "column": "gpu_ms",
+          "clock": "GPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.00792,
+            "p95_ms": 0.009312,
+            "p99_ms": 0.009953919999999998,
+            "min_ms": 0.00608,
+            "max_ms": 0.011872,
+            "MAD_ms": 0.00036800000000000027,
+            "process_medians_ms": [
+              0.007935999999999999,
+              0.008288,
+              0.00784,
+              0.00784,
+              0.007872
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "baseline",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.2732,
+            "p95_ms": 3.161019999999996,
+            "p99_ms": 5.196035999999991,
+            "min_ms": 0.0817,
+            "max_ms": 5.8134,
+            "MAD_ms": 0.17035,
+            "process_medians_ms": [
+              0.30945,
+              0.2384,
+              0.25035,
+              0.62405,
+              0.4112
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "audit",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.43645,
+            "p95_ms": 3.7047549999999925,
+            "p99_ms": 6.929944999999973,
+            "min_ms": 0.1012,
+            "max_ms": 8.8361,
+            "MAD_ms": 0.306,
+            "process_medians_ms": [
+              0.64775,
+              0.3647,
+              0.28159999999999996,
+              1.02745,
+              0.34385
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "timestamp",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.61305,
+            "p95_ms": 4.176489999999995,
+            "p99_ms": 6.146562999999998,
+            "min_ms": 0.1209,
+            "max_ms": 9.4321,
+            "MAD_ms": 0.46795,
+            "process_medians_ms": [
+              0.9581,
+              1.20735,
+              0.50635,
+              0.26505,
+              0.2522
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1",
+          "sdk": "sdl",
+          "mode": "timestamp",
+          "column": "gpu_ms",
+          "clock": "GPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.00512,
+            "p95_ms": 0.0064816,
+            "p99_ms": 0.007059519999999996,
+            "min_ms": 0.003168,
+            "max_ms": 0.007584,
+            "MAD_ms": 0.0004479999999999996,
+            "process_medians_ms": [
+              0.005184,
+              0.005504,
+              0.00496,
+              0.004992,
+              0.005039999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "baseline",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1.308,
+            "p95_ms": 5.659394999999996,
+            "p99_ms": 7.668553999999978,
+            "min_ms": 0.2183,
+            "max_ms": 9.0988,
+            "MAD_ms": 0.9962500000000001,
+            "process_medians_ms": [
+              1.6305,
+              0.24875,
+              2.16875,
+              1.8702,
+              0.8775
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "audit",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 2.0211,
+            "p95_ms": 6.213024999999996,
+            "p99_ms": 9.080192999999994,
+            "min_ms": 0.441,
+            "max_ms": 10.1569,
+            "MAD_ms": 1.07475,
+            "process_medians_ms": [
+              1.3566500000000001,
+              2.4148,
+              1.36925,
+              1.49705,
+              3.0385
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "timestamp",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1.8924500000000002,
+            "p95_ms": 5.557214999999997,
+            "p99_ms": 8.173853,
+            "min_ms": 0.4077,
+            "max_ms": 8.6497,
+            "MAD_ms": 0.8995500000000002,
+            "process_medians_ms": [
+              2.12935,
+              1.84165,
+              2.1266,
+              1.2357,
+              2.25535
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "graphicssdk",
+          "mode": "timestamp",
+          "column": "gpu_ms",
+          "clock": "GPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.04088,
+            "p95_ms": 0.054089599999999995,
+            "p99_ms": 0.055943679999999996,
+            "min_ms": 0.038848,
+            "max_ms": 0.056864,
+            "MAD_ms": 0.0012640000000000012,
+            "process_medians_ms": [
+              0.052048,
+              0.04168,
+              0.040192000000000005,
+              0.040576,
+              0.04016
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "baseline",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.52605,
+            "p95_ms": 3.818879999999985,
+            "p99_ms": 5.829890999999996,
+            "min_ms": 0.157,
+            "max_ms": 6.743,
+            "MAD_ms": 0.33945000000000003,
+            "process_medians_ms": [
+              0.4744,
+              0.5351,
+              0.3705,
+              1.1146,
+              0.7242
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "audit",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1.26165,
+            "p95_ms": 5.9618199999999915,
+            "p99_ms": 8.83357499999999,
+            "min_ms": 0.3524,
+            "max_ms": 9.4934,
+            "MAD_ms": 0.7643,
+            "process_medians_ms": [
+              0.8421,
+              1.60115,
+              1.22755,
+              1.5357,
+              1.21
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "timestamp",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 1.2476500000000001,
+            "p95_ms": 5.9913149999999975,
+            "p99_ms": 9.210495999999992,
+            "min_ms": 0.3558,
+            "max_ms": 11.9616,
+            "MAD_ms": 0.7647500000000002,
+            "process_medians_ms": [
+              1.1387,
+              1.41715,
+              0.64435,
+              1.3749,
+              0.7439
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "draw1000",
+          "sdk": "sdl",
+          "mode": "timestamp",
+          "column": "gpu_ms",
+          "clock": "GPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.036975999999999995,
+            "p95_ms": 0.039968,
+            "p99_ms": 0.04085024,
+            "min_ms": 0.035392,
+            "max_ms": 0.041344,
+            "MAD_ms": 0.0008160000000000008,
+            "process_medians_ms": [
+              0.038608,
+              0.0364,
+              0.03672,
+              0.036608,
+              0.037391999999999995
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "baseline",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.5384,
+            "p95_ms": 3.994464999999997,
+            "p99_ms": 6.642218,
+            "min_ms": 0.1755,
+            "max_ms": 9.5843,
+            "MAD_ms": 0.3474,
+            "process_medians_ms": [
+              0.22510000000000002,
+              1.90795,
+              1.912,
+              1.29405,
+              0.19540000000000002
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "audit",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.5666,
+            "p95_ms": 3.546994999999998,
+            "p99_ms": 6.565008999999992,
+            "min_ms": 0.1836,
+            "max_ms": 9.0314,
+            "MAD_ms": 0.36214999999999997,
+            "process_medians_ms": [
+              1.9935,
+              1.95475,
+              0.28064999999999996,
+              1.1235,
+              0.2366
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "timestamp",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.9715499999999999,
+            "p95_ms": 3.5365899999999875,
+            "p99_ms": 6.474804999999998,
+            "min_ms": 0.1959,
+            "max_ms": 7.9814,
+            "MAD_ms": 0.69085,
+            "process_medians_ms": [
+              0.21725,
+              1.2708,
+              1.9983499999999998,
+              0.8383499999999999,
+              1.24405
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "graphicssdk",
+          "mode": "timestamp",
+          "column": "gpu_ms",
+          "clock": "GPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.03776,
+            "p95_ms": 0.058086399999999996,
+            "p99_ms": 0.05923328,
+            "min_ms": 0.035968,
+            "max_ms": 0.060672,
+            "MAD_ms": 0.0009120000000000031,
+            "process_medians_ms": [
+              0.0576,
+              0.037472000000000005,
+              0.047088000000000005,
+              0.03712,
+              0.037264000000000005
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "baseline",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.33655,
+            "p95_ms": 5.004444999999983,
+            "p99_ms": 6.452922999999999,
+            "min_ms": 0.1189,
+            "max_ms": 8.2726,
+            "MAD_ms": 0.2041,
+            "process_medians_ms": [
+              0.14275,
+              0.2457,
+              0.28400000000000003,
+              1.1178,
+              1.2351999999999999
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "audit",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.62175,
+            "p95_ms": 4.586209999999995,
+            "p99_ms": 5.8242449999999995,
+            "min_ms": 0.1249,
+            "max_ms": 6.341,
+            "MAD_ms": 0.4747,
+            "process_medians_ms": [
+              0.16105,
+              1.2072,
+              0.5507500000000001,
+              1.23175,
+              0.92325
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "timestamp",
+          "column": "cpu_total_ms",
+          "clock": "CPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.30425,
+            "p95_ms": 5.6666149999999975,
+            "p99_ms": 6.805812999999997,
+            "min_ms": 0.1421,
+            "max_ms": 6.9655,
+            "MAD_ms": 0.1554,
+            "process_medians_ms": [
+              0.1729,
+              0.6815,
+              0.8401000000000001,
+              0.1755,
+              1.2649
+            ],
+            "samples_removed": 0
+          }
+        },
+        {
+          "scenario": "instanced1000",
+          "sdk": "sdl",
+          "mode": "timestamp",
+          "column": "gpu_ms",
+          "clock": "GPU",
+          "unit": "ms",
+          "statistics": {
+            "processes": 5,
+            "samples": 150,
+            "p50_ms": 0.034304,
+            "p95_ms": 0.0547552,
+            "p99_ms": 0.05600064,
+            "min_ms": 0.032064,
+            "max_ms": 0.05616,
+            "MAD_ms": 0.0008000000000000021,
+            "process_medians_ms": [
+              0.054400000000000004,
+              0.03432,
+              0.034048,
+              0.0332,
+              0.034272
+            ],
+            "samples_removed": 0
+          }
+        }
+      ],
+      "identity_attribution": "actual_render_device_queue",
+      "LLGL_profile": null
+    }
+  ],
+  "pending_prerequisites": [
+    {
+      "id": "P3-BEN-07",
+      "title": "Linux 비교 환경 probe 이식",
+      "status": "todo",
+      "requires": "Linux native probe 이식·실제 software/VVL·거부 대조 준비 검증 완료. 실제 Linux 물리 GPU/ICD·정확한 UUID와 SDK/SDL 동일 장치·driver/compiler·필수 validation 원본이 필요. software 성공은 최종 완료로 합산하지 않음.",
+      "depends_on": [
+        "P3-LNX-11",
+        "P3-BEN-01"
+      ]
+    },
+    {
+      "id": "P3-BEN-08",
+      "title": "Linux benchmark build 이식",
+      "status": "todo",
+      "requires": "4종 소비자 native Linux build·software probe/대표 validation smoke·거부 대조 준비 검증 완료. 선행 P3-BEN-07의 실제 물리 GPU qualification과 같은 환경의 build/probe가 있어야 최종 완료. 전체 Linux 사례·성능 비교는 별도 미완료.",
+      "depends_on": [
+        "P3-BEN-07"
+      ]
+    },
+    {
+      "id": "P3-LBEN-01",
+      "title": "Linux 업로드 비교",
+      "status": "todo",
+      "requires": "동일 Linux GPU/driver의 지원 SDK 조합",
+      "depends_on": [
+        "P3-BEN-08",
+        "P3-CMP-01",
+        "P3-BEN-03"
+      ]
+    },
+    {
+      "id": "P3-LBEN-02",
+      "title": "Linux draw/instancing 비교",
+      "status": "todo",
+      "requires": "동일 Linux GPU/driver의 지원 SDK 조합",
+      "depends_on": [
+        "P3-BEN-08",
+        "P3-CMP-01",
+        "P3-BEN-04"
+      ]
+    },
+    {
+      "id": "P3-LBEN-03",
+      "title": "Linux PSO 비교",
+      "status": "todo",
+      "requires": "동일 Linux GPU/driver의 지원 SDK 조합",
+      "depends_on": [
+        "P3-BEN-08",
+        "P3-CMP-01",
+        "P3-BEN-05"
+      ]
+    },
+    {
+      "id": "P3-LBEN-04",
+      "title": "Linux 자원 생성 비교",
+      "status": "todo",
+      "requires": "동일 Linux GPU/driver의 지원 SDK 조합",
+      "depends_on": [
+        "P3-BEN-08",
+        "P3-CMP-01",
+        "P3-BEN-06"
+      ]
+    }
+  ]
+}
