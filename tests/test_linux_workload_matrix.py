@@ -181,6 +181,14 @@ class MatrixContracts(unittest.TestCase):
             with self.assertRaises(ValueError):
                 m.loaded_libraries(trace, a)
 
+    def test_archived_real_linux_loader_aliases_and_layer_dot_path(self):
+        folder = m.ROOT/'benchmarks/reports/validation/2026-10-28-phase3-linux-workloads/native/linux-workloads-evidence'
+        for row in self.ready['runs']:
+            if row['job']['kind'] in ('probe', 'validation-smoke'):
+                with self.subTest(job=row['job']['name']):
+                    actual = m.loaded_libraries((folder/row['stderr']).read_bytes(), self.ready['qualification'])
+                    self.assertEqual(actual, row['job']['kind'] == 'validation-smoke')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -153,11 +153,15 @@ def loaded_libraries(stderr, a, live=False):
     # Ubuntu's loader trace may use /lib while the frozen file inventory resolves
     # the usr-merge symlink to /usr/lib. Live collection also checks real files.
     def normalized(path):
-        return '/usr'+path if path.startswith('/lib/') else path
+        path = pathlib.PurePosixPath(path).as_posix()
+        path = '/usr'+path if path.startswith('/lib/') else path
+        # dladdr is canonicalized by the native probe, whereas LD_DEBUG prints
+        # the loader's SONAME alias. Live q.driver_libraries resolves that alias.
+        return re.sub(r'/libvulkan\.so\.1(?:\.\d+)+$', '/libvulkan.so.1', path)
     require({normalized(i['path']) for i in a['runtime_libraries']}.issubset({normalized(p) for p in paths}),
             'Qualified actual loader/ICD not observed')
-    loaded_validation = {p for p in paths if 'VkLayer_khronos_validation' in p}
-    require(not loaded_validation or loaded_validation == {a['validation_library']}, 'Unexpected validation library')
+    loaded_validation = {normalized(p) for p in paths if 'VkLayer_khronos_validation' in p}
+    require(not loaded_validation or loaded_validation == {normalized(a['validation_library'])}, 'Unexpected validation library')
     if live:
         require(q.driver_libraries(pathlib.Path(a['icd']['path']), stderr.decode(errors='replace'), a['loader_path'])
                 == a['runtime_libraries'], 'Actual loader/ICD files changed')
