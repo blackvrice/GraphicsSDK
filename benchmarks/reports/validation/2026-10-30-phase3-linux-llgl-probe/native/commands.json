@@ -1,0 +1,323 @@
+[
+  {
+    "name": "configure",
+    "argv": [
+      "cmake",
+      "-S",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_llgl_probe",
+      "-B",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_C_COMPILER=gcc-14",
+      "-DCMAKE_CXX_COMPILER=g++-14",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+      "-DGFX_LLGL_OVERLAY=/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/patch/overlay.cpp",
+      "-DVulkan_INCLUDE_DIR=/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers/include",
+      "-DVulkan_LIBRARY=/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275"
+    ],
+    "overrides": {},
+    "pid": 11033,
+    "started": 956.894862541,
+    "finished": 957.771503775,
+    "returncode": 0,
+    "stdout": "commands/configure.stdout",
+    "stdout_sha256": "1178bf38c9bcf64c88fe959c6d55fb8b3a3506489dbbc832d9bd94c7edff1d50",
+    "stderr": "commands/configure.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "build",
+    "argv": [
+      "cmake",
+      "--build",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build",
+      "--target",
+      "linux_llgl_probe",
+      "--parallel",
+      "2",
+      "--verbose",
+      "--",
+      "-d",
+      "keepdepfile"
+    ],
+    "overrides": {},
+    "pid": 11114,
+    "started": 957.772122473,
+    "finished": 988.486307714,
+    "returncode": 0,
+    "stdout": "commands/build.stdout",
+    "stdout_sha256": "2d551e80c1ad0ccf8271c0025328a2a59d169c985f9344aa4a4c01d178c75383",
+    "stderr": "commands/build.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "executed-commands",
+    "argv": [
+      "ninja",
+      "-C",
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build",
+      "-t",
+      "commands",
+      "linux_llgl_probe"
+    ],
+    "overrides": {},
+    "pid": 11643,
+    "started": 988.487077865,
+    "finished": 988.491121524,
+    "returncode": 0,
+    "stdout": "commands/executed-commands.stdout",
+    "stdout_sha256": "e3fcc2d7ba222518355835f942fd69cf99fb2dc05795546d11da04d5f556a587",
+    "stderr": "commands/executed-commands.stderr",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "00-normal-identity-0",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "6d65736132352e322e382d3075627500",
+      "plain",
+      "identity",
+      "software-diagnostic"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11646,
+    "started": 991.271843099,
+    "finished": 991.310294795,
+    "returncode": 0,
+    "stdout": "commands/00-normal-identity-0.stdout",
+    "stdout_sha256": "5d6c0a385e4a037f75d03b11bc27c8ceccd95f7f3836b6dbdd6b7f2c7d7c0d30",
+    "stderr": "commands/00-normal-identity-0.stderr",
+    "stderr_sha256": "31605809931f26ceba06d12e954406a560d66d8daaf9b73d0405ec4ca0d6ab7f"
+  },
+  {
+    "name": "01-normal-smoke-0",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "6d65736132352e322e382d3075627500",
+      "plain",
+      "smoke",
+      "software-diagnostic"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11660,
+    "started": 999.088902814,
+    "finished": 999.127987291,
+    "returncode": 0,
+    "stdout": "commands/01-normal-smoke-0.stdout",
+    "stdout_sha256": "b23301fcb9ef918cab3402ff07918231e4192bc9f844d8bfb5c520d405565b8c",
+    "stderr": "commands/01-normal-smoke-0.stderr",
+    "stderr_sha256": "5f73d342fe4783a974d33f2b16d4d83e6f7d4097e7e433b1b9e4bda3cff95dea"
+  },
+  {
+    "name": "02-normal-identity-1",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "6d65736132352e322e382d3075627500",
+      "validation",
+      "identity",
+      "software-diagnostic"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/settings",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+      "GFX_EXPECT_VULKAN_LAYER": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so",
+      "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+      "VK_LOADER_DEBUG": "layer",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11671,
+    "started": 999.591764193,
+    "finished": 999.648865702,
+    "returncode": 0,
+    "stdout": "commands/02-normal-identity-1.stdout",
+    "stdout_sha256": "d7d2575735678a99cb9cab4a7ea429745bfc668173e0c7f27f0f2b8eb7072e65",
+    "stderr": "commands/02-normal-identity-1.stderr",
+    "stderr_sha256": "8a2c0e98d1339158cbafae396d2ba95a19401ed35936b0a79d22f3418ae6937c"
+  },
+  {
+    "name": "03-normal-smoke-1",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "6d65736132352e322e382d3075627500",
+      "validation",
+      "smoke",
+      "software-diagnostic"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/settings",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+      "GFX_EXPECT_VULKAN_LAYER": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so",
+      "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+      "VK_LOADER_DEBUG": "layer",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11682,
+    "started": 1000.197875209,
+    "finished": 1000.260560583,
+    "returncode": 0,
+    "stdout": "commands/03-normal-smoke-1.stdout",
+    "stdout_sha256": "ef0b406de25e96ee4e53112a6b4141afee8e3c9bfa7f404884f15211013ccfbe",
+    "stderr": "commands/03-normal-smoke-1.stderr",
+    "stderr_sha256": "0f1fcf453d1792e683d1ab616f262be846322c50daf0942421574b08ad54f92e"
+  },
+  {
+    "name": "04-callback-control-callback-control-1",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "6d65736132352e322e382d3075627500",
+      "validation",
+      "callback-control",
+      "software-diagnostic"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/settings",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+      "GFX_EXPECT_VULKAN_LAYER": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so",
+      "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+      "VK_LOADER_DEBUG": "layer",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11695,
+    "started": 1000.812764123,
+    "finished": 1000.869263448,
+    "returncode": 0,
+    "stdout": "commands/04-callback-control-callback-control-1.stdout",
+    "stdout_sha256": "d86ea1726c58b969f805dced04f0141765a29fdd8381ba428e16f041b0a9807f",
+    "stderr": "commands/04-callback-control-callback-control-1.stderr",
+    "stderr_sha256": "7fbcb4bac7c31cfc140518fbc946d8f63e55058aba8cb1a4ac4f381c4fc563a8"
+  },
+  {
+    "name": "05-wrong-uuid-smoke-0",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "00000000000000000000000000000000",
+      "plain",
+      "smoke",
+      "software-diagnostic"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11706,
+    "started": 1001.417560832,
+    "finished": 1001.439252417,
+    "returncode": 1,
+    "stdout": "commands/05-wrong-uuid-smoke-0.stdout",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "commands/05-wrong-uuid-smoke-0.stderr",
+    "stderr_sha256": "0f8a318eadfe46bec1dfecbe902a91bc73c621f7b59931847991339116892ef3"
+  },
+  {
+    "name": "06-wrong-kind-smoke-0",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "6d65736132352e322e382d3075627500",
+      "plain",
+      "smoke",
+      "physical"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11707,
+    "started": 1001.793730405,
+    "finished": 1001.797226406,
+    "returncode": 1,
+    "stdout": "commands/06-wrong-kind-smoke-0.stdout",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "commands/06-wrong-kind-smoke-0.stderr",
+    "stderr_sha256": "9f1901056e4c2a94780a02169e0ecd38bf9183a5724326027c19691af5d3f4a2"
+  },
+  {
+    "name": "07-missing-layer-smoke-1",
+    "argv": [
+      "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/linux_llgl_probe",
+      "6d65736132352e322e382d3075627500",
+      "validation",
+      "smoke",
+      "software-diagnostic"
+    ],
+    "overrides": {
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+      "VK_LOADER_LAYERS_DISABLE": "~implicit~",
+      "VK_LAYER_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/empty",
+      "VK_LAYER_SETTINGS_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/settings",
+      "SDL_VIDEODRIVER": "offscreen",
+      "XDG_RUNTIME_DIR": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence/xdg",
+      "LD_DEBUG": "libs",
+      "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+      "GFX_EXPECT_VULKAN_LAYER": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so",
+      "VK_KHRONOS_VALIDATION_VALIDATE_SYNC": "true",
+      "VK_LOADER_DEBUG": "layer",
+      "LD_LIBRARY_PATH": "/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib"
+    },
+    "pid": 11708,
+    "started": 1002.151358567,
+    "finished": 1002.155581959,
+    "returncode": 1,
+    "stdout": "commands/07-missing-layer-smoke-1.stdout",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "commands/07-missing-layer-smoke-1.stderr",
+    "stderr_sha256": "9e49ed366636f36e442870738dfd3f34df669ac8f59e979c59d03fa476d0d1f7"
+  }
+]

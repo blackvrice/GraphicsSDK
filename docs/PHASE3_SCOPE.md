@@ -107,3 +107,5 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 `P3-GATE-02`의 [Windows 비교 통합 보고서](PHASE3_COMPARISON_REPORT.md)는 완료된 5개 캠페인의 원본을 독립 재생해 CPU/GPU·계측 모드별 108개 통계 행과 현재 잔여 선행 조건을 생성한다. 기존 측정의 재검사이며 새 GPU 측정은 아니다. Linux 물리 GPU 비교·최종 감사가 남아 있으므로 GATE-02와 Phase 3는 미완료로 유지한다.
 
 [Linux SDK/SDL 전체 입력 software matrix](PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md)는 13개 입력의 일반/필수 validation 52개 프로세스와 전체 readback을 추가 검증했다. CPU 시간 행 156개는 진단 출력이며 성능 표본은 0이다. LLGL·물리 GPU 비교와 BEN-07·08/LBEN-01~04 수용 상태는 미완료로 유지한다.
+
+[Linux 승인 LLGL 프로필 build·최소 probe](PHASE3_LINUX_LLGL_PROBE_REPORT.md)는 고정 10줄 패치의 GCC 빌드, actual device/queue, 최소 buffer 참조와 callback·거부 제어 8개를 software에서 검증했다. Linux LLGL의 전체 workload 이식·물리 GPU·성능 비교는 아직 없으며 기존 수용 상태를 완료로 바꾸지 않는다.
