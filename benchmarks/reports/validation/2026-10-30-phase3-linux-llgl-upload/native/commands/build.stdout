@@ -1,0 +1,65 @@
+Change Dir: '/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build'
+
+Run Build Command(s): /usr/local/bin/ninja -v -j 2 -d keepdepfile linux_llgl_upload
+[1/2] /usr/bin/g++-14 -DGFX_LLGL_PIN=\"649c0cc8fa608312c5e4b94dae409a5859fc7553\" -DGFX_LLGL_PROFILE=\"llgl-fixed-pin-transfer-src-v1\" -DGFX_LLGL_UPLOAD_FINGERPRINT=\"407d551d781e414f4861f1e57764b1213d09f434792c834eae9febeee5e48eb7\" -I/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common -I/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/llgl_vulkan_upload -isystem /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/LLGL/include -isystem /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers/include -O2 -DNDEBUG -std=gnu++23 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/linux_llgl_upload.dir/main.cpp.o -MF CMakeFiles/linux_llgl_upload.dir/main.cpp.o.d -o CMakeFiles/linux_llgl_upload.dir/main.cpp.o -c /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/main.cpp
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:3,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/main.cpp:1:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp: At global scope:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   48 |     VkPhysicalDeviceIDProperties id{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};
+      |                                                                                    ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:49:90: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   49 |     VkPhysicalDeviceProperties2 properties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+      |                                                                                          ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:49:90: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp: In constructor ‘llglupload::Context::Context(bool, const std::string&)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::pNext’ [-Wmissing-field-initializers]
+   73 |             VkDebugUtilsMessengerCreateInfoEXT info{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};info.messageSeverity=VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT|VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;info.messageType=VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT|VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT|VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;info.pfnUserCallback=message;require(create(native.instance,&info,nullptr,&messenger.handle)==VK_SUCCESS,"Messenger creation failed");
+      |                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::messageSeverity’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::messageType’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::pfnUserCallback’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::pUserData’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/main.cpp: In function ‘std::string llglupload::validationControl(Context&, const std::string&)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/main.cpp:18:81: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   18 |         VkPhysicalDeviceProperties2 invalid{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};c.getProperties(c.native.physicalDevice,&invalid);
+      |                                                                                 ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-upload-evidence-build/main.cpp:18:81: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+[2/2] : && /usr/bin/g++-14 -O2 -DNDEBUG -Wl,--dependency-file=CMakeFiles/linux_llgl_upload.dir/link.d CMakeFiles/linux_llgl_upload.dir/main.cpp.o -o linux_llgl_upload  -Wl,-rpath,/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib  /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib/libLLGL.so  /usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275  /usr/lib/x86_64-linux-gnu/libcrypto.so  -ldl && :
+

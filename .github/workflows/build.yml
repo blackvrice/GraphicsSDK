@@ -35,6 +35,8 @@ jobs:
         run: python benchmarks/reports/validation/2026-10-30-phase3-linux-workload-matrix/verify.py
       - name: Replay Linux LLGL native software probe evidence
         run: python benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/verify.py
+      - name: Replay Linux LLGL full upload correctness and core-sync controls
+        run: python benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-upload/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -102,6 +104,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-10-30-phase3-linux-workload-matrix/verify.py
       - name: Replay Linux LLGL native software probe evidence
         run: python3 benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/verify.py
+      - name: Replay Linux LLGL full upload correctness and core-sync controls
+        run: python3 benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-upload/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements

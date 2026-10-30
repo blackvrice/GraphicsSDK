@@ -1547,7 +1547,7 @@
       "depends_on": [
         "P3-BEN-07"
       ],
-      "work": "공통 benchmark/의존성/설치 SDK 소비자의 Windows 의존성을 분리한다. SDK/SDL 전체 13개 입력의 일반·필수 validation software matrix 52개 프로세스와 full readback 준비 검증을 완료했다. LLGL·물리 GPU 성능 수용은 미완료다. 승인 LLGL 프로필의 Linux GCC build·최소 buffer probe·실제 callback/거부 제어 8개도 software에서 준비 검증했다. LLGL 전체 workload 소비자 이식은 별도 미완료다.",
+      "work": "공통 benchmark/의존성/설치 SDK 소비자의 Windows 의존성을 분리한다. SDK/SDL 전체 13개 입력의 일반·필수 validation software matrix 52개 프로세스와 full readback 준비 검증을 완료했다. LLGL·물리 GPU 성능 수용은 미완료다. 승인 LLGL 프로필의 Linux GCC build·최소 buffer probe·실제 callback/거부 제어 8개도 software에서 준비 검증했다. LLGL 전체 workload 소비자 이식은 별도 미완료다. 승인 LLGL Linux 업로드 correctness 소비자의 본문 보존 이식과 네 입력·전체 이미지 32개·core/sync/거부 제어 15개 software 검증을 완료했다. 물리 GPU·세 SDK fresh 성능 비교는 미완료다.",
       "done_when": "선택된 Vulkan 비교 프로그램의 native Linux build·실행 probe.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_BUILD_REPORT.md",
@@ -1559,7 +1559,9 @@
         "docs/PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md",
         "benchmarks/reports/validation/2026-10-30-phase3-linux-workload-matrix/summary.json",
         "docs/PHASE3_LINUX_LLGL_PROBE_REPORT.md",
-        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json"
+        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json",
+        "docs/PHASE3_LINUX_LLGL_UPLOAD_REPORT.md",
+        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-upload/summary.json"
       ],
       "requires": "4종 소비자 native Linux build·software probe/대표 validation smoke·거부 대조 준비 검증 완료. 선행 P3-BEN-07의 실제 물리 GPU qualification과 같은 환경의 build/probe가 있어야 최종 완료. 전체 Linux 사례·성능 비교는 별도 미완료."
     },
@@ -1843,13 +1845,15 @@
         "P3-CMP-01",
         "P3-BEN-03"
       ],
-      "work": "현재 제품·SDL·선택 경쟁 SDK의 업로드 계약을 Linux에서 실행한다. SDK/SDL 전체 13개 입력의 일반·필수 validation software matrix 52개 프로세스와 full readback 준비 검증을 완료했다. LLGL·물리 GPU 성능 수용은 미완료다. 승인 LLGL 프로필의 Linux GCC build·최소 buffer probe·실제 callback/거부 제어 8개도 software에서 준비 검증했다. LLGL 전체 workload 소비자 이식은 별도 미완료다.",
+      "work": "현재 제품·SDL·선택 경쟁 SDK의 업로드 계약을 Linux에서 실행한다. SDK/SDL 전체 13개 입력의 일반·필수 validation software matrix 52개 프로세스와 full readback 준비 검증을 완료했다. LLGL·물리 GPU 성능 수용은 미완료다. 승인 LLGL 프로필의 Linux GCC build·최소 buffer probe·실제 callback/거부 제어 8개도 software에서 준비 검증했다. LLGL 전체 workload 소비자 이식은 별도 미완료다. 승인 LLGL Linux 업로드 correctness 소비자의 본문 보존 이식과 네 입력·전체 이미지 32개·core/sync/거부 제어 15개 software 검증을 완료했다. 물리 GPU·세 SDK fresh 성능 비교는 미완료다.",
       "done_when": "Linux 전체 참조와 validation/performance 분리·fresh 반복 통계. Windows 값 재사용 금지.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md",
         "benchmarks/reports/validation/2026-10-30-phase3-linux-workload-matrix/summary.json",
         "docs/PHASE3_LINUX_LLGL_PROBE_REPORT.md",
-        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json"
+        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json",
+        "docs/PHASE3_LINUX_LLGL_UPLOAD_REPORT.md",
+        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-upload/summary.json"
       ],
       "requires": "동일 Linux GPU/driver의 지원 SDK 조합"
     },

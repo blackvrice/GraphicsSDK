@@ -108,4 +108,6 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 
 [Linux SDK/SDL 전체 입력 software matrix](PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md)는 13개 입력의 일반/필수 validation 52개 프로세스와 전체 readback을 추가 검증했다. CPU 시간 행 156개는 진단 출력이며 성능 표본은 0이다. LLGL·물리 GPU 비교와 BEN-07·08/LBEN-01~04 수용 상태는 미완료로 유지한다.
 
-[Linux 승인 LLGL 프로필 build·최소 probe](PHASE3_LINUX_LLGL_PROBE_REPORT.md)는 고정 10줄 패치의 GCC 빌드, actual device/queue, 최소 buffer 참조와 callback·거부 제어 8개를 software에서 검증했다. Linux LLGL의 전체 workload 이식·물리 GPU·성능 비교는 아직 없으며 기존 수용 상태를 완료로 바꾸지 않는다.
+[Linux 승인 LLGL 프로필 build·최소 probe](PHASE3_LINUX_LLGL_PROBE_REPORT.md)는 고정 10줄 패치의 GCC 빌드, actual device/queue, 최소 buffer 참조와 callback·거부 제어 8개를 software에서 검증했다. 이 최소 probe와 개별 workload 정확성은 구분하며 물리 GPU·성능 비교의 미완료 상태는 유지한다.
+
+[Linux LLGL 업로드 correctness 준비](PHASE3_LINUX_LLGL_UPLOAD_REPORT.md)는 기존 업로드/오류 제어 본문을 보존해 네 입력의 일반·고정 validation 전체 이미지 32개와 core/sync·거부 제어를 software에서 검증했다. 업로드 성능 표본은 0이며 물리 GPU 수용·세 SDK fresh 성능 비교와 draw/PSO/allocation 이식은 미완료다.
