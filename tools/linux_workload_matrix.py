@@ -240,7 +240,7 @@ def run(a):
         (out/name).mkdir(mode=0o700)
     shutil.copyfile(ready/'settings/vk_layer_settings.txt', out/'settings/vk_layer_settings.txt')
     sources = {pathlib.Path(x['path']) for x in prior['source_inputs']+prior['qualification']['source_inputs']}
-    sources.update(ROOT/p for p in (CONTRACT, 'tools/linux_workload_matrix.py'))
+    sources.update(ROOT/p for p in (CONTRACT, 'tools/linux_workload_matrix.py', 'LICENSE'))
     r['source_inputs'] = [dict(path=p.relative_to(ROOT).as_posix(), sha256=sha(p)) for p in sorted(sources)]
     with zipfile.ZipFile(out/'source.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
         for p in sorted(sources):

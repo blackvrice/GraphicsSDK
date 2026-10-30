@@ -166,7 +166,7 @@ class MatrixContracts(unittest.TestCase):
     def test_output_paths_stay_within_evidence(self):
         with tempfile.TemporaryDirectory() as td:
             folder = pathlib.Path(td); (folder/'ok').write_bytes(b'ok')
-            self.assertEqual(m.safe(folder, 'ok'), folder/'ok')
+            self.assertEqual(m.safe(folder, 'ok'), (folder/'ok').resolve())
             for bad in ('../ok', '/ok', 'C:/ok', 'bad\\ok'):
                 with self.subTest(bad=bad), self.assertRaises(ValueError):
                     m.safe(folder, bad)
