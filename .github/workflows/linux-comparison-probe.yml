@@ -1,9 +1,9 @@
 name: Linux comparison probe (software diagnostic)
 on:
   push:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py']
   pull_request:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -47,6 +47,10 @@ jobs:
         run: |
           python3 tools/linux_workloads.py run --mode software-diagnostic --qualification out/linux-comparison-evidence --output out/linux-workloads-evidence
           python3 tools/linux_workloads.py check --output out/linux-workloads-evidence --live
+      - name: Exercise every SDK and SDL workload case as software diagnostics
+        run: |
+          python3 tools/linux_workload_matrix.py run --readiness out/linux-workloads-evidence --output out/linux-workload-matrix
+          python3 tools/linux_workload_matrix.py check --output out/linux-workload-matrix --live
       - name: Preserve diagnostics without external binaries
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,5 +60,6 @@ jobs:
             out/linux-comparison-evidence/
             out/linux-vulkan-validation-evidence/runtime/
             out/linux-workloads-evidence/
+            out/linux-workload-matrix/
           if-no-files-found: error
           retention-days: 14
