@@ -31,6 +31,8 @@ jobs:
       - run: python tools/check_llgl_allocation_comparison.py
       - run: python tools/check_draw_gpu_timestamps.py
       - run: python tools/phase3_comparison_report.py --check
+      - name: Replay full Linux software workload matrix
+        run: python benchmarks/reports/validation/2026-10-30-phase3-linux-workload-matrix/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -94,6 +96,8 @@ jobs:
       - run: python3 tools/check_llgl_allocation_comparison.py
       - run: python3 tools/check_draw_gpu_timestamps.py
       - run: python3 tools/phase3_comparison_report.py --check
+      - name: Replay full Linux software workload matrix
+        run: python3 benchmarks/reports/validation/2026-10-30-phase3-linux-workload-matrix/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements

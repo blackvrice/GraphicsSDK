@@ -194,7 +194,11 @@ def check(folder, live=False):
     require(len(expected) == 52 and len(r['runs']) == len(expected), 'Full 13-case SDK/SDL matrix incomplete')
     last = 0; totals = dict(verified_images=0, verified_buffers=0, verified_bytes=0, diagnostic_rows=0)
     for row, job in zip(r['runs'], expected):
-        require(row['job'] == job and row['argv'] == arguments(job, r) and row['overrides'] == environment(job, r),
+        env = environment(job, r)
+        require(row['job'] == job and row['argv'] == arguments(job, r)
+                and row['overrides'].keys() == env.keys() and all(
+                    row['overrides'][key].replace('\\', '/') == value.replace('\\', '/')
+                    for key, value in env.items()),
                 'Native scenario, order, command or environment changed')
         require(type(row['job']['validation']) is bool and type(row['pid']) is int and row['pid'] > 0
                 and all(type(row[k]) in (int, float) and math.isfinite(row[k]) for k in ('started', 'finished'))

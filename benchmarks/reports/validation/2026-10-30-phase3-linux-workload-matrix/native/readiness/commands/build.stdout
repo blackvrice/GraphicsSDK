@@ -1,0 +1,408 @@
+[0/2] Re-checking globbed directories...
+[1/13] Building CXX object CMakeFiles/linux_vulkan_upload.dir/Environment.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Environment.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+[2/13] Building CXX object CMakeFiles/linux_vulkan_upload.dir/upload.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/upload.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_upload/../linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/upload.cpp: In member function ‘virtual std::vector<std::byte> upload::SDK::read()’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/upload.cpp:54:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   54 |         for(unsigned y=0;y<f.height;++y)std::memcpy(tight.data()+std::size_t(y)*f.rowBytes,padded.data()+std::size_t(y)*f.rowPitch,f.rowBytes);return tight;
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/upload.cpp:54:144: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   54 |         for(unsigned y=0;y<f.height;++y)std::memcpy(tight.data()+std::size_t(y)*f.rowBytes,padded.data()+std::size_t(y)*f.rowPitch,f.rowBytes);return tight;
+      |                                                                                                                                                ^~~~~~
+[3/13] Building CXX object CMakeFiles/linux_vulkan_draw.dir/Environment.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Environment.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+[4/13] Building CXX object CMakeFiles/linux_vulkan_draw.dir/draw.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_draw/../linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp: In member function ‘virtual drawbench::Times drawbench::SDK::draw(drawbench::Work, unsigned int)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:52:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   52 |         for(unsigned i=0;i<w.calls;++i)take(cmd->draw(3,w.instances,0,0));take(cmd->endRenderPass());take(cmd->end());auto b=bench::Clock::now();
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:52:75: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   52 |         for(unsigned i=0;i<w.calls;++i)take(cmd->draw(3,w.instances,0,0));take(cmd->endRenderPass());take(cmd->end());auto b=bench::Clock::now();
+      |                                                                           ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp: In member function ‘virtual std::vector<std::byte> drawbench::SDK::read()’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:57:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   57 |         for(unsigned y=0;y<height;++y)std::memcpy(tight.data()+y*width*4,padded.data()+y*f.rowPitch,width*4);return tight;
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:57:110: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   57 |         for(unsigned y=0;y<height;++y)std::memcpy(tight.data()+y*width*4,padded.data()+y*f.rowPitch,width*4);return tight;
+      |                                                                                                              ^~~~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp: In constructor ‘drawbench::SDL::SDL(bool, bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:68:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   68 |         if(std::string_view(SDL_GetGPUDeviceDriver(d))!="vulkan")throw std::runtime_error("SDL backend fallback");deviceName=SDL_GetStringProperty(SDL_GetGPUDeviceProperties(d),SDL_PROP_GPU_DEVICE_NAME_STRING,"");
+      |         ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:68:115: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   68 |         if(std::string_view(SDL_GetGPUDeviceDriver(d))!="vulkan")throw std::runtime_error("SDL backend fallback");deviceName=SDL_GetStringProperty(SDL_GetGPUDeviceProperties(d),SDL_PROP_GPU_DEVICE_NAME_STRING,"");
+      |                                                                                                                   ^~~~~~~~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp: In member function ‘virtual drawbench::Times drawbench::SDL::draw(drawbench::Work, unsigned int)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:83:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   83 |         for(unsigned i=0;i<w.calls;++i)SDL_DrawGPUPrimitives(pass,3,w.instances,0,0);SDL_EndGPURenderPass(pass);auto b=bench::Clock::now();auto fence=sdl(SDL_SubmitGPUCommandBufferAndAcquireFence(cmd));auto c=bench::Clock::now();bool ok=SDL_WaitForGPUFences(d,true,&fence,1);SDL_ReleaseGPUFence(d,fence);sdl(ok);auto e=bench::Clock::now();return times(a,b,c,e);
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/draw.cpp:83:86: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   83 |         for(unsigned i=0;i<w.calls;++i)SDL_DrawGPUPrimitives(pass,3,w.instances,0,0);SDL_EndGPURenderPass(pass);auto b=bench::Clock::now();auto fence=sdl(SDL_SubmitGPUCommandBufferAndAcquireFence(cmd));auto c=bench::Clock::now();bool ok=SDL_WaitForGPUFences(d,true,&fence,1);SDL_ReleaseGPUFence(d,fence);sdl(ok);auto e=bench::Clock::now();return times(a,b,c,e);
+      |                                                                                      ^~~~~~~~~~~~~~~~~~~~
+[5/13] Building CXX object CMakeFiles/linux_vulkan_pso.dir/Environment.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Environment.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+[6/13] Building CXX object CMakeFiles/linux_vulkan_pso.dir/pso.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/pso.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_pso/../linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/pso.cpp: In member function ‘virtual std::vector<std::byte> psobench::SDK::read()’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/pso.cpp:59:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   59 |         for(unsigned y=0;y<height;++y)std::memcpy(tight.data()+y*width*4,padded.data()+y*f.rowPitch,width*4);return tight;
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/pso.cpp:59:110: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   59 |         for(unsigned y=0;y<height;++y)std::memcpy(tight.data()+y*width*4,padded.data()+y*f.rowPitch,width*4);return tight;
+      |                                                                                                              ^~~~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/pso.cpp: In constructor ‘psobench::SDL::SDL(bool, bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/pso.cpp:70:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   70 |         if(std::string_view(SDL_GetGPUDeviceDriver(d))!="vulkan")throw std::runtime_error("SDL backend fallback");deviceName=SDL_GetStringProperty(SDL_GetGPUDeviceProperties(d),SDL_PROP_GPU_DEVICE_NAME_STRING,"");
+      |         ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/pso.cpp:70:115: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   70 |         if(std::string_view(SDL_GetGPUDeviceDriver(d))!="vulkan")throw std::runtime_error("SDL backend fallback");deviceName=SDL_GetStringProperty(SDL_GetGPUDeviceProperties(d),SDL_PROP_GPU_DEVICE_NAME_STRING,"");
+      |                                                                                                                   ^~~~~~~~~~
+[7/13] Building CXX object CMakeFiles/linux_vulkan_allocation.dir/Environment.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Environment.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+[8/13] Linking CXX executable linux_vulkan_upload
+[9/13] Linking CXX executable linux_vulkan_draw
+[10/13] Linking CXX executable linux_vulkan_pso
+[11/13] Building CXX object CMakeFiles/linux_vulkan_allocation.dir/allocation.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/Platform.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/Platform.hpp: In function ‘std::string linuxwork::layer(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/Platform.hpp:24:5: warning: this ‘else’ clause does not guard... [-Wmisleading-indentation]
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |     ^~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/../linux_workloads/Platform.hpp:24:80: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘else’
+   24 |     else linuxbench::require(found.empty(),"Validation active in plain probe");return found;
+      |                                                                                ^~~~~~
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:3:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp: In function ‘allocbench::Work allocbench::work(std::string_view)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:13:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   13 |     if(s=="buffer1")return{false,1};if(s=="buffer1000")return{false,1000};
+      |     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:13:37: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   13 |     if(s=="buffer1")return{false,1};if(s=="buffer1000")return{false,1000};
+      |                                     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:14:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   14 |     if(s=="texture1")return{true,1};if(s=="texture1000")return{true,1000};
+      |     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:14:37: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   14 |     if(s=="texture1")return{true,1};if(s=="texture1000")return{true,1000};
+      |                                     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp: In member function ‘virtual allocbench::Times allocbench::SDK::sample(allocbench::Work, unsigned int)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:49:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   49 |         for(auto& p:buffers)bw.push_back(p);for(auto& p:textures)tw.push_back(p);
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:49:45: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   49 |         for(auto& p:buffers)bw.push_back(p);for(auto& p:textures)tw.push_back(p);
+      |                                             ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:65:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   65 |         for(auto& p:bw)if(!p.expired())throw std::runtime_error("SDK buffer wrapper retained");for(auto& p:tw)if(!p.expired())throw std::runtime_error("SDK texture wrapper retained");
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:65:96: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   65 |         for(auto& p:bw)if(!p.expired())throw std::runtime_error("SDK buffer wrapper retained");for(auto& p:tw)if(!p.expired())throw std::runtime_error("SDK texture wrapper retained");
+      |                                                                                                ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp: In constructor ‘allocbench::SDL::SDL(bool, bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:77:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   77 |         if(std::string_view(SDL_GetGPUDeviceDriver(d))!="vulkan")throw std::runtime_error("SDL backend fallback");deviceName=SDL_GetStringProperty(SDL_GetGPUDeviceProperties(d),SDL_PROP_GPU_DEVICE_NAME_STRING,"");
+      |         ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-workloads-evidence-build/allocation.cpp:77:115: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   77 |         if(std::string_view(SDL_GetGPUDeviceDriver(d))!="vulkan")throw std::runtime_error("SDL backend fallback");deviceName=SDL_GetStringProperty(SDL_GetGPUDeviceProperties(d),SDL_PROP_GPU_DEVICE_NAME_STRING,"");
+      |                                                                                                                   ^~~~~~~~~~
+[12/13] Linking CXX executable linux_vulkan_allocation

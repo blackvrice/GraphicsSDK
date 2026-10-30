@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "schema_version": 1,
+    "source_lock": "tools/vulkan-validation.lock.json",
+    "platform": "Linux-x86_64",
+    "compiler": "g++-14",
+    "build_type": "Release",
+    "runtime_release_flags": "-O0 -DNDEBUG",
+    "prerequisite_parallel": 2,
+    "layer_parallel": 1,
+    "WSI_support": false,
+    "mimalloc": false,
+    "upstream_tests": false,
+    "SPIRV_executables": false,
+    "scope": "Headless external validation runtime only; not SDK payload or performance measurement"
+  },
+  "profile_file": {
+    "path": "tools/linux-vulkan-validation.json",
+    "bytes": 459,
+    "sha256": "dce8d2443045ac57e377bc7549474a01c0712e778d004d0523335ca2694a548d"
+  },
+  "source_lock": {
+    "path": "tools/vulkan-validation.lock.json",
+    "bytes": 1628,
+    "sha256": "227caebb04d1addff030c6903b727888acdafe28291aed752c3e3db3a4e9ef20"
+  },
+  "components": [
+    {
+      "name": "Vulkan-ValidationLayers",
+      "url": "https://github.com/KhronosGroup/Vulkan-ValidationLayers.git",
+      "commit": "79f4759c2c492c1be37e18c0318330f2959327cb",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "Vulkan-Headers",
+      "url": "https://github.com/KhronosGroup/Vulkan-Headers.git",
+      "commit": "b379292b2ab6df5771ba9870d53cf8b2c9295daf",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "Vulkan-Utility-Libraries",
+      "url": "https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git",
+      "commit": "5f26cf65a18bc89a8e3d6569c14314b6fdac8d4d",
+      "ref": "v1.3.290"
+    },
+    {
+      "name": "SPIRV-Headers",
+      "url": "https://github.com/KhronosGroup/SPIRV-Headers.git",
+      "commit": "2acb319af38d43be3ea76bfabf3998e5281d8d12",
+      "ref": "2acb319af38d43be3ea76bfabf3998e5281d8d12"
+    },
+    {
+      "name": "SPIRV-Tools",
+      "url": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+      "commit": "0cfe9e7219148716dfd30b37f4d21753f098707a",
+      "ref": "0cfe9e7219148716dfd30b37f4d21753f098707a"
+    },
+    {
+      "name": "robin-hood-hashing",
+      "url": "https://github.com/martinus/robin-hood-hashing.git",
+      "commit": "9145f963d80d6a02f0f96a47758050a89184a3ed",
+      "ref": "3.11.5"
+    }
+  ],
+  "layer_manifest": {
+    "path": "out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/VkLayer_khronos_validation.json",
+    "bytes": 95948,
+    "sha256": "e7a747e87a6663097db54662a353efe25fa92061995b89db9f2693ffd219f4ef"
+  },
+  "layer_library": {
+    "path": "out/linux-vvl-runtime-build/Vulkan-ValidationLayers/layers/libVkLayer_khronos_validation.so",
+    "bytes": 59913736,
+    "sha256": "264f6326379cdb9d562037aa06a49c7d6ec477cc4df7c4d8f5b894c9b9f93e5d"
+  },
+  "builder": {
+    "path": "tools/prepare_linux_validation.py",
+    "bytes": 6165,
+    "sha256": "6fd146fc70f1711b23b7ba528879615ebcc705565352cf8a3c75f5d2a3bcbc6d"
+  },
+  "licenses": [
+    {
+      "path": ".deps/vvl-linux/Vulkan-ValidationLayers/LICENSE.txt",
+      "bytes": 12983,
+      "sha256": "ac7f9f4384d1cec4c318493e0614a68871a74a4ae6c1f592022b0b8b86690c71"
+    },
+    {
+      "path": ".deps/Vulkan-Headers/LICENSE.md",
+      "bytes": 458,
+      "sha256": "ac24e5ea920e4318e4d02c4086ae51f53cfb03feed06c18df1019e7ada1ec7bc"
+    },
+    {
+      "path": ".deps/vvl-linux/Vulkan-Utility-Libraries/LICENSE.md",
+      "bytes": 304,
+      "sha256": "69760673abf91cfd0280ae73739a29c078f493804d9016a122b3b189b48ad6e6"
+    },
+    {
+      "path": ".deps/vvl-linux/SPIRV-Headers/LICENSE",
+      "bytes": 4812,
+      "sha256": "ff04ae7e6a468587fe59434fee2e67c0e2a749b592c794b764ff80f30b94a084"
+    },
+    {
+      "path": ".deps/vvl-linux/SPIRV-Tools/LICENSE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": ".deps/vvl-linux/robin-hood-hashing/LICENSE",
+      "bytes": 1075,
+      "sha256": "686cf8d62cc44fecff4be967238aba89665f9b6acf8a728987801ffc3a626bc7"
+    }
+  ],
+  "runtime_redistributed": false,
+  "system_installation": false,
+  "diagnostics": [
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-build.log",
+      "bytes": 11540,
+      "sha256": "ba89c7584f47fe247fbeff38b2dc42a5e5a7375a0831307b80591307fbbe9c15"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-checkout.log",
+      "bytes": 65,
+      "sha256": "fafce0afe61a9605cbc95c88d302196af0fb163a3b5b2d4f9875dddf0ecf5f60"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-configure.log",
+      "bytes": 593,
+      "sha256": "b2840934455430073ffb2838fe08deab5398602800276e8c17d290465c5a620e"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-fetch.log",
+      "bytes": 127,
+      "sha256": "54391d8ca4132941af7059aa9c5cf6b14954a9a17a2920507d1538d4175f8e71"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-init.log",
+      "bytes": 700,
+      "sha256": "9842dde5affbbd8a530125bee246db0019d77270a0c81cdd0a2a9e128d1ae9f4"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Headers-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-build.log",
+      "bytes": 35740,
+      "sha256": "8c9b8a33498018c9b9f71fcb7575f0959ce876b10d351564fc93807e333db047"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-checkout.log",
+      "bytes": 55,
+      "sha256": "6dcd416b6fd94fc6de0df83f26d6dc5a46457f55199d8f6037c5624b14543b68"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-configure.log",
+      "bytes": 904,
+      "sha256": "900daa8dab720c732596acfedad1d1bde257fe5f73436bb8713b412033951712"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-fetch.log",
+      "bytes": 125,
+      "sha256": "f6b1c52453b9f3f76b29b4aa485e86966b91cb53514902289721f9b9c0233fed"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-init.log",
+      "bytes": 698,
+      "sha256": "581edc81896fcd4517fe7a0f07f40d9dd20a301cfa234d2bf0f6bda62bc7c272"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/SPIRV-Tools-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-build.log",
+      "bytes": 9005,
+      "sha256": "c52119619819b4d21067dd9005aab75b369384d0b3af2b10e038ed91465bb302"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Headers-configure.log",
+      "bytes": 840,
+      "sha256": "b494f02afa58e4d77e017e07b70ceaa2b28002683ff00979b33be8a2da06d82d"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-build.log",
+      "bytes": 3884,
+      "sha256": "e20ebaacdec65682e03039f72f9986c3d6f156d3b9fcc47755706f1b72127ba1"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-checkout.log",
+      "bytes": 55,
+      "sha256": "9a128d44a96fbebd5478daaeb8242e49d7e733fa3a0676948475a7cb93393a8c"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-configure.log",
+      "bytes": 604,
+      "sha256": "a914619048f2f43d9be3dab83e3cd1248fa61476e540eb821b674785b9a520d1"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-fetch.log",
+      "bytes": 138,
+      "sha256": "91eea0b59313b9d91aa89f6fd131923e4c6c52f8944fad424816a1b7720bf81b"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-init.log",
+      "bytes": 711,
+      "sha256": "b3a803d3b38a9b72cadb90fa415425600120ed6d7f6080d1724a57fe87dec450"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-Utility-Libraries-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-checkout.log",
+      "bytes": 55,
+      "sha256": "850f081411e3f8b2d40e6820467bf26f80d9377d83fb4ebba8dcee334d6fbecf"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-fetch.log",
+      "bytes": 137,
+      "sha256": "4467b68a2e55a84117b69a665b72fa0f661017bc3e9cc212df17f1cfe4dae604"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-init.log",
+      "bytes": 710,
+      "sha256": "ef3d826e4df1765d0d536369846198d7221200d90a1571e0eac19d4580373326"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/Vulkan-ValidationLayers-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/commands.json",
+      "bytes": 14212,
+      "sha256": "2fdafaa464e3eca269f3263a7bd815219c72d55a72524942b0810ce70ab95fc1"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/layer-build.log",
+      "bytes": 15797,
+      "sha256": "b241b24d0c9754d088745beaec1965eb4f72db08fa2ab20a0b6559fa87088820"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/layer-configure.log",
+      "bytes": 620,
+      "sha256": "d5a3528734b552919c410bf3e9f0b9b87127416ac09a8291f2b90d62b053a941"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-build.log",
+      "bytes": 473,
+      "sha256": "3585348c9007b538b39f54e8b587f5118526e48624b3d12ac2674dad800a4e42"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-checkout.log",
+      "bytes": 46,
+      "sha256": "8a3386e13581fbf0206eac053bd955d237695199cab4b211c9de679d78247563"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-configure.log",
+      "bytes": 968,
+      "sha256": "f61876fc4b3cb4905aec9eeb13c763c5bc8905da1f176ae67fc5c5b433bc6e69"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-fetch.log",
+      "bytes": 128,
+      "sha256": "5403082df6c3e06f72882b6a16549e227bd881543a51ac149f613ef724a6197a"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-init.log",
+      "bytes": 705,
+      "sha256": "7a910f938e40348398c80024cb2653597f9d076490446342dd91e38bce0ee533"
+    },
+    {
+      "path": "out/linux-vulkan-validation-evidence/runtime/robin-hood-hashing-remote.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
