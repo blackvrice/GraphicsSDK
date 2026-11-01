@@ -1,0 +1,93 @@
+Change Dir: '/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build'
+
+Run Build Command(s): /usr/local/bin/ninja -v -j 2 -d keepdepfile linux_llgl_allocation
+[1/4] /usr/bin/g++-14 -Dllgl_draw_observer_EXPORTS -I/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/llgl_vulkan_draw -I/home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers/include -O2 -DNDEBUG -std=gnu++23 -fPIC -MD -MT CMakeFiles/llgl_draw_observer.dir/Layer.cpp.o -MF CMakeFiles/llgl_draw_observer.dir/Layer.cpp.o.d -o CMakeFiles/llgl_draw_observer.dir/Layer.cpp.o -c /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Layer.cpp
+[2/4] : && /usr/bin/g++-14 -fPIC -O2 -DNDEBUG  -Wl,--dependency-file=CMakeFiles/llgl_draw_observer.dir/link.d -shared -Wl,-soname,libVkLayer_gfx_llgl_draw.so -o libVkLayer_gfx_llgl_draw.so CMakeFiles/llgl_draw_observer.dir/Layer.cpp.o   && :
+[3/4] /usr/bin/g++-14 -DGFX_LLGL_ALLOCATION_FINGERPRINT=\"71508f36de1d1f65b845e9ea3e57d0fb668747061706d9de29a0c50c036bdf5e\" -DGFX_LLGL_PIN=\"649c0cc8fa608312c5e4b94dae409a5859fc7553\" -DGFX_LLGL_PROFILE=\"llgl-fixed-pin-transfer-src-v1\" -I/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common -I/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/llgl_vulkan_draw -I/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation -isystem /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/LLGL/include -isystem /home/runner/work/GraphicsSDK/GraphicsSDK/.deps/Vulkan-Headers/include -O2 -DNDEBUG -std=gnu++23 -Wall -Wextra -Wpedantic -MD -MT CMakeFiles/linux_llgl_allocation.dir/main.cpp.o -MF CMakeFiles/linux_llgl_allocation.dir/main.cpp.o.d -o CMakeFiles/linux_llgl_allocation.dir/main.cpp.o -c /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:3,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/SupportLinux.hpp:2,
+                 from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp:1:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp: At global scope:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   48 |     VkPhysicalDeviceIDProperties id{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};
+      |                                                                                    ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:48:84: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:49:90: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   49 |     VkPhysicalDeviceProperties2 properties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+      |                                                                                          ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:49:90: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp: In constructor ‘llglupload::Context::Context(bool, const std::string&)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::pNext’ [-Wmissing-field-initializers]
+   73 |             VkDebugUtilsMessengerCreateInfoEXT info{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};info.messageSeverity=VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT|VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;info.messageType=VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT|VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT|VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;info.pfnUserCallback=message;require(create(native.instance,&info,nullptr,&messenger.handle)==VK_SUCCESS,"Messenger creation failed");
+      |                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::messageSeverity’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::messageType’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::pfnUserCallback’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/Platform.hpp:73:108: warning: missing initializer for member ‘VkDebugUtilsMessengerCreateInfoEXT::pUserData’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/SupportLinux.hpp: In function ‘std::string llglpso::validationControl(llglupload::Context&, const std::string&)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/SupportLinux.hpp:26:102: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   26 |     if(name=="core-control"){VkPhysicalDeviceProperties2 invalid{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};c.getProperties(c.native.physicalDevice,&invalid);}
+      |                                                                                                      ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/SupportLinux.hpp:26:102: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp:2:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp: In function ‘allocbench::Work allocbench::work(std::string_view)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:13:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   13 |     if(s=="buffer1")return{false,1};if(s=="buffer1000")return{false,1000};
+      |     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:13:37: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   13 |     if(s=="buffer1")return{false,1};if(s=="buffer1000")return{false,1000};
+      |                                     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:14:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   14 |     if(s=="texture1")return{true,1};if(s=="texture1000")return{true,1000};
+      |     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/vulkan_allocation/Payload.hpp:14:37: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   14 |     if(s=="texture1")return{true,1};if(s=="texture1000")return{true,1000};
+      |                                     ^~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp: In member function ‘void llglallocation::Allocation::create(const std::string&)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp:26:533: warning: comparison of integer expressions of different signedness: ‘VkImageUsageFlags’ {aka ‘unsigned int’} and ‘int’ [-Wsign-compare]
+   26 |             if(w.texture){require(n.type==LLGL::Vulkan::ResourceNativeType::Image&&n.image.image&&n.image.extent.width==allocbench::width&&n.image.extent.height==allocbench::height&&n.image.extent.depth==1&&n.image.format==VK_FORMAT_R8G8B8A8_UNORM&&n.image.numMipLevels==1&&n.image.numArrayLayers==1&&n.image.sampleCountBits==VK_SAMPLE_COUNT_1_BIT,"Native texture shape/type differs");auto required=VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT;require((n.image.imageUsageFlags&required)==required,"Native sampled/copy usage absent");handle=bits(n.image.image);}
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp: In member function ‘std::vector<std::__cxx11::basic_string<char> > llglallocation::Allocation::use(unsigned int, const std::string&)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp:45:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   45 |         for(auto p:uploads)c.renderer->Release(*p);uploads.clear();for(auto p:downloads)c.renderer->Release(*p);downloads.clear();return hashes;
+      |         ^~~
+/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-allocation-evidence-build/main.cpp:45:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   45 |         for(auto p:uploads)c.renderer->Release(*p);uploads.clear();for(auto p:downloads)c.renderer->Release(*p);downloads.clear();return hashes;
+      |                                                    ^~~~~~~
+[4/4] : && /usr/bin/g++-14 -O2 -DNDEBUG -Wl,--dependency-file=CMakeFiles/linux_llgl_allocation.dir/link.d CMakeFiles/linux_llgl_allocation.dir/main.cpp.o -o linux_llgl_allocation  -Wl,-rpath,/home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib  /home/runner/work/GraphicsSDK/GraphicsSDK/out/linux-llgl-evidence-build/lib/libLLGL.so  /usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.275  /usr/lib/x86_64-linux-gnu/libcrypto.so  -ldl && :
+
