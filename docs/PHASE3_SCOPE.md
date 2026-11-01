@@ -111,3 +111,5 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 [Linux 승인 LLGL 프로필 build·최소 probe](PHASE3_LINUX_LLGL_PROBE_REPORT.md)는 고정 10줄 패치의 GCC 빌드, actual device/queue, 최소 buffer 참조와 callback·거부 제어 8개를 software에서 검증했다. 이 최소 probe와 개별 workload 정확성은 구분하며 물리 GPU·성능 비교의 미완료 상태는 유지한다.
 
 [Linux LLGL 업로드 correctness 준비](PHASE3_LINUX_LLGL_UPLOAD_REPORT.md)는 기존 업로드/오류 제어 본문을 보존해 네 입력의 일반·고정 validation 전체 이미지 32개와 core/sync·거부 제어를 software에서 검증했다. 업로드 성능 표본은 0이며 물리 GPU 수용·세 SDK fresh 성능 비교와 draw/PSO/allocation 이식은 미완료다.
+
+[Linux LLGL draw·instancing correctness 준비](PHASE3_LINUX_LLGL_DRAW_REPORT.md)는 기존 draw/control·native forwarding 본문을 보존해 세 입력의 일반·고정 validation 전체 이미지 24개와 실제 호출·instance 수, core/sync·거부 제어 17개를 software에서 검증했다. 성능 표본은 0이며 물리 GPU 수용·세 SDK fresh 비교와 PSO/allocation 이식은 미완료다.
