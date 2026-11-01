@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "executed": false,
+  "physical_GPU_accepted": false,
+  "performance_accepted": false,
+  "steps": [
+    {
+      "task": "P3-LNX-15",
+      "kind": "environment_required",
+      "workflow": ".github/workflows/linux-hardware-acceptance.yml",
+      "inputs": [
+        "icd",
+        "device_uuids"
+      ],
+      "runner": [
+        "self-hosted",
+        "Linux",
+        "X64",
+        "graphicssdk-gpu"
+      ]
+    },
+    {
+      "task": "P3-BEN-07",
+      "kind": "environment_required",
+      "workflow": ".github/workflows/linux-comparison-physical.yml",
+      "inputs": [
+        "icd",
+        "device_uuid"
+      ],
+      "runner": [
+        "self-hosted",
+        "Linux",
+        "X64",
+        "graphicssdk-gpu"
+      ]
+    },
+    {
+      "task": "P3-BEN-08",
+      "kind": "implementation_and_environment_required",
+      "remaining": "Qualify LLGL consumers on a real Linux GPU; current LLGL runners reject physical mode."
+    },
+    {
+      "tasks": [
+        "P3-LBEN-01",
+        "P3-LBEN-02",
+        "P3-LBEN-03",
+        "P3-LBEN-04"
+      ],
+      "kind": "implementation_and_environment_required",
+      "remaining": "Prepare Linux three-SDK timed campaigns, then collect fresh repetitions on the same physical GPU/driver; software diagnostic rows are excluded."
+    },
+    {
+      "task": "P3-WSI-08",
+      "kind": "human_observation_required",
+      "remaining": "Actual Linux desktop presentation and human window-operation acceptance."
+    },
+    {
+      "tasks": [
+        "P3-GATE-01",
+        "P3-GATE-02",
+        "P3-GATE-03"
+      ],
+      "kind": "acceptance_required",
+      "remaining": "Required physical/display/comparison evidence and final review remain incomplete."
+    }
+  ]
+}

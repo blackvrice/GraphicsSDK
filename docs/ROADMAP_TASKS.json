@@ -1547,7 +1547,7 @@
       "depends_on": [
         "P3-BEN-07"
       ],
-      "work": "공통 benchmark/의존성/설치 SDK 소비자의 Windows 의존성을 분리한다. SDK/SDL 4종 소비자·전체 13개 입력의 일반/필수 validation software matrix 52개 프로세스·full readback 준비 검증을 완료했다. 승인 LLGL의 GCC build·최소 probe와 업로드/draw·instancing/PSO/자원 4종 correctness 소비자를 이식해 software에서 검증했다. 자원 4종은 정상/제어 23개 프로세스·전체 이미지 8,008개·버퍼 8,008개·공개 생성/해제 16,016쌍·전체 109,837,728바이트를 확인했다. 기존 workload/control 본문과 승인 10줄 patch를 보존했다. 실제 Linux GPU qualification·같은 환경의 build/probe·세 SDK fresh 성능 반복 비교는 미완료다. native 할당 수·driver/allocator cache·물리 GPU 회수는 미검증이다.",
+      "work": "공통 benchmark/의존성/설치 SDK 소비자의 Windows 의존성을 분리한다. SDK/SDL 4종 소비자·전체 13개 입력의 일반/필수 validation software matrix 52개 프로세스·full readback 준비 검증을 완료했다. 승인 LLGL의 GCC build·최소 probe와 업로드/draw·instancing/PSO/자원 4종 correctness 소비자를 이식해 software에서 검증했다. 자원 4종은 정상/제어 23개 프로세스·전체 이미지 8,008개·버퍼 8,008개·공개 생성/해제 16,016쌍·전체 109,837,728바이트를 확인했다. 기존 workload/control 본문과 승인 10줄 patch를 보존했다. 실제 Linux GPU qualification·같은 환경의 build/probe·세 SDK fresh 성능 반복 비교는 미완료다. native 할당 수·driver/allocator cache·물리 GPU 회수는 미검증이다. 동일 source/qualification/승인 LLGL build의 5개 원본을 통합해 세 SDK 78개 정상·46개 제어와 source/runtime 충돌·직렬 순서를 재검사하는 자립 묶음 및 미실행 물리 GPU handoff를 준비했다. LLGL physical mode와 Linux 세 SDK timed campaign은 추가 구현·실제 환경 검증이 남아 있다.",
       "done_when": "선택된 Vulkan 비교 프로그램의 native Linux build·실행 probe.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_BUILD_REPORT.md",
@@ -1567,7 +1567,10 @@
         "docs/PHASE3_LINUX_LLGL_PSO_REPORT.md",
         "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-pso/summary.json",
         "docs/PHASE3_LINUX_LLGL_ALLOCATION_REPORT.md",
-        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-allocation/summary.json"
+        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-allocation/summary.json",
+        "docs/PHASE3_LINUX_READINESS_REPORT.md",
+        "tools/linux_readiness_report.py",
+        "benchmarks/reports/validation/2026-11-01-phase3-linux-readiness/summary.json"
       ],
       "requires": "4종 소비자 native Linux build·software probe/대표 validation smoke·거부 대조 준비 검증 완료. 선행 P3-BEN-07의 실제 물리 GPU qualification과 같은 환경의 build/probe가 있어야 최종 완료. 전체 Linux 사례·성능 비교는 별도 미완료."
     },
@@ -1977,12 +1980,15 @@
         "P3-LBEN-03",
         "P3-LBEN-04"
       ],
-      "work": "현재 제품과 지원 경쟁 조합의 원본·통계·라이선스 입력을 종합한다. Windows 5개 완료 캠페인의 원본 재생·108개 CPU/GPU/계측 모드별 통계 통합과 현재 잔여 선행 조건 생성 도구를 준비했다. Linux 비교·최종 감사 수용은 미완료다.",
+      "work": "현재 제품과 지원 경쟁 조합의 원본·통계·라이선스 입력을 종합한다. Windows 5개 완료 캠페인의 원본 재생·108개 CPU/GPU/계측 모드별 통계 통합과 현재 잔여 선행 조건 생성 도구를 준비했다. Linux 비교·최종 감사 수용은 미완료다. Linux software 원본 5개를 독립 재생해 같은 커밋·qualification·공통 파일 hash·78개 정상 coverage와 제어 46개를 통합하는 보고서 및 자립 재검사 묶음을 추가했다. CPU 진단 시간은 성능 통계로 합산하지 않으며 실제 GPU·추가 timed campaign·최종 수용은 미완료다.",
       "done_when": "새 측정과 과거 자료가 분리된 비교표, 미지원·미측정·환경 한계 및 재현 명령.",
       "evidence": [
         "docs/PHASE3_COMPARISON_REPORT.md",
         "benchmarks/reports/phase3-comparison.json",
-        "tools/phase3_comparison_report.py"
+        "tools/phase3_comparison_report.py",
+        "docs/PHASE3_LINUX_READINESS_REPORT.md",
+        "tools/linux_readiness_report.py",
+        "benchmarks/reports/validation/2026-11-01-phase3-linux-readiness/summary.json"
       ]
     },
     {

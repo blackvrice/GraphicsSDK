@@ -117,3 +117,5 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 [Linux LLGL PSO correctness 준비](PHASE3_LINUX_LLGL_PSO_REPORT.md)는 기존 lifecycle/control·native forwarding 본문을 보존해 pso1/pso8의 일반·고정 validation 전체 이미지 16개, 공개 PSO 72쌍·셰이더 144쌍·실제 draw 수와 core/sync·거부 제어 17개를 software에서 검증했다. 성능 표본은 0이며 native pipeline 수·driver cache·물리 회수, 물리 GPU·세 SDK fresh 성능 비교와 자원 생성 소비자 이식은 미완료다.
 
 [Linux LLGL 자원 correctness 준비](PHASE3_LINUX_LLGL_ALLOCATION_REPORT.md)는 기존 lifecycle/control·payload 본문을 보존해 버퍼/텍스처 1·1,000개 입력, 전체 이미지/버퍼 각각 8,008개·공개 생성/해제 16,016쌍·native identity 확인·core/sync·거부 제어 23개를 software에서 검증했다. 승인 LLGL Linux 4종 소비자 이식은 준비 완료이며 실제 GPU qualification·세 SDK fresh 성능 비교는 미완료다. native 할당 수·allocator cache·물리 회수를 검증했다고 표시하지 않는다.
+
+[Linux 세 SDK correctness 통합](PHASE3_LINUX_READINESS_REPORT.md)은 같은 커밋·qualification의 SDK/SDL matrix와 LLGL 4종 원본을 독립 재생해 정상 78개·제어 46개, 전체 이미지 24,240개·버퍼 24,024개를 하나의 자립 묶음으로 연결했다. CPU 진단 통계·순위·성능 표본은 생성하지 않는다. 물리 GPU handoff는 미실행 목록이며 LLGL physical mode·Linux timed campaign의 추가 구현과 실제 GPU·표시·Phase 3 수용은 미완료다.
