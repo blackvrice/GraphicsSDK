@@ -1,9 +1,9 @@
 name: Linux comparison probe (software diagnostic)
 on:
   push:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py', 'benchmarks/linux_llgl_draw/**', 'tools/linux_llgl_draw.py', 'tools/port_linux_llgl_draw.py', 'tests/test_linux_llgl_draw.py']
   pull_request:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py', 'benchmarks/linux_llgl_draw/**', 'tools/linux_llgl_draw.py', 'tools/port_linux_llgl_draw.py', 'tests/test_linux_llgl_draw.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -61,6 +61,10 @@ jobs:
         run: |
           python3 tools/linux_llgl_upload.py run --probe out/linux-llgl-evidence --output out/linux-llgl-upload-evidence
           python3 tools/linux_llgl_upload.py check --output out/linux-llgl-upload-evidence --live
+      - name: Verify approved LLGL Linux draw and instancing with native pass-through counters
+        run: |
+          python3 tools/linux_llgl_draw.py run --probe out/linux-llgl-evidence --output out/linux-llgl-draw-evidence
+          python3 tools/linux_llgl_draw.py check --output out/linux-llgl-draw-evidence --live
       - name: Exercise every SDK and SDL workload case as software diagnostics
         run: |
           python3 tools/linux_workload_matrix.py run --readiness out/linux-workloads-evidence --output out/linux-workload-matrix
@@ -77,5 +81,6 @@ jobs:
             out/linux-workload-matrix/
             out/linux-llgl-evidence/
             out/linux-llgl-upload-evidence/
+            out/linux-llgl-draw-evidence/
           if-no-files-found: error
           retention-days: 14
