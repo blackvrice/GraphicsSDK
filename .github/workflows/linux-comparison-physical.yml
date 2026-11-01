@@ -50,6 +50,13 @@ jobs:
           assert pathlib.Path(os.environ['GFX_COMPARISON_ICD']).is_file()
           assert re.fullmatch('[0-9a-f]{32}',os.environ['GFX_COMPARISON_UUID']) and int(os.environ['GFX_COMPARISON_UUID'],16)
           PY
+      - uses: actions/checkout@v4
+        with:
+          repository: LukasBanana/LLGL
+          ref: 649c0cc8fa608312c5e4b94dae409a5859fc7553
+          path: comparison-${{ github.run_id }}-${{ github.run_attempt }}/.deps/LLGL
+          clean: false
+          persist-credentials: false
       - name: Build isolated pinned validation runtime
         run: python3 tools/prepare_linux_validation.py
       - name: Require physical SDK and SDL device probes with pinned validation
@@ -60,6 +67,10 @@ jobs:
         run: |
           python3 tools/linux_workloads.py run --mode physical --qualification out/linux-comparison-physical --output out/linux-workloads-physical
           python3 tools/linux_workloads.py check --output out/linux-workloads-physical --live
+      - name: Qualify actual approved LLGL native GPU and minimal full buffer reference
+        run: |
+          python3 tools/linux_llgl_probe.py run --mode physical --qualification out/linux-comparison-physical --output out/linux-llgl-physical
+          python3 tools/linux_llgl_probe.py check --output out/linux-llgl-physical --live
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -68,5 +79,6 @@ jobs:
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-comparison-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-vulkan-validation-evidence/runtime/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-workloads-physical/
+            comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-llgl-physical/
           if-no-files-found: error
           retention-days: 14

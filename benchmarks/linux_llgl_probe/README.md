@@ -1,4 +1,4 @@
-# Linux LLGL software probe preparation
+# Linux LLGL minimal probe preparation
 
 Build pinned LLGL with the existing user-approved
 `llgl-fixed-pin-transfer-src-v1` ten-line overlay. The original `.deps/LLGL`
@@ -34,10 +34,43 @@ output, environments, PIDs and serialized intervals. Unknown compiler/runtime
 inputs or license branches fail. External shared libraries and system/driver
 files are never included in the saved evidence payload.
 
-This is native CPU/software preparation only. It emits no timing samples or
-performance statistics, and does not accept a physical GPU. Its minimal buffer
-smoke is not the upload/draw/PSO/allocation workload suite. The approved image
-barrier patch is compiled exactly but its full Linux workload behavior remains
-to be tested. Core callback delivery does not demonstrate every sync-validation
+The default remains native CPU/software preparation. It emits no timing samples
+or performance statistics. Its minimal buffer smoke is separate from the
+upload/draw/PSO/allocation workload suite. Core callback delivery does not demonstrate every sync-validation
 error control or GPU-assisted validation. Application instance API request is not
 intercepted; queried device/loader API support is not a measured request value.
+
+## Physical profile
+
+A clean Linux GPU host must first pass `linux_comparison.py run --mode physical`
+with an explicit installed ICD, exact UUID, corroborating PCI vendor/device and
+bound driver, and the pinned VVL runtime. Then use the same revision:
+
+```sh
+python3 tools/linux_llgl_probe.py run --mode physical --qualification out/linux-comparison-physical --output out/linux-llgl-physical
+python3 tools/linux_llgl_probe.py check --output out/linux-llgl-physical --live
+```
+
+The separate `GFX_LLGL_PHYSICAL_PROFILE=ON` build binds `physical` into its
+fingerprint, rejects software mode, and requires native integrated/discrete
+device type before loading LLGL. The actual LLGL native device/driver UUID and
+all qualified properties must match. LLGL's default adapter is not silently
+replaced or retried: a mismatch fails. This matters for multi-GPU hosts.
+Eight normal/control processes use the same minimal buffer and callback checks.
+Only successful physical execution sets `physical_probe_qualified=true`;
+`physical_GPU_accepted`, `P3_BEN_08_completed`, workload and performance acceptance
+remain false. This is a minimal probe, not the complete comparison suite.
+
+Hosted software CI additionally builds that same physical profile in a fresh
+build tree and proves four intended rejections:
+
+```sh
+python3 tools/linux_llgl_probe.py guard --mode physical --qualification out/linux-comparison-evidence --output out/linux-llgl-physical-guard
+python3 tools/linux_llgl_probe.py check --output out/linux-llgl-physical-guard --live
+```
+
+Native CPU device, wrong UUID, software-mode fallback and missing validation
+layer must fail with specific errors and no success JSON. These checks stop
+before LLGL renderer creation, produce zero readback/performance samples, and
+never set physical qualification. The physical manual workflow includes the
+LLGL checkout/build/probe; the four workload consumers remain software-only.

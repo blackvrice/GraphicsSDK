@@ -81,6 +81,10 @@ jobs:
         run: |
           python3 tools/linux_readiness_report.py collect --matrix out/linux-workload-matrix --upload out/linux-llgl-upload-evidence --draw out/linux-llgl-draw-evidence --pso out/linux-llgl-pso-evidence --allocation out/linux-llgl-allocation-evidence --output out/linux-readiness-report --live
           python3 tools/linux_readiness_report.py check --output out/linux-readiness-report --live
+      - name: Build physical LLGL profile and prove software cannot qualify
+        run: |
+          python3 tools/linux_llgl_probe.py guard --mode physical --qualification out/linux-comparison-evidence --output out/linux-llgl-physical-guard
+          python3 tools/linux_llgl_probe.py check --output out/linux-llgl-physical-guard --live
       - name: Preserve diagnostics without external binaries
         if: always()
         uses: actions/upload-artifact@v4
@@ -97,5 +101,6 @@ jobs:
             out/linux-llgl-pso-evidence/
             out/linux-llgl-allocation-evidence/
             out/linux-readiness-report/
+            out/linux-llgl-physical-guard/
           if-no-files-found: error
           retention-days: 14

@@ -1,7 +1,8 @@
-"""Build the approved LLGL profile on Linux; minimal software probes, no benchmark."""
+"""Build the approved LLGL profile on Linux; minimal qualified probes, no benchmark."""
 import argparse
 import hashlib
 import json
+import math
 import os
 import pathlib
 import platform
@@ -38,10 +39,30 @@ def exact(row, expected):
     require(all(k in row and same(row[k], v) for k, v in expected.items()), 'Probe identity, work or scope differs')
 
 
-def fingerprint(inputs, overlay_sha, pin):
-    data = 'linux-llgl|' + pin + '|' + PROFILE + '\n'
+def fingerprint(inputs, overlay_sha, pin, mode='software-diagnostic'):
+    data = identity_prefix(mode) + '|' + pin + '|' + PROFILE + '\n'
     data += ''.join(p+'|'+inputs[p]+'\n' for p in sorted(OWN))
     return hashlib.sha256((data+'overlay|'+overlay_sha+'\n').encode()).hexdigest()
+
+
+def identity_prefix(mode):
+    require(mode in ('software-diagnostic','physical'), 'Unknown LLGL probe mode')
+    return 'linux-llgl-physical' if mode=='physical' else 'linux-llgl'
+
+
+def validate_qualification(prior, mode, guard=False):
+    identity_prefix(mode)
+    require(type(guard) is bool and (not guard or mode=='physical'), 'Invalid physical guard profile')
+    wanted='software-diagnostic' if guard else mode
+    exact(prior,dict(mode=wanted,physical_probe_qualified=wanted=='physical',P3_BEN_07_completed=wanted=='physical'))
+    selected=q.select(prior['inventory'],prior['device_uuid'],wanted,prior['pci'])
+    require(same(selected,prior['selected']), 'Qualified native target changed')
+
+
+def guard_jobs():
+    rows=[dict(kind=kind,operation='smoke',validation=kind=='missing-layer')
+          for kind in ('native-software','wrong-uuid','wrong-kind','missing-layer')]
+    return [dict(j,name=f"{i:02}-{j['kind']}-smoke-{int(j['validation'])}") for i,j in enumerate(rows)]
 
 
 def jobs():
@@ -55,9 +76,11 @@ def jobs():
 
 
 def arguments(job, r):
+    mode=r.get('mode','software-diagnostic')
+    wrong='software-diagnostic' if mode=='physical' else 'physical'
     return [r['binaries']['probe']['path'], '0'*32 if job['kind']=='wrong-uuid' else r['qualification']['device_uuid'],
             'validation' if job['validation'] else 'plain', job['operation'],
-            'physical' if job['kind']=='wrong-kind' else 'software-diagnostic']
+            wrong if job['kind']=='wrong-kind' else mode]
 
 
 def environment(job, r):
@@ -72,7 +95,7 @@ def validate_result(value, job, r):
     a=r['qualification']; control=job['kind']=='callback-control'; smoke=job['operation']=='smoke'
     exact(value, dict(schema_version=1, sdk='llgl', task='P3-LBEN-LLGL-readiness', profile_id=PROFILE,
         unmodified_upstream=False, source_fingerprint=r['probe_fingerprint'], LLGL_commit=r['LLGL_commit'],
-        selected=a['selected'], environment=a['environment'], mode='software-diagnostic', operation=job['operation'],
+        selected=a['selected'], environment=a['environment'], mode=r.get('mode','software-diagnostic'), operation=job['operation'],
         native_handle_verified=True, queue_index=0, validation=job['validation'], control_only=control,
         delivered_errors=1 if control else 0, diagnostic_ids=[VUID] if control else [],
         verified_bytes=12288 if smoke else 0, reference_rounds=3 if smoke else 0,
@@ -99,9 +122,12 @@ def validate_result(value, job, r):
     return value
 
 
-def rejected(job, code, stdout, stderr):
+def rejected(job, code, stdout, stderr, mode='software-diagnostic'):
+    identity_prefix(mode)
     require(type(code) is int and code==1 and not stdout, 'Rejection succeeded or produced samples')
-    token={'wrong-uuid':b'Exact UUID absent or ambiguous', 'wrong-kind':b'Software diagnostics only',
+    token={'wrong-uuid':b'Exact UUID absent or ambiguous',
+           'wrong-kind':b'Physical qualification only' if mode=='physical' else b'Software diagnostics only',
+           'native-software':b'Requested probe kind differs from native device type',
            'missing-layer':b'Required comparison validation layer absent'}[job['kind']]
     require(token in stderr, 'Unrelated rejection')
 
@@ -201,13 +227,16 @@ def safe(folder, name):
 
 def check(folder, live=False):
     r=read(folder/'receipt.json')
+    mode=r.get('mode','software-diagnostic'); guard=r.get('physical_guard_only',False)
+    validate_qualification(r['qualification'],mode,guard)
     exact(r, dict(schema_version=1, task='P3-LBEN-LLGL-readiness', status='completed', inputs_unchanged=True,
-        profile_id=PROFILE, unmodified_upstream=False, minimal_buffer_reference_accepted=True,
+        profile_id=PROFILE, unmodified_upstream=False, minimal_buffer_reference_accepted=not guard,
         physical_GPU_accepted=False, workload_correctness_accepted=False, performance_accepted=False, performance_samples=0))
+    if mode=='physical':
+        exact(r,dict(mode=mode,physical_guard_only=guard,physical_probe_qualified=not guard,P3_BEN_08_completed=False))
     q.check(folder/'qualification')
     require(sha(folder/'qualification/receipt.json')==r['qualification_sha256']
             and same(read(folder/'qualification/receipt.json'),r['qualification']), 'Qualification changed')
-    exact(r['qualification'],dict(mode='software-diagnostic',physical_probe_qualified=False,P3_BEN_07_completed=False))
     require(r['source_commit']==r['qualification']['source_commit'], 'Qualification revision differs')
     require(sha(folder/'source.zip')==r['source_zip_sha256'], 'Executed source archive changed')
     with zipfile.ZipFile(folder/'source.zip') as z:
@@ -220,18 +249,20 @@ def check(folder, live=False):
                 and patch(original.decode()).encode()==changed and len(changed.splitlines())-len(original.splitlines())==10
                 and hashlib.sha256(changed).hexdigest()==r['overlay_sha256'], 'Approved ten-line overlay changed')
         sources={x['path']:x['sha256'] for x in r['source_inputs']}
-        require(fingerprint(sources,r['overlay_sha256'],r['LLGL_commit'])==r['probe_fingerprint'], 'Probe fingerprint differs')
+        require(fingerprint(sources,r['overlay_sha256'],r['LLGL_commit'],mode)==r['probe_fingerprint'], 'Probe fingerprint differs')
     require(sha(folder/'inputs.json')==r['inputs_sha256'], 'GNU input audit changed')
     inputs=read(folder/'inputs.json')
     validate_audit(inputs)
     require(inputs['actual_verbose_commands_verified'] is True, 'Actual compiler command log missing')
     require((folder/'settings/vk_layer_settings.txt').read_bytes()==(folder/'qualification/settings/vk_layer_settings.txt').read_bytes(), 'Required sync settings changed')
-    expected=jobs(); require(len(r['runs'])==len(expected), 'Missing/extra probe process'); last=0; verified=0
+    expected=guard_jobs() if guard else jobs(); require(len(r['runs'])==len(expected), 'Missing/extra probe process'); last=0; verified=0
     for row,job in zip(r['runs'],expected):
         env=environment(job,r)
         require(same(row['job'],job) and row['argv']==arguments(job,r) and row['overrides'].keys()==env.keys()
                 and all(row['overrides'][k].replace('\\','/')==v.replace('\\','/') for k,v in env.items()), 'Command/environment/order differs')
-        require(type(row['pid']) is int and row['pid']>0 and last<=row['started']<=row['finished'], 'Process/serialization differs'); last=row['finished']
+        require(type(row['pid']) is int and row['pid']>0
+                and all(type(row[k]) in (int,float) and math.isfinite(row[k]) for k in ('started','finished'))
+                and last<=row['started']<=row['finished'], 'Process/serialization differs'); last=row['finished']
         stdout,stderr=(safe(folder,row[k]).read_bytes() for k in ('stdout','stderr'))
         require(hashlib.sha256(stdout).hexdigest()==row['stdout_sha256'] and hashlib.sha256(stderr).hexdigest()==row['stderr_sha256'], 'Raw probe output changed')
         if job['kind'] in ('normal','callback-control'):
@@ -242,20 +273,22 @@ def check(folder, live=False):
             runtime=row['runtime_files']; require({x['path'] for x in runtime}==set(value['runtime_modules']), 'Runtime files missing')
             require(all(x in r['runtime_inputs'] for x in runtime), 'Runtime file binding changed')
             verified+=value['verified_bytes']
-        else: rejected(job,row['returncode'],stdout,stderr)
-    require(verified==24576 and type(r['verified_bytes']) is int and r['verified_bytes']==verified, 'Minimal full-reference byte total differs')
+        else: rejected(job,row['returncode'],stdout,stderr,mode)
+    require(verified==(0 if guard else 24576) and type(r['verified_bytes']) is int and r['verified_bytes']==verified, 'Minimal full-reference byte total differs')
     if live:
         q.check(pathlib.Path(r['qualification_evidence']),live=True)
         require(q.unchanged(r['frozen_inputs']+r['runtime_inputs']), 'Source/build/runtime changed')
         q.pin(ROOT/'.deps/LLGL',r['LLGL_commit']); q.pin(ROOT/'.deps/Vulkan-Headers',q.HEADERS)
-    return dict(processes=8,normal_probes=4,actual_callback_controls=1,rejection_controls=3,
+    result=dict(processes=len(expected),normal_probes=0 if guard else 4,actual_callback_controls=0 if guard else 1,rejection_controls=4 if guard else 3,
                 verified_bytes=verified,performance_samples=0,physical_GPU_accepted=False,workload_correctness_accepted=False)
+    if mode=='physical': result.update(mode=mode,physical_guard_only=guard,physical_probe_qualified=not guard,P3_BEN_08_completed=False)
+    return result
 
 
 def run(a):
     require(platform.system()=='Linux','Actual Linux host required'); qualification=a.qualification.resolve()
     q.check(qualification,live=True); prior=read(qualification/'receipt.json')
-    exact(prior,dict(mode='software-diagnostic',physical_probe_qualified=False,P3_BEN_07_completed=False))
+    mode=a.mode; guard=a.stage=='guard'; validate_qualification(prior,mode,guard)
     require(q.git(ROOT,'rev-parse','HEAD')==prior['source_commit'] and not q.git(ROOT,'status','--porcelain','--untracked-files=no'), 'Clean same-revision qualification required')
     pin=read(ROOT/APPROVAL)['upstream_commit']; q.pin(ROOT/'.deps/LLGL',pin); q.pin(ROOT/'.deps/Vulkan-Headers',q.HEADERS)
     out=a.output.resolve(); build=out.with_name(out.name+'-build')
@@ -284,7 +317,7 @@ def run(a):
             p=out/'commands'/(name+'.'+key); p.write_bytes(data); row[key]=p.relative_to(out).as_posix(); row[key+'_sha256']=sha(p)
         commands.append(dict(name=name,**row)); save(out/'commands.json',commands); return row,stdout,stderr
     loader=prior['loader_path']; overlay=out/'patch/overlay.cpp'
-    for name,argv in [('configure',['cmake','-S',ROOT/'benchmarks/linux_llgl_probe','-B',build,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_C_COMPILER=gcc-14','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DGFX_LLGL_OVERLAY='+str(overlay),'-DVulkan_INCLUDE_DIR='+str(ROOT/'.deps/Vulkan-Headers/include'),'-DVulkan_LIBRARY='+loader]),('build',['cmake','--build',build,'--target','linux_llgl_probe','--parallel','2','--verbose','--','-d','keepdepfile'])]:
+    for name,argv in [('configure',['cmake','-S',ROOT/'benchmarks/linux_llgl_probe','-B',build,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_C_COMPILER=gcc-14','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DGFX_LLGL_PHYSICAL_PROFILE='+('ON' if mode=='physical' else 'OFF'),'-DGFX_LLGL_OVERLAY='+str(overlay),'-DVulkan_INCLUDE_DIR='+str(ROOT/'.deps/Vulkan-Headers/include'),'-DVulkan_LIBRARY='+loader]),('build',['cmake','--build',build,'--target','linux_llgl_probe','--parallel','2','--verbose','--','-d','keepdepfile'])]:
         row,stdout,stderr=call(name,argv)
         if row['returncode']: print((stdout+stderr).decode(errors='replace')[-12000:],flush=True)
         require(row['returncode']==0,name+' failed; raw logs retained'); print(name+' PASS',flush=True)
@@ -293,18 +326,19 @@ def run(a):
     r=dict(schema_version=1,task='P3-LBEN-LLGL-readiness',status='running',source_commit=prior['source_commit'],qualification=prior,
         qualification_evidence=str(qualification),qualification_sha256=sha(out/'qualification/receipt.json'),output_directory=str(out),LLGL_commit=pin,
         profile_id=PROFILE,unmodified_upstream=False,source_inputs=sources,source_zip_sha256=sha(out/'source.zip'),overlay_sha256=sha(overlay),
-        probe_fingerprint=fingerprint({x['path']:x['sha256'] for x in sources},sha(overlay),pin),binaries=binaries,inputs_sha256=sha(out/'inputs.json'),
+        probe_fingerprint=fingerprint({x['path']:x['sha256'] for x in sources},sha(overlay),pin,mode),binaries=binaries,inputs_sha256=sha(out/'inputs.json'),
         minimal_buffer_reference_accepted=False,physical_GPU_accepted=False,workload_correctness_accepted=False,performance_accepted=False,performance_samples=0,
         verified_bytes=0,runtime_inputs=[],runs=[])
+    if mode=='physical': r.update(mode=mode,physical_guard_only=guard,physical_probe_qualified=False,P3_BEN_08_completed=False)
     r['frozen_inputs']=prior['frozen_inputs']+[record(p) for p in sorted(own)]+[
         {k:item[k] for k in ('path','bytes','sha256')} for item in inputs['files']+inputs['depfiles']]+list(binaries.values())+[
         record(overlay),record(out/'patch/original.cpp'),record(out/'source.zip'),record(out/'inputs.json'),record(out/'settings/vk_layer_settings.txt')]
     r['frozen_inputs'] += [record(build/n) for n in ('CMakeCache.txt','build.ninja','compile_commands.json','probe-identity.txt')]
-    require((build/'probe-identity.txt').read_text().startswith('linux-llgl|'+pin+'|'+PROFILE+'\n'), 'CMake profile identity differs')
+    require((build/'probe-identity.txt').read_text().startswith(identity_prefix(mode)+'|'+pin+'|'+PROFILE+'\n'), 'CMake profile identity differs')
     require(r['probe_fingerprint'].encode() in (build/'linux_llgl_probe').read_bytes(), 'Compiled probe fingerprint differs')
     save(out/'receipt.json',r)
     try:
-        for job in jobs():
+        for job in (guard_jobs() if guard else jobs()):
             require(q.unchanged(r['frozen_inputs']+r['runtime_inputs']), 'Frozen inputs changed')
             row,stdout,stderr=call(job['name'],arguments(job,r),environment(job,r)); row['job']=job; r['runs'].append(row); save(out/'receipt.json',r)
             if job['kind'] in ('normal','callback-control'):
@@ -315,20 +349,23 @@ def run(a):
                     require(not matches or matches==[item], 'Actual runtime file changed')
                     if not matches: r['runtime_inputs'].append(item)
                 r['verified_bytes']+=value['verified_bytes']
-            else: rejected(job,row['returncode'],stdout,stderr)
+            else: rejected(job,row['returncode'],stdout,stderr,mode)
             save(out/'receipt.json',r); print(job['name']+' PASS',flush=True)
         require(q.unchanged(r['frozen_inputs']+r['runtime_inputs']), 'Final source/runtime changed')
-        r.update(status='completed',inputs_unchanged=True,minimal_buffer_reference_accepted=True); save(out/'receipt.json',r)
+        r.update(status='completed',inputs_unchanged=True,minimal_buffer_reference_accepted=not guard)
+        if mode=='physical': r['physical_probe_qualified']=not guard
+        save(out/'receipt.json',r)
         print(json.dumps(check(out,live=True)),flush=True)
     except (OSError,ValueError,KeyError,subprocess.SubprocessError) as exc:
         r.update(status='failed',error=str(exc)); save(out/'receipt.json',r); raise
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__); parser.add_argument('stage',choices=('run','check'))
+    parser=argparse.ArgumentParser(description=__doc__); parser.add_argument('stage',choices=('run','check','guard'))
+    parser.add_argument('--mode',choices=('software-diagnostic','physical'),default='software-diagnostic')
     parser.add_argument('--qualification',type=pathlib.Path); parser.add_argument('--output',type=pathlib.Path,required=True); parser.add_argument('--live',action='store_true'); a=parser.parse_args()
     if a.stage=='check': print(json.dumps(check(a.output,a.live),indent=2)); return
-    require(a.qualification is not None,'Same-revision BEN-07 software qualification required'); run(a)
+    require(a.qualification is not None,'Same-revision BEN-07 qualification required'); run(a)
 
 
 if __name__=='__main__': main()

@@ -54,9 +54,13 @@ int main(int argc,char** argv) try {
                  <<",\"logical_device_created\":false,\"performance_samples\":0}\n";
         return 0;
     }
-    require(argc==5,"Usage: linux_llgl_probe UUID plain|validation identity|smoke|callback-control software-diagnostic");
+    require(argc==5,"Usage: linux_llgl_probe UUID plain|validation identity|smoke|callback-control software-diagnostic|physical");
     const std::string uuid=argv[1],mode=argv[2],op=argv[3],kind=argv[4];
+#if GFX_LLGL_PHYSICAL_PROFILE
+    require(kind=="physical","Physical qualification only");
+#else
     require(kind=="software-diagnostic","Software diagnostics only");
+#endif
     require((mode=="plain"||mode=="validation") && (op=="identity"||op=="smoke"||op=="callback-control"),"Invalid probe arguments");
     const bool validation=mode=="validation",control=op=="callback-control",smoke=op=="smoke";
     require(!control || validation,"Callback control requires validation");
