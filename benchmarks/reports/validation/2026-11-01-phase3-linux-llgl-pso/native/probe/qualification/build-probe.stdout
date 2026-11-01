@@ -1,0 +1,35 @@
+[1/4] Building CXX object CMakeFiles/linux_comparison_selection.dir/Selection.cpp.o
+[2/4] Linking CXX executable linux_comparison_selection
+[3/4] Building CXX object CMakeFiles/linux_comparison.dir/Probe.cpp.o
+In file included from /home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/Probe.cpp:1:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp: In member function ‘std::vector<linuxbench::Identity> linuxbench::NativeQuery::enumerate(bool)’:
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pNext’ [-Wmissing-field-initializers]
+   55 |         auto create=load<PFN_vkCreateInstance>("vkCreateInstance");VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};app.apiVersion=VK_API_VERSION_1_1;
+      |                                                                                                                            ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pApplicationName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::applicationVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::pEngineName’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::engineVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:55:124: warning: missing initializer for member ‘VkApplicationInfo::apiVersion’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pNext’ [-Wmissing-field-initializers]
+   56 |         VkInstanceCreateInfo ci{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};ci.pApplicationInfo=&app;if(validation){ci.enabledLayerCount=1;ci.ppEnabledLayerNames=&layer;}
+      |                                                                       ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::flags’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::pApplicationInfo’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledLayerCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledLayerNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::enabledExtensionCount’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:56:71: warning: missing initializer for member ‘VkInstanceCreateInfo::ppEnabledExtensionNames’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                             ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::driverUUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUID’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceNodeMask’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:93: warning: missing initializer for member ‘VkPhysicalDeviceIDProperties::deviceLUIDValid’ [-Wmissing-field-initializers]
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::pNext’ [-Wmissing-field-initializers]
+   63 |             VkPhysicalDeviceIDProperties ids{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};VkPhysicalDeviceProperties2 p{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};p.pNext=&ids;properties(device,&p);
+      |                                                                                                                                                                           ^
+/home/runner/work/GraphicsSDK/GraphicsSDK/benchmarks/linux_comparison/../common/LinuxEnvironment.hpp:63:171: warning: missing initializer for member ‘VkPhysicalDeviceProperties2::properties’ [-Wmissing-field-initializers]
+[4/4] Linking CXX executable linux_comparison
