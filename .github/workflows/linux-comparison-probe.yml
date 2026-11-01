@@ -1,9 +1,9 @@
 name: Linux comparison probe (software diagnostic)
 on:
   push:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py', 'benchmarks/linux_llgl_draw/**', 'tools/linux_llgl_draw.py', 'tools/port_linux_llgl_draw.py', 'tests/test_linux_llgl_draw.py', 'benchmarks/linux_llgl_pso/**', 'tools/linux_llgl_pso.py', 'tools/port_linux_llgl_pso.py', 'tests/test_linux_llgl_pso.py', 'benchmarks/llgl_vulkan_*/**', 'benchmarks/vulkan_pso/Frame.hpp', 'benchmarks/phase3_comparison/pso.json']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py', 'benchmarks/linux_llgl_draw/**', 'tools/linux_llgl_draw.py', 'tools/port_linux_llgl_draw.py', 'tests/test_linux_llgl_draw.py', 'benchmarks/linux_llgl_pso/**', 'tools/linux_llgl_pso.py', 'tools/port_linux_llgl_pso.py', 'tests/test_linux_llgl_pso.py', 'benchmarks/llgl_vulkan_*/**', 'benchmarks/vulkan_pso/Frame.hpp', 'benchmarks/phase3_comparison/pso.json', 'benchmarks/linux_llgl_allocation/**', 'tools/linux_llgl_allocation.py', 'tools/port_linux_llgl_allocation.py', 'tests/test_linux_llgl_allocation.py', 'benchmarks/vulkan_allocation/Payload.hpp', 'benchmarks/phase3_comparison/allocation.json']
   pull_request:
-    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py', 'benchmarks/linux_llgl_draw/**', 'tools/linux_llgl_draw.py', 'tools/port_linux_llgl_draw.py', 'tests/test_linux_llgl_draw.py', 'benchmarks/linux_llgl_pso/**', 'tools/linux_llgl_pso.py', 'tools/port_linux_llgl_pso.py', 'tests/test_linux_llgl_pso.py', 'benchmarks/llgl_vulkan_*/**', 'benchmarks/vulkan_pso/Frame.hpp', 'benchmarks/phase3_comparison/pso.json']
+    paths: ['.github/workflows/linux-comparison-probe.yml', 'benchmarks/linux_comparison/**', 'benchmarks/common/LinuxEnvironment.hpp', 'tools/linux_comparison.py', 'tests/test_linux_comparison.py', 'benchmarks/linux_workloads/**', 'tools/linux_workloads.py', 'tools/port_linux_benchmarks.py', 'tests/test_linux_workloads.py', 'tools/linux_workload_matrix.py', 'tests/test_linux_workload_matrix.py', 'benchmarks/linux_llgl_probe/**', 'tools/linux_llgl_probe.py', 'tests/test_linux_llgl_probe.py', 'benchmarks/linux_llgl_upload/**', 'tools/linux_llgl_upload.py', 'tools/port_linux_llgl_upload.py', 'tests/test_linux_llgl_upload.py', 'benchmarks/linux_llgl_draw/**', 'tools/linux_llgl_draw.py', 'tools/port_linux_llgl_draw.py', 'tests/test_linux_llgl_draw.py', 'benchmarks/linux_llgl_pso/**', 'tools/linux_llgl_pso.py', 'tools/port_linux_llgl_pso.py', 'tests/test_linux_llgl_pso.py', 'benchmarks/llgl_vulkan_*/**', 'benchmarks/vulkan_pso/Frame.hpp', 'benchmarks/phase3_comparison/pso.json', 'benchmarks/linux_llgl_allocation/**', 'tools/linux_llgl_allocation.py', 'tools/port_linux_llgl_allocation.py', 'tests/test_linux_llgl_allocation.py', 'benchmarks/vulkan_allocation/Payload.hpp', 'benchmarks/phase3_comparison/allocation.json']
   workflow_dispatch:
 permissions:
   contents: read
@@ -69,6 +69,10 @@ jobs:
         run: |
           python3 tools/linux_llgl_pso.py run --probe out/linux-llgl-evidence --output out/linux-llgl-pso-evidence
           python3 tools/linux_llgl_pso.py check --output out/linux-llgl-pso-evidence --live
+      - name: Verify approved LLGL Linux buffer and texture lifecycle with full resource payloads
+        run: |
+          python3 tools/linux_llgl_allocation.py run --probe out/linux-llgl-evidence --output out/linux-llgl-allocation-evidence
+          python3 tools/linux_llgl_allocation.py check --output out/linux-llgl-allocation-evidence --live
       - name: Exercise every SDK and SDL workload case as software diagnostics
         run: |
           python3 tools/linux_workload_matrix.py run --readiness out/linux-workloads-evidence --output out/linux-workload-matrix
@@ -87,5 +91,6 @@ jobs:
             out/linux-llgl-upload-evidence/
             out/linux-llgl-draw-evidence/
             out/linux-llgl-pso-evidence/
+            out/linux-llgl-allocation-evidence/
           if-no-files-found: error
           retention-days: 14
