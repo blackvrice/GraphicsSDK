@@ -90,3 +90,38 @@ CPU 계약 테스트와 Docker software pilot은 실제 GPU 수용이 아니다.
 GPU의 fresh draw/instancing 실행과 PSO·자원 생성 timed campaign 이식, 실제 표시와
 Phase 3 gate가 남아 있다. 기존 Windows 성능값과 software 진단을 Linux 성능으로
 재사용하지 않는다.
+
+## 실제 검증과 재생 증거
+
+소스 `bdb31227cea697a9595c2a0d26b1addf0ce8c4d6`의
+[Linux native CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41383330422)가
+통과했다. GCC 14.2.0, Linux x86_64, llvmpipe LLVM 20.1.2 software 장치에서
+새 draw 캠페인 42개 프로세스와 이미지 84개·808,080바이트를 검증했다.
+거부 제어 15개와 core/sync 전달 제어 2개를 포함한다. 기본 진단 행 63개는
+원본에 남기고 측정 표본·통계 행·성능 수용은 0으로 유지했다.
+
+성공한 LLGL 진단의 실제 native draw/forward 호출은 8,016개, instance는
+16,008개, vertex는 48,024개다. plain timer에서는 native 계수를 null로 남긴다.
+컴파일 2 units의 입력 469개는 generated 6·LLGL 86·자체 header 5·system 359·
+Vulkan header 13개로 분류된다. runtime 파일 42개와 frozen 입력 1,132개를
+보관했다. 같은 qualification의 통제 빌드 원본 graph는 SDK 6·SDL 251·probe 2·
+소비자 8 units이며 모든 필요한 프로젝트의 O2/no IPO/unity 조건을 재생했다.
+
+[동일 소스 Windows/Linux CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41383330537)의
+각 Python 계약 1,420개가 통과했다. 새 draw 계약 테스트 17개는 스케줄·시간 분할·
+전체 readback·native 계수·관측 분리·통계·변조 거부·고정 workload 보존을 검사한다.
+기존 upload 계약과 보관된 통제 upload 증거도 공통 실행기 변경 후 재생했다.
+
+`benchmarks/reports/validation/2026-11-02-phase3-linux-draw-campaign/`에 원본 파일
+397개를 담은 evidence ZIP, inventory·manifest·summary와 두 OS Python 로그·receipt를
+보관한다. 현재 저장소의 검증기로만 재생하며 ZIP 안의 source/native 코드는
+실행하지 않는다. 자체 hash 목록이며 외부 신뢰 서명을 주장하지 않는다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-02-phase3-linux-draw-campaign/verify.py
+```
+
+Build and correctness CI의 Windows/Linux 작업에도 이 독립 재생을 추가했다.
+로드맵 143개 작업의 ID와 상태는 유지하며 P3-BEN-08/P3-LBEN-02에 준비 완료 증거를
+추가했다. 실제 Linux GPU의 fresh draw 성능 수용과 PSO/allocation 타이밍 캠페인
+개발은 남아 있다.
