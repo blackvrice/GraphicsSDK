@@ -81,6 +81,10 @@ jobs:
         run: |
           python3 tools/linux_upload_campaign.py run --readiness out/linux-workloads-physical --llgl-correctness out/linux-llgl-upload-physical --output out/linux-upload-campaign-physical
           python3 tools/linux_upload_campaign.py check --output out/linux-upload-campaign-physical --live
+      - name: Collect fresh observer-free three-SDK draw repetitions
+        run: |
+          python3 tools/linux_draw_campaign.py run --readiness out/linux-workloads-physical --llgl-correctness out/linux-llgl-draw-physical --output out/linux-draw-campaign-physical
+          python3 tools/linux_draw_campaign.py check --output out/linux-draw-campaign-physical --live
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -95,5 +99,6 @@ jobs:
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-llgl-pso-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-llgl-allocation-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-upload-campaign-physical/
+            comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-draw-campaign-physical/
           if-no-files-found: error
           retention-days: 14

@@ -125,3 +125,5 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 [Linux LLGL 네 workload의 물리 경로](PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md)는 전체 upload/draw·instancing/PSO/allocation 소비자를 같은 revision의 성공한 물리 probe에 연결한다. software host에서는 각 물리 빌드의 네 거부를 확인하며 실제 물리 positive 실행과 timed campaign·fresh 비교는 미완료다. 기존 workload/control·observer·승인 vendor patch와 모든 로드맵 상태를 보존한다.
 
 [Linux 세 SDK 업로드 캠페인](PHASE3_LINUX_UPLOAD_CAMPAIGN_REPORT.md)은 고정 업로드 타이머·5개 독립 프로세스 × 30개 원본 표본과 별도 validation/observer gate를 이식한다. software smoke는 통계·성능 수용을 생성하지 않는다. 실제 GPU의 fresh 실행과 draw/PSO/allocation timed campaign·Phase 3 수용은 미완료다.
+
+[Linux 세 SDK draw/instancing 캠페인](PHASE3_LINUX_DRAW_CAMPAIGN_REPORT.md)은 같은 O2 빌드 정책에서 고정 draw 본문·네 CPU 구간·별도 native 관측과 다섯 fresh 프로세스 반복을 준비한다. software smoke는 통계/성능 수용을 생성하지 않는다. 실제 GPU fresh 실행과 PSO/allocation timed campaign·표시·Phase 3 수용은 미완료다.
