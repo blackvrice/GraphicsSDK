@@ -11,6 +11,8 @@ integrated/discrete 타입, PCI vendor/device와 알려진 bound driver를 기�
 UUID·driver UUID·이름·vendor/device·driver/API·queue·환경·실제 runtime
 경로가 일치해야 한다. 기본 LLGL adapter가 다른 장치를 선택하면 실패하며
 다른 adapter로 자동 재시도하지 않는다.
+PCI 기록은 같은 vendor/device·driver의 보조 근거이며, UUID별 PCI 주소를
+직접 매핑했다는 뜻은 아니다.
 
 `GFX_LLGL_PHYSICAL_PROFILE=ON`은 software 빌드와 다른 fingerprint를 만든다.
 물리 바이너리는 software 모드를 거부하고 native CPU/virtual/other 타입을
@@ -94,3 +96,44 @@ Phase 3 gate도 별도로 남아 있다.
 2026-11-01 통합 bundle과 handoff는 당시 software 검증 기록 그대로 보존한다.
 그 handoff의 LLGL physical 미구현 설명은 이 최소 probe 추가 이전 상태이며,
 네 소비자의 physical 경로는 여전히 추가 구현이 필요하다.
+
+## 검증 기록
+
+실행 소스는 `253357fa771c921958f3026c573f329ba91d425b`다.
+[Linux native CI 41362969946](https://github.com/blackvrice/GraphicsSDK/actions/runs/41362969946)이
+software 기본 프로필의 최소 probe·네 workload·SDK/SDL 전체 matrix·세 SDK
+통합을 통과한 뒤, 별도 physical 프로필을 빌드해 네 거부를 실제 실행했다.
+물리 성공 경로는 실행하지 않았다.
+
+| 관측 | 결과 |
+|---|---|
+| 환경 | Linux x86_64, kernel 7.0.0-1017-azure, AMD EPYC 7763, GCC 14.2.0 |
+| software 장치 | llvmpipe LLVM 20.1.2, native type 4 |
+| device / driver UUID | `6d65736132352e322e382d3075627500` / `6c6c766d706970655555494400000000` |
+| 실제 GNU compile unit / 입력 | 128 / 768 |
+| 입력 분류 | LLGL 367, 승인 overlay 1, 자체 2, Vulkan-Headers 13, system 385 |
+| 물리 프로필 fingerprint | `ac4a33f3e5d1d4b63e16be6758266ca78cf190893884efb53045d3b5fc285d90` |
+| 제어 결과 | 4개 모두 종료 1·빈 stdout·지정 오류 |
+| readback / 성능 표본 / 물리 qualification | 0 / 0 / false |
+
+[같은 소스의 Windows/Linux CI 41362970055](https://github.com/blackvrice/GraphicsSDK/actions/runs/41362970055)는
+각각 Python 1,369개 테스트와 입력 유지 검사를 통과했다. Vulkan compile CI
+[41362969940](https://github.com/blackvrice/GraphicsSDK/actions/runs/41362969940)도 통과했다.
+새 계약 테스트 8개는 mode별 fingerprint, qualification/PCI·native type·bool
+거부, fallback 없는 argv, 네 지정 오류, 물리 결과의 좁은 수용 범위를 검사한다.
+물리 positive metadata fixture는 synthetic 테스트이며 native 실행 증거가 아니다.
+
+원본은
+[`2026-11-02-phase3-linux-llgl-physical-guard`](../benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-guard/summary.json)에
+소스 ZIP·GNU audit·qualification·명령·원본 출력·양 OS Python receipt/log와 함께
+보존했다. 현재 저장소 검증기를 사용하는 다음 명령은 archive inventory/hash,
+프로필 fingerprint, 정확한 네 제어, tested/executed runner hash와 커밋 일치를
+검사한다. 과거 source ZIP 안의 Python/native 파일을 실행하지 않는다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-guard/verify.py
+```
+
+전체 manifest hash는 보존 확인용이며 외부 신뢰 서명이 아니다. offline 재생은
+새 물리 GPU 실행을 뜻하지 않는다. 기존 최소 probe·세 SDK 통합의 독립 재생도
+새 검증기에서 통과했다. 로드맵 143개 ID·상태는 유지했다.
