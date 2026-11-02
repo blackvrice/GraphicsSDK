@@ -77,6 +77,10 @@ jobs:
             python3 "tools/linux_llgl_${profile}.py" run --mode physical --probe out/linux-llgl-physical --output "out/linux-llgl-${profile}-physical"
             python3 "tools/linux_llgl_${profile}.py" check --output "out/linux-llgl-${profile}-physical" --live
           done
+      - name: Collect fresh observer-free three-SDK upload repetitions
+        run: |
+          python3 tools/linux_upload_campaign.py run --readiness out/linux-workloads-physical --llgl-correctness out/linux-llgl-upload-physical --output out/linux-upload-campaign-physical
+          python3 tools/linux_upload_campaign.py check --output out/linux-upload-campaign-physical --live
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -90,5 +94,6 @@ jobs:
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-llgl-draw-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-llgl-pso-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-llgl-allocation-physical/
+            comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-upload-campaign-physical/
           if-no-files-found: error
           retention-days: 14
