@@ -61,7 +61,7 @@ jobs:
         run: python3 tools/prepare_linux_validation.py
       - name: Require physical SDK and SDL device probes with pinned validation
         run: |
-          python3 tools/linux_comparison.py run --mode physical --icd "$GFX_COMPARISON_ICD" --device-uuid "$GFX_COMPARISON_UUID" --runtime-receipt out/linux-vulkan-validation-evidence/runtime/receipt.json --output out/linux-comparison-physical
+          python3 tools/linux_comparison.py run --controlled-build --mode physical --icd "$GFX_COMPARISON_ICD" --device-uuid "$GFX_COMPARISON_UUID" --runtime-receipt out/linux-vulkan-validation-evidence/runtime/receipt.json --output out/linux-comparison-physical
           python3 tools/linux_comparison.py check --output out/linux-comparison-physical --live
       - name: Build and exercise qualified Linux workload consumers
         run: |

@@ -23,6 +23,8 @@ class UploadCampaign(unittest.TestCase):
             a=ready['qualification'];d=a['selected'];d['device_type']=2
             a.update(mode='physical',physical_probe_qualified=True,P3_BEN_07_completed=True,inventory=[copy.deepcopy(d)],
                 pci=[dict(vendor_id=d['vendor_id'],device_id=d['device_id'],driver='amdgpu')])
+            a['controlled_build']=dict(name=c.build_policy.NAME,projects={k:{} for k in ('sdk','sdl','probe')})
+            ready['controlled_build']=dict(name=c.build_policy.NAME,projects=dict(consumer={}))
             llgl['probe']['qualification']=copy.deepcopy(a)
             llgl['probe'].update(mode='physical',physical_guard_only=False,physical_probe_qualified=True,P3_BEN_08_completed=False)
             llgl.update(mode='physical',physical_guard_only=False,physical_upload_correctness_verified=True,software_upload_correctness_verified=False,P3_BEN_08_completed=False)
@@ -101,6 +103,12 @@ class UploadCampaign(unittest.TestCase):
             with self.assertRaises(ValueError):c.validate_inputs(r['readiness'],r['llgl_correctness'],'physical')
         r=self.context()
         with self.assertRaises(ValueError):c.validate_inputs(r['readiness'],r['llgl_correctness'],'physical')
+        for key in ('controlled_build','machine'):
+            r=self.context(True);a=r['readiness']['qualification']
+            if key=='controlled_build':a.pop(key)
+            else:a['environment'][key]='aarch64'
+            r['llgl_correctness']['probe']['qualification']=copy.deepcopy(a)
+            with self.subTest(key=key),self.assertRaises(ValueError):c.validate_inputs(r['readiness'],r['llgl_correctness'],'physical')
 
     def test_measurement_environment_has_no_loader_trace_observer_or_validation(self):
         r=self.context(True)

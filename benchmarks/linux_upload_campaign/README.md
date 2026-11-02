@@ -16,7 +16,11 @@ Software smoke executes 42 serialized processes, verifies 96 full images, retain
 72 diagnostic interval rows, and exports no statistics/performance acceptance.
 
 On a real qualified Linux GPU, `run` instead requires same-revision SDK/SDL and
-LLGL physical correctness receipts. The fixed 90-process campaign includes all
+LLGL physical correctness receipts. SDK/SDL qualification must use
+`linux_comparison.py run --controlled-build`; the consumer automatically inherits
+the O2/no IPO/unity policy. Raw caches and compile graphs are replayed, and stock
+Release or guard-only evidence cannot qualify a physical timing campaign.
+The fixed 90-process campaign includes all
 validation/negative controls before 60 measurement processes. Each SDK/scenario
 has five fresh processes, five warmups and thirty retained samples per process.
 

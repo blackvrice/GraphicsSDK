@@ -32,6 +32,20 @@ Linux 계약이다. 과거 측정값·환경·결과는 가져오지 않는다. 
 
 ## 타이밍과 관측 분리
 
+물리 성능 실행은 `gnu-release-o2-no-ipo-unity-v1` 통제 빌드가 필수다.
+`linux_comparison.py run --controlled-build`가 SDK·SDL·probe에 같은
+`-O2 -DNDEBUG`, IPO/unity OFF를 적용하며 `linux_workloads.py`도 이를 이어받는다.
+각 프로젝트의 원본 CMake cache·compile command graph를 별도로 보존하고
+hash/frozen binding·실제 cache 값·모든 compile command의 O2/NDEBUG와
+다른 최적화·LTO·명시적 CPU tuning 부재를 재검사한다. LLGL core/소비자도
+기존 GNU audit의 O2 검증을 통과해야 한다. 통제 빌드 증거가 없는 과거
+SDK/SDL Release 준비 결과는 물리 성능 수용에 사용할 수 없다.
+
+기존 기본 Release 경로는 software correctness 호환성으로 유지한다.
+초기 `c9bc519` software 기록도 진단 증거이며, 동일 최적화 비교나 물리
+성능 수용을 증명하지 않는다. 현재 software/physical workflow는 통제 빌드를
+명시하며 실제 GPU 성공 경로는 여전히 미검증이다.
+
 LLGL observer는 별도 untimed probe 하나에만 로드한다. native query와
 LLGL instance 두 개·논리 장치 하나의 생성과 종료를 확인한다. 검증 시에는
 고정 VVL core/sync를 사용하며 실제 진단을 요구한다. 검증 실패·잘못된 UUID·

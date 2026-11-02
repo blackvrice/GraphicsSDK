@@ -12,6 +12,7 @@ import platform
 import re
 import subprocess
 import time
+import linux_build_policy as build_policy
 
 from audit_licenses import sdk_fingerprint
 
@@ -107,6 +108,7 @@ def control(job,code,stdout,stderr):
 
 def check(folder,live=False):
     r=read(folder/'receipt.json');require(r['status']=='completed' and r['task']=='P3-BEN-07' and r['inputs_unchanged'] is True,'Incomplete probe campaign')
+    if 'controlled_build' in r:build_policy.check(folder,r['controlled_build'],('sdk','sdl','probe'),r['frozen_inputs'])
     mode=r['mode'];require(r['physical_probe_qualified']==(mode=='physical') and type(r['physical_probe_qualified']) is bool
             and r['P3_BEN_07_completed']==(mode=='physical') and type(r['P3_BEN_07_completed']) is bool
             and r['workload_accepted'] is r['performance_accepted'] is r['SDL_native_handle_verified'] is False and type(r['measurement_samples']) is int and r['measurement_samples']==0,'Diagnostic probe promoted to hardware/workload/performance acceptance')
@@ -148,6 +150,8 @@ def run(a):
     require(not os.environ.get('GITHUB_SHA') or os.environ['GITHUB_SHA']==commit,'CI revision differs')
     sdl_pin=read(ROOT/'benchmarks/competitors/sources.lock.json')['sdl']['commit'];pin(ROOT/'.deps/SDL',sdl_pin);pin(ROOT/'.deps/Vulkan-Headers',HEADERS)
     sources=sorted(set([ROOT/n for n in OWN]+[pathlib.Path(__file__),ROOT/'tools/audit_licenses.py',ROOT/'tools/linux-vulkan-validation.json',ROOT/'tools/vulkan-validation.lock.json',ROOT/'CMakeLists.txt',*(ROOT/'include').rglob('*.hpp'),*(ROOT/'src').rglob('*.hpp'),*(ROOT/'src').rglob('*.cpp'),*(ROOT/'cmake').glob('*.in')]))
+    controlled=getattr(a,'controlled_build',False)
+    if controlled:sources.append(ROOT/build_policy.SOURCE)
     before=[record(p) for p in sources];out.mkdir(parents=True);build.mkdir();save(out/'runtime-receipt.json',runtime)
     for n in ('empty','settings','xdg'):(out/n).mkdir(mode=0o700)
     (out/'settings/vk_layer_settings.txt').write_text('khronos_validation.enables = VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT\nkhronos_validation.syncval_submit_time_validation = true\n')
@@ -162,6 +166,7 @@ def run(a):
             p=out/(name+'.'+key);p.write_bytes(data);row[key]=p.name;row[key+'_sha256']=sha(p)
         commands.append(dict(name=name,**row));save(out/'commands.json',commands);return row,stdout,stderr
     def build_call(name,argv):
+        if controlled and name.startswith('configure-'):argv=argv+build_policy.ARGS
         row,stdout,stderr=call(name,argv)
         if row['returncode']:print((stdout+stderr).decode(errors='replace')[-12000:],flush=True)
         require(row['returncode']==0,name+' failed; raw logs retained');print(name+' PASS',flush=True)
@@ -192,6 +197,7 @@ def run(a):
            SDK_source_fingerprint=sdk_fingerprint(ROOT),probe_fingerprint=fingerprint(),SDL_commit=sdl_pin,Vulkan_Headers_commit=HEADERS,probe=record(exe),icd=record(icd),loader_path=inventory['loader_path'],runtime_libraries=libraries,
            runtime_receipt_sha256=sha(out/'runtime-receipt.json'),validation_library=str(layer),inventory_sha256=sha(out/'inventory.stdout'),selection_sha256=sha(out/'selection.stdout'),output_directory=str(out),frozen_inputs=frozen,source_inputs=before,
            physical_probe_qualified=False,P3_BEN_07_completed=False,workload_accepted=False,performance_accepted=False,SDL_native_handle_verified=False,measurement_samples=0,runs=[])
+    if controlled:r['controlled_build']=build_policy.capture(out,dict(sdk=sdk,sdl=sdl,probe=probe_build),record)
     save(out/'receipt.json',r)
     try:
         for job in jobs(a.mode):
@@ -209,7 +215,7 @@ def run(a):
     except (OSError,ValueError,KeyError,subprocess.SubprocessError) as e:r.update(status='failed',error=str(e));save(out/'receipt.json',r);raise
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('stage',choices=('run','check'));p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--mode',choices=('software-diagnostic','physical'),default='physical');p.add_argument('--icd',type=pathlib.Path);p.add_argument('--device-uuid');p.add_argument('--runtime-receipt',type=pathlib.Path);p.add_argument('--live',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('stage',choices=('run','check'));p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--mode',choices=('software-diagnostic','physical'),default='physical');p.add_argument('--icd',type=pathlib.Path);p.add_argument('--device-uuid');p.add_argument('--runtime-receipt',type=pathlib.Path);p.add_argument('--live',action='store_true');p.add_argument('--controlled-build',action='store_true');a=p.parse_args()
     if a.stage=='check':print(json.dumps(check(a.output,a.live),indent=2));return
     require(a.icd is not None and a.runtime_receipt is not None,'Explicit ICD and pinned Linux runtime receipt required');run(a)
 if __name__=='__main__':main()

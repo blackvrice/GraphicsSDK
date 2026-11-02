@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import time
+import linux_build_policy as build_policy
 import linux_comparison as q
 import port_linux_benchmarks as port
 from linux_comparison import ROOT,read,save,sha,record,require
@@ -92,6 +93,9 @@ def validate_scope(r):
 
 def check(folder,live=False):
     r=read(folder/'receipt.json');require(r['task']=='P3-BEN-08' and r['status']=='completed' and r['inputs_unchanged'] is True,'Incomplete Linux workload build')
+    if 'controlled_build' in r:
+        build_policy.check(folder,r['controlled_build'],('consumer',),r['frozen_inputs'])
+        build_policy.scope(r['qualification'].get('controlled_build'),('sdk','sdl','probe'))
     require(sha(folder/'qualification/receipt.json')==r['qualification_sha256'] and read(folder/'qualification/receipt.json')==r['qualification'],'Qualification changed')
     q.check(folder/'qualification');validate_scope(r)
     require((folder/'settings/vk_layer_settings.txt').read_bytes()==(folder/'qualification/settings/vk_layer_settings.txt').read_bytes(),'Required synchronization settings changed')
@@ -127,7 +131,10 @@ def run(a):
     out.mkdir(parents=True);build.mkdir();shutil.copytree(qualification,out/'qualification')
     for n in ('commands','empty','settings','xdg'):(out/n).mkdir(mode=0o700)
     shutil.copyfile(qualification/'settings/vk_layer_settings.txt',out/'settings/vk_layer_settings.txt')
-    sources=sorted(set([pathlib.Path(__file__),ROOT/'benchmarks/phase3_comparison/contract.json',*[p for profile in port.PROFILES for p in port.paths(profile)]]));before=[record(p) for p in sources]
+    sources=sorted(set([pathlib.Path(__file__),ROOT/'benchmarks/phase3_comparison/contract.json',*[p for profile in port.PROFILES for p in port.paths(profile)]]))
+    controlled='controlled_build' in prior
+    if controlled:sources.append(ROOT/build_policy.SOURCE)
+    before=[record(p) for p in sources]
     base={k:v for k,v in os.environ.items() if not k.upper().startswith(('VK_','VVL_','SDL_','GFX_','LD_')) and k not in ('DISPLAY','WAYLAND_DISPLAY')}
     commands=[]
     def call(name,argv,env=None):
@@ -139,6 +146,7 @@ def run(a):
             p=out/'commands'/(name+'.'+key);p.write_bytes(data);row[key]=p.relative_to(out).as_posix();row[key+'_sha256']=sha(p)
         commands.append(dict(name=name,**row));save(out/'commands.json',commands);return row,stdout,stderr
     for name,argv in [('configure',['cmake','-S',ROOT/'benchmarks/linux_workloads','-B',build,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DGFX_INSTALLED_SDK='+str(install),'-DSDL_BINARY_DIR='+str(sdl)]),('build',['cmake','--build',build,'--parallel','2'])]:
+        if name=='configure' and controlled:argv+=build_policy.ARGS+['-DGFX_CONTROLLED_BUILD=ON']
         row,stdout,stderr=call(name,argv)
         if row['returncode']:print((stdout+stderr).decode(errors='replace')[-16000:],flush=True)
         require(row['returncode']==0,name+' failed; raw logs retained');print(name+' PASS',flush=True)
@@ -151,6 +159,7 @@ def run(a):
     r=dict(task='P3-BEN-08',status='running',source_commit=q.git(ROOT,'rev-parse','HEAD'),qualification_evidence=str(qualification),qualification_sha256=sha(out/'qualification/receipt.json'),qualification=prior,output_directory=str(out),
         binaries=binaries,profile_fingerprints={p:port.fingerprint(p) for p in port.PROFILES},shader_header_sha256=sha(ROOT/'tests/fixtures/SpirvFixtures.hpp'),frozen_inputs=frozen,source_inputs=before,
         P3_BEN_08_completed=False,physical_GPU_accepted=False,performance_accepted=False,all_workload_scenarios_accepted=False,performance_samples=0,validation_timings_excluded=True,verified_images=0,verified_buffers=0,verified_bytes=0,runs=[])
+    if controlled:r['controlled_build']=build_policy.capture(out,dict(consumer=build),record)
     save(out/'receipt.json',r)
     try:
         for job in schedule():

@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import time
 import zipfile
+import linux_build_policy as build_policy
 
 import linux_llgl_probe as p
 import linux_llgl_upload as lu
@@ -80,6 +81,10 @@ def validate_inputs(ready,llgl,mode):
     lu.policy.validate_receipt(llgl,'upload')
     require(lu.policy.mode(llgl)==mode and not lu.policy.guard(llgl),'Wrong or guard-only LLGL correctness receipt')
     require(ready['status']==llgl['status']=='completed' and ready['inputs_unchanged'] is llgl['inputs_unchanged'] is True,'Incomplete prerequisites')
+    if mode=='physical':
+        build_policy.scope(a.get('controlled_build'),('sdk','sdl','probe'))
+        build_policy.scope(ready.get('controlled_build'),('consumer',))
+        p.exact(a['environment'],dict(platform='Linux',machine='x86_64',pointer_bits=64))
 
 
 def arguments(job,r):
