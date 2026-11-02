@@ -142,3 +142,33 @@ python3 benchmarks/reports/validation/2026-11-02-phase3-linux-upload-campaign/ve
 
 offline 재검사는 새 GPU 측정이 아니다. 실제 Linux GPU fresh 수용과 후속
 세 timed campaign·표시·Phase 3 gate는 미완료로 유지한다.
+
+## 동일 최적화 정책 보완 검증
+
+후속 소스 `699f76f1f2ad98369a7b001830d2dca77cbfe8f1`의
+[native CI 41378242288](https://github.com/blackvrice/GraphicsSDK/actions/runs/41378242288)은
+통제 빌드로 모든 기존 회귀와 업로드 캠페인을 다시 통과했다. SDK 6개·SDL
+251개·probe 2개·소비자 8개 compile command graph와 원본 cache가
+`gnu-release-o2-no-ipo-unity-v1` 정책에 일치했다. LLGL core와 새 timer의 GNU
+audit도 O2를 확인했다. 새 timer 2 units/467 inputs·runtime 42개는 유지됐고,
+frozen 파일 결합은 1,125개다. 업로드 결과는 여전히 42개 software 프로세스·
+96개 전체 이미지·72개 진단 행이며 측정 표본·통계·성능 수용은 0이다.
+
+[같은 소스의 양 OS CI 41378242261](https://github.com/blackvrice/GraphicsSDK/actions/runs/41378242261)은
+각각 Python 1,403개와 입력 유지 검사를 통과했다. 정책의 원본 hash/설정
+재결합·다른 최적화/LTO/tuning·누락 프로젝트 거부 테스트 5개를 추가했고,
+로컬 전체 1,403개도 통과했다. 물리 경로는 통제 빌드·x86_64 qualification이
+없으면 거부한다.
+[Vulkan compile 41378242178](https://github.com/blackvrice/GraphicsSDK/actions/runs/41378242178)도 통과했다.
+
+원본 390개 파일은 앞선 기록과 구분해
+[`2026-11-02-phase3-linux-upload-controlled`](../benchmarks/reports/validation/2026-11-02-phase3-linux-upload-controlled/summary.json)에
+보존했다. 이 묶음은 원본 caches/compile graphs와 tested/executed 준비·정책·
+실행기 hash까지 현재 저장소 검증기로 재검사한다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-02-phase3-linux-upload-controlled/verify.py
+```
+
+실제 GPU의 전체 90개 프로세스 성공 경로·fresh 성능 수용은 미검증이며,
+기존 software 기록을 물리 또는 동일 최적화 성능 증거로 바꾸지 않는다.
