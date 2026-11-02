@@ -1547,7 +1547,7 @@
       "depends_on": [
         "P3-BEN-07"
       ],
-      "work": "공통 benchmark/의존성/설치 SDK 소비자의 Windows 의존성을 분리한다. SDK/SDL 4종 소비자·전체 13개 입력의 일반/필수 validation software matrix 52개 프로세스·full readback 준비 검증을 완료했다. 승인 LLGL의 GCC build·최소 probe와 업로드/draw·instancing/PSO/자원 4종 correctness 소비자를 이식해 software에서 검증했다. 자원 4종은 정상/제어 23개 프로세스·전체 이미지 8,008개·버퍼 8,008개·공개 생성/해제 16,016쌍·전체 109,837,728바이트를 확인했다. 기존 workload/control 본문과 승인 10줄 patch를 보존했다. 실제 Linux GPU qualification·같은 환경의 build/probe·세 SDK fresh 성능 반복 비교는 미완료다. native 할당 수·driver/allocator cache·물리 GPU 회수는 미검증이다. 동일 source/qualification/승인 LLGL build의 5개 원본을 통합해 세 SDK 78개 정상·46개 제어와 source/runtime 충돌·직렬 순서를 재검사하는 자립 묶음 및 미실행 물리 GPU handoff를 준비했다. LLGL 최소 probe의 별도 physical profile·같은 revision SDK/SDL 물리 qualification 연결·수동 workflow와 software 거부 제어 경로를 구현했다. 네 LLGL workload의 physical mode와 Linux 세 SDK timed campaign은 추가 구현·실제 환경 검증이 남아 있다. 실제 Linux software CI에서 별도 physical build의 GNU 128 units·768 inputs와 네 지정 거부를 확인했고, 같은 커밋의 양 OS Python 1,369개·기존 software 회귀를 통과했다. 실제 물리 positive 경로는 미검증이다.",
+      "work": "공통 benchmark/의존성/설치 SDK 소비자의 Windows 의존성을 분리한다. SDK/SDL 4종 소비자·전체 13개 입력의 일반/필수 validation software matrix 52개 프로세스·full readback 준비 검증을 완료했다. 승인 LLGL의 GCC build·최소 probe와 업로드/draw·instancing/PSO/자원 4종 correctness 소비자를 이식해 software에서 검증했다. 자원 4종은 정상/제어 23개 프로세스·전체 이미지 8,008개·버퍼 8,008개·공개 생성/해제 16,016쌍·전체 109,837,728바이트를 확인했다. 기존 workload/control 본문과 승인 10줄 patch를 보존했다. 실제 Linux GPU qualification·같은 환경의 build/probe·세 SDK fresh 성능 반복 비교는 미완료다. native 할당 수·driver/allocator cache·물리 GPU 회수는 미검증이다. 동일 source/qualification/승인 LLGL build의 5개 원본을 통합해 세 SDK 78개 정상·46개 제어와 source/runtime 충돌·직렬 순서를 재검사하는 자립 묶음 및 미실행 물리 GPU handoff를 준비했다. LLGL 최소 probe의 별도 physical profile·같은 revision SDK/SDL 물리 qualification 연결·수동 workflow와 software 거부 제어 경로를 구현했다. 네 LLGL workload의 physical mode는 구현 준비했으며 실제 positive 실행과 Linux 세 SDK timed campaign의 추가 구현·환경 검증이 남아 있다. 실제 Linux software CI에서 별도 physical build의 GNU 128 units·768 inputs와 네 지정 거부를 확인했고, 같은 커밋의 양 OS Python 1,369개·기존 software 회귀를 통과했다. 실제 물리 positive 경로는 미검증이다. 네 LLGL 소비자의 명시적 physical 빌드·같은 revision의 성공한 물리 probe 연결과 각 네 software 거부 경로를 구현했다. 전체 workload/control·observer 본문은 보존하며 실제 GPU positive 실행과 timed campaign·fresh 비교는 미완료다.",
       "done_when": "선택된 Vulkan 비교 프로그램의 native Linux build·실행 probe.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_BUILD_REPORT.md",
@@ -1572,7 +1572,8 @@
         "tools/linux_readiness_report.py",
         "benchmarks/reports/validation/2026-11-01-phase3-linux-readiness/summary.json",
         "docs/PHASE3_LINUX_LLGL_PHYSICAL_PROBE_REPORT.md",
-        "benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-guard/summary.json"
+        "benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-guard/summary.json",
+        "docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md"
       ],
       "requires": "4종 소비자 native Linux build·software probe/대표 validation smoke·거부 대조 준비 검증 완료. 선행 P3-BEN-07의 실제 물리 GPU qualification과 같은 환경의 build/probe가 있어야 최종 완료. 전체 Linux 사례·성능 비교는 별도 미완료."
     },
@@ -1856,7 +1857,7 @@
         "P3-CMP-01",
         "P3-BEN-03"
       ],
-      "work": "현재 제품·SDL·선택 경쟁 SDK의 업로드 계약을 Linux에서 실행한다. SDK/SDL 전체 13개 입력의 일반·필수 validation software matrix 52개 프로세스와 full readback 준비 검증을 완료했다. LLGL·물리 GPU 성능 수용은 미완료다. 승인 LLGL 프로필의 Linux GCC build·최소 buffer probe·실제 callback/거부 제어 8개도 software에서 준비 검증했다. LLGL 전체 workload 소비자 이식은 별도 미완료다. 승인 LLGL Linux 업로드 correctness 소비자의 본문 보존 이식과 네 입력·전체 이미지 32개·core/sync/거부 제어 15개 software 검증을 완료했다. 물리 GPU·세 SDK fresh 성능 비교는 미완료다.",
+      "work": "현재 제품·SDL·선택 경쟁 SDK의 업로드 계약을 Linux에서 실행한다. SDK/SDL 전체 13개 입력의 일반·필수 validation software matrix 52개 프로세스와 full readback 준비 검증을 완료했다. LLGL·물리 GPU 성능 수용은 미완료다. 승인 LLGL 프로필의 Linux GCC build·최소 buffer probe·실제 callback/거부 제어 8개도 software에서 준비 검증했다. LLGL 전체 workload 소비자 이식은 별도 미완료다. 승인 LLGL Linux 업로드 correctness 소비자의 본문 보존 이식과 네 입력·전체 이미지 32개·core/sync/거부 제어 15개 software 검증을 완료했다. 물리 GPU·세 SDK fresh 성능 비교는 미완료다. 네 LLGL 소비자의 명시적 physical 빌드·같은 revision의 성공한 물리 probe 연결과 각 네 software 거부 경로를 구현했다. 전체 workload/control·observer 본문은 보존하며 실제 GPU positive 실행과 timed campaign·fresh 비교는 미완료다.",
       "done_when": "Linux 전체 참조와 validation/performance 분리·fresh 반복 통계. Windows 값 재사용 금지.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md",
@@ -1864,7 +1865,8 @@
         "docs/PHASE3_LINUX_LLGL_PROBE_REPORT.md",
         "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json",
         "docs/PHASE3_LINUX_LLGL_UPLOAD_REPORT.md",
-        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-upload/summary.json"
+        "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-upload/summary.json",
+        "docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md"
       ],
       "requires": "동일 Linux GPU/driver의 지원 SDK 조합"
     },
@@ -1880,7 +1882,7 @@
         "P3-CMP-01",
         "P3-BEN-04"
       ],
-      "work": "현재 제품·SDL·선택 경쟁 SDK의 draw/instancing 계약을 Linux에서 실행한다. SDK/SDL 전체 software matrix 준비 검증을 완료했다. 승인 LLGL draw/instancing 세 입력의 일반·고정 validation 전체 이미지 24개와 실제 전달된 draw 호출·instance·vertex 수를 확인했다. 본문을 보존한 Linux 소비자·native pass-through 관찰기와 core/sync·거부 제어를 포함한 17개 직렬 프로세스가 software에서 통과했다. 성능 표본은 0이며 실제 Linux GPU qualification과 동일 GPU·driver의 세 SDK fresh 성능 반복 비교는 미완료다.",
+      "work": "현재 제품·SDL·선택 경쟁 SDK의 draw/instancing 계약을 Linux에서 실행한다. SDK/SDL 전체 software matrix 준비 검증을 완료했다. 승인 LLGL draw/instancing 세 입력의 일반·고정 validation 전체 이미지 24개와 실제 전달된 draw 호출·instance·vertex 수를 확인했다. 본문을 보존한 Linux 소비자·native pass-through 관찰기와 core/sync·거부 제어를 포함한 17개 직렬 프로세스가 software에서 통과했다. 성능 표본은 0이며 실제 Linux GPU qualification과 동일 GPU·driver의 세 SDK fresh 성능 반복 비교는 미완료다. 네 LLGL 소비자의 명시적 physical 빌드·같은 revision의 성공한 물리 probe 연결과 각 네 software 거부 경로를 구현했다. 전체 workload/control·observer 본문은 보존하며 실제 GPU positive 실행과 timed campaign·fresh 비교는 미완료다.",
       "done_when": "Linux 전체 참조와 validation/performance 분리·fresh 반복 통계. Windows 값 재사용 금지.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md",
@@ -1888,7 +1890,8 @@
         "docs/PHASE3_LINUX_LLGL_PROBE_REPORT.md",
         "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json",
         "docs/PHASE3_LINUX_LLGL_DRAW_REPORT.md",
-        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-draw/summary.json"
+        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-draw/summary.json",
+        "docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md"
       ],
       "requires": "동일 Linux GPU/driver의 지원 SDK 조합"
     },
@@ -1904,7 +1907,7 @@
         "P3-CMP-01",
         "P3-BEN-05"
       ],
-      "work": "현재 제품·SDL·선택 경쟁 SDK의 PSO 생성·사용·공개 해제 계약을 Linux로 이식한다. SDK/SDL 전체 software matrix 준비 검증을 완료했다. 승인 LLGL pso1/pso8의 일반·고정 validation 전체 이미지 16개와 공개 PSO 생성/해제 72쌍·shader 핸들 144쌍·실제 전달 draw 수를 확인했다. 기존 lifecycle/control 본문과 승인 10줄 patch를 보존한 17개 직렬 프로세스가 software에서 통과했다. 성능 표본은 0이며 native pipeline 수·driver cache·물리 회수는 미검증이다. 실제 Linux GPU qualification과 동일 GPU·driver의 세 SDK fresh 성능 반복 비교는 미완료다.",
+      "work": "현재 제품·SDL·선택 경쟁 SDK의 PSO 생성·사용·공개 해제 계약을 Linux로 이식한다. SDK/SDL 전체 software matrix 준비 검증을 완료했다. 승인 LLGL pso1/pso8의 일반·고정 validation 전체 이미지 16개와 공개 PSO 생성/해제 72쌍·shader 핸들 144쌍·실제 전달 draw 수를 확인했다. 기존 lifecycle/control 본문과 승인 10줄 patch를 보존한 17개 직렬 프로세스가 software에서 통과했다. 성능 표본은 0이며 native pipeline 수·driver cache·물리 회수는 미검증이다. 실제 Linux GPU qualification과 동일 GPU·driver의 세 SDK fresh 성능 반복 비교는 미완료다. 네 LLGL 소비자의 명시적 physical 빌드·같은 revision의 성공한 물리 probe 연결과 각 네 software 거부 경로를 구현했다. 전체 workload/control·observer 본문은 보존하며 실제 GPU positive 실행과 timed campaign·fresh 비교는 미완료다.",
       "done_when": "Linux 전체 참조와 validation/performance 분리·fresh 반복 통계. Windows 값 재사용 금지.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md",
@@ -1912,7 +1915,8 @@
         "docs/PHASE3_LINUX_LLGL_PROBE_REPORT.md",
         "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json",
         "docs/PHASE3_LINUX_LLGL_PSO_REPORT.md",
-        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-pso/summary.json"
+        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-pso/summary.json",
+        "docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md"
       ],
       "requires": "동일 Linux GPU/driver의 지원 SDK 조합"
     },
@@ -1928,7 +1932,7 @@
         "P3-CMP-01",
         "P3-BEN-06"
       ],
-      "work": "현재 제품·SDL·선택 경쟁 SDK의 자원 생성·사용·공개 해제 계약을 Linux로 이식한다. SDK/SDL 전체 software matrix 준비 검증과 승인 LLGL buffer1/buffer1000/texture1/texture1000의 일반·고정 validation 검증을 완료했다. 전체 이미지/버퍼 각각 8,008개·공개 생성/해제 16,016쌍·native 자원 identity 16,016회·전체 bytes/독립 CPU hash를 확인했다. 본문 보존 소비자와 core/sync·거부 제어를 포함한 23개 직렬 프로세스가 software에서 통과했다. 성능 표본 0이며 native 할당 수·allocator cache·물리 회수는 미검증이다. 실제 Linux GPU qualification과 동일 GPU·driver의 세 SDK fresh 성능 반복 비교는 미완료다.",
+      "work": "현재 제품·SDL·선택 경쟁 SDK의 자원 생성·사용·공개 해제 계약을 Linux로 이식한다. SDK/SDL 전체 software matrix 준비 검증과 승인 LLGL buffer1/buffer1000/texture1/texture1000의 일반·고정 validation 검증을 완료했다. 전체 이미지/버퍼 각각 8,008개·공개 생성/해제 16,016쌍·native 자원 identity 16,016회·전체 bytes/독립 CPU hash를 확인했다. 본문 보존 소비자와 core/sync·거부 제어를 포함한 23개 직렬 프로세스가 software에서 통과했다. 성능 표본 0이며 native 할당 수·allocator cache·물리 회수는 미검증이다. 실제 Linux GPU qualification과 동일 GPU·driver의 세 SDK fresh 성능 반복 비교는 미완료다. 네 LLGL 소비자의 명시적 physical 빌드·같은 revision의 성공한 물리 probe 연결과 각 네 software 거부 경로를 구현했다. 전체 workload/control·observer 본문은 보존하며 실제 GPU positive 실행과 timed campaign·fresh 비교는 미완료다.",
       "done_when": "Linux 전체 참조와 validation/performance 분리·fresh 반복 통계. Windows 값 재사용 금지.",
       "evidence": [
         "docs/PHASE3_LINUX_WORKLOAD_MATRIX_REPORT.md",
@@ -1936,7 +1940,8 @@
         "docs/PHASE3_LINUX_LLGL_PROBE_REPORT.md",
         "benchmarks/reports/validation/2026-10-30-phase3-linux-llgl-probe/summary.json",
         "docs/PHASE3_LINUX_LLGL_ALLOCATION_REPORT.md",
-        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-allocation/summary.json"
+        "benchmarks/reports/validation/2026-11-01-phase3-linux-llgl-allocation/summary.json",
+        "docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md"
       ],
       "requires": "동일 Linux GPU/driver의 지원 SDK 조합"
     },

@@ -121,3 +121,5 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 [Linux 세 SDK correctness 통합](PHASE3_LINUX_READINESS_REPORT.md)은 같은 커밋·qualification의 SDK/SDL matrix와 LLGL 4종 원본을 독립 재생해 정상 78개·제어 46개, 전체 이미지 24,240개·버퍼 24,024개를 하나의 자립 묶음으로 연결했다. CPU 진단 통계·순위·성능 표본은 생성하지 않는다. 물리 GPU handoff는 미실행 목록이며 LLGL physical mode·Linux timed campaign의 추가 구현과 실제 GPU·표시·Phase 3 수용은 미완료다.
 
 [Linux LLGL 물리 GPU 최소 probe 경로](PHASE3_LINUX_LLGL_PHYSICAL_PROBE_REPORT.md)는 별도 physical 빌드와 같은 revision의 SDK/SDL 물리 qualification 연결을 추가한다. software CI의 네 거부 대조와 실제 물리 성공 경로는 구분한다. 네 workload 소비자의 물리 경로·timed campaign은 추가 구현이 필요하며 BEN-08·LBEN·Phase 3 수용은 미완료로 유지한다.
+
+[Linux LLGL 네 workload의 물리 경로](PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md)는 전체 upload/draw·instancing/PSO/allocation 소비자를 같은 revision의 성공한 물리 probe에 연결한다. software host에서는 각 물리 빌드의 네 거부를 확인하며 실제 물리 positive 실행과 timed campaign·fresh 비교는 미완료다. 기존 workload/control·observer·승인 vendor patch와 모든 로드맵 상태를 보존한다.

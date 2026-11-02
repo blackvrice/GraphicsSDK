@@ -2,16 +2,17 @@
 import argparse
 import hashlib
 import pathlib
+import linux_llgl_workload_mode as policy
 import re
 from linux_comparison import ROOT, read, save, sha, require
 
 OWN = ('benchmarks/llgl_vulkan_upload/main.cpp','benchmarks/llgl_vulkan_upload/Context.hpp',
        'benchmarks/llgl_vulkan_upload/Payload.hpp','benchmarks/linux_llgl_upload/CMakeLists.txt',
        'benchmarks/common/LinuxEnvironment.hpp','benchmarks/competitors/sources.lock.json',
-       'benchmarks/phase3_comparison/upload.json','tools/port_linux_llgl_upload.py')
+       'benchmarks/phase3_comparison/upload.json','tools/port_linux_llgl_upload.py',policy.SOURCE)
 
 
-def translate(main, context):
+def translate(main, context, mode='software-diagnostic'):
     changes=[]
     def replace(text, old, new, label):
         require(text.count(old)==1,'Frozen source changed at '+label); changes.append(label)
@@ -60,27 +61,30 @@ inline std::string modules(){std::string out="[";for(const auto& p:linuxbench::m
         '''<<quote(loadedLayer)<<",\\\"selected\\\":"<<selected.json()<<",\\\"environment\\\":"<<linuxbench::environment()
          <<",\\\"mode\\\":\\\"software-diagnostic\\\",\\\"unmodified_upstream\\\":false,\\\"physical_GPU_accepted\\\":false,\\\"P3_LBEN_01_completed\\\":false";return o.str();''','Linux scope metadata')
     require(not any(x in main+context for x in ('GetModuleHandle','<Windows.h>','<TlHelp32.h>','BCrypt','<bcrypt.h>')), 'Windows API remains')
+    context,changes=policy.adapt(context,changes,'upload',mode)
     return main,context,changes
 
 
-def generate(output):
+def generate(output, mode='software-diagnostic'):
     require(output.resolve().is_relative_to(ROOT/'out'),'Generated files must remain under out/')
     original=(ROOT/OWN[0]).read_text(encoding='utf-8'); context=(ROOT/OWN[1]).read_text(encoding='utf-8')
-    main,platform,changes=translate(original,context)
+    main,platform,changes=translate(original,context,mode=mode)
     begin=original.index('std::string validationControl(');end=original.index('int main(')
     require(original[begin:end]==main[main.index('std::string validationControl('):main.index('int main(')],'Upload/control body changed')
     output.mkdir(parents=True,exist_ok=True)
     (output/'main.cpp').write_text(main,encoding='utf-8',newline='\n')
     (output/'Platform.hpp').write_text(platform,encoding='utf-8',newline='\n')
     inputs=[dict(path=n,sha256=sha(ROOT/n)) for n in sorted(OWN)]
-    identity='linux-llgl-upload|'+read(ROOT/'benchmarks/competitors/sources.lock.json')['llgl']['commit']+'|llgl-fixed-pin-transfer-src-v1\n'
+    identity=policy.prefix('upload',mode)+'|'+read(ROOT/'benchmarks/competitors/sources.lock.json')['llgl']['commit']+'|llgl-fixed-pin-transfer-src-v1\n'
     identity+=''.join(x['path']+'|'+x['sha256']+'\n' for x in inputs)
     manifest=dict(schema_version=1,inputs=inputs,adaptations=changes,workload_bodies_changed=False,
         source_fingerprint=hashlib.sha256(identity.encode()).hexdigest(),
         generated={n:sha(output/n) for n in ('main.cpp','Platform.hpp')})
+    if mode=='physical':manifest['mode']=mode
     save(output/'adaptation.json',manifest);return manifest
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=pathlib.Path,required=True)
-    generate(parser.parse_args().output)
+    parser.add_argument('--mode',choices=('software-diagnostic','physical'),default='software-diagnostic')
+    args=parser.parse_args();generate(args.output,args.mode)

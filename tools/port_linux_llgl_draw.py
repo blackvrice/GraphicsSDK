@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import pathlib
+import linux_llgl_workload_mode as policy
 import port_linux_llgl_upload as upload
 from linux_comparison import ROOT, read, save, sha, require
 
@@ -12,7 +13,7 @@ OWN=tuple(sorted(set(upload.OWN+(
     'benchmarks/phase3_comparison/draw.json','tools/port_linux_llgl_draw.py','tools/port_linux_llgl_upload.py'))))
 
 
-def translate(main,context,layer,upload_main):
+def translate(main,context,layer,upload_main, mode='software-diagnostic'):
     _,platform,changes=upload.translate(upload_main,context)
     changes=['shared platform: '+x for x in changes]
     def replace(text,old,new,label):
@@ -55,29 +56,32 @@ def translate(main,context,layer,upload_main):
         '#define EXPORT extern "C" __attribute__((visibility("default")))','Linux observer exports')
     # Identity enumeration creates one extra native instance, but no native device or draws.
     require(not any(x in main+platform+layer for x in ('GetModuleHandle','BCrypt','__declspec','<Windows.h>')),'Windows API remains')
+    platform,changes=policy.adapt(platform,changes,'draw',mode)
     return main,platform,layer,changes
 
 
-def generate(output):
+def generate(output, mode='software-diagnostic'):
     require(output.resolve().is_relative_to(ROOT/'out'),'Generated files must remain under out/')
     source=lambda n:(ROOT/n).read_text(encoding='utf-8')
     original=source('benchmarks/llgl_vulkan_draw/main.cpp')
     main,platform,layer,changes=translate(original,source('benchmarks/llgl_vulkan_upload/Context.hpp'),
-        source('benchmarks/llgl_vulkan_draw/Layer.cpp'),source('benchmarks/llgl_vulkan_upload/main.cpp'))
+        source('benchmarks/llgl_vulkan_draw/Layer.cpp'),source('benchmarks/llgl_vulkan_upload/main.cpp'),mode=mode)
     begin=original.index('std::string validationControl(');end=original.index('int main(')
     require(original[begin:end]==main[main.index('std::string validationControl('):main.index('int main(')],'Draw/control bodies changed')
     output.mkdir(parents=True,exist_ok=True)
     for n,text in [('main.cpp',main),('Platform.hpp',platform),('Layer.cpp',layer)]:
         (output/n).write_text(text,encoding='utf-8',newline='\n')
     inputs=[dict(path=n,sha256=sha(ROOT/n)) for n in OWN]
-    identity='linux-llgl-draw|'+read(ROOT/'benchmarks/competitors/sources.lock.json')['llgl']['commit']+'|llgl-fixed-pin-transfer-src-v1\n'
+    identity=policy.prefix('draw',mode)+'|'+read(ROOT/'benchmarks/competitors/sources.lock.json')['llgl']['commit']+'|llgl-fixed-pin-transfer-src-v1\n'
     identity+=''.join(x['path']+'|'+x['sha256']+'\n' for x in inputs)
     manifest=dict(schema_version=1,inputs=inputs,adaptations=changes,workload_bodies_changed=False,
         source_fingerprint=hashlib.sha256(identity.encode()).hexdigest(),
         generated={n:sha(output/n) for n in ('main.cpp','Platform.hpp','Layer.cpp')})
+    if mode=='physical':manifest['mode']=mode
     save(output/'adaptation.json',manifest);return manifest
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=pathlib.Path,required=True)
-    generate(parser.parse_args().output)
+    parser.add_argument('--mode',choices=('software-diagnostic','physical'),default='software-diagnostic')
+    args=parser.parse_args();generate(args.output,args.mode)

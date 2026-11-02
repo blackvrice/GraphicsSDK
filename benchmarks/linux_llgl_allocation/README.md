@@ -36,3 +36,12 @@ hashes, raw process logs and reference data. Offline `check` executes no archive
 code. Performance samples remain zero; physical-GPU `P3-LBEN-04`, internal native
 allocation counts, allocator cache state and GPU memory reclamation remain
 unverified. Adds no SDK dependency or vendor patch.
+
+## Physical profile
+
+The default remains software-only. The explicit `--mode physical` runner requires
+a same-revision successful physical LLGL probe and qualifies every native device
+and runtime binding before the unchanged workload/reference checks. See
+[physical workload preparation](../../docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md)
+for the run/guard commands, compiled mode fingerprint, validation controls and
+remaining real-GPU/performance acceptance.

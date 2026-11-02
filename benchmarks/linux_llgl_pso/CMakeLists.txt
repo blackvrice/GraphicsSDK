@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 project(GraphicsSDKLinuxLLGLPSO LANGUAGES CXX)
+set(GFX_LLGL_WORKLOAD_MODE "software-diagnostic" CACHE STRING "Qualified workload mode")
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Native Linux x86_64 required")
 endif()
@@ -15,7 +16,7 @@ set(CMAKE_UNITY_BUILD OFF)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${root}/tools/port_linux_llgl_pso.py"
-  --output "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_ERROR_IS_FATAL ANY)
+  --output "${CMAKE_CURRENT_BINARY_DIR}" --mode "${GFX_LLGL_WORKLOAD_MODE}" COMMAND_ERROR_IS_FATAL ANY)
 file(READ "${CMAKE_CURRENT_BINARY_DIR}/adaptation.json" manifest)
 string(JSON fingerprint GET "${manifest}" source_fingerprint)
 file(READ "${root}/benchmarks/competitors/sources.lock.json" lock)
@@ -48,3 +49,5 @@ target_compile_definitions(linux_llgl_pso PRIVATE GFX_PSO_SHADER_SHA="${shader_s
 target_include_directories(linux_llgl_pso PRIVATE "${root}/benchmarks/common" "${root}/benchmarks/llgl_vulkan_draw" "${root}/benchmarks/vulkan_pso" "${root}/tests/fixtures")
 target_include_directories(linux_llgl_pso SYSTEM PRIVATE "${root}/.deps/LLGL/include" "${root}/.deps/Vulkan-Headers/include")
 target_link_libraries(linux_llgl_pso PRIVATE "${LLGL_PROBE_BUILD}/lib/libLLGL.so" "${Vulkan_LIBRARY}" OpenSSL::Crypto ${CMAKE_DL_LIBS})
+
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${root}/tools/linux_llgl_workload_mode.py")

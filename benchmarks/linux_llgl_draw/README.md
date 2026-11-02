@@ -28,3 +28,12 @@ Retains raw logs, source ZIP, deterministic translation, actual two-unit GNU
 commands/depfiles and input/license/runtime hashes. Offline `check` executes no
 archived source or native code. Software correctness supplies **zero performance
 samples** and does not complete physical-GPU `P3-LBEN-02` acceptance.
+
+## Physical profile
+
+The default remains software-only. The explicit `--mode physical` runner requires
+a same-revision successful physical LLGL probe and qualifies every native device
+and runtime binding before the unchanged workload/reference checks. See
+[physical workload preparation](../../docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md)
+for the run/guard commands, compiled mode fingerprint, validation controls and
+remaining real-GPU/performance acceptance.

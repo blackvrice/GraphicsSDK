@@ -1,7 +1,8 @@
-"""Verify approved LLGL buffer/texture creation/use/public-release on qualified Linux software; no timing campaign."""
+"""Verify approved LLGL buffer/texture creation/use/public-release on qualified Linux devices; no timing campaign."""
 import argparse
 import hashlib
 import json
+import math
 import os
 import pathlib
 import platform
@@ -13,6 +14,7 @@ import time
 import zipfile
 
 import linux_llgl_probe as p
+import linux_llgl_workload_mode as policy
 import port_linux_llgl_allocation as port
 from linux_comparison import ROOT, read, save, sha, record, require
 
@@ -54,7 +56,7 @@ def environment(job,r):
     a=r['probe']['qualification'];out=pathlib.Path(r['output_directory'])
     env=p.q.overrides(out,a['icd']['path'],a['validation_library'],job['validation'])
     env.update(LD_LIBRARY_PATH=str(pathlib.PurePosixPath(r['probe']['binaries']['core']['path']).parent),
-               GFX_LLGL_ALLOCATION_KIND='physical' if job['kind']=='wrong-kind' else 'software-diagnostic')
+               GFX_LLGL_ALLOCATION_KIND=policy.native_kind(job,r))
     observer=str(pathlib.PurePosixPath(r['observer']['path']).parent)
     if job['kind']!='missing-observer':
         env['VK_LAYER_PATH']=observer+(':'+str(pathlib.PurePosixPath(a['validation_library']).parent) if job['validation'] else '')
@@ -71,7 +73,7 @@ def validate_result(value,job,r):
     p.exact(value,dict(schema_version=1,task='P3-LBEN-04-LLGL-readiness',sdk='llgl',api='vulkan',configuration='Release',
         contract='vulkan_resource_create_public_release_full_readback_v1',category='cpu_api',source_fingerprint=r['adaptation']['source_fingerprint'],
         LLGL_commit=r['probe']['LLGL_commit'],profile_id=p.PROFILE,dependency_profile=p.PROFILE,unmodified_upstream=False,
-        selected=d,environment=a['environment'],mode='software-diagnostic',device_name=d['name'],device_uuid=d['device_uuid'],driver_uuid=d['driver_uuid'],device_luid=None,
+        selected=d,environment=a['environment'],mode=policy.mode(r),device_name=d['name'],device_uuid=d['device_uuid'],driver_uuid=d['driver_uuid'],device_luid=None,
         native_vendor_id=d['vendor_id'],native_device_id=d['device_id'],native_driver_version=d['driver_version_raw'],native_api_version=d['api_version_raw'],
         native_handle_verified=True,queue_family=native['queue_family'],queue_index=0,queue_flags=native['queue_flags'],loader_api_version=native['loader_api_version'],
         instance_API_request_observed=True,observed_instance_api_version=native['loader_api_version'],loader_path=a['loader_path'],LLGL_path=r['probe']['binaries']['core']['path'],backend_path=r['probe']['binaries']['backend']['path'],
@@ -102,10 +104,11 @@ def validate_result(value,job,r):
     return value
 
 
-def rejected(job,code,stdout,stderr):
+def rejected(job,code,stdout,stderr,mode='software-diagnostic'):
     require(type(code) is int and code==1 and not stdout,'Rejection succeeded or produced output')
     token={'missing-layer':b'Required comparison validation layer absent','wrong-uuid':b'Exact UUID absent or ambiguous',
-           'wrong-kind':b'Software diagnostics only','missing-resource':b'Public resource creation count differs',
+           'native-software':b'Requested probe kind differs from native device type',
+           'wrong-kind':policy.wrong_kind_message(mode),'missing-resource':b'Public resource creation count differs',
            'alias-resource':b'Duplicate live public resource handle','skip-release':b'Public resource release count differs',
            'wrong-resource-payload':b'Full changing resource readback mismatch','stale-iteration':b'Full changing resource readback mismatch',
            'skip-copy':b'Full changing resource readback mismatch','corrupt-readback':b'Full changing resource readback mismatch',
@@ -178,8 +181,9 @@ def audit(build,call,build_stdout):
 
 def check(folder,live=False):
     r=read(folder/'receipt.json')
+    policy.validate_receipt(r,'allocation')
     p.exact(r,dict(schema_version=1,task='P3-LBEN-04-LLGL-readiness',status='completed',inputs_unchanged=True,
-        software_allocation_correctness_verified=True,physical_GPU_accepted=False,P3_LBEN_04_completed=False,performance_accepted=False,performance_samples=0))
+        software_allocation_correctness_verified=policy.mode(r)=='software-diagnostic',physical_GPU_accepted=False,P3_LBEN_04_completed=False,performance_accepted=False,performance_samples=0))
     p.check(folder/'probe');require(sha(folder/'probe/receipt.json')==r['probe_sha256'] and p.same(read(folder/'probe/receipt.json'),r['probe']),'Qualified probe changed')
     require(r['source_commit']==r['probe']['source_commit'],'Probe/consumer revision differs')
     layer=read(folder/'observer-layer.json')
@@ -195,22 +199,22 @@ def check(folder,live=False):
         require(len(z.namelist())==len(set(z.namelist()))==len(r['source_inputs']) and set(z.namelist())=={x['path'] for x in r['source_inputs']},'Source inventory changed')
         for item in r['source_inputs']:require(hashlib.sha256(z.read(item['path'])).hexdigest()==item['sha256'],'Source byte drift')
         source=lambda n:z.read(n).decode().replace('\r\n','\n')
-        main,support,platform,layer,changes=port.translate(source('benchmarks/llgl_vulkan_allocation/main.cpp'),source('benchmarks/llgl_vulkan_pso/main.cpp'),source('benchmarks/llgl_vulkan_pso/Support.hpp'),source('benchmarks/llgl_vulkan_upload/Context.hpp'),source('benchmarks/llgl_vulkan_draw/Layer.cpp'),source('benchmarks/llgl_vulkan_upload/main.cpp'),source('benchmarks/llgl_vulkan_draw/main.cpp'))
+        main,support,platform,layer,changes=port.translate(source('benchmarks/llgl_vulkan_allocation/main.cpp'),source('benchmarks/llgl_vulkan_pso/main.cpp'),source('benchmarks/llgl_vulkan_pso/Support.hpp'),source('benchmarks/llgl_vulkan_upload/Context.hpp'),source('benchmarks/llgl_vulkan_draw/Layer.cpp'),source('benchmarks/llgl_vulkan_upload/main.cpp'),source('benchmarks/llgl_vulkan_draw/main.cpp'),mode=policy.mode(r))
         require(all(text.encode()==(folder/'generated'/name).read_bytes() for name,text in [('main.cpp',main),('SupportLinux.hpp',support),('Platform.hpp',platform),('Layer.cpp',layer)]) and changes==r['adaptation']['adaptations'],'Platform adaptation/body drift')
         inputs={x['path']:x['sha256'] for x in r['source_inputs']}
         require(all(inputs[x['path']]==x['sha256'] for x in r['adaptation']['inputs']),'Adaptation input binding changed')
-        identity='linux-llgl-allocation|'+r['probe']['LLGL_commit']+'|'+p.PROFILE+'\n'+''.join(x['path']+'|'+x['sha256']+'\n' for x in r['adaptation']['inputs'])
+        identity=policy.prefix('allocation',policy.mode(r))+'|'+r['probe']['LLGL_commit']+'|'+p.PROFILE+'\n'+''.join(x['path']+'|'+x['sha256']+'\n' for x in r['adaptation']['inputs'])
         require(hashlib.sha256(identity.encode()).hexdigest()==r['adaptation']['source_fingerprint'],'Consumer fingerprint changed')
         require(json.loads(z.read(REFERENCE))==r['reference'],'Archived independent CPU reference changed')
     require(r['reference']==references()==read(folder/'payload-reference.json'),'Independent CPU reference changed')
     require((folder/'settings/vk_layer_settings.txt').read_bytes()==(folder/'probe/settings/vk_layer_settings.txt').read_bytes()
             and (folder/'sync-off/vk_layer_settings.txt').read_text()==OFF,'Validation controls/settings drift')
-    schedule=jobs();require(len(r['runs'])==len(schedule),'Missing/extra resource process');last=0;images=buffers=total=0
+    schedule=policy.jobs(r,jobs());require(len(r['runs'])==len(schedule),'Missing/extra resource process');last=0;images=buffers=total=0
     for row,job in zip(r['runs'],schedule):
         env=environment(job,r)
         require(p.same(row['job'],job) and row['argv']==arguments(job,r) and row['overrides'].keys()==env.keys()
                 and all(row['overrides'][k].replace('\\','/')==v.replace('\\','/') for k,v in env.items()),'Native order/argv/environment differs')
-        require(type(row['pid']) is int and row['pid']>0 and last<=row['started']<=row['finished'],'Native process/serialization differs');last=row['finished']
+        require(type(row['pid']) is int and row['pid']>0 and all(type(row[k]) in (int,float) and math.isfinite(row[k]) for k in ('started','finished')) and last<=row['started']<=row['finished'],'Native process/serialization differs');last=row['finished']
         stdout,stderr=(p.safe(folder,row[k]).read_bytes() for k in ('stdout','stderr'))
         require(hashlib.sha256(stdout).hexdigest()==row['stdout_sha256'] and hashlib.sha256(stderr).hexdigest()==row['stderr_sha256'],'Raw output drift')
         if job['kind']=='normal' or job['kind'] in TOKENS:
@@ -220,17 +224,18 @@ def check(folder,live=False):
             else:require(TOKENS[job['kind']].encode() in stderr,'Actual control diagnostic missing')
             require({x['path'] for x in row['runtime_files']}==set(value['runtime_modules']) and all(x in r['runtime_inputs'] for x in row['runtime_files']),'Runtime file binding differs')
             images+=value['verified_images'];buffers+=value['verified_buffers'];total+=value['verified_bytes']
-        else:rejected(job,row['returncode'],stdout,stderr)
-    require((r['verified_images'],r['verified_buffers'],r['verified_bytes'])==(images,buffers,total)==(8008,8008,109837728),'Complete changing-image totals differ')
+        else:rejected(job,row['returncode'],stdout,stderr,policy.mode(r))
+    require((r['verified_images'],r['verified_buffers'],r['verified_bytes'])==(images,buffers,total)==policy.totals(r,(8008,8008,109837728)),'Complete changing-image totals differ')
     if live:
         p.check(pathlib.Path(r['probe_evidence']),live=True)
         require(p.q.unchanged(r['frozen_inputs']+r['runtime_inputs']),'Source/build/runtime changed')
-    return dict(processes=23,normal_processes=8,core_sync_controls=2,rejection_controls=13,verified_images=images,verified_buffers=buffers,verified_bytes=total,resource_create_release_pairs=images+buffers,
-                performance_samples=0,physical_GPU_accepted=False,P3_LBEN_04_completed=False)
+    return policy.summary(r,dict(processes=23,normal_processes=8,core_sync_controls=2,rejection_controls=13,verified_images=images,verified_buffers=buffers,verified_bytes=total,resource_create_release_pairs=images+buffers,
+                performance_samples=0,physical_GPU_accepted=False,P3_LBEN_04_completed=False),'allocation')
 
 
 def run(a):
     require(platform.system()=='Linux','Actual Linux host required');probe=a.probe.resolve();p.check(probe,live=True);prior=read(probe/'receipt.json')
+    mode=a.mode;guard=a.stage=='guard';policy.validate_probe(prior,mode,guard)
     require(p.q.git(ROOT,'rev-parse','HEAD')==prior['source_commit'] and not p.q.git(ROOT,'status','--porcelain','--untracked-files=no'),'Clean same-revision probe required')
     out=a.output.resolve();build=out.with_name(out.name+'-build')
     require(out.is_relative_to(ROOT/'out') and not out.exists() and not build.exists(),'Fresh consumer roots required')
@@ -251,7 +256,7 @@ def run(a):
             path=out/'commands'/(name+'.'+key);path.write_bytes(data);row[key]=path.relative_to(out).as_posix();row[key+'_sha256']=sha(path)
         commands.append(dict(name=name,**row));save(out/'commands.json',commands);return row,stdout,stderr
     qualified=pathlib.Path(prior['output_directory']).with_name(pathlib.Path(prior['output_directory']).name+'-build')
-    for name,argv in [('configure',['cmake','-S',ROOT/'benchmarks/linux_llgl_allocation','-B',build,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DLLGL_PROBE_BUILD='+str(qualified),'-DVulkan_LIBRARY='+prior['qualification']['loader_path']]),('build',['cmake','--build',build,'--target','linux_llgl_allocation','--parallel','2','--verbose','--','-d','keepdepfile'])]:
+    for name,argv in [('configure',['cmake','-S',ROOT/'benchmarks/linux_llgl_allocation','-B',build,'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CXX_COMPILER=g++-14','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DGFX_LLGL_WORKLOAD_MODE='+mode,'-DLLGL_PROBE_BUILD='+str(qualified),'-DVulkan_LIBRARY='+prior['qualification']['loader_path']]),('build',['cmake','--build',build,'--target','linux_llgl_allocation','--parallel','2','--verbose','--','-d','keepdepfile'])]:
         row,stdout,stderr=call(name,argv)
         if row['returncode']:print((stdout+stderr).decode(errors='replace')[-12000:],flush=True)
         require(row['returncode']==0,name+' failed; raw logs retained');print(name+' PASS',flush=True)
@@ -268,13 +273,14 @@ def run(a):
         output_directory=str(out),adaptation=adaptation,source_inputs=source_inputs,source_zip_sha256=sha(out/'source.zip'),binary=record(build/'linux_llgl_allocation'),crypto=crypto,observer=record(build/'libVkLayer_gfx_llgl_draw.so'),observer_manifest_sha256=sha(out/'observer-layer.json'),
         reference=references(),inputs_sha256=sha(out/'inputs.json'),software_allocation_correctness_verified=False,physical_GPU_accepted=False,P3_LBEN_04_completed=False,
         performance_accepted=False,performance_samples=0,verified_images=0,verified_buffers=0,verified_bytes=0,runtime_inputs=[],runs=[])
+    policy.initialize(r,mode,guard,'allocation')
     r['frozen_inputs']=prior['frozen_inputs']+prior['runtime_inputs']+before+[r['binary'],r['observer'],crypto,record(build/'VkLayer_gfx_llgl_draw.json')]+[{k:x[k] for k in ('path','bytes','sha256')} for x in inputs['files']+inputs['depfiles']]
     r['frozen_inputs'] += [record(build/n) for n in ('main.cpp','Platform.hpp','Layer.cpp','SupportLinux.hpp','adaptation.json','CMakeCache.txt','build.ninja','compile_commands.json')]
     r['frozen_inputs'] += [record(out/n) for n in ('source.zip','inputs.json','payload-reference.json','observer-layer.json','settings/vk_layer_settings.txt','sync-off/vk_layer_settings.txt')]
     require(adaptation['source_fingerprint'].encode() in (build/'linux_llgl_allocation').read_bytes(),'Compiled consumer fingerprint differs')
     save(out/'receipt.json',r)
     try:
-        for job in jobs():
+        for job in policy.jobs(r,jobs()):
             require(p.q.unchanged(r['frozen_inputs']+r['runtime_inputs']),'Frozen consumer input changed')
             row,stdout,stderr=call(job['name'],arguments(job,r),environment(job,r));row['job']=job;r['runs'].append(row);save(out/'receipt.json',r)
             if job['kind']=='normal' or job['kind'] in TOKENS:
@@ -284,16 +290,16 @@ def run(a):
                     matches=[x for x in r['runtime_inputs'] if x['path']==item['path']];require(not matches or matches==[item],'Runtime file changed')
                     if not matches:r['runtime_inputs'].append(item)
                 r['verified_images']+=value['verified_images'];r['verified_buffers']+=value['verified_buffers'];r['verified_bytes']+=value['verified_bytes']
-            else:rejected(job,row['returncode'],stdout,stderr)
+            else:rejected(job,row['returncode'],stdout,stderr,policy.mode(r))
             save(out/'receipt.json',r);print(job['name']+' PASS',flush=True)
         require(p.q.unchanged(r['frozen_inputs']+r['runtime_inputs']),'Final consumer inputs changed')
-        r.update(status='completed',inputs_unchanged=True,software_allocation_correctness_verified=True);save(out/'receipt.json',r)
+        r.update(status='completed',inputs_unchanged=True);policy.finish(r,'allocation');save(out/'receipt.json',r)
         print(json.dumps(check(out,live=True)),flush=True)
     except (OSError,ValueError,KeyError,subprocess.SubprocessError) as exc:
         r.update(status='failed',error=str(exc));save(out/'receipt.json',r);raise
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('stage',choices=('run','check'));parser.add_argument('--probe',type=pathlib.Path);parser.add_argument('--output',type=pathlib.Path,required=True);parser.add_argument('--live',action='store_true');a=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('stage',choices=('run','check','guard'));parser.add_argument('--mode',choices=('software-diagnostic','physical'),default='software-diagnostic');parser.add_argument('--probe',type=pathlib.Path);parser.add_argument('--output',type=pathlib.Path,required=True);parser.add_argument('--live',action='store_true');a=parser.parse_args()
     if a.stage=='check':print(json.dumps(check(a.output,a.live),indent=2))
     else:require(a.probe is not None,'Qualified same-revision Linux LLGL probe required');run(a)

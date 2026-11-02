@@ -31,3 +31,12 @@ performance samples are zero and no timing ranking is produced. Hardware GPU
 qualification, three-SDK fresh Linux performance comparison and P3-LBEN-01 remain
 pending. The old independent CPU hash constants are reference data, not reused
 timing samples. Application API request is not intercepted.
+
+## Physical profile
+
+The default remains software-only. The explicit `--mode physical` runner requires
+a same-revision successful physical LLGL probe and qualifies every native device
+and runtime binding before the unchanged workload/reference checks. See
+[physical workload preparation](../../docs/PHASE3_LINUX_LLGL_PHYSICAL_WORKLOAD_REPORT.md)
+for the run/guard commands, compiled mode fingerprint, validation controls and
+remaining real-GPU/performance acceptance.
