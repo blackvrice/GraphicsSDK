@@ -47,6 +47,8 @@ jobs:
         run: python benchmarks/reports/validation/2026-11-01-phase3-linux-readiness/verify.py
       - name: Replay physical LLGL profile software rejection evidence
         run: python benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-guard/verify.py
+      - name: Replay four physical LLGL workload builds and sixteen software rejections
+        run: python benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-workloads/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -126,6 +128,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-11-01-phase3-linux-readiness/verify.py
       - name: Replay physical LLGL profile software rejection evidence
         run: python3 benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-guard/verify.py
+      - name: Replay four physical LLGL workload builds and sixteen software rejections
+        run: python3 benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-workloads/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements

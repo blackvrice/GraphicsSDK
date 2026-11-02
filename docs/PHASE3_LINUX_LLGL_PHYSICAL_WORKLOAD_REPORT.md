@@ -93,3 +93,42 @@ guard는 qualification이 아닌 명시적 제어 경로다. LLGL renderer를 �
 통합 비교다. 이후 실제 Linux GPU에서 BEN-07/08·LBEN-01~04 계약을 실행해야
 최종 수용할 수 있다. 실제 X11 화면 조작·Phase 3 gate도 별도로 남아 있다.
 기존 software 통합 bundle과 당시 handoff는 관측 기록 그대로 보존한다.
+
+## 검증 기록
+
+실행 소스는 `b78b8b82724c857a81fba664831d1916d37a54e3`이다.
+[Linux native CI 41366668887](https://github.com/blackvrice/GraphicsSDK/actions/runs/41366668887)은
+기존 software 최소 probe·네 workload·SDK/SDL matrix·세 SDK 통합과 선행
+physical 최소 probe의 네 제어를 통과한 뒤, 다음 네 물리 소비자 빌드를 검사했다.
+
+| 물리 소비자 빌드 | 실제 GNU unit / 입력 기록 | 지정 거부 |
+|---|---:|---:|
+| upload | 1 / 459 | 4 |
+| draw | 2 / 463 | 4 |
+| PSO | 2 / 464 | 4 |
+| allocation | 2 / 463 | 4 |
+
+네 소비자 모두 동일 source·probe·qualification을 사용했고, 총 7개 compile
+unit과 16개 거부를 확인했다. 공통 source/build/runtime 파일 결합은 1,082개이며
+동일 경로의 hash 충돌과 소비자 사이의 프로세스 겹침도 재검사했다. 정상
+workload·core/sync 제어·readback·성능 표본은 이 guard 결과에서 모두 0이다.
+
+[Windows/Linux CI 41366668814](https://github.com/blackvrice/GraphicsSDK/actions/runs/41366668814)는
+같은 커밋에서 각각 Python 1,382개와 입력 유지 검사를 통과했다. 새 정책 테스트는
+13개이며 관련 LLGL 테스트 100개와 로컬 전체 1,382개도 통과했다.
+[Linux Vulkan compile 41366668774](https://github.com/blackvrice/GraphicsSDK/actions/runs/41366668774)도
+통과했다. 로드맵 143개 ID·상태는 유지했다.
+
+원본 396개 파일은
+[`2026-11-02-phase3-linux-llgl-physical-workloads`](../benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-workloads/summary.json)의
+data ZIP과 inventory로 보존했다. 양 OS Python receipt/log·summary·독립 검증기도
+포함한다. 현재 저장소의 검증기만 실행하며, archive의 Python/native 파일은
+실행하지 않는다. 저장한 hash는 보존 확인용이며 외부 신뢰 서명은 아니다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-02-phase3-linux-llgl-physical-workloads/verify.py
+```
+
+offline 재검사는 16개 native 실패 기록과 tested/executed 소스 hash의 일치를
+확인하며 새 물리 GPU 실행을 뜻하지 않는다. 실제 GPU positive 경로·성능·
+BEN-08/LBEN/Phase 3 수용은 계속 미완료다.
