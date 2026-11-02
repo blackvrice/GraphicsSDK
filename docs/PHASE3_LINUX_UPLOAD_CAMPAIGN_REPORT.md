@@ -12,6 +12,7 @@
 업로드 fence 완료까지 측정한다. payload 생성·전체 readback·자원 준비와
 정리·warmup·validation은 통계에서 제외한다. 이 CPU 완료 시간은 GPU
 timestamp가 아니다. SDK padded staging과 SDL/LLGL tight layout 차이는 유지한다.
+SDL 기본 instance API 요청의 차이와 native handle 귀속 한계도 유지한다.
 
 `linux-upload-campaign.json`은 고정 Windows 비교의 반복·검증 수치를 재사용하는
 Linux 계약이다. 과거 측정값·환경·결과는 가져오지 않는다. 실제 Linux GPU와
@@ -88,3 +89,42 @@ metadata이며 실제 GPU 실행이 아니다. Docker pilot의 readback·observe
 다음은 draw/instancing·PSO·자원 생성의 Linux timed consumer와 캠페인 이식이다.
 업로드도 실제 GPU에서 같은 driver·source로 fresh 반복을 수집해야 최종 수용할
 수 있다. 실제 표시와 Phase 3 gate는 별도로 남아 있다.
+
+## 검증 기록
+
+실행 소스는 `c9bc5191d2af1fba7b82c56aaedaf96f44f928fb`다.
+[Linux native CI 41374639715](https://github.com/blackvrice/GraphicsSDK/actions/runs/41374639715)는
+기존 SDK/SDL·LLGL correctness·물리 거부 대조 회귀 다음에 새 캠페인을 실행했다.
+
+| 관측 | 결과 |
+|---|---|
+| 환경 | Linux x86_64, kernel 7.0.0-1017-azure, AMD EPYC 9V45, GCC 14.2.0 |
+| 장치 | llvmpipe LLVM 20.1.2, native type 4 |
+| device / driver UUID | `6d65736132352e322e382d3075627500` / `6c6c766d706970655555494400000000` |
+| 캠페인 | 42개 native 프로세스·12개 거부·2개 core/sync 제어 |
+| 전체 참조 | 이미지 96개·2,588,083,680바이트 |
+| 진단 / 측정 / 통계 | 72행 / 0개 / 0행 |
+| 실제 GNU compile unit / 입력 | 2 / 467 |
+| 입력 분류 | 자체 4·생성 5·LLGL 86·Vulkan-Headers 13·system 359 |
+| frozen 파일 / runtime 파일 | 1,124 / 42 |
+| 새 LLGL timer fingerprint | `10d596d4a49b93307111611db42543e5e4b18e22a6ceb99b924df020d579a12a` |
+
+[같은 커밋의 Windows/Linux CI 41374639467](https://github.com/blackvrice/GraphicsSDK/actions/runs/41374639467)는
+각각 Python 1,398개와 입력 유지 검사를 통과했다. 새 테스트는 16개이며
+로컬 전체 1,398개도 통과했다.
+[Linux Vulkan compile 41374639457](https://github.com/blackvrice/GraphicsSDK/actions/runs/41374639457)도
+통과했다. 물리 GPU 성공 경로는 실행하지 않았으며 로드맵 143개 ID·상태는 유지했다.
+
+원본 376개 파일과 양 OS Python receipt/log는
+[`2026-11-02-phase3-linux-upload-campaign`](../benchmarks/reports/validation/2026-11-02-phase3-linux-upload-campaign/summary.json)의
+data ZIP·inventory·summary·독립 검증기로 보존했다. 현재 저장소 검증기로만
+재생하며 archive 안의 Python/native 파일을 실행하지 않는다. 보존 hash는
+외부 신뢰 서명이 아니다. 다음 명령은 원본·소스·타이머 이식·순서·runtime·
+0개 측정/통계와 tested/executed Python hash를 재검사한다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-02-phase3-linux-upload-campaign/verify.py
+```
+
+offline 재검사는 새 GPU 측정이 아니다. 실제 Linux GPU fresh 수용과 후속
+세 timed campaign·표시·Phase 3 gate는 미완료로 유지한다.
