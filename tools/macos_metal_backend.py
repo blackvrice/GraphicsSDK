@@ -50,7 +50,7 @@ def graph(rows,source,arch,sdk):
     for row in rows:
         args=shlex.split(row['command']);backend=row['file'].startswith(source+'/src/')
         require('-arch' in args and args[args.index('-arch')+1]==arch and '-isysroot' in args and args[args.index('-isysroot')+1]==sdk,'Metal build architecture/SDK differs')
-        require('-O2' in args and '-DNDEBUG' in args and '-std=c++23' in args,'Metal build optimization/C++23 differs')
+        require('-O2' in args and '-DNDEBUG' in args and ('-std=c++23' in args or not backend and '-std=gnu++23' in args),'Metal build optimization/C++23 differs')
         require(('-DGFX_HAS_METAL=1' in args)==backend and not any(v.startswith(('-DGFX_HAS_VULKAN','-DGFX_HAS_D3D12','-flto')) or v in ('-O0','-O1','-O3','-Os','-Ofast') for v in args),'Metal backend/optimization flags differ')
         if row['file'].endswith('/src/backends/metal/Metal.cpp'):
             require('-fobjc-arc' in args and '-x' in args and args[args.index('-x')+1]=='objective-c++','Private Metal unit is not ARC Objective-C++')

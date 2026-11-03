@@ -48,6 +48,10 @@ class MetalBackend(unittest.TestCase):
 
     def test_exact_native_compiler_graph_with_one_private_objcxx_unit(self):
         self.assertEqual(len(b.UNITS),18);b.graph(self.graph(),'/source','arm64','/SDK')
+        rows=self.graph()
+        for row in rows:
+            if '/tests/' in row['file']:row['command']=row['command'].replace('-std=c++23','-std=gnu++23')
+        b.graph(rows,'/source','arm64','/SDK')
 
     def test_backend_architecture_optimization_and_language_drift_rejected(self):
         for old,new in [('arm64','x86_64'),('/SDK','/other'),('-O2','-O3'),('-std=c++23','-std=c++17'),
@@ -55,6 +59,8 @@ class MetalBackend(unittest.TestCase):
             rows=copy.deepcopy(self.graph());rows=[dict(r,command=r['command'].replace(old,new)) for r in rows]
             with self.subTest(new=new),self.assertRaises(ValueError):b.graph(rows,'/source','arm64','/SDK')
         with self.assertRaises(ValueError):b.graph(self.graph()[:-1],'/source','arm64','/SDK')
+        rows=self.graph();rows[0]['command']=rows[0]['command'].replace('-std=c++23','-std=gnu++23')
+        with self.assertRaises(ValueError):b.graph(rows,'/source','arm64','/SDK')
 
     def test_no_non_macos_fallback(self):
         for system in ('Linux','Windows'):
