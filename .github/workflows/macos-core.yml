@@ -27,10 +27,14 @@ jobs:
           if ! command -v ninja >/dev/null; then brew install ninja; fi
       - name: Build native Core, all CPU CTests and installed-only consumer
         run: python3 tools/macos_core.py run --architecture ${{ matrix.architecture }} --output out/macos-core-evidence
+      - name: Survey native Metal devices and offline shader tools without GPU submission
+        run: python3 tools/macos_metal_probe.py run --core out/macos-core-evidence --output out/macos-metal-evidence
       - name: Run every Python contract without exclusions
         run: python3 tools/check_python_contracts.py --output out/macos-python
       - name: Bind native and Python evidence to the same source and architecture
         run: python3 tools/macos_core.py check --output out/macos-core-evidence --python out/macos-python --live
+      - name: Bind Metal availability to the same native and tested source
+        run: python3 tools/macos_metal_probe.py check --output out/macos-metal-evidence --python out/macos-python --live
       - name: Replay saved native macOS matrix independently
         if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-macos-core/verify.py') != '' }}
         run: python3 benchmarks/reports/validation/2026-11-03-macos-core/verify.py
@@ -41,6 +45,7 @@ jobs:
           name: macos-core-${{ matrix.architecture }}-${{ github.sha }}
           path: |
             out/macos-core-evidence/
+            out/macos-metal-evidence/
             out/macos-python/
           if-no-files-found: error
           retention-days: 14
