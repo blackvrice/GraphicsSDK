@@ -1,4 +1,5 @@
 #include <graphics/Graphics.hpp>
+#include "../../foundation/DeviceGeneration.hpp"
 #define VK_NO_PROTOTYPES
 #include <vulkan/vulkan_core.h>
 #include "VulkanValidation.hpp"
@@ -437,7 +438,6 @@ struct Recording {
     ~Recording() { release(); }
 };
 struct Pending { VkFence fence{}; std::uint64_t serial{}; std::shared_ptr<Recording> recording; };
-std::atomic<std::uint64_t> generations{1};
 struct State {
     std::shared_ptr<NativeDevice> native;
     VkPhysicalDevice physical{};
@@ -449,7 +449,7 @@ struct State {
     VkPhysicalDeviceLimits limits{};
     bool fullDrawIndexUint32{};
     std::thread::id thread{std::this_thread::get_id()};
-    std::uint64_t id{generations.fetch_add(1)}, last{}, completed{};
+    std::uint64_t id{detail::allocateDeviceGeneration()}, last{}, completed{};
     bool retired{}, lost{};
     std::list<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
@@ -1488,6 +1488,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     }
     native->GetDeviceQueue(native->handle, selected->family, 0, &native->queue);
     auto owner = std::make_shared<State>(); owner->native = native; owner->physical = selected->physical;
+    if (!owner->id) return fail(ErrorCode::InvalidState, "Device generation sequence exhausted");
     owner->memory = selected->memory; owner->family = selected->family;
     owner->timestampBits = selected->timestampBits;
     owner->maxColorAttachments = selected->maxColorAttachments;

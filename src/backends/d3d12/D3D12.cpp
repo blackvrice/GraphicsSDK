@@ -1,4 +1,5 @@
 #include <graphics/Graphics.hpp>
+#include "../../foundation/DeviceGeneration.hpp"
 #include "FenceWait.hpp"
 #include <Windows.h>
 #include <d3d12.h>
@@ -1062,7 +1063,8 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     }
     auto state = std::make_shared<State>();
     state->description=desc;
-    static std::atomic<std::uint64_t> identifiers{1}; state->id = identifiers.fetch_add(1);
+    state->id = detail::allocateDeviceGeneration();
+    if (!state->id) return invalid("Device generation sequence exhausted", ErrorCode::InvalidState);
     HRESULT result = CreateDXGIFactory2(desc.validation ? DXGI_CREATE_FACTORY_DEBUG : 0, IID_PPV_ARGS(&state->factory));
     if (FAILED(result)) return failed(result, "Create DXGI factory failed");
     ComPtr<IDXGIAdapter1> selected;

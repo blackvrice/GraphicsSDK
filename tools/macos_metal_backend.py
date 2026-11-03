@@ -20,7 +20,7 @@ from linux_comparison import ROOT, GIT, require, read, save, sha, record, unchan
 from audit_licenses import sdk_fingerprint
 
 OWN=('tools/macos_metal_backend.py','tools/audit_licenses.py','tools/linux_comparison.py',
-     'src/backends/metal/Metal.cpp','tests/MetalSubmissionTests.cpp','tests/macos_metal_consumer/CMakeLists.txt')
+     'src/backends/metal/Metal.cpp','src/foundation/DeviceGeneration.hpp','tests/MetalSubmissionTests.cpp','tests/macos_metal_consumer/CMakeLists.txt')
 UNITS=(*core.CORE,'src/backends/metal/Metal.cpp',*(f'tests/{name}.cpp' for name in core.TESTS.values()),'tests/MetalSubmissionTests.cpp')
 SCOPE=dict(SDK_Metal_submission_executed=True,resource_or_draw_executed=False,native_error_injected=False,
     native_validation_accepted=False,physical_GPU_accepted=False,performance_accepted=False,
@@ -71,7 +71,7 @@ def check(folder,python=None,live=False):
         require(len(r['source_inputs'])==len(OWN) and {p['path'] for p in r['source_inputs']}==set(OWN),'Metal frozen source inventory differs')
         for item in r['source_inputs']:require(hashlib.sha256(z.read(item['path'])).hexdigest()==item['sha256'],'Metal source byte drift')
         with zipfile.ZipFile(folder/'availability/core/source.zip') as c:
-            for name in ('src/backends/metal/Metal.cpp','tests/MetalSubmissionTests.cpp','tests/macos_metal_consumer/CMakeLists.txt'):
+            for name in ('src/backends/metal/Metal.cpp','src/foundation/DeviceGeneration.hpp','tests/MetalSubmissionTests.cpp','tests/macos_metal_consumer/CMakeLists.txt'):
                 require(z.read(name)==c.read(name),'Core/backend source snapshots differ')
     ids=probe.inventory(read(folder/'availability/receipt.json')['inventory'])
     require(ids,'No native Metal device; cannot accept submission evidence')

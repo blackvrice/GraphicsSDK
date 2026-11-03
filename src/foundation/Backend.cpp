@@ -1,6 +1,11 @@
 #include <graphics/Graphics.hpp>
+#include "DeviceGeneration.hpp"
 
 namespace gfx {
+std::uint64_t detail::allocateDeviceGeneration() noexcept {
+    static GenerationCounter counter;
+    return counter.next();
+}
 std::string_view buildFingerprint() noexcept { return GFX_SOURCE_SHA256; }
 #ifdef GFX_HAS_METAL
 Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc);

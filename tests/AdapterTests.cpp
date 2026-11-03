@@ -1,9 +1,11 @@
 #include <graphics/Graphics.hpp>
+#include "../src/foundation/DeviceGeneration.hpp"
 #include <array>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
 #include <unordered_set>
+#include <thread>
 #if defined(_WIN32) && defined(GFX_TEST_D3D12)
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -26,6 +28,16 @@ template<class T> void reject(gfx::Result<T> value,gfx::ErrorCode code,const cha
     check(!value && value.error().code==code,text);
 }
 void cpu() {
+    gfx::detail::GenerationCounter edge(UINT64_MAX-1);
+    check(edge.next()==UINT64_MAX-1 && edge.next()==0 && edge.next()==0,"Generation exhaustion must not wrap/reuse IDs");
+    const auto first=gfx::detail::allocateDeviceGeneration(), second=gfx::detail::allocateDeviceGeneration();
+    check(first && second>first,"All backends share one SDK generation allocator");
+    std::array<std::array<std::uint64_t,64>,4> generations{};
+    std::array<std::thread,4> workers;
+    for(std::size_t i=0;i<workers.size();++i)workers[i]=std::thread([&,i]{for(auto& id:generations[i])id=gfx::detail::allocateDeviceGeneration();});
+    for(auto& worker:workers)worker.join();
+    std::unordered_set<std::uint64_t> unique;
+    for(const auto& batch:generations)for(auto id:batch)check(id && unique.insert(id).second,"Concurrent generation allocation must be unique");
     if (!gfx::backendCompiled(gfx::Backend::Vulkan))
         reject(gfx::enumerateAdapters(gfx::Backend::Vulkan),gfx::ErrorCode::Unsupported,"Uncompiled enumeration must fail");
     if (!gfx::backendCompiled(gfx::Backend::Metal))

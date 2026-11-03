@@ -18,6 +18,9 @@ OBJCXX 언어·C++23·ARC로 컴파일한다. 기존 SDK source fingerprint에 �
 - fence는 장치 세대와 단조 증가 값으로 검사한다. 다른 세대·0·미제출 값·범위 밖 timeout을
   거부한다. 0ms는 native status polling만 수행하며 finite wait는 최대 1ms 간격의 CPU
   polling을 사용한다. timeout은 제출을 취소하지 않고 동일 fence로 재시도할 수 있다.
+  D3D12/Vulkan/Metal은 연결된 SDK 내 공통 atomic 번호 발급기를 사용해 backend 사이의
+  fence owner 충돌을 방지한다. 번호 고갈은 wrap/reuse 없이 실패하며 CPU 계약은 고갈과
+  4개 스레드의 256개 번호 발급을 검사한다.
 - native Completed만 완료 값으로 반영하고 완료 제출을 순서대로 해제한다. Error는 원본
   NSError code/설명을 보존하고 deviceRemoved/accessRevoked를 DeviceLost, 나머지를
   BackendFailure로 고정한다. 이후 성공으로 덮어쓰지 않는다. 장치 파괴 후 자식 native

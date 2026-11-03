@@ -1,9 +1,9 @@
 // Private Objective-C++ implementation; CMake explicitly selects OBJCXX for this unit.
 #include <graphics/Graphics.hpp>
+#include "../../foundation/DeviceGeneration.hpp"
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 #include <algorithm>
-#include <atomic>
 #include <deque>
 #include <limits>
 #include <thread>
@@ -13,7 +13,6 @@ namespace {
 auto fail(ErrorCode code, std::string text, std::int64_t native = 0) {
     return std::unexpected(Error{code, std::move(text), native});
 }
-std::atomic<std::uint64_t> nextGeneration{1};
 struct Pending {
     std::uint64_t serial;
     id<MTLCommandBuffer> buffer;
@@ -230,10 +229,8 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         id<MTLCommandQueue> queue = [selected newCommandQueue];
         if (!queue) return fail(ErrorCode::OutOfMemory, "Metal command queue creation failed");
         auto state = std::make_shared<State>();
-        auto generation = nextGeneration.load(std::memory_order_relaxed);
-        do {
-            if (generation == UINT64_MAX) return fail(ErrorCode::InvalidState, "Metal generation sequence exhausted");
-        } while (!nextGeneration.compare_exchange_weak(generation, generation + 1, std::memory_order_relaxed));
+        const auto generation = detail::allocateDeviceGeneration();
+        if (!generation) return fail(ErrorCode::InvalidState, "Device generation sequence exhausted");
         state->device = selected; state->queue = queue; state->generation = generation;
         DeviceCaps caps;
         caps.backend = Backend::Metal; caps.adapterName = name; caps.adapterId = {Backend::Metal, selected.registryID};
