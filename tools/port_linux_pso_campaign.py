@@ -8,7 +8,8 @@ from linux_comparison import ROOT,require,read,save,sha
 OWN=tuple(sorted(set(base.OWN+('benchmarks/llgl_vulkan_pso_compare/main.cpp',
     'benchmarks/llgl_vulkan_pso_compare/PSO.hpp','benchmarks/llgl_vulkan_pso_compare/Identity.hpp',
     'benchmarks/common/Adapter.hpp','benchmarks/linux_pso_campaign/CMakeLists.txt',
-    'tools/port_linux_pso_campaign.py','benchmarks/phase3_comparison/competitors/llgl-pso-comparison.json'))))
+    'tools/port_linux_pso_campaign.py','benchmarks/phase3_comparison/competitors/llgl-pso-comparison.json',
+    'benchmarks/phase3_comparison/linux-pso-campaign.json'))))
 OUTPUTS=('main.cpp','PSO.hpp','Identity.hpp','SupportLinux.hpp','Platform.hpp','Layer.cpp')
 
 

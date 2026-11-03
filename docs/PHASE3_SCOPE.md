@@ -127,3 +127,13 @@ desktop/사람 관측이 없다. 준비 성공을 WSI-08 또는 LNX-15 완료에
 [Linux 세 SDK 업로드 캠페인](PHASE3_LINUX_UPLOAD_CAMPAIGN_REPORT.md)은 고정 업로드 타이머·5개 독립 프로세스 × 30개 원본 표본과 별도 validation/observer gate를 이식한다. software smoke는 통계·성능 수용을 생성하지 않는다. 실제 GPU의 fresh 실행과 draw/PSO/allocation timed campaign·Phase 3 수용은 미완료다.
 
 [Linux 세 SDK draw/instancing 캠페인](PHASE3_LINUX_DRAW_CAMPAIGN_REPORT.md)은 같은 O2 빌드 정책에서 고정 draw 본문·네 CPU 구간·별도 native 관측과 다섯 fresh 프로세스 반복을 준비한다. software smoke는 통계/성능 수용을 생성하지 않는다. 실제 GPU fresh 실행과 PSO/allocation timed campaign·표시·Phase 3 수용은 미완료다.
+
+
+### Linux PSO 반복 캠페인 준비 (2026-11-03)
+
+P3-LBEN-03의 세 SDK PSO 타이머·고정 반복 계약·required validation/오류 제어·
+별도 native 관측·증거 수집/재생을 연결한다. 생성/public 해제의 cpu_api 두 구간을
+분리하고 GPU use/readback을 타이밍 밖에 둔다. software smoke는 37개 프로세스의
+진단이며 성능 통계는 내보내지 않는다. 실제 Linux GPU positive/fresh 비교,
+allocation 타이머와 Phase 3 gate는 미완료다. 상세는
+`docs/PHASE3_LINUX_PSO_CAMPAIGN_REPORT.md`를 따른다.

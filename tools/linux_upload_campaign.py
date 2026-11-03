@@ -225,7 +225,8 @@ def validate_success(row,stdout,stderr,job,r,api=None):
     else:require(not re.search(rb'Validation Error|SYNC-HAZARD',stderr),'Unexpected native error')
     if job['kind'] in ('measurement','smoke'):
         require(b'VkLayer_' not in stderr,'Layer activation in measured process')
-        require(sum(value['samples_ms'])/1000<=row['finished']-row['started'],'Samples exceed enclosing process')
+        elapsed=api.elapsed_samples_ms(value) if hasattr(api,'elapsed_samples_ms') else sum(value['samples_ms'])
+        require(elapsed/1000<=row['finished']-row['started'],'Samples exceed enclosing process')
     if job['sdk']!='llgl' and job['kind'] not in ('measurement','smoke'):
         require(matrix.loaded_libraries(stderr,qualification(r))==(job['kind']=='validation'),'Actual SDK/SDL runtime layer drift')
     return value
@@ -342,6 +343,7 @@ def run(a,api=None):
     sources={ROOT/n for n in (*api.port.OWN,api.PLAN,api.WINDOWS_PLAN,api.SOURCE_FILE,'tools/linux_upload_campaign.py',
         'tools/linux_llgl_upload.py','tools/linux_llgl_draw.py','tools/linux_llgl_probe.py','tools/linux_llgl_workload_mode.py',
         'tools/linux_workload_matrix.py','tools/linux_workloads.py','tools/linux_comparison.py','tools/run_vulkan_comparison.py','LICENSE')}
+    sources.update(ROOT/n for n in getattr(api,'EXTRA_SOURCES',()))
     if api.REFERENCE_SOURCE:sources.add(ROOT/api.REFERENCE_SOURCE)
     sources.update(pathlib.Path(n['path']) for n in prior['source_inputs']+prior['qualification']['source_inputs'])
     require(all(n.is_relative_to(ROOT) for n in sources),'Qualified source escaped repository')
