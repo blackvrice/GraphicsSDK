@@ -260,6 +260,7 @@ def check(folder,live=False,api=None):
     require((folder/'settings/vk_layer_settings.txt').read_bytes()==(folder/'readiness/settings/vk_layer_settings.txt').read_bytes()
         and (folder/'sync-off/vk_layer_settings.txt').read_text()==lu.OFF,'Required validation settings drift')
     require(p.same(r['reference'],read(folder/api.REFERENCE_FILE)) and p.same(r['reference'],api.reference()),'Independent full-image reference drift')
+    extra_totals={key:0 for key in getattr(api,'EXTRA_COUNTERS',())}
     expected=api.schedule(r['plan'],r['mode']);require(len(r['runs'])==len(expected),'Missing/extra native processes');last=0;images=verified=0
     for row,job in zip(r['runs'],expected):
         env=api.environment(job,r)
@@ -272,17 +273,18 @@ def check(folder,live=False,api=None):
             require(p.same(value,row['result']),'Parsed/raw output drift')
             if job['sdk']=='llgl':require({x['path'] for x in row['runtime_files']}==set(value['runtime_modules']) and all(x in r['runtime_inputs'] for x in row['runtime_files']),'Runtime module binding drift')
             images+=value['verified_images'];verified+=value['verified_bytes']
+            for key in extra_totals:extra_totals[key]+=value[key]
         else:api.rejected(job,row['returncode'],stdout,stderr,r)
     physical=r['mode']=='physical'
     totals=api.FULL_TOTALS if physical else api.SMOKE_TOTALS
-    p.exact(r,dict(verified_images=totals[0],verified_bytes=totals[1]))
+    p.exact(r,dict(verified_images=totals[0],verified_bytes=totals[1],**extra_totals))
     require((images,verified)==(r['verified_images'],r['verified_bytes']) and p.same(r['groups'],api.summarize(r['runs'],r['mode'])),'Readback totals/statistics drift')
     if live:
         w.check(pathlib.Path(r['readiness_evidence']),live=True);api.CORRECTNESS.check(pathlib.Path(r['llgl_evidence']),live=True)
         require(p.q.unchanged(r['frozen_inputs']+r['runtime_inputs']),'Source/build/runtime drift')
     return dict(processes=len(expected),rejection_controls=sum(j['kind'] not in api.SUCCESS for j in expected),core_sync_controls=2,measurement_processes=sum(j['kind']=='measurement' for j in expected),
         measurement_samples=r['measurement_samples'],verified_images=images,verified_bytes=verified,statistics_rows=len(r['groups']),
-        performance_accepted=physical,physical_GPU_accepted=False,**{api.COMPLETION_FIELD:False})
+        performance_accepted=physical,physical_GPU_accepted=False,**{api.COMPLETION_FIELD:False},**extra_totals)
 
 
 def audit(build,call,build_stdout,api=None):
@@ -398,6 +400,7 @@ def run(a,api=None):
             if job['kind'] in api.SUCCESS:
                 value=api.validate_success(row,stdout,stderr,job,r);row['result']=value
                 r['verified_images']+=value['verified_images'];r['verified_bytes']+=value['verified_bytes']
+                for key in getattr(api,'EXTRA_COUNTERS',()):r[key]+=value[key]
                 if job['sdk']=='llgl':
                     row['runtime_files']=[record(pathlib.Path(n)) for n in value['runtime_modules']]
                     r['runtime_inputs']=binding.merge_records([r['runtime_inputs'],row['runtime_files']])

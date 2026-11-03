@@ -89,6 +89,10 @@ jobs:
         run: |
           python3 tools/linux_pso_campaign.py run --readiness out/linux-workloads-physical --llgl-correctness out/linux-llgl-pso-physical --output out/linux-pso-campaign-physical
           python3 tools/linux_pso_campaign.py check --output out/linux-pso-campaign-physical --live
+      - name: Collect fresh observer-free three-SDK resource repetitions
+        run: |
+          python3 tools/linux_allocation_campaign.py run --readiness out/linux-workloads-physical --llgl-correctness out/linux-llgl-allocation-physical --output out/linux-allocation-campaign-physical
+          python3 tools/linux_allocation_campaign.py check --output out/linux-allocation-campaign-physical --live
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -105,5 +109,6 @@ jobs:
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-upload-campaign-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-draw-campaign-physical/
             comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-pso-campaign-physical/
+            comparison-${{ github.run_id }}-${{ github.run_attempt }}/out/linux-allocation-campaign-physical/
           if-no-files-found: error
           retention-days: 14

@@ -137,3 +137,13 @@ P3-LBEN-03의 세 SDK PSO 타이머·고정 반복 계약·required validation/�
 진단이며 성능 통계는 내보내지 않는다. 실제 Linux GPU positive/fresh 비교,
 allocation 타이머와 Phase 3 gate는 미완료다. 상세는
 `docs/PHASE3_LINUX_PSO_CAMPAIGN_REPORT.md`를 따른다.
+
+
+### Linux allocation 반복 캠페인 준비 (2026-11-03)
+
+P3-LBEN-04의 세 SDK public 자원 생성/해제 CPU 타이머, 전체 변경 payload,
+required validation/오류 제어, native 핸들 감사와 증거 수집/재생을 연결한다.
+software 53개 프로세스는 진단이며 성능 통계를 내보내지 않는다. native 자원
+핸들 확인은 실제 GPU 메모리 할당 개수나 회수 검증이 아니다. 실제 Linux GPU
+fresh 실행과 표시 검증, 최종 Phase 3 gate는 미완료다. 상세는
+`docs/PHASE3_LINUX_ALLOCATION_CAMPAIGN_REPORT.md`를 따른다.
