@@ -20,6 +20,7 @@ struct StaticSampler {
 };
 // Vulkan: set 0, entry i maps to binding i, static sampler i to binding 32+i.
 // Register slot/space are the D3D12 shader mapping; visibility applies to both backends.
+// Metal supports space 0: texture(slot+element), buffer(slot+element), sampler(slot).
 struct BindingLayout { std::vector<BindingLayoutEntry> entries; std::vector<StaticSampler> samplers; };
 [[nodiscard]] Result<void> validateBindingLayout(const BindingLayout&);
 // binding indexes BindingLayout::entries; element indexes that entry's array.

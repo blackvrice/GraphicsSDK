@@ -8,6 +8,7 @@
 #include <cstring>
 #include <limits>
 #include <thread>
+#include <array>
 
 namespace gfx {
 namespace {
@@ -18,6 +19,7 @@ struct Pending {
     std::uint64_t serial;
     id<MTLCommandBuffer> buffer;
     std::vector<std::shared_ptr<struct Allocation>> allocations;
+    std::vector<std::shared_ptr<struct NativePipeline>> pipelines;
 };
 struct Allocation {
     id<MTLBuffer> buffer;
@@ -35,11 +37,40 @@ struct Use {
     ResourceState shadow;
     bool initialized;
 };
+struct NativePipeline {
+    id<MTLRenderPipelineState> pipeline;
+    id<MTLDepthStencilState> depth;
+    std::vector<id<MTLSamplerState>> samplers;
+    VertexLayout vertices;
+    BindingLayout bindings;
+    RenderTargetLayout targets;
+    DepthState depthState;
+    std::vector<std::uint64_t> minimumBytes;
+    bool sampled{};
+    void release() { pipeline = nil; depth = nil; samplers.clear(); }
+};
+struct BufferView {
+    std::shared_ptr<Allocation> allocation;
+    std::uint64_t offset{},bytes{};
+    std::uint32_t stride{};
+};
+struct ResourceView { std::shared_ptr<Allocation> allocation; std::uint64_t offset{},size{}; };
+struct Draw {
+    std::shared_ptr<NativePipeline> pipeline;
+    std::shared_ptr<const std::vector<ResourceView>> bindings;
+    std::array<BufferView,15> vertices;
+    BufferView indices;
+    std::uint32_t count{},instances{},first{},firstInstance{};
+    std::int32_t baseVertex{};
+    bool indexed{};
+    MTLScissorRect scissor{};
+};
 struct Attachment {
     std::shared_ptr<Allocation> allocation;
     LoadOp load;
     Color clear;
     float clearDepth{};
+    bool readOnly{};
 };
 enum class OperationKind { Buffer, UploadTexture, ReadTexture, Pass };
 struct Operation {
@@ -49,6 +80,8 @@ struct Operation {
     OperationKind kind{OperationKind::Buffer};
     std::vector<Attachment> attachments;
     std::vector<std::string> markers;
+    std::vector<Draw> draws;
+    std::vector<std::pair<bool,std::size_t>> order;
 };
 struct NativeRecording { id<MTLCommandBuffer> buffer; };
 struct State {
@@ -63,6 +96,7 @@ struct State {
     std::vector<std::weak_ptr<int>> objects;
     id<MTLComputePipelineState> tailPipeline;
     std::vector<std::weak_ptr<NativeRecording>> recordings;
+    std::vector<std::weak_ptr<NativePipeline>> pipelines;
     void retire() {
         if (retired) return;
         @autoreleasepool {
@@ -70,6 +104,7 @@ struct State {
             pending.clear();
             for (auto& w : recordings) if (auto r = w.lock()) r->buffer = nil;
             for (auto& w : allocations) if (auto a = w.lock()) { a->buffer = nil; a->texture = nil; }
+            for (auto& w : pipelines) if (auto p = w.lock()) p->release();
             tailPipeline = nil; queue = nil; device = nil;
         }
         retired = true;
@@ -176,6 +211,20 @@ struct MetalTexture final : Texture {
     TextureDesc description() const override { return allocation->textureDesc; }
     TextureFootprint footprint() const override { return allocation->footprint; }
 };
+struct MetalPipeline final : Pipeline {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativePipeline> native;
+    std::shared_ptr<int> token;
+};
+bool vertexState(ResourceState s) { return s == ResourceState::VertexBuffer || s == ResourceState::VertexAndIndexBuffer; }
+bool indexState(ResourceState s) { return s == ResourceState::IndexBuffer || s == ResourceState::VertexAndIndexBuffer; }
+bool visible(ShaderVisibility v,unsigned stage) { return v == ShaderVisibility::All || unsigned(v) == stage; }
+MTLPixelFormat pixelFormat(Format f) {
+    switch(f) { case Format::RGBA8UNorm:return MTLPixelFormatRGBA8Unorm;case Format::BGRA8UNorm:return MTLPixelFormatBGRA8Unorm;
+    case Format::RGBA16Float:return MTLPixelFormatRGBA16Float;case Format::D32Float:return MTLPixelFormatDepth32Float; }
+    return MTLPixelFormatInvalid;
+}
+#include "MetalGraphics.hpp"
 struct MetalCommands final : CommandList {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeRecording> native;
@@ -185,6 +234,11 @@ struct MetalCommands final : CommandList {
     std::uint64_t submitted{};
     std::vector<Use> uses;
     std::vector<Operation> operations;
+    std::shared_ptr<NativePipeline> selected;
+    std::shared_ptr<const std::vector<ResourceView>> bindings;
+    std::array<BufferView,15> vertices;
+    BufferView indices;
+    MTLScissorRect scissor{};
     explicit MetalCommands(std::shared_ptr<State> state) : owner(std::move(state)) {}
     Result<void> begin() override {
         if (auto ok = owner->poll(); !ok) return ok;
@@ -194,6 +248,7 @@ struct MetalCommands final : CommandList {
         owner->recordings.push_back(next); native = std::move(next);
         open = true; ended = false; submitted = 0; inPass = false;
         operations.clear(); uses.clear();
+        selected.reset(); bindings.reset(); vertices = {}; indices = {};
         return {};
     }
     Result<void> end() override {
@@ -234,7 +289,41 @@ struct MetalCommands final : CommandList {
                     }
                     id<MTLRenderCommandEncoder> encoder = [next renderCommandEncoderWithDescriptor:descriptor];
                     if (!encoder) return fail(ErrorCode::BackendFailure, "Metal render encoder creation failed");
-                    for (NSString* label : labels) [encoder insertDebugSignpost:label];
+                    const auto& extent = op.attachments.front().allocation->textureDesc;
+                    [encoder setViewport:MTLViewport{0,0,double(extent.width),double(extent.height),0,1}];
+                    [encoder setCullMode:MTLCullModeNone];
+                    for (const auto& item : op.order) {
+                        if (!item.first) { [encoder insertDebugSignpost:labels[item.second]]; continue; }
+                        const auto& draw = op.draws[item.second]; const auto& p = *draw.pipeline;
+                        [encoder setRenderPipelineState:p.pipeline]; [encoder setDepthStencilState:p.depth]; [encoder setScissorRect:draw.scissor];
+                        for (const auto& slot : p.vertices.buffers) {
+                            const auto& view = draw.vertices[slot.slot];
+                            [encoder setVertexBuffer:view.allocation->buffer offset:view.offset atIndex:16+slot.slot];
+                        }
+                        std::size_t offset = 0;
+                        for (const auto& entry : p.bindings.entries) for (unsigned element=0;element<entry.count;++element) {
+                            const auto& view = (*draw.bindings)[offset++];
+                            for (unsigned stage=0;stage<2;++stage) if (visible(entry.visibility,stage)) {
+                                if (entry.type == BindingType::Texture2D) {
+                                    if (stage==0) [encoder setVertexTexture:view.allocation->texture atIndex:entry.slot+element];
+                                    else [encoder setFragmentTexture:view.allocation->texture atIndex:entry.slot+element];
+                                } else {
+                                    if (stage==0) [encoder setVertexBuffer:view.allocation->buffer offset:view.offset atIndex:entry.slot+element];
+                                    else [encoder setFragmentBuffer:view.allocation->buffer offset:view.offset atIndex:entry.slot+element];
+                                }
+                            }
+                        }
+                        for (std::size_t i=0;i<p.bindings.samplers.size();++i) {
+                            const auto& sampler = p.bindings.samplers[i];
+                            if (visible(sampler.visibility,0)) [encoder setVertexSamplerState:p.samplers[i] atIndex:sampler.slot];
+                            if (visible(sampler.visibility,1)) [encoder setFragmentSamplerState:p.samplers[i] atIndex:sampler.slot];
+                        }
+                        if (draw.indexed) [encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle indexCount:draw.count
+                            indexType:draw.indices.stride==2?MTLIndexTypeUInt16:MTLIndexTypeUInt32 indexBuffer:draw.indices.allocation->buffer
+                            indexBufferOffset:draw.indices.offset+std::uint64_t(draw.first)*draw.indices.stride instanceCount:draw.instances
+                            baseVertex:draw.baseVertex baseInstance:draw.firstInstance];
+                        else [encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:draw.first vertexCount:draw.count instanceCount:draw.instances baseInstance:draw.firstInstance];
+                    }
                     [encoder endEncoding];
                     continue;
                 }
@@ -303,7 +392,10 @@ struct MetalCommands final : CommandList {
             NSString* label = [[NSString alloc] initWithBytes:text.data() length:text.size() encoding:NSUTF8StringEncoding];
             if (!label || text.empty() || text.find('\0') != std::string_view::npos)
                 return fail(ErrorCode::InvalidArgument, "Metal marker requires nonempty UTF-8 without NUL");
-            if (inPass) operations[passOperation].markers.emplace_back(text);
+            if (inPass) {
+                auto& op = operations[passOperation]; op.markers.reserve(op.markers.size()+1);op.order.reserve(op.order.size()+1);
+                op.markers.emplace_back(text);op.order.emplace_back(false,op.markers.size()-1);
+            }
             else operations.push_back(Operation{{},{},0,std::string(text)});
         }
         return {};
@@ -337,9 +429,10 @@ struct MetalCommands final : CommandList {
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
+            !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer)
             return fail(ErrorCode::Unsupported, "Metal buffer state is outside the transfer slice");
-        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource) ||
+        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Metal host buffer state is fixed");
         uses.reserve(uses.size()+1); retain(*a).shadow = target;
@@ -350,12 +443,13 @@ struct MetalCommands final : CommandList {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
-            target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead)
+            target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::ShaderRead)
             return fail(ErrorCode::Unsupported, "Metal texture state is outside the transfer/pass slice");
         if (target == ResourceState::RenderTarget && !(*a)->textureDesc.renderTarget)
             return fail(ErrorCode::InvalidArgument, "Metal color attachment usage required");
         if ((target == ResourceState::DepthWrite || target == ResourceState::DepthRead) && !(*a)->textureDesc.depthStencil)
             return fail(ErrorCode::InvalidArgument, "Metal depth attachment usage required");
+        if (target == ResourceState::ShaderRead && (*a)->textureDesc.depthStencil) return fail(ErrorCode::Unsupported,"Metal depth sampling unsupported");
         uses.reserve(uses.size()+1); retain(*a).shadow = target;
         return {};
     }
@@ -415,11 +509,13 @@ struct MetalCommands final : CommandList {
             if (shadow(*a) != (desc.depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite) ||
                 (desc.depth.load == LoadOp::Load && !initialized(*a)))
                 return fail(ErrorCode::InvalidState, "Metal depth pass requires state and initialized Load contents");
-            op.attachments.push_back(Attachment{*a,desc.depth.load,{},desc.depth.clear});
+            op.attachments.push_back(Attachment{*a,desc.depth.load,{},desc.depth.clear,desc.depth.readOnly});
         }
         uses.reserve(uses.size()+op.attachments.size()); operations.reserve(operations.size()+1);
         for (const auto& a : op.attachments) retain(a.allocation).initialized = true;
         operations.push_back(std::move(op)); inPass = true; passOperation = operations.size()-1;
+        selected.reset();bindings.reset();const auto& extent=operations.back().attachments.front().allocation->textureDesc;
+        scissor={0,0,extent.width,extent.height};
         return {};
     }
     Result<void> endRenderPass() override {
@@ -427,14 +523,83 @@ struct MetalCommands final : CommandList {
         if (!inPass) return fail(ErrorCode::InvalidState, "Metal render pass is not open");
         inPass = false; return {};
     }
-    Result<void> setPipeline(const PipelinePtr&) override { return owner->unsupported(); }
-    Result<void> bindTexture(const TexturePtr&) override { return owner->unsupported(); }
-    Result<void> bindResources(const ResourceBindings&) override { return owner->unsupported(); }
-    Result<void> bindVertexBuffer(std::uint32_t, const BufferPtr&, std::uint32_t, std::uint64_t, std::uint64_t) override { return owner->unsupported(); }
-    Result<void> bindIndexBuffer(const BufferPtr&, IndexFormat, std::uint64_t, std::uint64_t) override { return owner->unsupported(); }
-    Result<void> setScissor(std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t) override { return owner->unsupported(); }
-    Result<void> draw(std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t) override { return owner->unsupported(); }
-    Result<void> drawIndexed(std::uint32_t, std::uint32_t, std::uint32_t, std::int32_t, std::uint32_t) override { return owner->unsupported(); }
+    Result<void> setPipeline(const PipelinePtr& value) override {
+        if(auto ok=ready();!ok)return ok;
+        if(!inPass)return fail(ErrorCode::InvalidState,"Metal pipeline requires active pass");
+        auto p=std::dynamic_pointer_cast<MetalPipeline>(value);if(!p)return fail(value?ErrorCode::WrongDevice:ErrorCode::InvalidArgument,"Expected Metal pipeline");
+        if(p->owner!=owner)return fail(ErrorCode::WrongDevice,"Metal pipeline belongs to another generation");
+        std::vector<Format> colors;std::optional<Format> depth;
+        for(const auto& a:operations[passOperation].attachments){if(a.allocation->textureDesc.depthStencil)depth=a.allocation->textureDesc.format;else colors.push_back(a.allocation->textureDesc.format);}
+        if(p->native->targets.colors!=colors||p->native->targets.depth!=depth)return fail(ErrorCode::InvalidArgument,"Metal pipeline/pass attachment formats differ");
+        selected=p->native;bindings.reset();return {};
+    }
+    Result<void> bindTexture(const TexturePtr& value) override {
+        if(auto ok=ready();!ok)return ok;
+        if(!inPass||!selected||!selected->sampled)return fail(ErrorCode::InvalidState,"Metal bindTexture requires sampledTexture pipeline");
+        ResourceBindings data;data.textures={{0,0,value}};return bindResources(data);
+    }
+    Result<void> bindResources(const ResourceBindings& data) override {
+        if(auto ok=ready();!ok)return ok;
+        if(!inPass||!selected)return fail(ErrorCode::InvalidState,"Metal bindings require pass/pipeline");
+        std::size_t count=0;for(const auto& e:selected->bindings.entries)count+=e.count;
+        auto next=std::make_shared<std::vector<ResourceView>>(count);
+        auto slot=[&](unsigned index,unsigned element,BindingType type)->Result<std::size_t>{
+            if(index>=selected->bindings.entries.size())return fail(ErrorCode::InvalidArgument,"Unknown Metal binding entry");
+            const auto& e=selected->bindings.entries[index];if(e.type!=type||element>=e.count)return fail(ErrorCode::InvalidArgument,"Metal binding type/array mismatch");
+            std::size_t at=element;for(unsigned i=0;i<index;++i)at+=selected->bindings.entries[i].count;
+            if((*next)[at].allocation)return fail(ErrorCode::InvalidArgument,"Duplicate Metal binding element");return at;};
+        for(const auto& view:data.textures){auto at=slot(view.binding,view.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());auto a=allocation(view.texture);if(!a)return std::unexpected(a.error());
+            if((*a)->textureDesc.depthStencil)return fail(ErrorCode::Unsupported,"Metal depth sampling unsupported");
+            if(shadow(*a)!=ResourceState::ShaderRead||!initialized(*a))return fail(ErrorCode::InvalidState,"Metal sampling requires initialized ShaderRead texture");(*next)[*at].allocation=*a;}
+        for(const auto& view:data.constants){auto at=slot(view.binding,view.element,BindingType::ConstantBuffer);if(!at)return std::unexpected(at.error());auto a=allocation(view.buffer);if(!a)return std::unexpected(a.error());
+            if((*a)->desc.memory==Memory::Readback||view.offset%256||!view.size||view.size%256||view.size>65536||view.offset>(*a)->desc.size||view.size>(*a)->desc.size-view.offset||view.size<selected->minimumBytes[view.binding])return fail(ErrorCode::InvalidArgument,"Metal constant view range/alignment/size invalid");
+            if(shadow(*a)!=ResourceState::ConstantBuffer)return fail(ErrorCode::InvalidState,"Metal constants require ConstantBuffer state");(*next)[*at]={*a,view.offset,view.size};}
+        for(const auto& view:*next)if(!view.allocation)return fail(ErrorCode::InvalidArgument,"Incomplete Metal resource snapshot");
+        uses.reserve(uses.size()+next->size());for(const auto& view:*next)retain(view.allocation);bindings=std::move(next);return {};
+    }
+    Result<void> bindVertexBuffer(std::uint32_t slot,const BufferPtr& value,std::uint32_t stride,std::uint64_t offset,std::uint64_t size) override {
+        if(auto ok=ready();!ok)return ok;auto a=allocation(value);if(!a)return std::unexpected(a.error());
+        if(slot>=15)return fail(ErrorCode::Unsupported,"Metal vertex stream slots are 0..14");
+        if(!stride||stride>2048||(*a)->desc.memory==Memory::Readback||offset>(*a)->desc.size||size>(*a)->desc.size-offset)return fail(ErrorCode::InvalidArgument,"Invalid Metal vertex view");
+        const auto bytes=size?size:(*a)->desc.size-offset;if(!bytes||bytes>UINT32_MAX)return fail(ErrorCode::InvalidArgument,"Invalid Metal vertex view size");
+        if(!vertexState(shadow(*a)))return fail(ErrorCode::InvalidState,"Metal vertex buffer state required");
+        uses.reserve(uses.size()+1);retain(*a);vertices[slot]={*a,offset,bytes,stride};return {};
+    }
+    Result<void> bindIndexBuffer(const BufferPtr& value,IndexFormat format,std::uint64_t offset,std::uint64_t size) override {
+        if(auto ok=ready();!ok)return ok;auto a=allocation(value);if(!a)return std::unexpected(a.error());
+        if(format!=IndexFormat::UInt16&&format!=IndexFormat::UInt32)return fail(ErrorCode::InvalidArgument,"Invalid Metal index format");
+        const auto element=format==IndexFormat::UInt16?2u:4u;
+        if((*a)->desc.memory==Memory::Readback||offset%element||offset>(*a)->desc.size||size>(*a)->desc.size-offset)return fail(ErrorCode::InvalidArgument,"Invalid Metal index view");
+        const auto bytes=size?size:(*a)->desc.size-offset;if(!bytes||bytes>UINT32_MAX||bytes%element)return fail(ErrorCode::InvalidArgument,"Invalid Metal index view size");
+        if(!indexState(shadow(*a)))return fail(ErrorCode::InvalidState,"Metal index buffer state required");
+        uses.reserve(uses.size()+1);retain(*a);indices={*a,offset,bytes,element};return {};
+    }
+    Result<void> setScissor(std::uint32_t x,std::uint32_t y,std::uint32_t width,std::uint32_t height) override {
+        if(auto ok=ready();!ok)return ok;if(!inPass)return fail(ErrorCode::InvalidState,"Metal scissor requires pass");
+        const auto d=operations[passOperation].attachments.front().allocation->textureDesc;
+        if(!width||!height||x>d.width||width>d.width-x||y>d.height||height>d.height-y)return fail(ErrorCode::InvalidArgument,"Metal scissor outside attachment");
+        scissor={x,y,width,height};return {};
+    }
+    Result<void> recordDraw(std::uint32_t count,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance,bool indexed) {
+        if(auto ok=ready();!ok)return ok;if(!inPass||!selected)return fail(ErrorCode::InvalidState,"Metal draw requires pass and pipeline");
+        if(!count||!instances||instances>UINT32_MAX-firstInstance||(!indexed&&count>UINT32_MAX-first))return fail(ErrorCode::InvalidArgument,"Invalid Metal draw range");
+        if(indexed&&(!indices.allocation||!indexState(shadow(indices.allocation))))return fail(ErrorCode::InvalidState,"Metal index binding missing/stale");
+        if(indexed&&std::uint64_t(first)+count>indices.bytes/indices.stride)return fail(ErrorCode::InvalidArgument,"Metal index range exceeds view");
+        for(const auto& input:selected->vertices.buffers){const auto& view=vertices[input.slot];unsigned extent=0,alignment=1;
+            for(const auto& a:selected->vertices.attributes)if(a.slot==input.slot){extent=std::max(extent,a.offset+vertexBytes(a.format));alignment=std::max(alignment,a.format==VertexFormat::UNorm8x4?1u:4u);}
+            if(!view.allocation||view.stride!=input.stride||!vertexState(shadow(view.allocation)))return fail(ErrorCode::InvalidState,"Metal vertex binding missing/mismatched");
+            if(view.offset%alignment||view.bytes<extent)return fail(ErrorCode::InvalidArgument,"Metal vertex alignment/extent mismatch");
+            auto last=(view.bytes-extent)/view.stride;
+            if((input.rate==VertexInputRate::Instance&&std::uint64_t(firstInstance)+instances-1>last)||
+                (input.rate==VertexInputRate::Vertex&&((!indexed&&std::uint64_t(first)+count-1>last)||(indexed&&base>0&&std::uint32_t(base)>last))))return fail(ErrorCode::InvalidArgument,"Metal input exceeds vertex/instance view");}
+        if(!selected->bindings.entries.empty()&&!bindings)return fail(ErrorCode::InvalidState,"Metal draw requires complete bindings");
+        if(bindings)for(const auto& view:*bindings)if(shadow(view.allocation)!=(view.allocation->texture?ResourceState::ShaderRead:ResourceState::ConstantBuffer))return fail(ErrorCode::InvalidState,"Metal binding read state changed");
+        for(const auto& a:operations[passOperation].attachments)if(a.readOnly&&selected->depthState.writeEnabled)return fail(ErrorCode::InvalidState,"Read-only Metal depth rejects writing pipeline");
+        auto& op=operations[passOperation];op.draws.reserve(op.draws.size()+1);op.order.reserve(op.order.size()+1);
+        op.draws.push_back(Draw{selected,bindings,vertices,indices,count,instances,first,firstInstance,base,indexed,scissor});op.order.emplace_back(true,op.draws.size()-1);return {};
+    }
+    Result<void> draw(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,0,firstInstance,false); }
+    Result<void> drawIndexed(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,base,firstInstance,true); }
     Result<void> writeTimestamp(std::uint32_t) override { return owner->unsupported(); }
     Result<void> resolveTimestamps() override { return owner->unsupported(); }
     Result<double> elapsedGpuMilliseconds() override { return owner->unsupported(); }
@@ -461,7 +626,10 @@ struct MetalQueue final : CommandQueue {
         std::vector<std::shared_ptr<Allocation>> allocations;
         allocations.reserve(commands->uses.size());
         for (auto& use : commands->uses) allocations.push_back(use.allocation);
-        owner->pending.push_back({owner->last + 1, commands->native->buffer, std::move(allocations)});
+        std::vector<std::shared_ptr<NativePipeline>> pipelines;
+        for(const auto& op:commands->operations)for(const auto& draw:op.draws)
+            if(std::find(pipelines.begin(),pipelines.end(),draw.pipeline)==pipelines.end())pipelines.push_back(draw.pipeline);
+        owner->pending.push_back({owner->last + 1, commands->native->buffer, std::move(allocations),std::move(pipelines)});
         @autoreleasepool { [commands->native->buffer commit]; }
         commands->submitted = ++owner->last;
         for (auto& use : commands->uses) {
@@ -573,7 +741,12 @@ struct MetalDevice final : Device {
             return TexturePtr(value);
         }
     }
-    Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) override { return owner->unsupported(); }
+    Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {
+        auto p=graphics(*owner,desc);if(!p)return std::unexpected(p.error());
+        auto wrapper=std::make_shared<MetalPipeline>();wrapper->owner=owner;wrapper->native=*p;wrapper->token=std::make_shared<int>();
+        std::erase_if(owner->pipelines,[](auto& w){return w.expired();});std::erase_if(owner->objects,[](auto& w){return w.expired();});
+        owner->pipelines.push_back(*p);owner->objects.push_back(wrapper->token);return PipelinePtr(wrapper);
+    }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         return std::make_unique<MetalCommands>(owner);
@@ -626,6 +799,7 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         DeviceCaps caps;
         caps.backend = Backend::Metal; caps.adapterName = name; caps.adapterId = {Backend::Metal, selected.registryID};
         caps.depthAttachment = true; caps.multipleRenderTargets = true;
+        caps.vertexInput = true; caps.indexedDrawing = true; caps.resourceBinding = true; caps.bindingLayouts = true;
         return std::make_unique<MetalDevice>(std::move(state), std::move(caps));
     }
 }

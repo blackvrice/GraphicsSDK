@@ -146,7 +146,7 @@ void contracts(gfx::Device& d){
 int main(int argc,char** argv)try{
     check(argc>=1&&argc<=3,"Optional fingerprint and fresh output directory");if(argc>=2)check(gfx::buildFingerprint()==argv[1],"Installed/source fingerprint");
     if(argc==3){output=argv[2];check(std::filesystem::create_directory(output),"Fresh output required");}
-    auto d=take(gfx::createDevice(desc()));check(d->caps().depthAttachment&&d->caps().multipleRenderTargets&&!d->caps().resourceBinding,"Pass capabilities without drawing/binding");
+    auto d=take(gfx::createDevice(desc()));check(d->caps().depthAttachment&&d->caps().multipleRenderTargets&&d->caps().resourceBinding,"Graphics capabilities");
     constexpr std::array formats{F::RGBA8UNorm,F::RGBA16Float,F::D32Float,F::BGRA8UNorm};
     for(auto f:formats)for(auto size:std::array<std::array<unsigned,2>,4>{{{1,1},{3,2},{65,17},{129,7}}})roundtrip(*d,f,size[0],size[1]);
     for(auto f:{F::RGBA8UNorm,F::RGBA16Float,F::BGRA8UNorm})clears(*d,f);depth(*d);for(auto n:{2u,4u,8u})mrt(*d,n);contracts(*d);

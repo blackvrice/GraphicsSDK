@@ -6,7 +6,9 @@
 
 namespace gfx {
 enum class ShaderStage { Vertex, Fragment };
-enum class ShaderFormat { DXBC, SPIRV };
+// MSL is reviewed UTF-8 source; Metal uses gfx_vertex / gfx_fragment entry names.
+// It is not HLSL translation or a portable metallib binary format.
+enum class ShaderFormat { DXBC, SPIRV, MSL };
 // SPIRV input must already pass an external validator for the Vulkan environment.
 // The backend checks its supported interface, not complete SPIR-V semantics.
 struct ShaderBinary { ShaderStage stage{}; std::vector<std::byte> bytes; ShaderFormat format{ShaderFormat::DXBC}; };

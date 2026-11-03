@@ -17,6 +17,7 @@ import zipfile
 import macos_core as core
 import macos_metal_probe as probe
 import macos_metal_textures as textures
+import macos_metal_graphics as graphics
 from linux_comparison import ROOT, GIT, require, read, save, sha, record, unchanged, cache
 from audit_licenses import sdk_fingerprint
 
@@ -27,6 +28,8 @@ OWN_V2=(*OWN,'tests/MetalBufferTests.cpp')
 UNITS_V2=(*UNITS,'tests/MetalBufferTests.cpp')
 OWN_V3=(*OWN_V2,'tests/MetalTextureTests.cpp','tools/macos_metal_textures.py')
 UNITS_V3=(*UNITS_V2,'tests/MetalTextureTests.cpp')
+OWN_V4=(*OWN_V3,'src/backends/metal/MetalGraphics.hpp','tests/MetalGraphicsTests.cpp','tests/fixtures/metal/graphics.metal','tools/macos_metal_graphics.py')
+UNITS_V4=(*UNITS_V3,'tests/MetalGraphicsTests.cpp')
 SIZES=(1,2,3,4,5,7,257,259,4096,65539,1048579)
 SCOPE=dict(SDK_Metal_submission_executed=True,resource_or_draw_executed=False,native_error_injected=False,
     native_validation_accepted=False,physical_GPU_accepted=False,performance_accepted=False,
@@ -34,6 +37,7 @@ SCOPE=dict(SDK_Metal_submission_executed=True,resource_or_draw_executed=False,na
 SCOPE_V2=dict(SCOPE,resource_or_draw_executed=True,SDK_Metal_buffers_executed=True,internal_tail_dispatch_executed=True,
     draw_executed=False,P4_MTL_03_completed=False)
 SCOPE_V3=dict(SCOPE_V2,SDK_Metal_textures_executed=True,clear_load_pass_executed=True,P4_MTL_04_completed=False)
+SCOPE_V4=dict(SCOPE_V3,SDK_Metal_graphics_executed=True,draw_executed=True,P4_MTL_05_completed=False)
 
 
 def result(value,fp,ids):
@@ -68,7 +72,7 @@ def payloads(folder):
 def junit(data,version=1):
     root=ET.fromstring(data);rows=list(root.iter('testcase'))
     names=[r.get('name') for r in rows]
-    wanted=set(core.TESTS)|{'metal_submission_contracts'}|({'metal_buffer_contracts'} if version>=2 else set())|({'metal_texture_pass_contracts'} if version==3 else set())
+    wanted=set(core.TESTS)|{'metal_submission_contracts'}|({'metal_buffer_contracts'} if version>=2 else set())|({'metal_texture_pass_contracts'} if version>=3 else set())|({'metal_graphics_contracts'} if version==4 else set())
     require(len(rows)==len(wanted) and set(names)==wanted,'Missing/extra Metal/CPU CTests')
     for row in rows:
         duration=float(row.get('time','nan'))
@@ -76,7 +80,7 @@ def junit(data,version=1):
 
 
 def graph(rows,source,arch,sdk,version=1):
-    units={1:UNITS,2:UNITS_V2,3:UNITS_V3}[version]
+    units={1:UNITS,2:UNITS_V2,3:UNITS_V3,4:UNITS_V4}[version]
     require(len(rows)==len(units) and {r['file'] for r in rows}=={source+'/'+n for n in units},'Metal build compiler graph differs')
     for row in rows:
         args=shlex.split(row['command']);backend=row['file'].startswith(source+'/src/')
@@ -89,9 +93,9 @@ def graph(rows,source,arch,sdk,version=1):
 
 def check(folder,python=None,live=False):
     r=read(folder/'receipt.json')
-    versions={'macos-metal-submission-v1':1,'macos-metal-buffers-v2':2,'macos-metal-textures-v3':3}
+    versions={'macos-metal-submission-v1':1,'macos-metal-buffers-v2':2,'macos-metal-textures-v3':3,'macos-metal-graphics-v4':4}
     require(r['scope'] in versions,'Unknown Metal execution scope')
-    version=versions[r['scope']];own={1:OWN,2:OWN_V2,3:OWN_V3}[version];scope={1:SCOPE,2:SCOPE_V2,3:SCOPE_V3}[version]
+    version=versions[r['scope']];own={1:OWN,2:OWN_V2,3:OWN_V3,4:OWN_V4}[version];scope={1:SCOPE,2:SCOPE_V2,3:SCOPE_V3,4:SCOPE_V4}[version]
     core.exact(r,dict(schema_version=1,status='completed',inputs_unchanged=True,**scope))
     probe.check(folder/'availability')
     base=read(folder/'availability/core/receipt.json')
@@ -108,7 +112,9 @@ def check(folder,python=None,live=False):
             for name in ('src/backends/metal/Metal.cpp','src/foundation/DeviceGeneration.hpp','tests/MetalSubmissionTests.cpp','tests/macos_metal_consumer/CMakeLists.txt'):
                 require(z.read(name)==c.read(name),'Core/backend source snapshots differ')
             if version>=2:require(z.read('tests/MetalBufferTests.cpp')==c.read('tests/MetalBufferTests.cpp'),'Core/buffer source snapshot differs')
-            if version==3:require(z.read('tests/MetalTextureTests.cpp')==c.read('tests/MetalTextureTests.cpp'),'Core/texture source snapshot differs')
+            if version>=3:require(z.read('tests/MetalTextureTests.cpp')==c.read('tests/MetalTextureTests.cpp'),'Core/texture source snapshot differs')
+            if version==4:
+                for name in ('src/backends/metal/MetalGraphics.hpp','tests/MetalGraphicsTests.cpp'):require(z.read(name)==c.read(name),'Core/graphics source snapshot differs')
     ids=probe.inventory(read(folder/'availability/receipt.json')['inventory'])
     require(ids,'No native Metal device; cannot accept submission evidence')
     for name in ('native','consumer'):
@@ -122,11 +128,16 @@ def check(folder,python=None,live=False):
             require(value==json.loads((folder/'commands'/(name+'.stdout')).read_text()),'Raw/parsed buffer output differs')
             require(payloads(folder/(name+'-payloads'))==value['verified_bytes'],'Metal verified byte count differs')
         verified=2*value['verified_bytes']
-    if version==3:
+    if version>=3:
         for name in ('texture-native','texture-consumer'):
             value=read(folder/(name+'.json'));textures.result(value,r['SDK_source_fingerprint'])
             require(value==json.loads((folder/'commands'/(name+'.stdout')).read_text()),'Raw/parsed texture output differs')
             require(textures.payloads(folder/(name+'-payloads'))==value['verified_bytes'],'Verified texture byte count differs')
+    if version==4:
+        for name in ('graphics-native','graphics-consumer'):
+            value=read(folder/(name+'.json'));graphics.result(value,r['SDK_source_fingerprint'])
+            require(value==json.loads((folder/'commands'/(name+'.stdout')).read_text()),'Raw/parsed graphics output differs')
+            require(graphics.payloads(folder/(name+'-payloads'))==value['verified_bytes'],'Graphics verified byte count differs')
     junit((folder/'tests.xml').read_bytes(),version)
     graph(read(folder/'sdk-commands.json'),base['source_directory'],r['architecture'],base['sdk_path'],version)
     c=cache(folder/'sdk-cache.txt')
@@ -136,12 +147,12 @@ def check(folder,python=None,live=False):
         core.exact(c,dict(CMAKE_BUILD_TYPE='Release',CMAKE_OSX_ARCHITECTURES=r['architecture'],CMAKE_OSX_SYSROOT=base['sdk_path'],CMAKE_CXX_FLAGS_RELEASE='-O2 -DNDEBUG',CMAKE_INTERPROCEDURAL_OPTIMIZATION='OFF',CMAKE_UNITY_BUILD='OFF'))
     c=cache(folder/'consumer-cache.txt');require(c['GraphicsSDK_DIR']==r['install_directory']+'/lib/cmake/GraphicsSDK','Metal consumer escaped fresh package')
     rows=read(folder/'consumer-commands.json')
-    consumer_units=['tests/MetalSubmissionTests.cpp']+(['tests/MetalBufferTests.cpp'] if version>=2 else [])+(['tests/MetalTextureTests.cpp'] if version==3 else [])
+    consumer_units=['tests/MetalSubmissionTests.cpp']+(['tests/MetalBufferTests.cpp'] if version>=2 else [])+(['tests/MetalTextureTests.cpp'] if version>=3 else [])+(['tests/MetalGraphicsTests.cpp'] if version==4 else [])
     core.compile_graph(rows,[base['source_directory']+'/'+n for n in consumer_units],r['architecture'],base['sdk_path'])
     require(all(r['install_directory']+'/include' in shlex.split(row['command']) and base['source_directory']+'/include' not in row['command'] for row in rows),'Metal consumer did not use installed public headers')
     require(r['installed_headers']==base['installed_headers'],'Metal installed headers differ from same-source Core')
     commands=read(folder/'commands.json');require(commands==r['commands'],'Metal command receipt drift')
-    wanted=['configure','build','list-tests','ctest','native']+(['buffer-native'] if version>=2 else [])+(['texture-native'] if version==3 else [])+['install','library-arch','consumer-configure','consumer-build','consumer-arch','consumer']+(['buffer-consumer-arch','buffer-consumer'] if version>=2 else [])+(['texture-consumer-arch','texture-consumer'] if version==3 else [])
+    wanted=['configure','build','list-tests','ctest','native']+(['buffer-native'] if version>=2 else [])+(['texture-native'] if version>=3 else [])+(['graphics-native'] if version==4 else [])+['install','library-arch','consumer-configure','consumer-build','consumer-arch','consumer']+(['buffer-consumer-arch','buffer-consumer'] if version>=2 else [])+(['texture-consumer-arch','texture-consumer'] if version>=3 else [])+(['graphics-consumer-arch','graphics-consumer'] if version==4 else [])
     require([c['name'] for c in commands]==wanted,'Missing/extra Metal command processes')
     last=0
     for command in commands:
@@ -149,20 +160,23 @@ def check(folder,python=None,live=False):
         last=command['finished']
     for name in ('library-arch','consumer-arch'):require((folder/'commands'/(name+'.stdout')).read_text().strip()==r['architecture'],'Native Metal artifact architecture differs')
     if version>=2:require((folder/'commands/buffer-consumer-arch.stdout').read_text().strip()==r['architecture'],'Buffer consumer architecture differs')
-    if version==3:require((folder/'commands/texture-consumer-arch.stdout').read_text().strip()==r['architecture'],'Texture consumer architecture differs')
+    if version>=3:require((folder/'commands/texture-consumer-arch.stdout').read_text().strip()==r['architecture'],'Texture consumer architecture differs')
+    if version==4:require((folder/'commands/graphics-consumer-arch.stdout').read_text().strip()==r['architecture'],'Graphics consumer architecture differs')
     if live:require(unchanged(r['frozen_inputs']) and sdk_fingerprint(ROOT)==r['SDK_source_fingerprint'],'Metal build/source/install input changed')
     count=None
     if python:
         count=core.validate_python(python,base)
         tested={x['path']:x['sha256'] for x in read(python/'receipt.json')['inputs']}
         require(tested['tools/macos_metal_backend.py']==next(x['sha256'] for x in r['source_inputs'] if x['path']=='tools/macos_metal_backend.py'),'Executed/tested Metal runner differs')
-        if version==3:require(tested['tools/macos_metal_textures.py']==next(x['sha256'] for x in r['source_inputs'] if x['path']=='tools/macos_metal_textures.py'),'Executed/tested texture checker differs')
+        if version>=3:require(tested['tools/macos_metal_textures.py']==next(x['sha256'] for x in r['source_inputs'] if x['path']=='tools/macos_metal_textures.py'),'Executed/tested texture checker differs')
+        if version==4:require(tested['tools/macos_metal_graphics.py']==next(x['sha256'] for x in r['source_inputs'] if x['path']=='tools/macos_metal_graphics.py'),'Executed/tested graphics checker differs')
     value=dict(architecture=r['architecture'],registry_ids=ids,CPU_CTests=11,Metal_CTests=version,native_and_installed_submissions=201,
         installed_consumer_passed=True,Python_contracts=count,**scope)
     if version>=2:
         value['marker_contract_submissions']=value.pop('native_and_installed_submissions')
         value.update(verified_buffer_bytes=verified,buffer_payload_files=44,buffer_cases_per_execution=22)
-    if version==3:value.update(texture_payload_files=88,verified_texture_bytes=2*sum(r['size'] for r in textures.catalog()),texture_cases_per_execution=44)
+    if version>=3:value.update(texture_payload_files=88,verified_texture_bytes=2*sum(r['size'] for r in textures.catalog()),texture_cases_per_execution=44)
+    if version==4:value.update(graphics_payload_files=36,verified_graphics_bytes=2*sum(r['size'] for r in graphics.catalog()),graphics_cases_per_execution=18)
     return value
 
 
@@ -176,7 +190,7 @@ def run(a):
     require(commit==base['source_commit'] and not subprocess.check_output([*GIT,'status','--porcelain','--untracked-files=no'],cwd=ROOT,text=True).strip(),'Metal/Core source differs or tracked checkout dirty')
     out=a.output.resolve();require(out.is_relative_to(ROOT/'out') and not out.exists(),'Fresh output under out/ required')
     out.mkdir(parents=True);shutil.copytree(a.availability,out/'availability');(out/'commands').mkdir()
-    frozen=[record(ROOT/n) for n in OWN_V3];source_inputs=[dict(path=n,sha256=sha(ROOT/n)) for n in OWN_V3]
+    frozen=[record(ROOT/n) for n in OWN_V4];source_inputs=[dict(path=n,sha256=sha(ROOT/n)) for n in OWN_V4]
     frozen += base['frozen_inputs']
     build=out.with_name(out.name+'-build');consumer=out.with_name(out.name+'-consumer');install=out.with_name(out.name+'-install')
     require(not any(p.exists() for p in (build,consumer,install)),'Fresh Metal build/install roots required')
@@ -196,11 +210,12 @@ def run(a):
         '-DCMAKE_INSTALL_PREFIX='+str(install),'-DCMAKE_INSTALL_LIBDIR=lib','-DGFX_ENABLE_METAL=ON','-DGFX_ENABLE_D3D12=OFF','-DGFX_ENABLE_VULKAN=OFF','-DGFX_BUILD_EXAMPLES=OFF','-DGFX_BUILD_TESTS=ON'])
     call('build',['cmake','--build',build,'--parallel','3','--verbose'])
     listing=json.loads(call('list-tests',['ctest','--test-dir',build,'--show-only=json-v1']))
-    require(len(listing['tests'])==14 and {t['name'] for t in listing['tests']}==set(core.TESTS)|{'metal_submission_contracts','metal_buffer_contracts','metal_texture_pass_contracts'},'Unexpected Metal/CPU suite')
+    require(len(listing['tests'])==15 and {t['name'] for t in listing['tests']}==set(core.TESTS)|{'metal_submission_contracts','metal_buffer_contracts','metal_texture_pass_contracts','metal_graphics_contracts'},'Unexpected Metal/CPU suite')
     call('ctest',['ctest','--test-dir',build,'--output-on-failure','--no-tests=error','--timeout','120','--output-junit',out/'tests.xml'])
     fp=base['SDK_source_fingerprint'];save(out/'native.json',json.loads(call('native',[build/'gfx_metal_tests',fp])))
     save(out/'buffer-native.json',json.loads(call('buffer-native',[build/'gfx_metal_buffer_tests',fp,out/'buffer-native-payloads'])))
     save(out/'texture-native.json',json.loads(call('texture-native',[build/'gfx_metal_texture_tests',fp,out/'texture-native-payloads'])))
+    save(out/'graphics-native.json',json.loads(call('graphics-native',[build/'gfx_metal_graphics_tests',ROOT/'tests/fixtures/metal/graphics.metal',fp,out/'graphics-native-payloads'])))
     call('install',['cmake','--install',build]);call('library-arch',['lipo','-archs',install/'lib/libGraphicsSDKCore.a'])
     call('consumer-configure',['cmake','-S',ROOT/'tests/macos_metal_consumer','-B',consumer,*flags,'-DCMAKE_PREFIX_PATH='+str(install)])
     call('consumer-build',['cmake','--build',consumer,'--verbose']);call('consumer-arch',['lipo','-archs',consumer/'macos_metal_consumer'])
@@ -209,17 +224,19 @@ def run(a):
     save(out/'buffer-consumer.json',json.loads(call('buffer-consumer',[consumer/'macos_metal_buffer_consumer',fp,out/'buffer-consumer-payloads'])))
     call('texture-consumer-arch',['lipo','-archs',consumer/'macos_metal_texture_consumer'])
     save(out/'texture-consumer.json',json.loads(call('texture-consumer',[consumer/'macos_metal_texture_consumer',fp,out/'texture-consumer-payloads'])))
+    call('graphics-consumer-arch',['lipo','-archs',consumer/'macos_metal_graphics_consumer'])
+    save(out/'graphics-consumer.json',json.loads(call('graphics-consumer',[consumer/'macos_metal_graphics_consumer',ROOT/'tests/fixtures/metal/graphics.metal',fp,out/'graphics-consumer-payloads'])))
     for name,path in (('sdk',build),('consumer',consumer)):
         for source,target in (('CMakeCache.txt','cache.txt'),('compile_commands.json','commands.json')):(out/(name+'-'+target)).write_bytes((path/source).read_bytes())
     headers=[dict(path=p.relative_to(install/'include').as_posix(),sha256=sha(p)) for p in sorted((install/'include').rglob('*.hpp'))]
     frozen += [record(p) for p in (build/'CMakeCache.txt',build/'compile_commands.json',consumer/'CMakeCache.txt',consumer/'compile_commands.json',build/'gfx_metal_tests',build/'gfx_metal_buffer_tests',install/'lib/libGraphicsSDKCore.a',consumer/'macos_metal_consumer',consumer/'macos_metal_buffer_consumer',*(install/'include').rglob('*.hpp'))]
     require(unchanged(frozen) and sdk_fingerprint(ROOT)==fp,'Source/build/install changed during Metal execution')
-    frozen += [record(build/'gfx_metal_texture_tests'),record(consumer/'macos_metal_texture_consumer')]
+    frozen += [record(build/'gfx_metal_texture_tests'),record(consumer/'macos_metal_texture_consumer'),record(build/'gfx_metal_graphics_tests'),record(consumer/'macos_metal_graphics_consumer')]
     with zipfile.ZipFile(out/'source.zip','w',zipfile.ZIP_DEFLATED) as z:
-        for n in OWN_V3:z.write(ROOT/n,n)
-    r=dict(schema_version=1,scope='macos-metal-textures-v3',status='completed',source_commit=commit,architecture=base['architecture'],SDK_source_fingerprint=fp,
+        for n in OWN_V4:z.write(ROOT/n,n)
+    r=dict(schema_version=1,scope='macos-metal-graphics-v4',status='completed',source_commit=commit,architecture=base['architecture'],SDK_source_fingerprint=fp,
         github_run_id=os.environ.get('GITHUB_RUN_ID'),install_directory=str(install),inputs_unchanged=True,source_inputs=source_inputs,installed_headers=headers,
-        frozen_inputs=frozen,commands=commands,files=[dict(path=p.relative_to(out).as_posix(),bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(out.rglob('*')) if p.is_file()],**SCOPE_V3)
+        frozen_inputs=frozen,commands=commands,files=[dict(path=p.relative_to(out).as_posix(),bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(out.rglob('*')) if p.is_file()],**SCOPE_V4)
     save(out/'receipt.json',r);print(json.dumps(check(out,live=True),indent=2))
 
 

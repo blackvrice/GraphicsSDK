@@ -29,7 +29,7 @@ jobs:
         run: python3 tools/macos_core.py run --architecture ${{ matrix.architecture }} --output out/macos-core-evidence
       - name: Survey native Metal devices and offline shader tools without GPU submission
         run: python3 tools/macos_metal_probe.py run --core out/macos-core-evidence --output out/macos-metal-evidence
-      - name: Execute SDK Metal submissions, buffers, textures and installed public consumers
+      - name: Execute SDK Metal submission, resources, graphics and installed public consumers
         run: python3 tools/macos_metal_backend.py run --availability out/macos-metal-evidence --output out/macos-metal-backend-evidence
       - name: Run every Python contract without exclusions
         run: python3 tools/check_python_contracts.py --output out/macos-python
