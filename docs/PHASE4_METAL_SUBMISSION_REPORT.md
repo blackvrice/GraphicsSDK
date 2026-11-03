@@ -20,6 +20,7 @@ cmake -S tests/macos_metal_consumer -B out/metal-consumer -G Ninja -DCMAKE_BUILD
 cmake --build out/metal-consumer
 out/metal-consumer/macos_metal_consumer
 out/metal-consumer/macos_metal_buffer_consumer
+out/metal-consumer/macos_metal_texture_consumer
 ```
 
 ## 구현 계약

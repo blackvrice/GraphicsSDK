@@ -51,6 +51,9 @@ jobs:
       - name: Replay saved Metal full buffer payloads, partial guards and lifetime evidence
         if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-metal-buffers/verify.py') != '' }}
         run: python3 benchmarks/reports/validation/2026-11-03-metal-buffers/verify.py
+      - name: Replay saved Metal full texture payloads and color-depth clear-load passes
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-metal-textures/verify.py') != '' }}
+        run: python3 benchmarks/reports/validation/2026-11-03-metal-textures/verify.py
       - name: Preserve diagnostics without system libraries or native binaries
         if: always()
         uses: actions/upload-artifact@v4

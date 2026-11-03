@@ -10,18 +10,20 @@ flowchart TD
   API --> Core[Result / backend selection / shader utilities]
   Core --> D3D12[D3D12 device / commands / resources / queue]
   Core --> Vulkan[Vulkan device / commands / resources / queue]
-  Core --> Metal[Opt-in Metal device / queue / buffers / submission]
+  Core --> Metal[Opt-in Metal buffers / textures / clear-load passes / queue]
   Suite[Independent benchmark runner] --> Adapters[LLGL / SDL3 / GraphicsSDK adapters]
   Adapters --> API
 ```
 
 Metal은 macOS에서 private Objective-C++/ARC unit을 선택적으로 빌드하며 public header는
 C++ 전용이다. 현재 장치·command queue·marker·제출/fence와 buffers·전송 동기화·수명을
-구현하고 texture/public shader/pipeline/draw는 Unsupported다. 버퍼 복사는 CPU operation
+구현하며 네 포맷의 texture 전송·color/depth Clear/Load/Store pass를 추가했다. public shader/
+pipeline/draw는 Unsupported다. 버퍼/texture 복사와 pass는 CPU operation
 list를 end에서 새 native command buffer로 finalization하며 실패 시 CPU 기록을 보존한다.
 정렬 prefix는 blit, 마지막 1~3바이트는 내부 전송 kernel로 처리한다. 세 backend는 공통 atomic 장치 세대 번호를 사용해 fence owner 충돌과
 번호 재사용을 막는다. 범위와 native 증거는 [Metal 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다.
 buffer ownership·managed synchronization·전체 참조는 [Metal 버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따른다.
+texture 초기화 shadow/commit·MRT·패스 상태·전체 texel 참조는 [Metal 텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
 
 `Device`와 자원은 backend 구현을 가상 인터페이스 뒤에 숨긴다. 자원은 shared_ptr
 소유권을 사용하고 명령 기록은 native 참조와 상태 snapshot을 저장한다. 제출 시

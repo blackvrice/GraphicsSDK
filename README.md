@@ -6,7 +6,9 @@ Independent C++23 graphics SDK, namespace `gfx`, CMake target `GraphicsSDK::Core
 An opt-in [macOS Metal device/queue/submission slice](docs/PHASE4_METAL_SUBMISSION_REPORT.md)
 supports adapter selection, markers and fence completion, plus
 [buffers, transfer synchronization and retained lifetimes](docs/PHASE4_METAL_BUFFER_REPORT.md).
-Metal textures, public shader/pipeline APIs, drawing and presentation remain unimplemented.
+[Metal texture transfers and color/depth clear/load passes](docs/PHASE4_METAL_TEXTURE_REPORT.md)
+include four formats, MRT and full readback verification. Public Metal shader/pipeline APIs,
+drawing and presentation remain unimplemented.
 This is not a completed cross-platform SDK release.
 
 Vulkan validation now explicitly requests core/synchronization checks and has a

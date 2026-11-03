@@ -1,5 +1,8 @@
 # Metal buffers·전송 동기화·수명 준비
 
+이 문서는 아래 `9f9b1d5` 소스의 buffer 준비와 보관 근거다. 이후 texture/pass 기능은
+[Metal 텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)에 별도로 기록한다.
+
 P4-MTL-03 구현 준비다. 기존 macOS opt-in Metal backend에 Upload/Device/Readback 버퍼와
 논리 상태·복사·stale version·완료 보유를 추가한다. 공개 header 변경은 없다.
 

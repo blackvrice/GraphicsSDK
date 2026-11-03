@@ -2104,10 +2104,11 @@
       "depends_on": [
         "P4-MTL-03"
       ],
-      "work": "Metal textures·buffer-texture 전송·pass 구현. RGBA8/BGRA8/RGBA16F/D32 private 2D texture·256-byte row footprint·managed readback sync·tracked hazard·초기화 shadow/commit·stale/거부 원자성·native 수명/퇴역을 추가했다. color/depth Clear/Load/Store와 2/4/8 mixed MRT, read-only depth, pass marker 및 pass 상태 guard를 구현했다. native/설치 소비자의 44개 전체 texel·padding payload와 v3 receipt·현재 checker 재생, 7개 adversarial Python 계약을 준비했다. graphics pipeline/draw·물리 GPU/native validation·선행 gate 수용은 미완료다.",
+      "work": "Metal textures·buffer-texture 전송·pass 구현. RGBA8/BGRA8/RGBA16F/D32 private 2D texture·256-byte row footprint·managed readback sync·tracked hazard·초기화 shadow/commit·stale/거부 원자성·native 수명/퇴역을 추가했다. color/depth Clear/Load/Store와 2/4/8 mixed MRT, read-only depth, pass marker 및 pass 상태 guard를 구현했다. native/설치 소비자의 44개 전체 texel·padding payload와 v3 receipt·현재 checker 재생, 7개 adversarial Python 계약을 준비했다. graphics pipeline/draw·물리 GPU/native validation·선행 gate 수용은 미완료다. 동일 소스 macOS arm64/Intel에서 각 CPU 11+Metal 3 CTest·세 직접/설치 소비자·Python 1,494개가 통과했다. texture 직접/설치 실행은 각각 44개 이미지와 106,925 assertion을 검사했다. 전체 texture readback 176개·1,297,408바이트와 원본 evidence 512개를 보관하고 Windows에서 모든 texel/guard를 독립 재검증했다. 같은 소스 Windows/Linux 회귀와 Linux Vulkan 컴파일도 통과했으며 선행 gate·physical/native validation 수용은 남아 있다.",
       "done_when": "전체 texel/padding·Clear/Load 참조.",
       "evidence": [
-        "docs/PHASE4_METAL_TEXTURE_REPORT.md"
+        "docs/PHASE4_METAL_TEXTURE_REPORT.md",
+        "benchmarks/reports/validation/2026-11-03-metal-textures/verify.py"
       ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },

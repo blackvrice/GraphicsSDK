@@ -52,6 +52,7 @@ Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux Vulka
 [장치·queue·submission 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다. Linux 물리 GPU/사람의 화면 수용은
 미완료다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 Metal buffer 전송·수명과 설치 buffer 소비자는 [버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따른다.
+Metal texture·color/depth clear/load·MRT와 세 번째 설치 소비자는 [텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
 현재 host의 Linux 환경 가용성은 [P3-LNX-01 조사](PHASE3_LINUX_ENVIRONMENT.md)에
 기록한다. 로컬 WSL 미설치 관측은 보존하며, 후속 실제 Linux compile 근거는 별도 CI 보고서에 연결한다.
 Linux 전용 `linux-vulkan` / `linux-vulkan-validation` preset의 backend flag·외부 헤더·
