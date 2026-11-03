@@ -9,9 +9,16 @@ flowchart TD
   Consumer[C++ consumer] --> API[include/graphics]
   API --> Core[Result / backend selection / shader utilities]
   Core --> D3D12[D3D12 device / commands / resources / queue]
+  Core --> Vulkan[Vulkan device / commands / resources / queue]
+  Core --> Metal[Opt-in Metal device / queue / submission]
   Suite[Independent benchmark runner] --> Adapters[LLGL / SDL3 / GraphicsSDK adapters]
   Adapters --> API
 ```
+
+Metal은 macOS에서 private Objective-C++/ARC unit을 선택적으로 빌드하며 public header는
+C++ 전용이다. 현재 장치·command queue·marker·제출/fence만 구현하고 resources/draw는
+Unsupported다. 세 backend는 공통 atomic 장치 세대 번호를 사용해 fence owner 충돌과
+번호 재사용을 막는다. 범위와 native 증거는 [Metal 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다.
 
 `Device`와 자원은 backend 구현을 가상 인터페이스 뒤에 숨긴다. 자원은 shared_ptr
 소유권을 사용하고 명령 기록은 native 참조와 상태 snapshot을 저장한다. 제출 시

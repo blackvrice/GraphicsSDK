@@ -1,6 +1,6 @@
 # Docker·GitHub CLI로 다른 OS 검사하기
 
-2026-10-29 기준. Windows 개발 PC에서 **로컬 Linux 검사는 Docker**, **원격 Windows/Linux CI는 GitHub CLI**를 사용한다. macOS는 별도 GitHub runner workflow를 추가하는 예시를 아래에 둔다. 이 문서를 추가한 것만으로 OS/GPU 수용 항목을 완료 처리하지 않는다.
+2026-11-03 갱신. Windows 개발 PC에서 **로컬 Linux 검사는 Docker**, **원격 Windows/Linux/macOS CI는 GitHub CLI**를 사용한다. native macOS arm64/Intel의 Core·Metal workflow가 등록되어 있다. OS/API 실행과 물리 GPU·표시·성능 수용을 구분한다.
 
 ## 1. 검사 범위 선택
 
@@ -11,7 +11,7 @@
 | Linux Vulkan 기능·core/sync validation | Docker `validation` 또는 `linux-vulkan-validation.yml` | Mesa software ICD의 전송·렌더링·필수 layer·오류 통제 | 물리 GPU 성능·driver 수용 |
 | Linux X11/XCB | 기존 XCB CI | Xvfb·software ICD에서 창/표면·resize·수명·전체 참조 | 실제 화면을 사람이 확인하는 수용 |
 | Windows 회귀 | 기존 `build.yml` | Windows SDK 빌드·기본 테스트와 Python 검사 | hosted runner의 WARP/CPU 결과를 실제 GPU/GBV 수용으로 확대하지 않음 |
-| macOS CPU 이식성 | 아래 macOS workflow 추가 예시 | macOS compiler·CPU 계약 | 현재 Metal backend는 미구현이며 Metal/GPU 지원을 확인하는 검사가 아님 |
+| macOS Core·Metal 준비 | `macos-core.yml` arm64/Intel | native compiler·Core CPU·Metal 장치/제출·설치 소비자 | 일반 runner의 가상 장치 실행이며 물리 GPU·Metal resources/draw·표시·성능 수용이 아님 |
 | 실제 Linux GPU | 등록된 Linux GPU self-hosted runner | 지정 ICD·장치 UUID의 실제 suite/validation | runner·driver·장치를 따로 준비해야 함 |
 
 Docker Linux 컨테이너는 macOS를 대신 실행하는 환경이 아니다. Windows Docker Desktop에서는 Linux backend를 통해 Linux 컨테이너를 실행한다. 실제 OS 정보는 컨테이너의 `uname`과 검사 receipt에 남긴다. [Docker WSL backend 설명](https://docs.docker.com/desktop/features/wsl/).
@@ -49,7 +49,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop과 Linux 엔진 연결을 확�
 
 이 PC에서는 Docker `29.9.2`, context `desktop-linux`, server OS `linux`, GitHub CLI `2.103.3`과 로그인 정상 응답을 확인했다. 설치 경로가 다른 PC에서는 `$Docker`·`$Gh`를 실제 위치로 바꾼다. CLI 버전 출력만으로 Docker server 연결까지 성공했다고 판단하지 않는다.
 
-문서 작성 중 PowerShell 구문, Dockerfile `build --check`, Bash `bash -n`, 기본 Ubuntu 컨테이너의 `uname -s`가 통과한 것을 확인했다. 아래 SDK 검사 3개 모드와 macOS 예시 전체를 이번 문서 작업에서 새로 실행한 것은 아니다.
+2026-10-29 최초 문서 작업에서는 PowerShell 구문, Dockerfile `build --check`, Bash `bash -n`, 기본 Ubuntu 컨테이너의 `uname -s`를 확인했다. 당시 아래 SDK 검사 3개 모드와 macOS 예시 전체를 새로 실행한 것은 아니다. 후속 native macOS 실행과 보관 근거는 현재 5절의 보고서를 따른다.
 
 로그인이 필요한 경우 다음은 **사용자가 브라우저에서 완료하는** 절차다. 토큰을 문서·로그·Docker 이미지에 복사하지 않는다.
 
@@ -236,46 +236,33 @@ Write-Output "검사 결과: $EvidenceDir"
 
 XCB 가상 화면 검사까지 필요한 경우에는 위 이미지에 임의 설정을 덧붙여 성공으로 간주하지 말고, 먼저 해당 기존 workflow의 `libxcb1-dev`·`xvfb`·`xauth`·`openbox`와 고정 `--xcb` validation 준비 절차를 그대로 따른다. 간단한 시작점은 3절의 `linux-xcb-matrix.yml`이다.
 
-## 5. macOS 검사 추가 예시
+## 5. 등록된 macOS arm64/Intel 검사
 
-현재 저장소에는 macOS workflow가 없다. 아래는 `.github/workflows/macos-portable.yml`로 **추가·커밋해 기본 branch인 main에 등록한 뒤** 사용할 수 있는 수동 실행 예시다. 이 문서에 예시를 실은 것과 macOS 검사가 이미 통과한 것은 다르다. runner label의 architecture는 실제 로그의 `uname -m`으로 확인한다. [GitHub runner OS·architecture 목록](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
+[macos-core.yml](../.github/workflows/macos-core.yml)은 push/PR/수동 실행으로 일반 `macos-15`
+arm64와 `macos-15-intel` x86_64를 검사한다. Docker Linux 컨테이너로 대체하지 않는다.
 
-```yaml
-name: macOS portable CPU checks
-on:
-  workflow_dispatch:
-permissions:
-  contents: read
-jobs:
-  portable:
-    runs-on: macos-15
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Prepare compiler tools
-        run: |
-          uname -a
-          clang++ --version
-          cmake --version
-          if ! command -v ninja >/dev/null; then brew install ninja; fi
-      - run: cmake --preset portable-core -DCMAKE_CXX_COMPILER=clang++ -DGFX_ENABLE_D3D12=OFF -DGFX_ENABLE_VULKAN=OFF
-      - run: cmake --build --preset portable-core --parallel 1
-      - run: ctest --preset portable-core --no-tests=error --output-junit "$PWD/out/macos-cpu.xml"
-      - run: python3 tools/check_python_contracts.py --output out/python-contracts
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: macos-portable-${{ github.sha }}
-          path: |
-            out/macos-cpu.xml
-            out/portable/Testing/Temporary/
-            out/python-contracts/
-          if-no-files-found: warn
+```powershell
+& $Gh workflow run macos-core.yml --repo $Repository --ref main
+& $Gh run list --workflow macos-core.yml --repo $Repository --limit 5
+# 선택한 실행 ID를 3절의 방식으로 watch/download한다.
 ```
 
-추가 후 `gh workflow run macos-portable.yml --repo $Repository --ref main`으로 실행한다. 감시·artifact 수집은 3절을 따른다. C++23/compiler·OS 차이로 실패하면 미대응 부분의 발견으로 기록한다. Metal·MoltenVK·macOS 화면 검증은 이 CPU 예시에 포함되지 않는다.
+Core 단계는 D3D12/Vulkan/Metal OFF의 CPU CTest 11개와 설치 public 소비자를 검사한다.
+별도 Metal availability 단계는 실제 장치 registry ID/default·정확한 선택/부정 대조와
+native framework·offline shader compile을 관찰하며 command 제출은 하지 않는다.
+그다음 Metal ON 빌드는 CPU 11개+Metal 제출 CTest 1개·직접 실행·설치 소비자를 수행한다.
+67회씩 3회 native 계약을 실행하고 전체 Python suite와 source/fingerprint를 결합한다.
+
+Artifact `macos-core-<architecture>-<source commit>`에는 `macos-core-evidence`,
+`macos-metal-evidence`, `macos-metal-backend-evidence`, `macos-python`을 보관한다.
+실패해도 원본 stdout/stderr·cache·compiler graph·receipt를 수집한다. native binary·
+system framework·외부 SDK는 업로드하지 않는다. 실제 범위와 보관 결과는
+[Core 보고서](PHASE4_MACOS_CORE_REPORT.md), [가용성 보고서](PHASE4_METAL_AVAILABILITY_REPORT.md),
+[SDK 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다.
+
+일반 runner에서 관측한 Apple Paravirtual 장치를 physical GPU로 분류하지 않는다.
+Metal resources/transfer/shader dispatch/draw·표시·native validation·성능 수용은 남아 있으며
+P3-LNX-15를 완료하는 Linux 물리 GPU 증거를 대체하지 않는다.
 
 ## 6. 실제 Linux GPU와 화면 수용
 

@@ -64,6 +64,18 @@ DXBC 경로이며 [SHADER_PIPELINE](SHADER_PIPELINE.md)의 한계를 따른다.
 caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을
 보장하지 않는다. Result 실패를 확인하는 전체 예제는 `examples/Triangle.cpp`에 있다.
 
+macOS의 opt-in `GFX_ENABLE_METAL=ON`은 현재 장치 열거/생성, queue, command begin/end,
+UTF-8 debug marker, 제출과 fence 대기/완료만 구현한다. `Backend::Metal`의 AdapterId는
+native registry ID이며 default는 system default device, 명시적 ID 부재는 Unsupported다.
+softwareAdapter=false는 지원하는 선택 정책이며 물리/가상 장치 판정이 아니다.
+validation/software/device-loss-testing 옵션은 Unsupported다. Metal의 buffer/texture/
+pipeline/draw·timestamp·표시·recovery·validation count·OS budget도 Unsupported이며
+caps는 미구현 기능을 false로 유지한다. 세부 계약과 native 검사는
+[Metal 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다.
+
+D3D12/Vulkan/Metal의 fence owner는 연결된 SDK 안에서 공통 번호 발급기를 사용한다.
+장치 세대 번호는 재사용·overflow wrap하지 않으며 고갈 시 생성이 InvalidState로 실패한다.
+
 ## 어댑터 조회와 명시적 선택
 
 `enumerateAdapters(Backend::D3D12)`는 매 호출마다 새 DXGI 후보 목록을 반환한다.

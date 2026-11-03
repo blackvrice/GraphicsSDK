@@ -45,6 +45,9 @@ jobs:
       - name: Replay saved Metal device and shader-tool availability
         if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-metal-availability/verify.py') != '' }}
         run: python3 benchmarks/reports/validation/2026-11-03-metal-availability/verify.py
+      - name: Replay saved native SDK Metal submission and installed-consumer evidence
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-metal-submission/verify.py') != '' }}
+        run: python3 benchmarks/reports/validation/2026-11-03-metal-submission/verify.py
       - name: Preserve diagnostics without system libraries or native binaries
         if: always()
         uses: actions/upload-artifact@v4

@@ -5,6 +5,19 @@ OFF다. C++ 공개 header에는 Objective-C를 노출하지 않고 private `Meta
 OBJCXX 언어·C++23·ARC로 컴파일한다. 기존 SDK source fingerprint에 이 unit이 포함된다.
 정적 `GraphicsSDK::Core` 패키지는 system Metal/Foundation framework 의존성을 전달한다.
 
+macOS에서 Xcode C++23 toolchain·CMake·Ninja를 준비한 뒤 실행한다. 장치가 없으면 이
+Metal 계약 검사는 실패하며 CPU-only 검사는 `GFX_ENABLE_METAL=OFF`를 사용한다.
+
+```sh
+cmake -S . -B out/metal -G Ninja -DCMAKE_BUILD_TYPE=Release -DGFX_ENABLE_D3D12=OFF -DGFX_ENABLE_VULKAN=OFF -DGFX_ENABLE_METAL=ON -DGFX_BUILD_EXAMPLES=OFF
+cmake --build out/metal --parallel 3
+ctest --test-dir out/metal --output-on-failure --no-tests=error
+cmake --install out/metal --prefix out/metal-install
+cmake -S tests/macos_metal_consumer -B out/metal-consumer -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$PWD/out/metal-install"
+cmake --build out/metal-consumer
+out/metal-consumer/macos_metal_consumer
+```
+
 ## 구현 계약
 
 - MTLCopyAllDevices의 registry ID를 backend-scoped AdapterId로 정렬·중복 검사한다.
@@ -59,7 +72,45 @@ python3 tools/macos_metal_backend.py check --output out/macos-metal-backend-evid
 
 Offline check는 archived source/native code를 실행하지 않는다. 7개 CPU receipt 계약은
 실행 누락·skip·scope 승격·잘못된 compiler graph/architecture/language를 거부한다.
-이는 native 실행을 대체하지 않는다. 실제 CI 결과는 실행 후 이 문서에 추가한다.
+이는 native 실행을 대체하지 않는다.
 
 Phase 3 gate·P3-LNX-15·P4-MTL-01 의존성과 물리 GPU 수용은 미완료다. 143개 roadmap
 ID/status와 active Phase 3를 유지하고 P4-MTL-02의 진행 근거만 추가한다.
+
+## 실제 실행과 보관 결과
+
+소스 `8ad09321d1bfe284f704e92a7c76266b8c3b9c94`, SDK fingerprint
+`e20fb799357fa64ca59d9c474310b9396e52d70b3c17a409f36668d83559461d`의
+[macOS arm64/Intel CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41611111609)가
+모두 통과했다. 두 환경 모두 Apple Paravirtual device 1개를 관측했고 registry ID 정확한
+선택과 부재 거부, native command queue·marker·기록/제출/완료·zero poll Timeout 후
+재대기·자식 수명 계약을 실행했다. ID는 각 VM 실행의 관측값으로 다음 실행에 고정하지 않는다.
+물리 GPU 판정 또는 데이터 전송/draw 검증으로 사용하지 않는다.
+
+각 환경에서 native CTest 12개(기존 CPU 11개+Metal 1개), 직접 실행과 설치 소비자가
+통과했다. 직접/설치 실행은 각각 116개 assertion을 수행했다. 제출은 실행당 66회
+Completed 확인과 1회 장치 파괴 시 native 완료 대기·정리로 총 201회다. 두 zero poll은
+실제로 Timeout을 반환했고 같은 fence 재대기가 성공했다. timeout 강제 유도나 native
+NSError 주입은 하지 않았다. 공통 세대 번호 고갈·4개 스레드 256개 발급을 포함한
+어댑터 CPU 실행은 262개 assertion이 통과했다.
+
+각 환경의 전체 Python 1,480개도 통과했다. 같은 소스의
+[Windows/Linux 회귀](https://github.com/blackvrice/GraphicsSDK/actions/runs/41611111298)와
+[Linux Vulkan 컴파일](https://github.com/blackvrice/GraphicsSDK/actions/runs/41611111329)도 통과했다.
+SDK/test compiler graph 18 units(그중 private ARC Objective-C++ 1개), 설치 소비자 1 unit,
+public header 13개와 이번 helper source 7개를 기록했다. SDK unit은 strict C++23,
+CMake test target의 GNU C++23도 허용하고 architecture/SDK/O2/잘못된 backend는 계속 검사한다.
+
+원본 216개를 `benchmarks/reports/validation/2026-11-03-metal-submission/`에 source ZIP,
+inventory/summary/manifest와 보관했고 Windows에서 현재 검사기로 독립 재생했다.
+evidence ZIP은 1,011,490바이트다. system SDK/framework·native binary를 재배포하지 않으며
+해당 binary 크기/hash와 compiler/log/receipt를 보존한다. manifest는 자체 hash 목록이며
+외부 신뢰 서명이 아니다. 과거 Metal availability·Core·Linux 증거도 그대로 유지한다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-03-metal-submission/verify.py
+```
+
+Windows/Linux/macOS CI에 이 재생을 연결한다. P4-MTL-02는 선행 Phase 3/P4-MTL-01 수용과
+native fault/validation·물리 GPU 검증을 완료한 것으로 승격하지 않는다. 다음 구현은
+P4-MTL-03의 buffers·전송 동기화·resource lifetime이며 별도 실제 payload 검사가 필요하다.

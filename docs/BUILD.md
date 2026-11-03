@@ -1,7 +1,7 @@
 # Build
 
 Windows에서 Docker·GitHub CLI로 Linux 검사·CI 실행·원본 수집을 하려면
-[다른 OS 검사 가이드](CROSS_PLATFORM_TESTING.md)를 따른다. macOS CPU workflow 추가 예시와
+[다른 OS 검사 가이드](CROSS_PLATFORM_TESTING.md)를 따른다. macOS arm64/Intel native Core·Metal workflow와
 software/물리 GPU·사람의 화면 확인 범위도 구분한다.
 
 Linux XCB native surface 연결은 `-DGFX_ENABLE_VULKAN=ON -DGFX_VULKAN_XCB=ON`으로 켠다.
@@ -45,10 +45,12 @@ cmake --build out/consumer --config Release
 ./out/core/Release/gfx_indexed_quads.exe out/indexed-quads.ppm
 ```
 
-SDK 자체에는 다운로드가 없다. D3D12와 Vulkan을 모두 끈 빌드는 GPU backend를 제공하지 않으며
+SDK 자체에는 다운로드가 없다. D3D12·Vulkan·Metal을 모두 끈 빌드는 GPU backend를 제공하지 않으며
 Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux Vulkan의 native compile·CPU 검사는
-[Ubuntu CI에서 검증](PHASE3_LINUX_COMPILE_REPORT.md)했다. Linux 물리 GPU/WSI와 macOS native build/runtime은
-미검증이다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
+[Ubuntu CI에서 검증](PHASE3_LINUX_COMPILE_REPORT.md)했다. macOS native Core는
+[arm64/Intel 보고서](PHASE4_MACOS_CORE_REPORT.md), 별도 Metal 준비는
+[장치·queue·submission 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다. Linux 물리 GPU/사람의 화면 수용은
+미완료다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 현재 host의 Linux 환경 가용성은 [P3-LNX-01 조사](PHASE3_LINUX_ENVIRONMENT.md)에
 기록한다. 로컬 WSL 미설치 관측은 보존하며, 후속 실제 Linux compile 근거는 별도 CI 보고서에 연결한다.
 Linux 전용 `linux-vulkan` / `linux-vulkan-validation` preset의 backend flag·외부 헤더·
