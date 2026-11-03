@@ -1,5 +1,8 @@
 # Metal SDK 장치·queue·submission 준비
 
+이 문서는 아래 소스 `8ad0932`의 submission 전용 구현과 보관 근거다. 후속 buffer·동기화·
+수명 구현과 native 자원 퇴역 방식은 [Metal 버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따른다.
+
 P4-MTL-02의 구현 준비다. `GFX_ENABLE_METAL=ON`은 native macOS에서만 지원하며 기본값은
 OFF다. C++ 공개 header에는 Objective-C를 노출하지 않고 private `Metal.cpp`만 CMake의
 OBJCXX 언어·C++23·ARC로 컴파일한다. 기존 SDK source fingerprint에 이 unit이 포함된다.
@@ -16,6 +19,7 @@ cmake --install out/metal --prefix out/metal-install
 cmake -S tests/macos_metal_consumer -B out/metal-consumer -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$PWD/out/metal-install"
 cmake --build out/metal-consumer
 out/metal-consumer/macos_metal_consumer
+out/metal-consumer/macos_metal_buffer_consumer
 ```
 
 ## 구현 계약

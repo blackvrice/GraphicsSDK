@@ -36,7 +36,8 @@ P4-MTL-03 구현 준비다. 기존 macOS opt-in Metal backend에 Upload/Device/R
 MetalBufferTests는 1/2/3/4/5/7/257/259/4096/65539/1048579바이트의 full copy와 각 19바이트
 guard를 가진 partial copy를 검사한다. Upload→private Device→Readback의 전체 byte 참조,
 동일 command의 write-after-write, unaligned CPU slice, 잘못된 range/memory/state/thread/
-generation·stale CPU write/빈 write·sibling 제출·transition, 거부 원자성·미제출 보유·
+generation·stale CPU write/빈 write·sibling 제출·transition, 연속 제출의 private 데이터,
+거부 원자성·미제출 보유·
 wrapper 해제 후 native 보유·최종 회수·퇴역을 검사한다. busy/timeout 강제 주입은 하지 않는다.
 
 macOS CI는 CPU-only Core/가용성 조사 후 Metal ON CTest 13개와 submission/buffer 직접
@@ -54,5 +55,42 @@ python3 tools/macos_metal_backend.py run --availability out/macos-metal-evidence
 python3 tools/macos_metal_backend.py check --output out/macos-metal-backend-evidence --python out/macos-python --live
 ```
 
-실제 실행 결과는 검증 후 아래에 기록한다. 물리 GPU·성능·native validation/오류 강제 주입과
+물리 GPU·성능·native validation/오류 강제 주입과
 선행 Phase 3/P4 수용을 완료한 것으로 승격하지 않는다. 143개 roadmap 상태는 유지한다.
+
+## 실제 실행과 보관 결과
+
+소스 `9f9b1d50a9c818c174a9350a072ae6707e9fe4ed`, SDK fingerprint
+`7c795e6f5dad1cf9f6bf97015bf47c84153e510b1d816bd6f9de911b8b55dbbe`의
+[macOS arm64/Intel CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41616526930)가
+모두 통과했다. 각 환경에서 CPU 11+Metal 2 CTest, marker/buffer 직접 실행과 두 설치
+소비자, 전체 Python 1,487개가 통과했다. buffer 직접/설치 실행은 각각 151개 assertion,
+full 11+partial 11개의 모든 byte와 19-byte guard를 검사했다. 별도 CTest 실행도 같은
+payload 비교와 제어 계약을 수행한다. 이전 marker suite의 201회 제출과 buffer 제출은
+구분하며 201을 전체 buffer 제출 수로 재사용하지 않는다.
+
+각 환경의 직접/설치 readback 파일 44개, 4,475,426바이트를 저장하고 Windows의 현재
+checker로 모든 byte/guard를 독립 재계산했다. 총 88개·8,950,852바이트다. 두 장치는
+Apple Paravirtual device이며 arm64의 unified_memory=true, Intel=false를 관측했다.
+native buffer factory는 선택한 shared/managed·private mode와 tracked hazard/mapping/
+allocatedSize를 검사했다. 이로써 두 host storage 경로의 실제 데이터 전송을 확인했다.
+물리 GPU·실제 discrete 장치 driver 수용으로 승격하지 않는다.
+
+같은 소스의 [Windows/Linux 회귀 CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41616527013)도
+통과했고 [Linux Vulkan 컴파일·CPU 계약](https://github.com/blackvrice/GraphicsSDK/actions/runs/41616527020)도
+통과했다. source ZIP 8개 입력, SDK/tests compiler graph 19 units 중 private ObjC++/ARC 1개,
+설치 소비자 2 units, public headers 13개를 기록했다. 원본 evidence 파일 320개를
+`benchmarks/reports/validation/2026-11-03-metal-buffers/`에 inventory/summary/manifest와
+함께 보관했다. evidence ZIP은 1,114,003바이트다. native executable·system SDK/framework는
+재배포하지 않으며 hash/크기와 실제 source/build/receipt/전체 readback 데이터만 보관한다.
+manifest는 자체 hash 목록으로 외부 신뢰 서명이 아니다. archived code/native binary를
+실행하지 않고 현재 checker로 재생한다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-03-metal-buffers/verify.py
+```
+
+이 재생을 Windows/Linux/macOS CI에 연결한다. 과거 submission v1, Metal availability,
+Core 및 Linux 증거도 유지한다. P4-MTL-03의 native API 기능 준비 근거이며 선행 gate와
+물리 GPU·native validation/오류 주입 수용은 미완료다. 다음 구현은 P4-MTL-04의 textures·
+buffer-texture 전송·pass이며 별도 전체 texel 참조가 필요하다.
