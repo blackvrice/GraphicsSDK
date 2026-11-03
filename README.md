@@ -7,8 +7,10 @@ An opt-in [macOS Metal device/queue/submission slice](docs/PHASE4_METAL_SUBMISSI
 supports adapter selection, markers and fence completion, plus
 [buffers, transfer synchronization and retained lifetimes](docs/PHASE4_METAL_BUFFER_REPORT.md).
 [Metal texture transfers and color/depth clear/load passes](docs/PHASE4_METAL_TEXTURE_REPORT.md)
-include four formats, MRT and full readback verification. Public Metal shader/pipeline APIs,
-drawing and presentation remain unimplemented.
+include four formats, MRT and full readback verification.
+[Metal graphics pipelines](docs/PHASE4_METAL_GRAPHICS_REPORT.md) accept reviewed MSL source and
+support vertex/index/instance input, binding snapshots, sampling, blend/scissor and depth/MRT draws.
+Metal presentation, timestamps and native validation remain unimplemented.
 This is not a completed cross-platform SDK release.
 
 Vulkan validation now explicitly requests core/synchronization checks and has a

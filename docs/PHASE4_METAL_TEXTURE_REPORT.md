@@ -1,5 +1,8 @@
 # Metal textures·전송·clear/load pass 준비
 
+이 문서는 해당 slice의 당시 범위와 원본 증거다. 이후 MSL pipeline·입력/binding·draw 지원은
+[Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
+
 P4-MTL-04의 native API 기능 준비다. opt-in macOS Metal backend에 RGBA8UNorm,
 BGRA8UNorm, RGBA16Float, D32Float의 single-sample/mip 2D private texture를 추가한다.
 공개 header는 바꾸지 않는다. shader/pipeline/draw·표시·timestamp·native validation은 미지원이다.

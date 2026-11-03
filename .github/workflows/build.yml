@@ -69,6 +69,8 @@ jobs:
         run: python benchmarks/reports/validation/2026-11-03-metal-buffers/verify.py
       - name: Replay native Metal full textures and color-depth clear-load passes
         run: python benchmarks/reports/validation/2026-11-03-metal-textures/verify.py
+      - name: Replay native Metal graphics inputs, bindings and full draw images
+        run: python benchmarks/reports/validation/2026-11-03-metal-graphics/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -170,6 +172,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-11-03-metal-buffers/verify.py
       - name: Replay native Metal full textures and color-depth clear-load passes
         run: python3 benchmarks/reports/validation/2026-11-03-metal-textures/verify.py
+      - name: Replay native Metal graphics inputs, bindings and full draw images
+        run: python3 benchmarks/reports/validation/2026-11-03-metal-graphics/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements

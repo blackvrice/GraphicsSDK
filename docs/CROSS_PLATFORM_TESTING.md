@@ -11,7 +11,7 @@
 | Linux Vulkan 기능·core/sync validation | Docker `validation` 또는 `linux-vulkan-validation.yml` | Mesa software ICD의 전송·렌더링·필수 layer·오류 통제 | 물리 GPU 성능·driver 수용 |
 | Linux X11/XCB | 기존 XCB CI | Xvfb·software ICD에서 창/표면·resize·수명·전체 참조 | 실제 화면을 사람이 확인하는 수용 |
 | Windows 회귀 | 기존 `build.yml` | Windows SDK 빌드·기본 테스트와 Python 검사 | hosted runner의 WARP/CPU 결과를 실제 GPU/GBV 수용으로 확대하지 않음 |
-| macOS Core·Metal 준비 | `macos-core.yml` arm64/Intel | native compiler·Core CPU·Metal 장치/제출·설치 소비자 | 일반 runner의 가상 장치 실행이며 물리 GPU·Metal public pipeline/draw·표시·성능 수용이 아님 |
+| macOS Core·Metal 준비 | `macos-core.yml` arm64/Intel | native compiler·Core CPU·Metal 장치/제출/graphics·설치 소비자 | 일반 runner의 가상 장치 실행이며 물리 GPU·표시·성능 수용이 아님 |
 | 실제 Linux GPU | 등록된 Linux GPU self-hosted runner | 지정 ICD·장치 UUID의 실제 suite/validation | runner·driver·장치를 따로 준비해야 함 |
 
 Docker Linux 컨테이너는 macOS를 대신 실행하는 환경이 아니다. Windows Docker Desktop에서는 Linux backend를 통해 Linux 컨테이너를 실행한다. 실제 OS 정보는 컨테이너의 `uname`과 검사 receipt에 남긴다. [Docker WSL backend 설명](https://docs.docker.com/desktop/features/wsl/).
@@ -250,18 +250,20 @@ arm64와 `macos-15-intel` x86_64를 검사한다. Docker Linux 컨테이너로 �
 Core 단계는 D3D12/Vulkan/Metal OFF의 CPU CTest 11개와 설치 public 소비자를 검사한다.
 별도 Metal availability 단계는 실제 장치 registry ID/default·정확한 선택/부정 대조와
 native framework·offline shader compile을 관찰하며 command 제출은 하지 않는다.
-그다음 Metal ON 빌드는 CPU 11개+Metal 제출/buffer/texture CTest 3개·직접 실행·세 설치 소비자를 수행한다.
+그다음 Metal ON 빌드는 CPU 11개+Metal 제출/buffer/texture/graphics CTest 4개·직접 실행·네 설치 소비자를 수행한다.
 marker 계약은 67회씩 3회 제출한다. 별도 buffer 계약은 실행당 11개 full+11개 partial 전체 byte/guard를 비교하고 직접/설치 실행에서 총 44개 readback 파일을 남긴다. texture/pass 계약은 실행당 44개 전체 이미지·row padding을 비교하고 직접/설치 실행에서 88개 readback 파일을 남긴다. 전체 Python suite와 source/fingerprint를 결합한다.
+Graphics는 고정 MSL fixture·native compiler/reflection과 실행당 18개 전체 draw 이미지·padding을
+검사하며 직접/설치 실행의 36개 파일을 남긴다. snapshot·입력/배열 sampler·blend/scissor·depth/MRT를 포함한다.
 
 Artifact `macos-core-<architecture>-<source commit>`에는 `macos-core-evidence`,
 `macos-metal-evidence`, `macos-metal-backend-evidence`, `macos-python`을 보관한다.
 실패해도 원본 stdout/stderr·cache·compiler graph·receipt를 수집한다. native binary·
 system framework·외부 SDK는 업로드하지 않는다. 실제 범위와 보관 결과는
 [Core 보고서](PHASE4_MACOS_CORE_REPORT.md), [가용성 보고서](PHASE4_METAL_AVAILABILITY_REPORT.md),
-[SDK 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md), [버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md), [텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
+[SDK 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md), [버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md), [텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md), [graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
 
 일반 runner에서 관측한 Apple Paravirtual 장치를 physical GPU로 분류하지 않는다.
-Metal public shader/pipeline/draw·표시·native validation·성능 수용은 남아 있으며
+Metal 표시·native validation·성능과 물리 GPU 수용은 남아 있으며
 P3-LNX-15를 완료하는 Linux 물리 GPU 증거를 대체하지 않는다.
 
 ## 6. 실제 Linux GPU와 화면 수용

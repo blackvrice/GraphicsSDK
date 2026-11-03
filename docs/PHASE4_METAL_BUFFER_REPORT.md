@@ -1,5 +1,8 @@
 # Metal buffers·전송 동기화·수명 준비
 
+이 문서는 해당 slice의 당시 범위와 원본 증거다. 이후 MSL pipeline·입력/binding·draw 지원은
+[Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
+
 이 문서는 아래 `9f9b1d5` 소스의 buffer 준비와 보관 근거다. 이후 texture/pass 기능은
 [Metal 텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)에 별도로 기록한다.
 

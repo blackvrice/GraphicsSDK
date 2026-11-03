@@ -2122,10 +2122,12 @@
       "depends_on": [
         "P4-MTL-04"
       ],
-      "work": "reviewed MSL shader fixture로 common draw/depth/MRT/binding 구현. ShaderFormat MSL 값 추가와 고정 entry/native reflection, Metal pipeline/depth/sampler와 immutable draw/binding snapshot, vertex/index/instance·scissor/blend·리소스 read state·stale/수명/퇴역을 구현했다. whole draw 이미지 18개·row padding과 compiler/interface·세대/thread/실패 보존·stale 제어, v4 receipt/현재 checker 독립 재생 및 7개 adversarial Python 계약을 준비했다. HLSL 변환/공개 reflection/compute·표시·물리/native validation 수용과 선행 gate는 미완료다.",
+      "work": "reviewed MSL shader fixture로 common draw/depth/MRT/binding 구현. ShaderFormat MSL·고정 entry/native reflection, pipeline/depth/sampler·immutable draw/binding snapshot, vertex/index/instance·scissor/blend·read state·stale/수명/퇴역을 구현했다. macOS ARM/Intel CPU+Metal 15 CTest·네 설치 소비자·전체 Python 1,501개와 실행당 18개 전체 draw 이미지·padding을 통과했다. v4 원본과 현재 checker의 독립 재생, Windows/Linux 회귀·Linux Vulkan compile 근거를 보관한다. 물리 GPU/native validation·표시·성능 및 선행 gate는 미완료다.",
       "done_when": "동일 이미지·vertex/index/바인딩·수명 참조.",
       "evidence": [
-        "docs/PHASE4_METAL_GRAPHICS_REPORT.md"
+        "docs/PHASE4_METAL_GRAPHICS_REPORT.md",
+        "benchmarks/reports/validation/2026-11-03-metal-graphics/summary.json",
+        "benchmarks/reports/validation/2026-11-03-metal-graphics/verify.py"
       ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },

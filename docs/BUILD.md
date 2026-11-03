@@ -53,6 +53,9 @@ Unsupported 반환과 portable 헤더/코어 계약만 검증한다. Linux Vulka
 미완료다. `portable-core` preset은 Ninja 및 C++23 toolchain이 필요하다.
 Metal buffer 전송·수명과 설치 buffer 소비자는 [버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따른다.
 Metal texture·color/depth clear/load·MRT와 세 번째 설치 소비자는 [텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
+Metal MSL graphics pipeline·입력/binding·전체 draw 이미지와 네 번째 설치 소비자는
+[graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다. macOS에서 `GFX_ENABLE_METAL=ON`과
+`GFX_BUILD_TESTS=ON`으로 빌드하면 CPU 11개와 Metal CTest 4개를 실행한다.
 현재 host의 Linux 환경 가용성은 [P3-LNX-01 조사](PHASE3_LINUX_ENVIRONMENT.md)에
 기록한다. 로컬 WSL 미설치 관측은 보존하며, 후속 실제 Linux compile 근거는 별도 CI 보고서에 연결한다.
 Linux 전용 `linux-vulkan` / `linux-vulkan-validation` preset의 backend flag·외부 헤더·

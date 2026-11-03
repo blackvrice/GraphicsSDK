@@ -59,20 +59,20 @@ version 검사는 유지하므로, 정상 기록 뒤의 upload 변경은 여전�
 실패한 요청의 인자에만 등장한 자원은 caller 참조 해제 뒤 회수할 수 있다.
 [복사 거부 원자성 보고서](PHASE2_COPY_ATOMICITY_REPORT.md)를 따른다.
 
-ShaderBinary는 stage와 바이트 배열이다. compileHlsl/reflectShader는 Windows bootstrap
+ShaderBinary는 format·stage와 바이트 배열이다. compileHlsl/reflectShader는 Windows bootstrap
 DXBC 경로이며 [SHADER_PIPELINE](SHADER_PIPELINE.md)의 한계를 따른다.
 caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을
 보장하지 않는다. Result 실패를 확인하는 전체 예제는 `examples/Triangle.cpp`에 있다.
 
 macOS의 opt-in `GFX_ENABLE_METAL=ON`은 현재 장치 열거/생성, queue, command begin/end,
 UTF-8 debug marker, 제출과 fence 대기/완료, Upload/Device/Readback 버퍼 및 2D texture 전송과
-color/depth clear/load/store pass를 구현한다.
+color/depth clear/load/store pass와 MSL graphics pipeline·입력/binding·draw를 구현한다.
 `Backend::Metal`의 AdapterId는
 native registry ID이며 default는 system default device, 명시적 ID 부재는 Unsupported다.
 softwareAdapter=false는 지원하는 선택 정책이며 물리/가상 장치 판정이 아니다.
 validation/software/device-loss-testing 옵션은 Unsupported다. Metal의
-public shader/pipeline/draw·timestamp·표시·recovery·validation count·OS budget도 Unsupported이며
-caps는 미구현 기능을 false로 유지한다. 세부 계약과 native 검사는
+timestamp·표시·recovery·validation count·OS budget도 Unsupported이며
+caps의 vertexInput/indexedDrawing/resourceBinding/bindingLayouts는 true다. 세부 제출 계약은
 [Metal 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다.
 
 Metal 버퍼는 Upload의 write, Readback의 read, private Device의 명시적 transfer 상태를
@@ -85,8 +85,20 @@ payload 검사는 [Metal 버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따
 Metal texture는 RGBA8/BGRA8/RGBA16F/D32의 private single-mip/sample 2D와 256-byte rowPitch
 footprint를 지원한다. 전체 buffer-texture 전송·color 1..8개/독립 depth의 Clear/Load/Store,
 초기화/stale/패스 상태·수명 검사를 수행한다. depthAttachment/multipleRenderTargets caps는
-이 attachment/pass 기능을 나타내며 graphics pipeline/draw 지원을 뜻하지 않는다. mip/array/
-MSAA/stencil·표시·sampling API는 미지원이다. [Metal 텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
+이 attachment/pass 기능을 나타낸다. mip/array texture·MSAA/stencil·표시는 미지원이다.
+[Metal 텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
+
+`ShaderFormat::MSL`은 UTF-8 source이며 vertex/fragment의 고정 entry는 `gfx_vertex`/
+`gfx_fragment`다. native compiler와 pipeline argument reflection을 검사한다. 공개
+compileHlsl/reflectShader에 MSL 변환·reflection을 추가하지 않는다. vertex attribute i는
+attributes[i], stream slot 0..14는 native buffer 16+slot에 대응한다. space 0에서 constant
+buffer는 slot+element(0..13), float texture2d는 texture slot+element, static sampler는
+sampler slot에 대응한다. 상수는 bounded flat numeric struct와 256 정렬 view를 요구한다.
+triangle draw/indexed draw/instancing·texture 배열 sampling·Point/Linear·Clamp/Repeat·
+scissor/alpha blend·depth-only/MRT를 지원한다. 각 draw는 pipeline/bindings/input view를
+보존하며 재바인딩 실패가 이전 snapshot을 바꾸지 않는다. 실제 index 값+baseVertex의
+vertex 범위 유효성은 caller 책임이다. 전체 범위와 native·설치 소비자 검증은
+[Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
 
 D3D12/Vulkan/Metal의 fence owner는 연결된 SDK 안에서 공통 번호 발급기를 사용한다.
 장치 세대 번호는 재사용·overflow wrap하지 않으며 고갈 시 생성이 InvalidState로 실패한다.

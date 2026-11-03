@@ -1,5 +1,11 @@
 # Shader pipeline
 
+Metal은 별도 `ShaderFormat::MSL`의 reviewed UTF-8 source를 native compiler에 전달한다.
+고정 entry는 `gfx_vertex`/`gfx_fragment`이며 pipeline 생성에서 active attribute와
+argument reflection을 layout과 대조한다. 공개 MSL reflection·HLSL 변환·metallib 입력은
+추가하지 않는다. 입력/binding profile과 전체 draw 근거는
+[Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
+
 Vulkan은 별도의 `ShaderFormat::SPIRV` 입력으로 외부 검증된 SPIR-V 1.3/Vulkan 1.1
 `main` shader를 받는다. 초기 path는 standalone Position·VertexIndex/InstanceIndex,
 Float/UNorm vertex inputs, matching float varyings와 float4 color outputs를 지원하며

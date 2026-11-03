@@ -1,5 +1,8 @@
 # Metal SDK 장치·queue·submission 준비
 
+이 문서는 해당 slice의 당시 범위와 원본 증거다. 이후 MSL pipeline·입력/binding·draw 지원은
+[Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
+
 이 문서는 아래 소스 `8ad0932`의 submission 전용 구현과 보관 근거다. 후속 buffer·동기화·
 수명 구현과 native 자원 퇴역 방식은 [Metal 버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따른다.
 

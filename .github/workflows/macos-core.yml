@@ -37,7 +37,7 @@ jobs:
         run: python3 tools/macos_core.py check --output out/macos-core-evidence --python out/macos-python --live
       - name: Bind Metal availability to the same native and tested source
         run: python3 tools/macos_metal_probe.py check --output out/macos-metal-evidence --python out/macos-python --live
-      - name: Bind SDK Metal submission and full buffer/texture payloads to the same tested source
+      - name: Bind SDK Metal submission and full buffer/texture/draw payloads to the same tested source
         run: python3 tools/macos_metal_backend.py check --output out/macos-metal-backend-evidence --python out/macos-python --live
       - name: Replay saved native macOS matrix independently
         if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-macos-core/verify.py') != '' }}
@@ -54,6 +54,9 @@ jobs:
       - name: Replay saved Metal full texture payloads and color-depth clear-load passes
         if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-metal-textures/verify.py') != '' }}
         run: python3 benchmarks/reports/validation/2026-11-03-metal-textures/verify.py
+      - name: Replay saved Metal graphics inputs, binding snapshots and full draw images
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-metal-graphics/verify.py') != '' }}
+        run: python3 benchmarks/reports/validation/2026-11-03-metal-graphics/verify.py
       - name: Preserve diagnostics without system libraries or native binaries
         if: always()
         uses: actions/upload-artifact@v4
