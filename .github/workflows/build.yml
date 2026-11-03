@@ -59,6 +59,8 @@ jobs:
         run: python benchmarks/reports/validation/2026-11-03-phase3-linux-pso-campaign/verify.py
       - name: Replay Linux three-SDK resource timing and full payloads
         run: python benchmarks/reports/validation/2026-11-03-phase3-linux-allocation-campaign/verify.py
+      - name: Replay native macOS arm64 and Intel Core evidence
+        run: python benchmarks/reports/validation/2026-11-03-macos-core/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -150,6 +152,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-11-03-phase3-linux-pso-campaign/verify.py
       - name: Replay Linux three-SDK resource timing and full payloads
         run: python3 benchmarks/reports/validation/2026-11-03-phase3-linux-allocation-campaign/verify.py
+      - name: Replay native macOS arm64 and Intel Core evidence
+        run: python3 benchmarks/reports/validation/2026-11-03-macos-core/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements

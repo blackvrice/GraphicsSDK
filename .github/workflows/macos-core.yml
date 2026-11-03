@@ -31,6 +31,9 @@ jobs:
         run: python3 tools/check_python_contracts.py --output out/macos-python
       - name: Bind native and Python evidence to the same source and architecture
         run: python3 tools/macos_core.py check --output out/macos-core-evidence --python out/macos-python --live
+      - name: Replay saved native macOS matrix independently
+        if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-macos-core/verify.py') != '' }}
+        run: python3 benchmarks/reports/validation/2026-11-03-macos-core/verify.py
       - name: Preserve diagnostics without system libraries or native binaries
         if: always()
         uses: actions/upload-artifact@v4

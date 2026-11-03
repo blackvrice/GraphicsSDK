@@ -2048,10 +2048,11 @@
       "depends_on": [
         "P3-GATE-03"
       ],
-      "work": "실제 Mac/compiler/GPU/Metal 검증 범위를 기록한다. macOS Apple Silicon/Intel의 native Core 빌드·CPU CTest 11개·설치된 public SDK 소비자·전체 Python 계약을 검증하는 CI와 원본 toolchain/source/compile graph/CTest/receipt 보관·재생 도구를 준비했다. D3D12/Vulkan은 OFF이며 Metal/GPU 조회·실행·성능 수용은 이 단계 범위가 아니다. 실제 Metal backend·GPU·전체 패키지 입력 감사와 Phase 3 gate 의존성은 미완료다.",
+      "work": "실제 Mac/compiler/GPU/Metal 검증 범위를 기록한다. macOS Apple Silicon/Intel의 native Core 빌드·CPU CTest 11개·설치된 public SDK 소비자·전체 Python 계약을 검증하는 CI와 원본 toolchain/source/compile graph/CTest/receipt 보관·재생 도구를 준비했다. D3D12/Vulkan은 OFF이며 Metal/GPU 조회·실행·성능 수용은 이 단계 범위가 아니다. 실제 Metal backend·GPU·전체 패키지 입력 감사와 Phase 3 gate 의존성은 미완료다. 동일 소스 GitHub macOS arm64/Intel에서 각각 native CTest 11개·설치 Core 소비자·Python 1,465개가 통과했다. Apple clang 17/Xcode 16.4/SDK 15.5, Core/tests/examples 18 units·consumer 1 unit·설치 header 13개·source 135개와 원본 증거를 보관하고 Windows에서 독립 재생했다. Metal/GPU 수용과 Phase 3 gate 의존성은 미완료다.",
       "done_when": "실제 환경 receipt, 가용하지 않으면 runtime 수용 미완료.",
       "evidence": [
-        "docs/PHASE4_MACOS_CORE_REPORT.md"
+        "docs/PHASE4_MACOS_CORE_REPORT.md",
+        "benchmarks/reports/validation/2026-11-03-macos-core/summary.json"
       ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },
@@ -2170,10 +2171,11 @@
       "depends_on": [
         "P4-MTL-08"
       ],
-      "work": "설치된 SDK로 독립 C++ 소비자 build/runtime 검사. macOS Apple Silicon/Intel의 native Core 빌드·CPU CTest 11개·설치된 public SDK 소비자·전체 Python 계약을 검증하는 CI와 원본 toolchain/source/compile graph/CTest/receipt 보관·재생 도구를 준비했다. D3D12/Vulkan은 OFF이며 Metal/GPU 조회·실행·성능 수용은 이 단계 범위가 아니다. 실제 Metal backend·GPU·전체 패키지 입력 감사와 Phase 3 gate 의존성은 미완료다.",
+      "work": "설치된 SDK로 독립 C++ 소비자 build/runtime 검사. macOS Apple Silicon/Intel의 native Core 빌드·CPU CTest 11개·설치된 public SDK 소비자·전체 Python 계약을 검증하는 CI와 원본 toolchain/source/compile graph/CTest/receipt 보관·재생 도구를 준비했다. D3D12/Vulkan은 OFF이며 Metal/GPU 조회·실행·성능 수용은 이 단계 범위가 아니다. 실제 Metal backend·GPU·전체 패키지 입력 감사와 Phase 3 gate 의존성은 미완료다. 동일 소스 GitHub macOS arm64/Intel에서 각각 native CTest 11개·설치 Core 소비자·Python 1,465개가 통과했다. Apple clang 17/Xcode 16.4/SDK 15.5, Core/tests/examples 18 units·consumer 1 unit·설치 header 13개·source 135개와 원본 증거를 보관하고 Windows에서 독립 재생했다. Metal/GPU 수용과 Phase 3 gate 의존성은 미완료다.",
       "done_when": "실제 find_package·native 참조 실행과 입력 감사.",
       "evidence": [
-        "docs/PHASE4_MACOS_CORE_REPORT.md"
+        "docs/PHASE4_MACOS_CORE_REPORT.md",
+        "benchmarks/reports/validation/2026-11-03-macos-core/summary.json"
       ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },

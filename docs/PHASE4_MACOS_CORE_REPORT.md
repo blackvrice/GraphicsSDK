@@ -41,3 +41,31 @@ source 불변 receipt를 보관한다. GPU 존재 여부는 이 도구에서 조
 
 Metal backend·장치/queue·buffer/texture/draw·표시·native validation·경쟁 성능 비교는
 Phase 4의 별도 개발이다. P3-LNX-15의 Linux 물리 GPU 수용 역시 미완료로 유지한다.
+
+
+## 실제 실행과 보관 증거
+
+소스 `36edaf8b1f4773a43a335ecdbf483ab379161098`의
+[macOS 두 아키텍처 CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41581408467)가
+모두 통과했다. arm64는 macOS 15.8.2, x86_64는 macOS 15.7.9에서 실행됐다. 두 작업 모두
+Xcode 16.4·Apple clang 17.0.0·macOS SDK 15.5를 사용했고, 각 11개 CTest·설치 소비자·
+전체 Python 계약 1,465개가 통과했다. 각 Core/tests/examples graph는 18 units,
+consumer graph는 1 unit이며 설치 public header 13개와 source 입력 135개를 보관했다.
+아키텍처별 OS 버전을 분리 기록하며 두 환경을 동일 성능 조건이라고 주장하지 않는다.
+
+[동일 소스 Windows/Linux 회귀 CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41581408288)도
+통과했다. 실제 Mac 실행에는 Core 코드 수정이 필요하지 않았다.
+
+`benchmarks/reports/validation/2026-11-03-macos-core/`에 원본 파일 94개를 담은 ZIP,
+inventory·manifest·summary·검증기를 보관했다. 원본 source ZIP 안의 코드나 Mac native
+binary를 실행하지 않고 현재 저장소의 검증기로 재생한다. 설치 library/consumer의
+hash와 lipo 출력은 보관하되 native binary와 system SDK는 재배포하지 않는다. 자체 hash
+목록이며 외부 신뢰 서명을 주장하지 않는다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-03-macos-core/verify.py
+```
+
+Windows에서 두 Mac 환경 증거의 독립 재생이 통과했다. Windows/Linux 일반 CI와 macOS
+matrix에도 이 재생을 추가한다. GPU 존재 여부·Metal runtime/성능·Linux 물리 GPU 수용은
+확인하지 않았으며 로드맵 143개 ID/상태와 active Phase 3를 유지한다.
