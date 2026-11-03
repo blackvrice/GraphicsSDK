@@ -87,7 +87,7 @@ Result<std::shared_ptr<NativePipeline>> graphics(State& owner,const GraphicsPipe
             }
             if(a.type!=MTLArgumentTypeTexture&&a.type!=MTLArgumentTypeBuffer)return fail(ErrorCode::Unsupported,"MSL resource type outside the graphics binding profile");
             if(a.access!=MTLArgumentAccessReadOnly)return fail(ErrorCode::Unsupported,"Writable MSL graphics resources unsupported");
-            if(a.type==MTLArgumentTypeTexture&&(a.textureType!=MTLTextureType2D||a.depthTexture||a.textureDataType!=MTLDataTypeFloat))return fail(ErrorCode::Unsupported,"Only non-depth float texture2d arguments supported");
+            if(a.type==MTLArgumentTypeTexture&&(a.textureType!=MTLTextureType2D||a.isDepthTexture||a.textureDataType!=MTLDataTypeFloat))return fail(ErrorCode::Unsupported,"Only non-depth float texture2d arguments supported");
             if(a.type==MTLArgumentTypeBuffer){
                 if(a.index>=14||a.bufferDataType!=MTLDataTypeStruct||!a.bufferDataSize||a.bufferDataSize>65536||a.bufferAlignment>256)
                     return fail(ErrorCode::Unsupported,"Metal constants require a bounded flat struct at buffer 0..13");

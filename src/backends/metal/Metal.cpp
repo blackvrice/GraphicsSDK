@@ -164,7 +164,7 @@ struct State {
         }
         return {};
     }
-    // Later slices implement graphics pipelines/drawing, presentation and native validation.
+    // Presentation, timestamps and native validation remain unsupported.
     auto unsupported() const {
         if (auto ok = check(); !ok) return std::unexpected(ok.error());
         return fail(ErrorCode::Unsupported, "Not implemented by the Metal submission backend");
