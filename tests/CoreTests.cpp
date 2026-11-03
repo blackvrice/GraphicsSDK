@@ -37,9 +37,10 @@ float4 PS() : SV_Target0 { return float4(1,0,0,1); }
 void cpu() {
     if (!gfx::backendCompiled(gfx::Backend::Vulkan))
         check(!gfx::createDevice({gfx::Backend::Vulkan}), "Uncompiled Vulkan must fail");
-    check(!gfx::backendCompiled(gfx::Backend::Metal), "Metal must not be advertised");
-    auto unsupported = gfx::createDevice({gfx::Backend::Metal});
-    check(!unsupported && unsupported.error().code == gfx::ErrorCode::Unsupported, "Unsupported backend error");
+    if (!gfx::backendCompiled(gfx::Backend::Metal)) {
+        auto unsupported = gfx::createDevice({gfx::Backend::Metal});
+        check(!unsupported && unsupported.error().code == gfx::ErrorCode::Unsupported, "Unsupported backend error");
+    }
     check(!gfx::compileHlsl("", "VS", gfx::ShaderStage::Vertex), "Reject empty HLSL");
     check(!gfx::reflectShader({}), "Reject empty shader binary");
 }

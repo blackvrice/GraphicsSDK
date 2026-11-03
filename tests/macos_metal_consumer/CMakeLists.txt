@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.25)
+project(MetalInstalledConsumer LANGUAGES CXX)
+find_package(GraphicsSDK CONFIG REQUIRED)
+add_executable(macos_metal_consumer ../MetalSubmissionTests.cpp)
+target_link_libraries(macos_metal_consumer PRIVATE GraphicsSDK::Core)
+set_target_properties(macos_metal_consumer PROPERTIES CXX_EXTENSIONS OFF)

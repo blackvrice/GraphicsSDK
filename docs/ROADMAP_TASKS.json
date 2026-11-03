@@ -2068,9 +2068,11 @@
       "depends_on": [
         "P4-MTL-01"
       ],
-      "work": "Objective-C++ 내부 구현과 C++ 공개 API를 연결한다.",
+      "work": "Objective-C++ 내부 구현과 C++ 공개 API를 연결한다. macOS 전용 GFX_ENABLE_METAL=ON 선택, registry ID 열거·정확한 선택/default, native queue/command buffer·begin/end/marker·단조 fence·finite/zero 대기·완료 정리·잘못된 스레드/장치/세대 거부를 구현했다. 명령 즉시 파괴/재사용과 장치 파괴 후 자식 거부, 66회 완료+1회 파괴 정리 제출을 native CTest·직접 실행·설치 소비자로 검증하도록 arm64/Intel CI와 source/receipt 재생을 준비했다. Native 오류 주입·validation·buffer/texture/draw·물리 GPU/성능 수용과 P4-MTL-01 의존성은 미완료다.",
       "done_when": "실제 장치·제출·오류 계약 실행.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE4_METAL_SUBMISSION_REPORT.md"
+      ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },
     {

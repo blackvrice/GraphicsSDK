@@ -84,6 +84,7 @@ def check(folder,python=None,live=False):
         require(c['CMAKE_CXX_FLAGS_RELEASE']=='-O2 -DNDEBUG' and c['CMAKE_INTERPROCEDURAL_OPTIMIZATION']=='OFF' and c['CMAKE_UNITY_BUILD']=='OFF','Build policy differs')
     c=cache(folder/'core-cache.txt')
     require(all(c[k]=='OFF' for k in ('GFX_ENABLE_D3D12','GFX_ENABLE_VULKAN','GFX_VULKAN_XCB','GFX_VULKAN_VALIDATION_TESTS')) and c['GFX_BUILD_TESTS']=='ON','GPU backend or missing CPU tests')
+    require(c.get('GFX_ENABLE_METAL','OFF')=='OFF','Metal enabled in CPU-only Core evidence')
     c=cache(folder/'consumer-cache.txt')
     require(c['GraphicsSDK_DIR']==r['install_directory']+'/lib/cmake/GraphicsSDK','Consumer package escaped fresh installation')
     compile_graph(read(folder/'core-commands.json'),[r['source_directory']+'/'+n for n in UNITS],r['architecture'],r['sdk_path'])
@@ -132,7 +133,7 @@ def run(a):
     require(not any(p.exists() for p in (build,consumer,install)),'Fresh build/install roots required')
     flags=['-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_CXX_COMPILER='+compiler,'-DCMAKE_OSX_ARCHITECTURES='+a.architecture,'-DCMAKE_OSX_SYSROOT='+sdk,
         '-DCMAKE_CXX_FLAGS=','-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG','-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF','-DCMAKE_UNITY_BUILD=OFF','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON']
-    call('configure',['cmake','-S',ROOT,'-B',build,*flags,'-DCMAKE_INSTALL_PREFIX='+str(install),'-DCMAKE_INSTALL_LIBDIR=lib','-DGFX_ENABLE_D3D12=OFF','-DGFX_ENABLE_VULKAN=OFF','-DGFX_VULKAN_XCB=OFF','-DGFX_VULKAN_VALIDATION_TESTS=OFF','-DGFX_BUILD_TESTS=ON','-DGFX_BUILD_EXAMPLES=ON'])
+    call('configure',['cmake','-S',ROOT,'-B',build,*flags,'-DCMAKE_INSTALL_PREFIX='+str(install),'-DCMAKE_INSTALL_LIBDIR=lib','-DGFX_ENABLE_D3D12=OFF','-DGFX_ENABLE_VULKAN=OFF','-DGFX_ENABLE_METAL=OFF','-DGFX_VULKAN_XCB=OFF','-DGFX_VULKAN_VALIDATION_TESTS=OFF','-DGFX_BUILD_TESTS=ON','-DGFX_BUILD_EXAMPLES=ON'])
     call('build',['cmake','--build',build,'--parallel','3','--verbose'])
     listing=json.loads(call('list-tests',['ctest','--test-dir',build,'--show-only=json-v1']))
     require(len(listing['tests'])==len(TESTS) and {r['name'] for r in listing['tests']}==set(TESTS),'Unexpected CPU suite')
