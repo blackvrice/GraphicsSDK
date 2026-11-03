@@ -76,3 +76,41 @@ native module/file hash·원본 stdout/stderr·유한 직렬 실행 증거를 �
 실제 Linux GPU의 qualification과 같은 장치·driver에서 네 workload의 fresh 비교,
 실제 표시 검증과 Phase 3 최종 gate가 남아 있다. Intel 충돌·장시간 메모리 증가
 조사를 재개하지 않는다.
+
+
+## 실제 CI와 보관 증거
+
+소스 `8b10b37389db8803ac5b40b700f02ac1d3aadce3`의
+[Linux native CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41576389309)가
+전체 통과했다. GCC 14.2.0, Linux x86_64, llvmpipe LLVM 20.1.2 software 장치에서
+캠페인 53개 프로세스·거부 19개·core/sync 양성 대조 2개, 전체 이미지/버퍼 각각
+28,028개·총 자원 56,056개·384,432,048바이트를 확인했다. 기본 진단 행 84개를
+보존하며 측정 표본·통계 행은 0이다. LLGL 성공 workload의 생성·해제·사용·전체
+검증·native 자원 핸들 확인은 각각 24,024회다. 별도 관측/validation에서 전체
+payload hash 16,016개와 native draw 0을 확인했다. 이 수치는 GPU allocation
+개수나 캠페인 전체의 중복 없는 메모리 주소 수를 의미하지 않는다.
+
+컴파일 2 units의 입력 468개는 generated 6·LLGL 86·자체 header 4·system 359·
+Vulkan header 13개다. runtime 파일 42개·frozen 입력 1,139개를 보관했다. 통제
+qualification/소비자의 SDK 6·SDL 251·probe 2·consumer 8 units 원본 graph와 cache를
+재생했다. 기존 upload/draw/PSO 캠페인과 Linux 전체 correctness 회귀도 같은
+native 실행에서 통과했다. Docker pilot에서도 네 입력의 plain/관측 전체 payload와
+생성·해제 구간을 확인했다.
+
+[동일 소스 Windows/Linux CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41576389248)의
+각 Python 계약 1,456개와 [Linux Vulkan 컴파일](https://github.com/blackvrice/GraphicsSDK/actions/runs/41576389313)이
+통과했다. 로컬에서도 동일 소스 계약 1,456개·입력 불변을 확인했다.
+
+`benchmarks/reports/validation/2026-11-03-phase3-linux-allocation-campaign/`에 원본
+432개를 담은 evidence ZIP, inventory·manifest·summary와 두 OS Python receipt/log를
+보관했다. 현재 저장소의 검증기로만 재생하며 ZIP 안의 source/native 코드는 실행하지
+않는다. 자체 hash 목록이며 외부 신뢰 서명을 주장하지 않는다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-03-phase3-linux-allocation-campaign/verify.py
+```
+
+Windows/Linux Build and correctness CI에도 이 재생을 추가했다. 로드맵 143개 상태는
+유지하고 P3-BEN-08/P3-LBEN-04에 준비 완료 증거를 추가했다. P3-LNX-15는 실제 Linux
+물리 GPU에서 공통 GPU suite를 수용하는 별도 항목이며 이번 software 증거로 완료하지
+않는다. 물리 GPU/ICD/VVL 환경과 정확한 UUID를 지정한 실제 실행이 필요하다.
