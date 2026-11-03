@@ -46,3 +46,37 @@ CI는 기존 일반 macOS arm64/Intel matrix를 사용하며 GPU larger runner�
 Core CPU 단계의 GPU 미조회 범위와 별도 Metal availability 단계를 구분한다. 실제
 SDK Metal 장치/queue/backend·버퍼/텍스처/draw·표시·native validation은 이후 개발과
 GPU 실행이 필요하다. P3-LNX-15 및 Phase 3 gate 상태는 변경하지 않는다.
+
+
+## 실제 실행과 보관 증거
+
+소스 `611f5c858b2596851e689233bebc4d1ebe4bbee4`의
+[macOS arm64/Intel CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41588150132)가
+모두 통과했다. 각 환경에서 `Apple Paravirtual device` 1개, default와 같은 registry
+ID, 정확한 ID 재선택과 두 잘못된 ID 거부를 확인했다. arm64의 unified memory는 true,
+최대 buffer 길이는 3,758,096,384바이트였고 Intel은 false·1,073,741,824바이트였다.
+이 descriptor 차이를 그대로 보존하며 물리 GPU 또는 동일 성능 조건이라고 주장하지 않는다.
+registry ID는 해당 CI VM에서 관측한 값이며 다음 실행에 고정 ID로 재사용하지 않는다.
+
+두 환경 모두 Metal/Foundation framework 실제 로드를 관측했고, offline MSL→AIR→
+metallib 생성과 invalid.metal의 실제 unknown-type/expected-brace compiler 진단·
+종료 코드 1·출력 binary 없음이 확인됐다. 단일 Objective-C++ compile unit과 source
+입력 7개를 보관했다. GPU command/queue/dispatch는 실행하지 않았고 SDK Metal backend는
+사용하지 않았다. Native API 장치와 offline 도구가 가용한 후보 환경을 확보한 결과다.
+
+각 환경의 기존 Core CTest 11개·설치 소비자·전체 Python 계약 1,473개도 통과했다.
+[동일 소스 Windows/Linux 회귀 CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41588150153)도
+통과했다. 두 Mac 결과를 `benchmarks/reports/validation/2026-11-03-metal-availability/`에
+원본 152개·source ZIP·inventory/manifest/summary와 함께 보관했고 Windows에서 독립
+재생했다. 외부 SDK·native executable·AIR/metallib binary는 재배포하지 않으며 해당
+파일의 hash/크기와 원본 compiler 출력만 보관한다. 자체 hash 목록이고 외부 신뢰
+서명은 아니다. archived source/native code는 실행하지 않는다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-03-metal-availability/verify.py
+```
+
+Windows/Linux/macOS CI에 이 재생을 추가한다. 로드맵 143개 상태와 active Phase 3를
+유지하며 P4-MTL-01의 환경 준비 근거에 추가했다. 다음 단계는 이 환경에서 C++ 공개
+API와 Metal 장치/queue/submission 구현을 연결하고 실제 command 완료·오류 계약을
+검증하는 것이다. 실제 buffer/texture/draw·표시·물리 GPU/성능 수용은 별도 남아 있다.

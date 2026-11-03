@@ -69,3 +69,8 @@ python3 benchmarks/reports/validation/2026-11-03-macos-core/verify.py
 Windows에서 두 Mac 환경 증거의 독립 재생이 통과했다. Windows/Linux 일반 CI와 macOS
 matrix에도 이 재생을 추가한다. GPU 존재 여부·Metal runtime/성능·Linux 물리 GPU 수용은
 확인하지 않았으며 로드맵 143개 ID/상태와 active Phase 3를 유지한다.
+
+
+2026-11-03 후속 준비: 동일 macOS matrix에 별도 native Metal availability probe를
+연결했다. Core CPU 도구 자체는 GPU를 조회하지 않으며, 별도 단계에서 장치/도구를
+확인한다. 결과와 한계는 `PHASE4_METAL_AVAILABILITY_REPORT.md`에 기록한다.
