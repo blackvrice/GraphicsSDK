@@ -184,9 +184,10 @@ struct MetalCommands final : CommandList {
             if (!next) return fail(ErrorCode::OutOfMemory, "Metal command buffer creation failed");
             for (const auto& op : operations) {
                 if (!op.bytes) {
+                    NSString* label = [[NSString alloc] initWithBytes:op.marker.data() length:op.marker.size() encoding:NSUTF8StringEncoding];
+                    if (!label) return fail(ErrorCode::OutOfMemory, "Metal marker label allocation failed");
                     id<MTLBlitCommandEncoder> encoder = [next blitCommandEncoder];
                     if (!encoder) return fail(ErrorCode::OutOfMemory, "Metal marker encoder creation failed");
-                    NSString* label = [[NSString alloc] initWithBytes:op.marker.data() length:op.marker.size() encoding:NSUTF8StringEncoding];
                     [encoder insertDebugSignpost:label]; [encoder endEncoding];
                     continue;
                 }

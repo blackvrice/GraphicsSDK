@@ -146,7 +146,9 @@ def check(folder,python=None,live=False):
         require(tested['tools/macos_metal_backend.py']==next(x['sha256'] for x in r['source_inputs'] if x['path']=='tools/macos_metal_backend.py'),'Executed/tested Metal runner differs')
     value=dict(architecture=r['architecture'],registry_ids=ids,CPU_CTests=11,Metal_CTests=version,native_and_installed_submissions=201,
         installed_consumer_passed=True,Python_contracts=count,**scope)
-    if version==2:value.update(verified_buffer_bytes=verified,buffer_payload_files=44,buffer_cases_per_execution=22)
+    if version==2:
+        value['marker_contract_submissions']=value.pop('native_and_installed_submissions')
+        value.update(verified_buffer_bytes=verified,buffer_payload_files=44,buffer_cases_per_execution=22)
     return value
 
 

@@ -94,7 +94,9 @@ void contracts(gfx::Device& d) {
     reject(c->copyBuffer(up,back,33),gfx::ErrorCode::InvalidArgument,"Oversized copy");
     reject(c->copyBuffer(up,up,1),gfx::ErrorCode::InvalidArgument,"Aliased copy");
     reject(c->copyBuffer(up,gpu,32),gfx::ErrorCode::InvalidState,"Explicit private destination state required");
-    take(c->copyBuffer(up,back,32));take(c->end());
+    take(c->copyBuffer(up,back,32));
+    reject(c->copyBuffer(up,gpu,32),gfx::ErrorCode::InvalidState,"Rejected request preserves earlier accepted observations");
+    take(c->end());
     take(up->write(32,{}));reject(d.queue().submit(*c),gfx::ErrorCode::InvalidState,"Empty CPU write invalidates a prior observation");
     take(c->begin());take(c->copyBuffer(up,back,32));take(c->end());
     auto sibling=take(d.createCommandList());take(sibling->begin());take(sibling->copyBuffer(up,back,32));take(sibling->end());
@@ -107,6 +109,20 @@ void contracts(gfx::Device& d) {
     std::thread worker([&] { auto a=up->write(0,expected);auto b=back->read(0,32);auto r=c->transition(gpu,gfx::ResourceState::Common);rejected=!a&&!b&&!r&&a.error().code==gfx::ErrorCode::InvalidState&&b.error().code==gfx::ErrorCode::InvalidState&&r.error().code==gfx::ErrorCode::InvalidState; });worker.join();
     check(rejected,"Host buffer and transfer thread guards");
     c.reset();sibling.reset();stale.reset();up.reset();gpu.reset();back.reset();foreign.reset();empty(d);
+    {
+        // The second command records against committed state before the first fence is waited.
+        auto data=pattern(257);auto batchUp=take(d.createBuffer({257,gfx::Memory::Upload}));
+        auto batchGPU=take(d.createBuffer({257}));auto batchRead=take(d.createBuffer({257,gfx::Memory::Readback}));
+        take(batchUp->write(0,data));auto first=take(d.createCommandList());take(first->begin());
+        take(first->transition(batchGPU,gfx::ResourceState::CopyDestination));take(first->copyBuffer(batchUp,batchGPU,257));take(first->end());
+        auto earlier=take(d.queue().submit(*first));first.reset();batchUp.reset();
+        auto next=take(d.createCommandList());take(next->begin());take(next->transition(batchGPU,gfx::ResourceState::CopySource));
+        take(next->copyBuffer(batchGPU,batchRead,257));take(next->end());auto later=take(d.queue().submit(*next));
+        check(later.value==earlier.value+1&&later.device==earlier.device,"Ordered cross-batch fences");
+        next.reset();batchGPU.reset();take(d.queue().wait(later));
+        check(take(batchRead->read(0,257))==data,"Private buffer state and data across consecutive submissions");
+        batchRead.reset();empty(d);
+    }
     // A rejected argument must acquire neither a native reference nor an observed version.
     up=take(d.createBuffer({32,gfx::Memory::Upload}));gpu=take(d.createBuffer({32}));c=take(d.createCommandList());take(c->begin());
     reject(c->copyBuffer(up,gpu,32),gfx::ErrorCode::InvalidState,"Rejected copy preserves recording and captures no arguments");
