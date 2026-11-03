@@ -2086,9 +2086,11 @@
       "depends_on": [
         "P4-MTL-02"
       ],
-      "work": "Upload/device/readback·완료 보유와 버전 계약 구현.",
+      "work": "Upload/device/readback·완료 보유와 버전 계약 구현. Metal private/shared/managed buffer·host range/flush/readback synchronization·논리 transfer state·stale CPU/submit version·기록/제출 참조와 weak 회수 진단·퇴역 해제를 추가했다. macOS 4-byte blit prefix와 1~3-byte 내부 tail kernel로 비정렬 크기 및 partial guard를 보존한다. 11개 full+11개 partial 전체 payload·거부 원자성/수명/세대/스레드를 native CTest·직접/설치 소비자에서 검사하고 v2 receipt와 현재 checker로 모든 byte를 재생하도록 준비했다. 물리 GPU·native validation/오류 주입·선행 Phase 3/P4 수용은 미완료다.",
       "done_when": "전체 buffer 참조와 stale/수명 회귀 통과.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE4_METAL_BUFFER_REPORT.md"
+      ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },
     {

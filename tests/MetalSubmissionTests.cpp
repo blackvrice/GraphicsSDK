@@ -97,7 +97,7 @@ int main(int argc, char** argv) try {
     const auto statistics = take(device->resourceStatistics());
     check(!statistics.trackedObjects && !statistics.uniqueResources && !statistics.resourceAllocationBytes &&
         !statistics.pendingSubmissions && !statistics.pendingObjectReferences, "Completed submission retention pruned; no resources implemented");
-    reject(device->createBuffer({16}), gfx::ErrorCode::Unsupported, "Buffers pending later slice");
+    reject(device->createBuffer({0}), gfx::ErrorCode::InvalidArgument, "Zero-size buffers rejected");
     reject(device->createTexture({4, 4}), gfx::ErrorCode::Unsupported, "Textures pending later slice");
     reject(device->createGraphicsPipeline({}), gfx::ErrorCode::Unsupported, "Pipelines pending later slice");
     reject(device->checkSurfaceSupport({}), gfx::ErrorCode::Unsupported, "Surfaces pending later slice");
@@ -124,7 +124,7 @@ int main(int argc, char** argv) try {
     reject(commands->begin(), gfx::ErrorCode::DeviceLost, "Retired child cannot record");
     reject(commands->debugMarker("retired"), gfx::ErrorCode::DeviceLost, "Retired child cannot encode");
     reject(commands->draw(3), gfx::ErrorCode::DeviceLost, "Retired child cannot enter unsupported operations");
-    commands.reset(); // Last owner waits for retained native completion without callback/use-after-free.
+    commands.reset(); // Device retirement has waited and released native references; the child stays inert.
     std::cout << "{\"schema_version\":1,\"contract\":\"metal_submission_v1\",\"SDK_source_fingerprint\":\"" << gfx::buildFingerprint()
         << "\",\"default_registry_id\":\"" << hex(caps.adapterId.value) << "\",\"registry_ids\":[";
     for (std::size_t i = 0; i < adapters.size(); ++i) { if (i) std::cout << ','; std::cout << '"' << hex(adapters[i].id.value) << '"'; }
