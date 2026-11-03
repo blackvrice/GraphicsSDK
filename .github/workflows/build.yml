@@ -55,6 +55,8 @@ jobs:
         run: python benchmarks/reports/validation/2026-11-02-phase3-linux-upload-controlled/verify.py
       - name: Replay Linux three-SDK draw timing and separate native audits
         run: python benchmarks/reports/validation/2026-11-02-phase3-linux-draw-campaign/verify.py
+      - name: Replay Linux three-SDK PSO timing and separate native audits
+        run: python benchmarks/reports/validation/2026-11-03-phase3-linux-pso-campaign/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -142,6 +144,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-11-02-phase3-linux-upload-controlled/verify.py
       - name: Replay Linux three-SDK draw timing and separate native audits
         run: python3 benchmarks/reports/validation/2026-11-02-phase3-linux-draw-campaign/verify.py
+      - name: Replay Linux three-SDK PSO timing and separate native audits
+        run: python3 benchmarks/reports/validation/2026-11-03-phase3-linux-pso-campaign/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements

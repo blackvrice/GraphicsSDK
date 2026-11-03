@@ -68,3 +68,37 @@ native 계수·module·물리 prerequisite·정확한 오류 거부, 모든 표�
 
 실제 Linux GPU qualification과 같은 GPU/driver의 fresh PSO 비교는 미완료다.
 allocation timed campaign 연결, 실제 표시와 최종 Phase 3 gate가 남아 있다.
+
+
+## 실제 CI와 보관 증거
+
+소스 `6b398213bd6e4c9def9d3e52c83f1e70a8d23d18`의
+[Linux native CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41571988107)가
+전체 통과했다. GCC 14.2.0, Linux x86_64, llvmpipe LLVM 20.1.2 software 장치에서
+37개 캠페인 프로세스·거부 17개·core/sync 양성 대조 2개·전체 이미지 56개·
+538,720바이트를 확인했다. 기본 진단 행 42개를 보존하며 측정 표본·통계 행은 0이다.
+성공한 LLGL 진단의 native draw/forward 각각 72개, instance 72개, vertex 216개를
+확인했다. 이는 native pipeline 생성 개수의 관측이 아니다.
+
+컴파일 2 units의 입력 469개는 generated 6·LLGL 86·자체 header 5·system 359·
+Vulkan header 13개다. runtime 파일 42개·frozen 입력 1,134개를 보관했다.
+통제 qualification/소비자의 SDK 6·SDL 251·probe 2·consumer 8 units 원본 graph와
+cache를 재생했다. 기존 upload/draw 캠페인과 Linux 전체 correctness 회귀도
+같은 native 실행에서 통과했다.
+
+[동일 소스 Windows/Linux CI](https://github.com/blackvrice/GraphicsSDK/actions/runs/41571988104)의
+각 Python 계약 1,441개와 [Linux Vulkan 컴파일](https://github.com/blackvrice/GraphicsSDK/actions/runs/41571988009)이
+통과했다. 로컬에서도 동일 소스 계약 1,441개·입력 불변을 확인했다.
+
+`benchmarks/reports/validation/2026-11-03-phase3-linux-pso-campaign/`에 원본 388개를
+담은 evidence ZIP, inventory·manifest·summary와 두 OS Python receipt/log를 보관했다.
+현재 저장소의 검증기로만 재생하며 ZIP 안의 source/native 코드는 실행하지 않는다.
+자체 hash 목록이며 외부 신뢰 서명을 주장하지 않는다.
+
+```sh
+python3 benchmarks/reports/validation/2026-11-03-phase3-linux-pso-campaign/verify.py
+```
+
+Windows/Linux Build and correctness CI에도 이 재생을 추가했다. 로드맵 143개
+작업 상태는 유지하고 P3-BEN-08/P3-LBEN-03에 준비 완료 증거를 추가했다.
+실제 Linux GPU fresh 실행과 성능 수용, allocation timed campaign은 미완료다.
