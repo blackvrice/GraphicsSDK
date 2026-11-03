@@ -2104,9 +2104,11 @@
       "depends_on": [
         "P4-MTL-03"
       ],
-      "work": "공통 색/깊이 texture와 pass 의미를 구현한다.",
+      "work": "Metal textures·buffer-texture 전송·pass 구현. RGBA8/BGRA8/RGBA16F/D32 private 2D texture·256-byte row footprint·managed readback sync·tracked hazard·초기화 shadow/commit·stale/거부 원자성·native 수명/퇴역을 추가했다. color/depth Clear/Load/Store와 2/4/8 mixed MRT, read-only depth, pass marker 및 pass 상태 guard를 구현했다. native/설치 소비자의 44개 전체 texel·padding payload와 v3 receipt·현재 checker 재생, 7개 adversarial Python 계약을 준비했다. graphics pipeline/draw·물리 GPU/native validation·선행 gate 수용은 미완료다.",
       "done_when": "전체 texel/padding·Clear/Load 참조.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE4_METAL_TEXTURE_REPORT.md"
+      ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },
     {

@@ -50,7 +50,7 @@ int main(int argc, char** argv) try {
     check(caps.backend == gfx::Backend::Metal && !caps.softwareAdapter, "Metal capabilities and selection policy");
     check(std::any_of(adapters.begin(), adapters.end(), [&](const auto& a) { return a.id == caps.adapterId && a.name == caps.adapterName; }), "Default adapter belongs to inventory");
     check(!caps.compute && !caps.timestampQueries && !caps.swapChain && !caps.resourceBinding && !caps.vertexInput && !caps.indexedDrawing &&
-        !caps.bindingLayouts && !caps.depthAttachment && !caps.multipleRenderTargets && !caps.deviceRecovery && !caps.deviceLossInjection, "No unimplemented capability advertised");
+        !caps.bindingLayouts && caps.depthAttachment && caps.multipleRenderTargets && !caps.deviceRecovery && !caps.deviceLossInjection, "Capabilities describe transfer/pass support without drawing");
     auto foreign = take(gfx::createDevice(description(caps.adapterId)));
     auto& queue = device->queue();
     check(take(queue.completedValue()) == 0, "No completed fence before submission");
@@ -98,7 +98,7 @@ int main(int argc, char** argv) try {
     check(!statistics.trackedObjects && !statistics.uniqueResources && !statistics.resourceAllocationBytes &&
         !statistics.pendingSubmissions && !statistics.pendingObjectReferences, "Completed submission retention pruned; no resources implemented");
     reject(device->createBuffer({0}), gfx::ErrorCode::InvalidArgument, "Zero-size buffers rejected");
-    reject(device->createTexture({4, 4}), gfx::ErrorCode::Unsupported, "Textures pending later slice");
+    reject(device->createTexture({0, 4}), gfx::ErrorCode::InvalidArgument, "Invalid texture extent rejected");
     reject(device->createGraphicsPipeline({}), gfx::ErrorCode::Unsupported, "Pipelines pending later slice");
     reject(device->checkSurfaceSupport({}), gfx::ErrorCode::Unsupported, "Surfaces pending later slice");
     reject(device->createSwapChain({}, {}), gfx::ErrorCode::Unsupported, "Presentation pending later slice");

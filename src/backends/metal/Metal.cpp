@@ -21,7 +21,11 @@ struct Pending {
 };
 struct Allocation {
     id<MTLBuffer> buffer;
+    id<MTLTexture> texture;
     BufferDesc desc;
+    TextureDesc textureDesc;
+    TextureFootprint footprint;
+    bool initialized{};
     ResourceState state{ResourceState::Common};
     std::uint64_t version{}, lastUse{}, bytes{};
 };
@@ -29,11 +33,22 @@ struct Use {
     std::shared_ptr<Allocation> allocation;
     std::uint64_t version;
     ResourceState shadow;
+    bool initialized;
 };
+struct Attachment {
+    std::shared_ptr<Allocation> allocation;
+    LoadOp load;
+    Color clear;
+    float clearDepth{};
+};
+enum class OperationKind { Buffer, UploadTexture, ReadTexture, Pass };
 struct Operation {
     std::shared_ptr<Allocation> source, destination;
     std::uint64_t bytes{};
     std::string marker;
+    OperationKind kind{OperationKind::Buffer};
+    std::vector<Attachment> attachments;
+    std::vector<std::string> markers;
 };
 struct NativeRecording { id<MTLCommandBuffer> buffer; };
 struct State {
@@ -54,7 +69,7 @@ struct State {
             for (auto& p : pending) [p.buffer waitUntilCompleted];
             pending.clear();
             for (auto& w : recordings) if (auto r = w.lock()) r->buffer = nil;
-            for (auto& w : allocations) if (auto a = w.lock()) a->buffer = nil;
+            for (auto& w : allocations) if (auto a = w.lock()) { a->buffer = nil; a->texture = nil; }
             tailPipeline = nil; queue = nil; device = nil;
         }
         retired = true;
@@ -114,7 +129,7 @@ struct State {
         }
         return {};
     }
-    // Later slices implement textures, drawing, presentation and native validation.
+    // Later slices implement graphics pipelines/drawing, presentation and native validation.
     auto unsupported() const {
         if (auto ok = check(); !ok) return std::unexpected(ok.error());
         return fail(ErrorCode::Unsupported, "Not implemented by the Metal submission backend");
@@ -154,10 +169,19 @@ struct MetalBuffer final : Buffer {
         return result;
     }
 };
+struct MetalTexture final : Texture {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<Allocation> allocation;
+    std::shared_ptr<int> token;
+    TextureDesc description() const override { return allocation->textureDesc; }
+    TextureFootprint footprint() const override { return allocation->footprint; }
+};
 struct MetalCommands final : CommandList {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeRecording> native;
     bool open{}, ended{};
+    bool inPass{};
+    std::size_t passOperation{};
     std::uint64_t submitted{};
     std::vector<Use> uses;
     std::vector<Operation> operations;
@@ -168,21 +192,72 @@ struct MetalCommands final : CommandList {
         auto next = std::make_shared<NativeRecording>();
         std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
         owner->recordings.push_back(next); native = std::move(next);
-        open = true; ended = false; submitted = 0;
+        open = true; ended = false; submitted = 0; inPass = false;
         operations.clear(); uses.clear();
         return {};
     }
     Result<void> end() override {
         if (auto ok = owner->check(); !ok) return ok;
         if (!open) return fail(ErrorCode::InvalidState, "Metal command list is not recording");
+        if (inPass) return fail(ErrorCode::InvalidState, "Metal render pass must be ended first");
         // Finalize into a fresh native buffer. An encoder/compiler failure discards that
         // uncommitted buffer and leaves the accepted CPU recording open and retryable.
         @autoreleasepool {
-            if (std::any_of(operations.begin(), operations.end(), [](const auto& op) { return (op.bytes & 3) != 0; }))
+            if (std::any_of(operations.begin(), operations.end(), [](const auto& op) { return op.kind == OperationKind::Buffer && (op.bytes & 3) != 0; }))
                 if (auto ok = owner->prepareTail(); !ok) return ok;
             id<MTLCommandBuffer> next = [owner->queue commandBuffer];
             if (!next) return fail(ErrorCode::OutOfMemory, "Metal command buffer creation failed");
             for (const auto& op : operations) {
+                if (op.kind == OperationKind::Pass) {
+                    MTLRenderPassDescriptor* descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+                    if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal pass descriptor allocation failed");
+                    unsigned index = 0;
+                    for (const auto& a : op.attachments) {
+                        if (a.allocation->textureDesc.depthStencil) {
+                            descriptor.depthAttachment.texture = a.allocation->texture;
+                            descriptor.depthAttachment.loadAction = a.load == LoadOp::Clear ? MTLLoadActionClear : MTLLoadActionLoad;
+                            descriptor.depthAttachment.storeAction = MTLStoreActionStore;
+                            if (a.load == LoadOp::Clear) descriptor.depthAttachment.clearDepth = a.clearDepth;
+                        } else {
+                            auto color = descriptor.colorAttachments[index++];
+                            color.texture = a.allocation->texture;
+                            color.loadAction = a.load == LoadOp::Clear ? MTLLoadActionClear : MTLLoadActionLoad;
+                            color.storeAction = MTLStoreActionStore;
+                            if (a.load == LoadOp::Clear) color.clearColor = MTLClearColorMake(a.clear.r,a.clear.g,a.clear.b,a.clear.a);
+                        }
+                    }
+                    std::vector<NSString*> labels;
+                    for (const auto& text : op.markers) {
+                        NSString* label = [[NSString alloc] initWithBytes:text.data() length:text.size() encoding:NSUTF8StringEncoding];
+                        if (!label) return fail(ErrorCode::OutOfMemory, "Metal pass label allocation failed");
+                        labels.push_back(label);
+                    }
+                    id<MTLRenderCommandEncoder> encoder = [next renderCommandEncoderWithDescriptor:descriptor];
+                    if (!encoder) return fail(ErrorCode::BackendFailure, "Metal render encoder creation failed");
+                    for (NSString* label : labels) [encoder insertDebugSignpost:label];
+                    [encoder endEncoding];
+                    continue;
+                }
+                if (op.kind == OperationKind::UploadTexture || op.kind == OperationKind::ReadTexture) {
+                    const bool upload = op.kind == OperationKind::UploadTexture;
+                    auto image = upload ? op.destination : op.source;
+                    auto host = upload ? op.source : op.destination;
+                    const auto f = image->footprint;
+                    id<MTLBlitCommandEncoder> encoder = [next blitCommandEncoder];
+                    if (!encoder) return fail(ErrorCode::OutOfMemory, "Metal texture blit encoder creation failed");
+                    if (upload) {
+                        [encoder copyFromBuffer:host->buffer sourceOffset:0 sourceBytesPerRow:f.rowPitch sourceBytesPerImage:f.size
+                            sourceSize:MTLSizeMake(image->textureDesc.width,image->textureDesc.height,1) toTexture:image->texture
+                            destinationSlice:0 destinationLevel:0 destinationOrigin:MTLOriginMake(0,0,0)];
+                    } else {
+                        [encoder copyFromTexture:image->texture sourceSlice:0 sourceLevel:0 sourceOrigin:MTLOriginMake(0,0,0)
+                            sourceSize:MTLSizeMake(image->textureDesc.width,image->textureDesc.height,1) toBuffer:host->buffer
+                            destinationOffset:0 destinationBytesPerRow:f.rowPitch destinationBytesPerImage:f.size];
+                        if (host->buffer.storageMode == MTLStorageModeManaged) [encoder synchronizeResource:host->buffer];
+                    }
+                    [encoder endEncoding];
+                    continue;
+                }
                 if (!op.bytes) {
                     NSString* label = [[NSString alloc] initWithBytes:op.marker.data() length:op.marker.size() encoding:NSUTF8StringEncoding];
                     if (!label) return fail(ErrorCode::OutOfMemory, "Metal marker label allocation failed");
@@ -228,7 +303,8 @@ struct MetalCommands final : CommandList {
             NSString* label = [[NSString alloc] initWithBytes:text.data() length:text.size() encoding:NSUTF8StringEncoding];
             if (!label || text.empty() || text.find('\0') != std::string_view::npos)
                 return fail(ErrorCode::InvalidArgument, "Metal marker requires nonempty UTF-8 without NUL");
-            operations.push_back(Operation{{},{},0,std::string(text)});
+            if (inPass) operations[passOperation].markers.emplace_back(text);
+            else operations.push_back(Operation{{},{},0,std::string(text)});
         }
         return {};
     }
@@ -237,12 +313,18 @@ struct MetalCommands final : CommandList {
         if (!open) return fail(ErrorCode::InvalidState, "Metal command list is not recording");
         return {};
     }
+    Result<void> outsidePass() const {
+        if (auto ok = ready(); !ok) return ok;
+        if (inPass) return fail(ErrorCode::InvalidState, "Metal operation requires no active render pass");
+        return {};
+    }
     Result<std::shared_ptr<Allocation>> allocation(const BufferPtr& value) const {
         auto buffer = std::dynamic_pointer_cast<MetalBuffer>(value);
         if (!buffer) return fail(value ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Metal buffer");
         if (buffer->owner != owner) return fail(ErrorCode::WrongDevice, "Metal buffer belongs to another generation");
         return buffer->allocation;
     }
+    Result<std::shared_ptr<Allocation>> allocation(const TexturePtr& value) const;
     Use* find(const std::shared_ptr<Allocation>& a) {
         auto it = std::find_if(uses.begin(), uses.end(), [&](auto& u) { return u.allocation == a; });
         return it == uses.end() ? nullptr : &*it;
@@ -250,10 +332,10 @@ struct MetalCommands final : CommandList {
     ResourceState shadow(const std::shared_ptr<Allocation>& a) { auto u = find(a); return u ? u->shadow : a->state; }
     Use& retain(const std::shared_ptr<Allocation>& a) {
         if (auto u = find(a)) return *u;
-        return uses.emplace_back(Use{a,a->version,a->state});
+        return uses.emplace_back(Use{a,a->version,a->state,a->initialized});
     }
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
             return fail(ErrorCode::Unsupported, "Metal buffer state is outside the transfer slice");
@@ -264,9 +346,21 @@ struct MetalCommands final : CommandList {
         // Explicitly tracked native resources synchronize accesses between encoders on this queue.
         return {};
     }
-    Result<void> transition(const TexturePtr&, ResourceState) override { return owner->unsupported(); }
+    Result<void> transition(const TexturePtr& value, ResourceState target) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto a = allocation(value); if (!a) return std::unexpected(a.error());
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
+            target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead)
+            return fail(ErrorCode::Unsupported, "Metal texture state is outside the transfer/pass slice");
+        if (target == ResourceState::RenderTarget && !(*a)->textureDesc.renderTarget)
+            return fail(ErrorCode::InvalidArgument, "Metal color attachment usage required");
+        if ((target == ResourceState::DepthWrite || target == ResourceState::DepthRead) && !(*a)->textureDesc.depthStencil)
+            return fail(ErrorCode::InvalidArgument, "Metal depth attachment usage required");
+        uses.reserve(uses.size()+1); retain(*a).shadow = target;
+        return {};
+    }
     Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) override {
-        if (auto ok = ready(); !ok) return ok;
+        if (auto ok = outsidePass(); !ok) return ok;
         auto src = allocation(source); if (!src) return std::unexpected(src.error());
         auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
         if (!bytes || bytes > (*src)->desc.size || bytes > (*dst)->desc.size || *src == *dst)
@@ -277,11 +371,62 @@ struct MetalCommands final : CommandList {
         retain(*src); retain(*dst); operations.push_back(Operation{*src,*dst,bytes,{}});
         return {};
     }
-    Result<void> copyBufferToTexture(const BufferPtr&, const TexturePtr&) override { return owner->unsupported(); }
-    Result<void> copyTextureToBuffer(const TexturePtr&, const BufferPtr&) override { return owner->unsupported(); }
-    Result<void> beginRenderPass(const TexturePtr&, Color) override { return owner->unsupported(); }
-    Result<void> beginRenderPass(const RenderPassDesc&) override { return owner->unsupported(); }
-    Result<void> endRenderPass() override { return owner->unsupported(); }
+    bool initialized(const std::shared_ptr<Allocation>& a) { auto u = find(a); return u ? u->initialized : a->initialized; }
+    Result<void> textureCopy(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& host, bool upload) {
+        if (host->desc.size < image->footprint.size || (upload ? host->desc.memory == Memory::Readback : host->desc.memory == Memory::Upload))
+            return fail(ErrorCode::InvalidArgument, "Metal texture copy footprint/memory invalid");
+        if (shadow(image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource) ||
+            shadow(host) != (upload ? ResourceState::CopySource : ResourceState::CopyDestination))
+            return fail(ErrorCode::InvalidState, "Metal texture copy requires explicit transfer states");
+        if (!upload && !initialized(image)) return fail(ErrorCode::InvalidState, "Metal texture contents uninitialized");
+        uses.reserve(uses.size()+2); operations.reserve(operations.size()+1);
+        retain(image); retain(host);
+        Operation op; op.source = upload ? host : image; op.destination = upload ? image : host;
+        op.kind = upload ? OperationKind::UploadTexture : OperationKind::ReadTexture;
+        operations.push_back(std::move(op));
+        if (upload) find(image)->initialized = true;
+        return {};
+    }
+    Result<void> copyBufferToTexture(const BufferPtr& source, const TexturePtr& destination) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = allocation(source); if (!src) return std::unexpected(src.error());
+        auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
+        return textureCopy(*dst,*src,true);
+    }
+    Result<void> copyTextureToBuffer(const TexturePtr& source, const BufferPtr& destination) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = allocation(source); if (!src) return std::unexpected(src.error());
+        auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
+        return textureCopy(*src,*dst,false);
+    }
+    Result<void> beginRenderPass(const TexturePtr& value, Color clear) override { return beginRenderPass(RenderPassDesc{{{value,LoadOp::Clear,clear}},{}}); }
+    Result<void> beginRenderPass(const RenderPassDesc& desc) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (auto ok = validateRenderPass(desc); !ok) return ok;
+        Operation op; op.kind = OperationKind::Pass;
+        for (const auto& color : desc.colors) {
+            auto a = allocation(color.texture); if (!a) return std::unexpected(a.error());
+            if (shadow(*a) != ResourceState::RenderTarget || (color.load == LoadOp::Load && !initialized(*a)))
+                return fail(ErrorCode::InvalidState, "Metal color pass requires state and initialized Load contents");
+            op.attachments.push_back(Attachment{*a,color.load,color.clear,0});
+        }
+        if (desc.depth.texture) {
+            auto a = allocation(desc.depth.texture); if (!a) return std::unexpected(a.error());
+            if (shadow(*a) != (desc.depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite) ||
+                (desc.depth.load == LoadOp::Load && !initialized(*a)))
+                return fail(ErrorCode::InvalidState, "Metal depth pass requires state and initialized Load contents");
+            op.attachments.push_back(Attachment{*a,desc.depth.load,{},desc.depth.clear});
+        }
+        uses.reserve(uses.size()+op.attachments.size()); operations.reserve(operations.size()+1);
+        for (const auto& a : op.attachments) retain(a.allocation).initialized = true;
+        operations.push_back(std::move(op)); inPass = true; passOperation = operations.size()-1;
+        return {};
+    }
+    Result<void> endRenderPass() override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!inPass) return fail(ErrorCode::InvalidState, "Metal render pass is not open");
+        inPass = false; return {};
+    }
     Result<void> setPipeline(const PipelinePtr&) override { return owner->unsupported(); }
     Result<void> bindTexture(const TexturePtr&) override { return owner->unsupported(); }
     Result<void> bindResources(const ResourceBindings&) override { return owner->unsupported(); }
@@ -294,6 +439,12 @@ struct MetalCommands final : CommandList {
     Result<void> resolveTimestamps() override { return owner->unsupported(); }
     Result<double> elapsedGpuMilliseconds() override { return owner->unsupported(); }
 };
+Result<std::shared_ptr<Allocation>> MetalCommands::allocation(const TexturePtr& value) const {
+    auto texture = std::dynamic_pointer_cast<MetalTexture>(value);
+    if (!texture) return fail(value ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Metal texture");
+    if (texture->owner != owner) return fail(ErrorCode::WrongDevice, "Metal texture belongs to another generation");
+    return texture->allocation;
+}
 struct MetalQueue final : CommandQueue {
     std::shared_ptr<State> owner;
     explicit MetalQueue(std::shared_ptr<State> state) : owner(std::move(state)) {}
@@ -314,7 +465,8 @@ struct MetalQueue final : CommandQueue {
         @autoreleasepool { [commands->native->buffer commit]; }
         commands->submitted = ++owner->last;
         for (auto& use : commands->uses) {
-            use.allocation->state = use.shadow; use.allocation->lastUse = owner->last; ++use.allocation->version;
+            use.allocation->state = use.shadow; use.allocation->initialized = use.initialized;
+            use.allocation->lastUse = owner->last; ++use.allocation->version;
         }
         return Fence{owner->last, owner->generation};
     }
@@ -392,7 +544,35 @@ struct MetalDevice final : Device {
             return BufferPtr(value);
         }
     }
-    Result<TexturePtr> createTexture(TextureDesc) override { return owner->unsupported(); }
+    Result<TexturePtr> createTexture(TextureDesc desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        @autoreleasepool {
+            const auto format = desc.format == Format::RGBA8UNorm ? MTLPixelFormatRGBA8Unorm :
+                desc.format == Format::BGRA8UNorm ? MTLPixelFormatBGRA8Unorm :
+                desc.format == Format::RGBA16Float ? MTLPixelFormatRGBA16Float : MTLPixelFormatDepth32Float;
+            MTLTextureDescriptor* descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format width:desc.width height:desc.height mipmapped:NO];
+            if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal texture descriptor creation failed");
+            descriptor.resourceOptions = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
+            descriptor.usage = MTLTextureUsageShaderRead;
+            if (desc.renderTarget || desc.depthStencil) descriptor.usage |= MTLTextureUsageRenderTarget;
+            auto a = std::make_shared<Allocation>(); a->textureDesc = desc;
+            a->texture = [owner->device newTextureWithDescriptor:descriptor];
+            if (!a->texture) return fail(ErrorCode::OutOfMemory, "Metal texture allocation failed");
+            a->bytes = a->texture.allocatedSize;
+            if (!a->bytes || a->texture.storageMode != MTLStorageModePrivate || a->texture.hazardTrackingMode != MTLHazardTrackingModeTracked ||
+                a->texture.pixelFormat != format || a->texture.width != desc.width || a->texture.height != desc.height)
+                return fail(ErrorCode::BackendFailure, "Metal texture descriptor/storage mismatch");
+            const auto rowBytes = desc.width * (desc.format == Format::RGBA16Float ? 8u : 4u);
+            const auto rowPitch = (rowBytes+255u)&~255u;
+            a->footprint = {std::uint64_t(rowPitch)*desc.height,rowPitch,rowBytes,desc.height};
+            auto value = std::make_shared<MetalTexture>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
+            std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+            std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+            owner->allocations.push_back(a); owner->objects.push_back(value->token);
+            return TexturePtr(value);
+        }
+    }
     Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) override { return owner->unsupported(); }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
@@ -445,6 +625,7 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         state->device = selected; state->queue = queue; state->generation = generation;
         DeviceCaps caps;
         caps.backend = Backend::Metal; caps.adapterName = name; caps.adapterId = {Backend::Metal, selected.registryID};
+        caps.depthAttachment = true; caps.multipleRenderTargets = true;
         return std::make_unique<MetalDevice>(std::move(state), std::move(caps));
     }
 }

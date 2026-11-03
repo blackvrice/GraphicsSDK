@@ -29,7 +29,7 @@ jobs:
         run: python3 tools/macos_core.py run --architecture ${{ matrix.architecture }} --output out/macos-core-evidence
       - name: Survey native Metal devices and offline shader tools without GPU submission
         run: python3 tools/macos_metal_probe.py run --core out/macos-core-evidence --output out/macos-metal-evidence
-      - name: Execute SDK Metal submissions, buffers and installed public consumers
+      - name: Execute SDK Metal submissions, buffers, textures and installed public consumers
         run: python3 tools/macos_metal_backend.py run --availability out/macos-metal-evidence --output out/macos-metal-backend-evidence
       - name: Run every Python contract without exclusions
         run: python3 tools/check_python_contracts.py --output out/macos-python
@@ -37,7 +37,7 @@ jobs:
         run: python3 tools/macos_core.py check --output out/macos-core-evidence --python out/macos-python --live
       - name: Bind Metal availability to the same native and tested source
         run: python3 tools/macos_metal_probe.py check --output out/macos-metal-evidence --python out/macos-python --live
-      - name: Bind SDK Metal submission and full buffer payloads to the same tested source
+      - name: Bind SDK Metal submission and full buffer/texture payloads to the same tested source
         run: python3 tools/macos_metal_backend.py check --output out/macos-metal-backend-evidence --python out/macos-python --live
       - name: Replay saved native macOS matrix independently
         if: ${{ hashFiles('benchmarks/reports/validation/2026-11-03-macos-core/verify.py') != '' }}
