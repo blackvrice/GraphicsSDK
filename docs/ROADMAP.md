@@ -256,7 +256,7 @@ P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/drive
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P4-MTL-01`<br>미완료 · 필수 | **Mac 환경·native toolchain 확인**<br>실제 Mac/compiler/GPU/Metal 검증 범위를 기록한다.<br>완료: 실제 환경 receipt, 가용하지 않으면 runtime 수용 미완료. | 선행: `P3-GATE-03`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
+| [ ] `P4-MTL-01`<br>미완료 · 필수 | **Mac 환경·native toolchain 확인**<br>실제 Mac/compiler/GPU/Metal 검증 범위를 기록한다. macOS Apple Silicon/Intel의 native Core 빌드·CPU CTest 11개·설치된 public SDK 소비자·전체 Python 계약을 검증하는 CI와 원본 toolchain/source/compile graph/CTest/receipt 보관·재생 도구를 준비했다. D3D12/Vulkan은 OFF이며 Metal/GPU 조회·실행·성능 수용은 이 단계 범위가 아니다. 실제 Metal backend·GPU·전체 패키지 입력 감사와 Phase 3 gate 의존성은 미완료다.<br>완료: 실제 환경 receipt, 가용하지 않으면 runtime 수용 미완료. | 선행: `P3-GATE-03`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분<br>근거: [PHASE4_MACOS_CORE_REPORT](PHASE4_MACOS_CORE_REPORT.md) |
 | [ ] `P4-MTL-02`<br>미완료 · 필수 | **Metal 장치·queue·submission**<br>Objective-C++ 내부 구현과 C++ 공개 API를 연결한다.<br>완료: 실제 장치·제출·오류 계약 실행. | 선행: `P4-MTL-01`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
 | [ ] `P4-MTL-03`<br>미완료 · 필수 | **Metal buffers·동기화·수명**<br>Upload/device/readback·완료 보유와 버전 계약 구현.<br>완료: 전체 buffer 참조와 stale/수명 회귀 통과. | 선행: `P4-MTL-02`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
 | [ ] `P4-MTL-04`<br>미완료 · 필수 | **Metal textures·전송·pass**<br>공통 색/깊이 texture와 pass 의미를 구현한다.<br>완료: 전체 texel/padding·Clear/Load 참조. | 선행: `P4-MTL-03`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
@@ -264,7 +264,7 @@ P3-LNX-04의 software 경로와 분리해 실제 Linux 물리 GPU에서 ID/drive
 | [ ] `P4-MTL-06`<br>미완료 · 필수 | **Metal 화면 출력**<br>지원되는 Mac 표면·drawable·완료·resize/종료를 구현한다.<br>완료: 실제 출력·참조·drawable 수명 수용. | 선행: `P4-MTL-05`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
 | [ ] `P4-MTL-07`<br>미완료 · 필수 | **Metal native validation·회귀**<br>지원되는 native validation과 오류 controls를 구성한다.<br>완료: Mac 실제 실행 결과와 진단 한계 명시. | 선행: `P4-MTL-06`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
 | [ ] `P4-MTL-08`<br>미완료 · 필수 | **동일 Metal 경쟁 비교**<br>지원 SDK와 같은 GPU/workload 계약으로 비교한다.<br>완료: 참조 일치·분리 측정·라이선스 감사. | 선행: `P4-MTL-07`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
-| [ ] `P4-MTL-09`<br>미완료 · 필수 | **Mac 설치 소비자 수용**<br>설치된 SDK로 독립 C++ 소비자 build/runtime 검사.<br>완료: 실제 find_package·native 참조 실행과 입력 감사. | 선행: `P4-MTL-08`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분 |
+| [ ] `P4-MTL-09`<br>미완료 · 필수 | **Mac 설치 소비자 수용**<br>설치된 SDK로 독립 C++ 소비자 build/runtime 검사. macOS Apple Silicon/Intel의 native Core 빌드·CPU CTest 11개·설치된 public SDK 소비자·전체 Python 계약을 검증하는 CI와 원본 toolchain/source/compile graph/CTest/receipt 보관·재생 도구를 준비했다. D3D12/Vulkan은 OFF이며 Metal/GPU 조회·실행·성능 수용은 이 단계 범위가 아니다. 실제 Metal backend·GPU·전체 패키지 입력 감사와 Phase 3 gate 의존성은 미완료다.<br>완료: 실제 find_package·native 참조 실행과 입력 감사. | 선행: `P4-MTL-08`<br>환경: 실제 Mac toolchain/GPU; compile/runtime/measurement를 구분<br>근거: [PHASE4_MACOS_CORE_REPORT](PHASE4_MACOS_CORE_REPORT.md) |
 
 ## Phase 5 — Shader pipeline
 

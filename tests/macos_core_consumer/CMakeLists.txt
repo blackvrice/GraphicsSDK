@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.25)
+project(GraphicsSDKMacCoreConsumer LANGUAGES CXX)
+set(CMAKE_FIND_USE_PACKAGE_REGISTRY OFF)
+set(CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY OFF)
+find_package(GraphicsSDK CONFIG REQUIRED)
+add_executable(macos_core_consumer main.cpp)
+target_link_libraries(macos_core_consumer PRIVATE GraphicsSDK::Core)
