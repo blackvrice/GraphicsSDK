@@ -1,0 +1,69 @@
+name: macOS Metal comparison diagnostic
+on:
+  push:
+    paths:
+      - '.github/workflows/macos-metal-comparison.yml'
+      - 'benchmarks/macos_metal_comparison/**'
+      - 'tools/macos_metal_comparison.py'
+      - 'src/backends/metal/**'
+      - 'include/graphics/**'
+      - 'CMakeLists.txt'
+  pull_request:
+    paths:
+      - '.github/workflows/macos-metal-comparison.yml'
+      - 'benchmarks/macos_metal_comparison/**'
+      - 'tools/macos_metal_comparison.py'
+      - 'src/backends/metal/**'
+      - 'include/graphics/**'
+      - 'CMakeLists.txt'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  comparison:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            architecture: arm64
+          - runner: macos-15-intel
+            architecture: x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL
+          ref: 3b2bc951500ca6a1f428af77e036e732d9a8afe3
+          path: .deps/SDL
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: LukasBanana/LLGL
+          ref: 649c0cc8fa608312c5e4b94dae409a5859fc7553
+          path: .deps/LLGL
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify native architecture and prepare build tools
+        run: |
+          test "$(uname -m)" = '${{ matrix.architecture }}'
+          if ! command -v cmake >/dev/null; then brew install cmake; fi
+          if ! command -v ninja >/dev/null; then brew install ninja; fi
+      - name: Build pinned Metal paths and verify images before diagnostic timing
+        run: python3 tools/macos_metal_comparison.py run --output out/macos-metal-comparison
+      - name: Replay comparison data independently
+        run: python3 tools/macos_metal_comparison.py check --output out/macos-metal-comparison
+      - name: Preserve raw diagnostic data and upstream notices
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-metal-comparison-${{ matrix.architecture }}-${{ github.sha }}
+          path: out/macos-metal-comparison/
+          if-no-files-found: error
+          retention-days: 14
