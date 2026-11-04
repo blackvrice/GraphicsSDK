@@ -67,6 +67,10 @@ def case(out, key, mode, fp):
         exact(result, dict(SDK_source_fingerprint=fp))
     require(re.fullmatch(r'[0-9a-f]{16}', result['registry_id']) and int(result['registry_id'], 16), 'Missing native registry identity')
     require(type(result['name']) is str and result['name'] and result['target_storage'] in ('private', 'shared', 'managed'), 'Missing native adapter/storage metadata')
+    require(type(result['mac1']) is bool and type(result['mac2']) is bool, 'Missing native Mac family support')
+    if key == 'sdl':
+        require(result['mac1'] or result['mac2'], 'SDL Metal requires observed Mac family support')
+        exact(result, dict(mac1_compatibility=result['mac1'] and not result['mac2']))
     stderr = (out/'commands'/f'{name}.stderr').read_text(encoding='utf-8')
     require(('Metal API Validation Enabled' in stderr) == (not measured), f'{name} validation state differs')
     require(not re.search(r'failed assertion|Metal (?:API )?Validation Error', stderr, re.IGNORECASE), f'{name} emitted an API validation error')
@@ -133,9 +137,10 @@ def check(out):
         require((out/'commands'/f'{key}-arch.stdout').read_text().strip() == receipt['architecture'], 'Binary architecture differs')
         baseline, _ = case(out, key, 'reference', receipt['SDK_source_fingerprint'])
         measured, intervals[key] = case(out, key, 'timing', receipt['SDK_source_fingerprint'])
-        require(all(baseline[k] == measured[k] for k in ('registry_id', 'name', 'identity', 'target_storage')), 'Reference and timing devices differ')
-        info[key] = {k: baseline[k] for k in ('registry_id', 'name', 'identity', 'target_storage')}
-    require(len({(r['registry_id'], r['name']) for r in info.values()}) == 1, 'Competitors used different Metal adapters')
+        identity_fields = ('registry_id', 'name', 'identity', 'target_storage', 'mac1', 'mac2')
+        require(all(baseline[k] == measured[k] for k in identity_fields), 'Reference and timing devices differ')
+        info[key] = {k: baseline[k] for k in identity_fields}
+    require(len({(r['registry_id'], r['name'], r['mac1'], r['mac2']) for r in info.values()}) == 1, 'Competitors used different Metal adapters')
     return dict(architecture=receipt['architecture'], SDK_source_fingerprint=receipt['SDK_source_fingerprint'], adapters=info,
                 images=18, verified_RGBA_bytes=147456, timing_samples=108, intervals=intervals,
                 physical_GPU_accepted=False, performance_accepted=False, GPU_timestamp_executed=False)
@@ -171,6 +176,7 @@ def run(folder):
     def call(name, args, profile=None, timeout=600):
         args = list(map(str, args))
         profile = profile or {}
+        print(f'Running {name}', flush=True)
         with (out/'commands'/f'{name}.stdout').open('wb') as stdout, (out/'commands'/f'{name}.stderr').open('wb') as stderr:
             start = time.monotonic()
             with subprocess.Popen(args, cwd=ROOT, env={**env, **profile}, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr) as child:
@@ -204,11 +210,16 @@ def run(folder):
     for key in ADAPTERS:
         call(f'{key}-arch', ['lipo','-archs',build/f'metal_{key}'])
         frozen.append(record(build/f'metal_{key}'))
+    device_identity = None
     for mode in ('reference', 'timing'):
         for key in ADAPTERS:
             name = f'{key}-{mode}'
             call(name, [build/f'metal_{key}',mode,ROOT/BENCH/'Draw.metal',out/name], PROFILE if mode == 'reference' else {}, timeout=120)
-            case(out, key, mode, fp)
+            result, _ = case(out, key, mode, fp)
+            observed = (result['registry_id'], result['name'], result['mac1'], result['mac2'])
+            if device_identity is None:
+                device_identity = observed
+            require(observed == device_identity, f'{name} selected a different Metal adapter')
     for path in ('CMakeCache.txt','compile_commands.json'):
         shutil.copyfile(build/path, out/path)
         shutil.copyfile(sdk_build/path, out/('sdk-'+path))

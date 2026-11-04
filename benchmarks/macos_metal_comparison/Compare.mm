@@ -45,6 +45,7 @@ struct Host {
     id<MTLDevice> device;
     std::uint64_t registry;
     const char* name;
+    bool mac1, mac2;
 
     Host() {
         auto devices = [MTLCopyAllDevices() autorelease];
@@ -54,6 +55,8 @@ struct Host {
         registry = device.registryID;
         name = device.name.UTF8String;
         require(name && *name, "Metal adapter name unavailable");
+        mac1 = [device supportsFamily:MTLGPUFamilyMac1];
+        mac2 = [device supportsFamily:MTLGPUFamilyMac2];
     }
 };
 
@@ -144,8 +147,19 @@ struct Renderer {
         // The pinned Metal GPU backend requires a video driver with Metal_CreateView.
         sdl(SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "cocoa"));
         sdl(SDL_Init(SDL_INIT_VIDEO));
-        device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_MSL, false, "metal");
-        sdl(device != nullptr);
+        const auto properties = SDL_CreateProperties();
+        sdl(properties != 0);
+        sdl(SDL_SetStringProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, "metal"));
+        sdl(SDL_SetBooleanProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN, true));
+        sdl(SDL_SetBooleanProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false));
+        sdl(SDL_SetBooleanProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false));
+        sdl(SDL_SetBooleanProperty(properties, SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN,
+                                  !host.mac2 && host.mac1));
+        device = SDL_CreateGPUDeviceWithProperties(properties);
+        const std::string error = device ? "" : SDL_GetError();
+        SDL_DestroyProperties(properties);
+        if (!device) throw std::runtime_error(error + " (native Mac1=" + std::to_string(host.mac1) +
+                                              ", Mac2=" + std::to_string(host.mac2) + ")");
         require(std::string(SDL_GetGPUDeviceDriver(device)) == "metal", "SDL selected a non-Metal driver");
         const char* name = SDL_GetStringProperty(SDL_GetGPUDeviceProperties(device), SDL_PROP_GPU_DEVICE_NAME_STRING, "");
         require(std::string(name) == host.name, "SDL selected a different adapter name");
@@ -419,7 +433,12 @@ int main(int argc, char** argv) {
             std::cout << "{\"adapter\":\"" << adapter << "\",\"mode\":\"" << mode << "\",\"registry_id\":\""
                       << std::hex << std::setw(16) << std::setfill('0') << host.registry << std::dec << "\",\"name\":"
                       << std::quoted(host.name) << ",\"identity\":\"" << identity << "\",\"target_storage\":\""
-                      << renderer.storage << "\",\"images\":3,\"timing_samples\":" << (mode == "timing" ? 36 : 0);
+                      << renderer.storage << "\",\"mac1\":" << (host.mac1 ? "true" : "false")
+                      << ",\"mac2\":" << (host.mac2 ? "true" : "false")
+                      << ",\"images\":3,\"timing_samples\":" << (mode == "timing" ? 36 : 0);
+#if defined(COMPARE_sdl)
+            std::cout << ",\"mac1_compatibility\":" << (!host.mac2 && host.mac1 ? "true" : "false");
+#endif
 #if defined(COMPARE_sdk)
             std::cout << ",\"SDK_source_fingerprint\":\"" << gfx::buildFingerprint() << '"';
 #endif
