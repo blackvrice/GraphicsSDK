@@ -27,9 +27,10 @@ entry point와 stage를 명시하고 최적화 level 3 및 warnings-as-errors를
 제공하지 않는다. `D3DReflect`로 이름/register/count/space, 지원 resource 종류와 cbuffer의
 최소 byte 크기를 읽고 실제 bytecode stage도 검증한다.
 
-목표 경로인 DXC → DXIL/SPIR-V → SPIRV-Cross → MSL은 아직 구현하지 않았다.
-DXC 설치 유무와 이 경로의 동작 여부는 별도이며, 현재 bootstrap을 Phase 5 완료로
-표시하지 않는다. compile cache 및 pipeline cache도 아직 없다.
+Phase 5 오프라인 검사는 고정 DXC로 SM 6.0 DXIL과 Vulkan 1.1용 SPIR-V 1.3을 생성하고,
+SPIRV-Cross로 macOS MSL 2.1 소스를 생성한다. 각 경로의 버전, 지원 프로필, 라이선스와
+재현 절차는 [도구 계약 보고서](PHASE5_SHADER_TOOLCHAIN_REPORT.md)에 있다.
+SDK의 DXIL·변환 셰이더 런타임 연동과 compile·pipeline cache는 후속 항목에서 다룬다.
 
 pipeline은 명시적 vertex layout과 graphics binding layout을 받는다. Texture2D/constant buffer의
 bounded array, register space, VS/PS/All visibility 및 scalar static sampler를 지원한다.
