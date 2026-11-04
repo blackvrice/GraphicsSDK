@@ -25,8 +25,9 @@ list를 end에서 새 native command buffer로 finalization하며 실패 시 CPU
 buffer ownership·managed synchronization·전체 참조는 [Metal 버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따른다.
 texture 초기화 shadow/commit·MRT·패스 상태·전체 texel 참조는 [Metal 텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
 Native compiler/reflection·pipeline·draw/binding snapshot과 fence 소유권 및 전체 draw 참조는
-[Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다. public MSL reflection,
-HLSL 변환·compute·표시·timestamps·native validation은 미지원이다.
+[Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다. Metal 창 출력은 앱의
+CAMetalLayer에 직접 렌더링한다. drawable 명령은 제출 때 인코딩하고 렌더와 표시를 같은 큐에
+순서대로 넣는다. [Metal 화면 출력 보고서](PHASE4_METAL_PRESENTATION_REPORT.md)
 
 `Device`와 자원은 backend 구현을 가상 인터페이스 뒤에 숨긴다. 자원은 shared_ptr
 소유권을 사용하고 명령 기록은 native 참조와 상태 snapshot을 저장한다. 제출 시

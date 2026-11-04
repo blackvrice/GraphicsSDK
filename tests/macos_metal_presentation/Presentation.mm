@@ -197,9 +197,11 @@ unsigned nativeDisplayControl(ObservedMetalLayer* layer) {
     return waitForDisplay(layer->presented);
 }
 
-void frame(gfx::Device& gpu, gfx::SwapChain& chain, const gfx::PipelinePtr& pso,
+bool frame(gfx::Device& gpu, gfx::SwapChain& chain, const gfx::PipelinePtr& pso,
            std::uint32_t width, std::uint32_t height, std::uint32_t split, bool verify) {
-    auto back = take(chain.acquire());
+    auto acquired = chain.acquire();
+    if (!verify && !acquired && acquired.error().code == ErrorCode::Timeout) return false;
+    auto back = take(std::move(acquired));
     check(back->description().width == width && back->description().height == height &&
           back->description().format == gfx::Format::BGRA8UNorm, "Acquired drawable has wrong shape");
     if (verify) {
@@ -234,7 +236,7 @@ void frame(gfx::Device& gpu, gfx::SwapChain& chain, const gfx::PipelinePtr& pso,
     }
     take(chain.present());
     take(gpu.queue().wait(fence));
-    if (!verify) return;
+    if (!verify) return true;
     reject(gpu.queue().submit(*stale), ErrorCode::InvalidState, "Recording survived drawable present");
     take(stale->begin());
     reject(stale->transition(back, ResourceState::RenderTarget), ErrorCode::InvalidState, "Presented drawable remained usable");
@@ -247,6 +249,7 @@ void frame(gfx::Device& gpu, gfx::SwapChain& chain, const gfx::PipelinePtr& pso,
                 check(std::to_integer<int>(pixels[offset + c]) == color[c], "Full BGRA drawable readback differs");
         }
     }
+    return true;
 }
 
 int window(bool interactive, bool runner) {
@@ -284,7 +287,8 @@ int window(bool interactive, bool runner) {
     if (interactive) {
         while (!delegate.closeRequested) {
             pump();
-            if (window.miniaturized) continue;
+            if (delegate.closeRequested) break;
+            if (window.miniaturized || !(window.occlusionState & NSWindowOcclusionStateVisible)) continue;
             const NSSize pixels = [view convertRectToBacking:view.bounds].size;
             if (pixels.width < 2 || pixels.height < 1 || pixels.width > 16384 || pixels.height > 16384) continue;
             if (width != unsigned(pixels.width) || height != unsigned(pixels.height)) {
@@ -294,7 +298,7 @@ int window(bool interactive, bool runner) {
                 layer.contentsScale = window.backingScaleFactor;
                 take(chain->resize(width, height));
             }
-            frame(*gpu, *chain, pso, width, height, 1 + frames++ % (width - 1), false);
+            if (frame(*gpu, *chain, pso, width, height, 1 + frames % (width - 1), false)) ++frames;
         }
     } else {
         for (unsigned i = 0; i < 4; ++i) {

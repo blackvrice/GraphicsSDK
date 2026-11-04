@@ -1,5 +1,7 @@
 # Metal graphics·입력·binding 준비
 
+이 문서는 P4-MTL-05의 실행 범위를 기록한다. 창 출력은 [Metal 화면 출력 보고서](PHASE4_METAL_PRESENTATION_REPORT.md)를 따른다.
+
 P4-MTL-05 구현 준비다. Metal native graphics pipeline, vertex/index/instance 입력,
 immutable binding snapshot과 실제 draw를 추가한다. ShaderFormat 끝에 MSL을 추가해 기존
 DXBC=0/SPIRV=1 값을 유지한다. MSL은 UTF-8 source와 고정 gfx_vertex/gfx_fragment entry다.

@@ -11,7 +11,7 @@
 | Linux Vulkan 기능·core/sync validation | Docker `validation` 또는 `linux-vulkan-validation.yml` | Mesa software ICD의 전송·렌더링·필수 layer·오류 통제 | 물리 GPU 성능·driver 수용 |
 | Linux X11/XCB | 기존 XCB CI | Xvfb·software ICD에서 창/표면·resize·수명·전체 참조 | 실제 화면을 사람이 확인하는 수용 |
 | Windows 회귀 | 기존 `build.yml` | Windows SDK 빌드·기본 테스트와 Python 검사 | hosted runner의 WARP/CPU 결과를 실제 GPU/GBV 수용으로 확대하지 않음 |
-| macOS Core·Metal 준비 | `macos-core.yml` arm64/Intel | native compiler·Core CPU·Metal 장치/제출/graphics·설치 소비자 | 일반 runner의 가상 장치 실행이며 물리 GPU·표시·성능 수용이 아님 |
+| macOS Core·Metal 준비 | `macos-core.yml` arm64/Intel | native compiler·Core CPU·Metal 그래픽스·AppKit 창 출력 검증 | 물리 GPU·사람의 화면 확인·성능 수용은 별도 |
 | 실제 Linux GPU | 등록된 Linux GPU self-hosted runner | 지정 ICD·장치 UUID의 실제 suite/validation | runner·driver·장치를 따로 준비해야 함 |
 
 Docker Linux 컨테이너는 macOS를 대신 실행하는 환경이 아니다. Windows Docker Desktop에서는 Linux backend를 통해 Linux 컨테이너를 실행한다. 실제 OS 정보는 컨테이너의 `uname`과 검사 receipt에 남긴다. [Docker WSL backend 설명](https://docs.docker.com/desktop/features/wsl/).
@@ -256,15 +256,15 @@ Graphics는 고정 MSL fixture·native compiler/reflection과 실행당 18개 �
 검사하며 직접/설치 실행의 36개 파일을 남긴다. snapshot·입력/배열 sampler·blend/scissor·depth/MRT를 포함한다.
 
 Artifact `macos-core-<architecture>-<source commit>`에는 `macos-core-evidence`,
-`macos-metal-evidence`, `macos-metal-backend-evidence`, `macos-python`을 보관한다.
+`macos-metal-evidence`, `macos-metal-backend-evidence`, `macos-metal-presentation`, `macos-python`을 보관한다.
 실패해도 원본 stdout/stderr·cache·compiler graph·receipt를 수집한다. native binary·
 system framework·외부 SDK는 업로드하지 않는다. 실제 범위와 보관 결과는
 [Core 보고서](PHASE4_MACOS_CORE_REPORT.md), [가용성 보고서](PHASE4_METAL_AVAILABILITY_REPORT.md),
 [SDK 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md), [버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md), [텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md), [graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
 
-일반 runner에서 관측한 Apple Paravirtual 장치를 physical GPU로 분류하지 않는다.
-Metal 표시·native validation·성능과 물리 GPU 수용은 남아 있으며
-P3-LNX-15를 완료하는 Linux 물리 GPU 증거를 대체하지 않는다.
+Metal 창 검사는 설치 SDK로 레이어 수명 계약을 실행하고, AppKit 화면이 있으면 크기 변경 전후
+전체 BGRA readback과 표시 콜백을 확인한다. 수동 창 조작과 실제 Mac에서의 재현 절차는
+[Metal 화면 출력 보고서](PHASE4_METAL_PRESENTATION_REPORT.md)에 있다.
 
 ## 6. 실제 Linux GPU와 화면 수용
 

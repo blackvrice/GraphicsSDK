@@ -71,7 +71,7 @@ color/depth clear/load/store pass와 MSL graphics pipeline·입력/binding·draw
 native registry ID이며 default는 system default device, 명시적 ID 부재는 Unsupported다.
 softwareAdapter=false는 지원하는 선택 정책이며 물리/가상 장치 판정이 아니다.
 validation/software/device-loss-testing 옵션은 Unsupported다. Metal의
-timestamp·표시·recovery·validation count·OS budget도 Unsupported이며
+timestamp·recovery·validation count·OS budget도 Unsupported이며
 caps의 vertexInput/indexedDrawing/resourceBinding/bindingLayouts는 true다. 세부 제출 계약은
 [Metal 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다.
 
@@ -85,7 +85,7 @@ payload 검사는 [Metal 버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md)를 따
 Metal texture는 RGBA8/BGRA8/RGBA16F/D32의 private single-mip/sample 2D와 256-byte rowPitch
 footprint를 지원한다. 전체 buffer-texture 전송·color 1..8개/독립 depth의 Clear/Load/Store,
 초기화/stale/패스 상태·수명 검사를 수행한다. depthAttachment/multipleRenderTargets caps는
-이 attachment/pass 기능을 나타낸다. mip/array texture·MSAA/stencil·표시는 미지원이다.
+이 attachment/pass 기능을 나타낸다. mip/array texture·MSAA/stencil은 미지원이다.
 [Metal 텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md)를 따른다.
 
 `ShaderFormat::MSL`은 UTF-8 source이며 vertex/fragment의 고정 entry는 `gfx_vertex`/
@@ -464,13 +464,13 @@ Vulkan staging footprint는 마지막 행 padding까지 포함하고 D3D12는 �
 
 ## Native surface 지원 확인
 
-`SurfaceKind`는 `Win32`와 `Xcb`다. 기존 `Surface{Win32, hwnd}` 초기화를 유지하며 XCB는
+`SurfaceKind`는 `Win32`, `Xcb`, `MetalLayer`를 지원한다. Win32는 `Surface{Win32, hwnd}`, XCB는
 `Surface{Xcb, nullptr, connection, windowId}`로 불투명 `xcb_connection_t*`와 32비트 XID를
 전달한다. HWND 필드와 XCB 필드를 혼합하지 않는다. 공개 헤더에 platform header는 없다.
 struct 확장과 새 virtual 함수 때문에 정적 SDK 소비자는 헤더·라이브러리를 함께 재빌드한다.
 
-`Device::checkSurfaceSupport(surface)`는 생성 thread에서 임시 native surface를 만들고
-현재 선택된 graphics queue의 실제 surface 지원을 확인한 뒤 해제한다. Vulkan XCB는 창의
+Vulkan의 `Device::checkSurfaceSupport(surface)`는 생성 thread에서 임시 native surface를 만들고
+현재 선택된 graphics queue의 surface 지원을 확인한 뒤 해제한다. Vulkan XCB는 창의
 geometry/InputOutput 종류·visual 지원도 확인한다. D3D12는 같은 process·생성 thread의 live
 Win32 HWND를 확인한다. 이 함수는 swapchain을 만들거나 format·present·모니터 표시를 보장하지 않는다.
 
@@ -492,6 +492,15 @@ InvalidArgument, 연결 오류·다른 thread는 InvalidState다. 지원하지 �
 함수/queue는 Unsupported, Vulkan surface 소실은 nativeCode를 보존한 BackendFailure다.
 관찰된 DeviceLost는 기존 세대 차단 계약이 우선한다. SDK는 native 창을 생성·닫거나 이벤트 loop를
 소유하지 않는다. 이 함수의 임시 surface는 반환 전 해제되고 caller의 창·연결은 유지된다.
+
+## macOS 창 루프에서 SwapChain 사용
+
+Metal 앱은 메인 스레드에서 장치를 생성하고, 뷰에 붙인 `CAMetalLayer*`를 Objective-C++에서
+`Surface{SurfaceKind::MetalLayer, (__bridge void*)layer}`로 전달한다. drawable은 BGRA8Unorm이며
+버퍼 수 2 또는 3과 픽셀 크기를 지정한다. 프레임은 `acquire()` 후 `RenderTarget`으로 전환하고
+그린 다음 `Present` 상태로 제출해 표시한다. `CopySource`로 전환하면 표시 전 readback도 가능하다.
+현재 drawable 참조를 해제하고 `resize()`를 호출하며 `waitIdle()`은 표시 명령까지 기다린다.
+창 이벤트 처리와 설치 SDK 실행 명령은 [Metal 화면 출력 보고서](PHASE4_METAL_PRESENTATION_REPORT.md)를 따른다.
 
 ## Win32 창 루프에서 SwapChain 사용
 

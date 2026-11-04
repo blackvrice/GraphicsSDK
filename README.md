@@ -10,7 +10,8 @@ supports adapter selection, markers and fence completion, plus
 include four formats, MRT and full readback verification.
 [Metal graphics pipelines](docs/PHASE4_METAL_GRAPHICS_REPORT.md) accept reviewed MSL source and
 support vertex/index/instance input, binding snapshots, sampling, blend/scissor and depth/MRT draws.
-Metal presentation, timestamps and native validation remain unimplemented.
+[Metal window presentation](docs/PHASE4_METAL_PRESENTATION_REPORT.md) renders directly to a
+caller-provided CAMetalLayer and supports resize and drawable readback.
 This is not a completed cross-platform SDK release.
 
 Vulkan validation now explicitly requests core/synchronization checks and has a

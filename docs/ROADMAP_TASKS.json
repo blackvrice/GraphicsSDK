@@ -2141,9 +2141,12 @@
       "depends_on": [
         "P4-MTL-05"
       ],
-      "work": "지원되는 Mac 표면·drawable·완료·resize/종료를 구현한다.",
+      "work": "앱의 CAMetalLayer로 BGRA8 drawable에 직접 렌더링하고 동일 큐에서 표시한다. 메인 스레드·레이어 점유·Present 상태·실패/퇴역·픽셀 resize 및 이전 drawable 기록 차단을 구현했다. 설치 SDK AppKit 소비자로 macOS ARM/Intel 크기 변경 전후 8개 전체 BGRA 프레임을 비교했다. Intel에서 양수 compositor 시각을 관찰했고 ARM은 직접 Metal 대조에서도 양수 시각을 관찰하지 못했다. 물리 Mac과 수동 창 조작은 별도 수용 항목이다.",
       "done_when": "실제 출력·참조·drawable 수명 수용.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE4_METAL_PRESENTATION_REPORT.md",
+        "benchmarks/reports/validation/2026-11-04-metal-presentation/summary.json"
+      ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },
     {

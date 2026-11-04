@@ -99,9 +99,9 @@ int main(int argc, char** argv) try {
         !statistics.pendingSubmissions && !statistics.pendingObjectReferences, "Completed submission retention pruned; no resources implemented");
     reject(device->createBuffer({0}), gfx::ErrorCode::InvalidArgument, "Zero-size buffers rejected");
     reject(device->createTexture({0, 4}), gfx::ErrorCode::InvalidArgument, "Invalid texture extent rejected");
-    reject(device->createGraphicsPipeline({}), gfx::ErrorCode::Unsupported, "Pipelines pending later slice");
-    reject(device->checkSurfaceSupport({}), gfx::ErrorCode::Unsupported, "Surfaces pending later slice");
-    reject(device->createSwapChain({}, {}), gfx::ErrorCode::Unsupported, "Presentation pending later slice");
+    reject(device->createGraphicsPipeline({}), gfx::ErrorCode::Unsupported, "Metal requires an MSL pipeline");
+    reject(device->checkSurfaceSupport({}), gfx::ErrorCode::Unsupported, "Win32 surface unsupported on Metal");
+    reject(device->createSwapChain({}, {}), gfx::ErrorCode::Unsupported, "Win32 swapchain unsupported on Metal");
     reject(device->validationErrorCount(), gfx::ErrorCode::Unsupported, "No synthesized validation zero");
     reject(device->queryMemoryBudget(gfx::MemorySegment::Local), gfx::ErrorCode::Unsupported, "No synthesized budget zero");
     reject(device->recover(), gfx::ErrorCode::Unsupported, "Recovery not advertised");
