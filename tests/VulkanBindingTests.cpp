@@ -116,8 +116,19 @@ gfx::BufferPtr constantForRejected(gfx::Device& d) {
 void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation) {
     check(d.caps().resourceBinding && d.caps().bindingLayouts, "Binding capabilities are advertised");
     auto def = bindingTest::pipeline(true, true); auto p = take(d.createGraphicsPipeline(def)); auto badDef = def;
+    const auto reflected = take(gfx::reflectSpirvInterface(def.fragment));
+    check(reflected.stage == gfx::ShaderStage::Fragment && reflected.entryPoint == "main" &&
+          reflected.inputs == std::vector<gfx::ShaderLocation>{{0, 2}} &&
+          reflected.outputs == std::vector<gfx::ShaderLocation>{{0, 4}} &&
+          reflected.bindings.size() == 4 && reflected.bindings[1].slot == 1 &&
+          reflected.bindings[1].space == 0 && reflected.bindings[1].count == 2 &&
+          reflected.bindings[1].minimumBytes == 272, "Public reflection matches installed pipeline layout");
     badDef.bindingLayout.entries[0].count = 1; reject(d.createGraphicsPipeline(badDef), gfx::ErrorCode::InvalidArgument, "Shader array count mismatch");
     badDef = def; badDef.bindingLayout.entries[2].visibility = gfx::ShaderVisibility::Fragment; reject(d.createGraphicsPipeline(badDef), gfx::ErrorCode::InvalidArgument, "Shader visibility mismatch");
+    badDef = def; badDef.bindingLayout.entries[1].type = gfx::BindingType::Texture2D; reject(d.createGraphicsPipeline(badDef), gfx::ErrorCode::InvalidArgument, "Shader descriptor type mismatch");
+    badDef = def; badDef.bindingLayout.samplers.pop_back(); reject(d.createGraphicsPipeline(badDef), gfx::ErrorCode::InvalidArgument, "Shader sampler slot missing");
+    badDef = def; badDef.fragment = def.vertex; badDef.fragment.stage = gfx::ShaderStage::Fragment;
+    reject(d.createGraphicsPipeline(badDef), gfx::ErrorCode::InvalidArgument, "Shader execution model mismatch");
     badDef = def; badDef.sampledTexture = true; reject(d.createGraphicsPipeline(badDef), gfx::ErrorCode::InvalidArgument, "Legacy/layout conflict");
     auto other = take(gfx::createDevice(desc(adapter, validation))); auto foreign = take(other->createBuffer({1024, gfx::Memory::Upload})); auto foreignTexture = take(other->createTexture({4, 4}));
     auto c = take(d.createCommandList()); reject(c->bindResources({}), gfx::ErrorCode::InvalidState, "Binding before recording"); take(c->begin()); reject(c->bindResources({}), gfx::ErrorCode::InvalidState, "Binding requires pipeline");

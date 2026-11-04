@@ -1,4 +1,5 @@
 #include <graphics/Shader.hpp>
+#include "../backends/vulkan/Spirv.hpp"
 #ifdef GFX_HAS_D3D12
 #include "D3D12Shader.hpp"
 #include <d3dcompiler.h>
@@ -175,6 +176,11 @@ Result<std::vector<ShaderBinding>> d3d12ShaderBindings(const D3D12ShaderReflecti
 Result<std::vector<ShaderBinding>> reflectShader(const ShaderBinary& shader) {
     if (shader.bytes.empty() || !graphicsStage(shader.stage))
         return std::unexpected(Error{ErrorCode::InvalidArgument, "Invalid shader binary/stage"});
+    if (shader.format == ShaderFormat::SPIRV) {
+        auto reflection = reflectSpirvInterface(shader);
+        if (!reflection) return std::unexpected(reflection.error());
+        return std::move(reflection->bindings);
+    }
 #ifdef GFX_HAS_D3D12
     auto reflection = reflectD3D12Shader(shader);
     if (!reflection) return std::unexpected(reflection.error());
@@ -182,5 +188,11 @@ Result<std::vector<ShaderBinding>> reflectShader(const ShaderBinary& shader) {
 #else
     return std::unexpected(Error{ErrorCode::Unsupported, "Shader reflection is not compiled"});
 #endif
+}
+
+Result<SpirvShaderInterface> reflectSpirvInterface(const ShaderBinary& shader) {
+    auto parsed = vulkan::parseSpirv(shader, shader.stage);
+    if (!parsed) return std::unexpected(parsed.error());
+    return std::move(parsed->reflection);
 }
 }

@@ -90,8 +90,17 @@ int main(int argc, char** argv) try {
     gfx::GraphicsPipelineDesc desc;
     desc.vertex = shader(out/"vert.spv", ShaderStage::Vertex);
     desc.fragment = shader(out/"frag.spv", ShaderStage::Fragment);
+    const auto vertex = take(gfx::reflectSpirvInterface(desc.vertex));
+    const auto fragment = take(gfx::reflectSpirvInterface(desc.fragment));
+    check(vertex.entryPoint == "main" && vertex.stage == ShaderStage::Vertex &&
+          vertex.inputs.empty() && vertex.outputs.empty() && vertex.bindings.empty() &&
+          fragment.entryPoint == "main" && fragment.stage == ShaderStage::Fragment &&
+          fragment.inputs.empty() && fragment.outputs == std::vector<gfx::ShaderLocation>{{0, 4}} &&
+          fragment.bindings.empty(), "Public interface of validated DXC modules differs");
     auto invalid = desc;
     invalid.fragment = shader(out/"named.spv", ShaderStage::Fragment);
+    check(take(gfx::reflectSpirvInterface(invalid.fragment)).entryPoint == "pixelMain",
+          "Reflection must preserve a non-default entry point");
     reject(*device, invalid, ErrorCode::Unsupported, "entry point must be main");
     invalid.fragment = desc.vertex;
     invalid.fragment.stage = ShaderStage::Fragment;
