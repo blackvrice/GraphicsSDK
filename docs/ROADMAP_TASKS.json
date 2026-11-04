@@ -2178,9 +2178,13 @@
       "depends_on": [
         "P4-MTL-07"
       ],
-      "work": "지원 SDK와 같은 GPU/workload 계약으로 비교한다.",
+      "work": "macOS ARM/Intel의 단일 Metal 장치에서 GraphicsSDK·고정 SDL3·고정 LLGL의 1/128/1024 draw를 비교했다. Intel SDL은 네이티브 조회로 확인한 Mac1 호환 경로를 사용했다. 아키텍처별 전체 RGBA 이미지 18개·CPU 분리 시간 샘플 108개와 컴파일·라이선스 원문을 보관하고 독립 재생했다. GraphicsSDK의 고 draw 입력 CPU 기록 비용과 반복 reserve 구간을 확인했다. 물리 Mac 성능과 GPU 시간 수용은 별도다.",
       "done_when": "참조 일치·분리 측정·라이선스 감사.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE4_METAL_COMPARISON_REPORT.md",
+        "benchmarks/reports/validation/2026-11-04-metal-comparison/summary.json",
+        "benchmarks/reports/validation/2026-11-04-metal-comparison/verify.py"
+      ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },
     {

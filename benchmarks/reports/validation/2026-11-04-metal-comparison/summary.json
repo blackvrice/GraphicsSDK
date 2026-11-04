@@ -1,0 +1,862 @@
+{
+  "schema_version": 1,
+  "scope": "macos-metal-draw-diagnostic-v1",
+  "source_commit": "1ca2c6d13973300689bbad60d9988e78ea9a6bc3",
+  "github_run_id": "41785299697",
+  "external_trust_signature": false,
+  "archive_sha256": "88e06c201bc15bd4110d22ad67bfed44efac8f78ddba5b3da12734b175c0a2d9",
+  "architectures": {
+    "arm64": {
+      "architecture": "arm64",
+      "SDK_source_fingerprint": "7f89bd2d3460289aa5d65b1786cdccbd30585caf4e442b0c294ab24e7fae6a06",
+      "adapters": {
+        "sdk": {
+          "registry_id": "000000010000019a",
+          "name": "Apple Paravirtual device",
+          "identity": "explicit-registry-id",
+          "target_storage": "private",
+          "mac1": true,
+          "mac2": true
+        },
+        "sdl": {
+          "registry_id": "000000010000019a",
+          "name": "Apple Paravirtual device",
+          "identity": "pinned-default-selection-with-single-adapter",
+          "target_storage": "private",
+          "mac1": true,
+          "mac2": true
+        },
+        "llgl": {
+          "registry_id": "000000010000019a",
+          "name": "Apple Paravirtual device",
+          "identity": "injected-and-observed-native-registry-id",
+          "target_storage": "managed",
+          "mac1": true,
+          "mac2": true
+        }
+      },
+      "images": 18,
+      "verified_RGBA_bytes": 147456,
+      "timing_samples": 108,
+      "intervals": {
+        "sdk": {
+          "1": {
+            "host_record_submit_median_ns": 45458.5,
+            "host_queue_wait_median_ns": 1284979.5
+          },
+          "128": {
+            "host_record_submit_median_ns": 368562.5,
+            "host_queue_wait_median_ns": 1288729.0
+          },
+          "1024": {
+            "host_record_submit_median_ns": 35042875.0,
+            "host_queue_wait_median_ns": 2132708.0
+          }
+        },
+        "sdl": {
+          "1": {
+            "host_record_submit_median_ns": 65208.0,
+            "host_queue_wait_median_ns": 871021.0
+          },
+          "128": {
+            "host_record_submit_median_ns": 40562.5,
+            "host_queue_wait_median_ns": 780000.0
+          },
+          "1024": {
+            "host_record_submit_median_ns": 90979.0,
+            "host_queue_wait_median_ns": 1085292.0
+          }
+        },
+        "llgl": {
+          "1": {
+            "host_record_submit_median_ns": 39813.0,
+            "host_queue_wait_median_ns": 741416.5
+          },
+          "128": {
+            "host_record_submit_median_ns": 38937.5,
+            "host_queue_wait_median_ns": 625042.0
+          },
+          "1024": {
+            "host_record_submit_median_ns": 171104.0,
+            "host_queue_wait_median_ns": 1284729.0
+          }
+        }
+      },
+      "physical_GPU_accepted": false,
+      "performance_accepted": false,
+      "GPU_timestamp_executed": false
+    },
+    "x86_64": {
+      "architecture": "x86_64",
+      "SDK_source_fingerprint": "7f89bd2d3460289aa5d65b1786cdccbd30585caf4e442b0c294ab24e7fae6a06",
+      "adapters": {
+        "sdk": {
+          "registry_id": "00000001000002ec",
+          "name": "Apple Paravirtual device",
+          "identity": "explicit-registry-id",
+          "target_storage": "private",
+          "mac1": true,
+          "mac2": false
+        },
+        "sdl": {
+          "registry_id": "00000001000002ec",
+          "name": "Apple Paravirtual device",
+          "identity": "pinned-default-selection-with-single-adapter",
+          "target_storage": "private",
+          "mac1": true,
+          "mac2": false
+        },
+        "llgl": {
+          "registry_id": "00000001000002ec",
+          "name": "Apple Paravirtual device",
+          "identity": "injected-and-observed-native-registry-id",
+          "target_storage": "managed",
+          "mac1": true,
+          "mac2": false
+        }
+      },
+      "images": 18,
+      "verified_RGBA_bytes": 147456,
+      "timing_samples": 108,
+      "intervals": {
+        "sdk": {
+          "1": {
+            "host_record_submit_median_ns": 45658.0,
+            "host_queue_wait_median_ns": 518029.0
+          },
+          "128": {
+            "host_record_submit_median_ns": 739584.0,
+            "host_queue_wait_median_ns": 601456.5
+          },
+          "1024": {
+            "host_record_submit_median_ns": 106842739.0,
+            "host_queue_wait_median_ns": 1358197.0
+          }
+        },
+        "sdl": {
+          "1": {
+            "host_record_submit_median_ns": 45551.0,
+            "host_queue_wait_median_ns": 557179.5
+          },
+          "128": {
+            "host_record_submit_median_ns": 57353.5,
+            "host_queue_wait_median_ns": 526407.0
+          },
+          "1024": {
+            "host_record_submit_median_ns": 152259.5,
+            "host_queue_wait_median_ns": 878860.5
+          }
+        },
+        "llgl": {
+          "1": {
+            "host_record_submit_median_ns": 44388.5,
+            "host_queue_wait_median_ns": 389342.5
+          },
+          "128": {
+            "host_record_submit_median_ns": 52878.5,
+            "host_queue_wait_median_ns": 441368.0
+          },
+          "1024": {
+            "host_record_submit_median_ns": 138122.5,
+            "host_queue_wait_median_ns": 856998.0
+          }
+        }
+      },
+      "physical_GPU_accepted": false,
+      "performance_accepted": false,
+      "GPU_timestamp_executed": false
+    }
+  },
+  "files": [
+    {
+      "path": "matrix/arm64/CMakeCache.txt",
+      "bytes": 46629,
+      "sha256": "893e8427886a23abaf549c538adb436e1c001e820379c99096da1faa382aeaee"
+    },
+    {
+      "path": "matrix/arm64/CMakeLists.txt",
+      "bytes": 1525,
+      "sha256": "ad3f006c5177c8e95368ea038ff3f53dbe564f0c77302850ce5975b321be77d1"
+    },
+    {
+      "path": "matrix/arm64/commands/build.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/build.stdout",
+      "bytes": 96524,
+      "sha256": "b6fbef3a751b672365721291fde3dcf5d780574d6c8ba05f059ccc6227774248"
+    },
+    {
+      "path": "matrix/arm64/commands/configure.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/configure.stdout",
+      "bytes": 20125,
+      "sha256": "c091f78a9de1a70e7d7b051fa459343d2dbdf24af78506671a321ed7bef4c940"
+    },
+    {
+      "path": "matrix/arm64/commands/llgl-arch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/llgl-arch.stdout",
+      "bytes": 6,
+      "sha256": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01"
+    },
+    {
+      "path": "matrix/arm64/commands/llgl-reference.stderr",
+      "bytes": 77,
+      "sha256": "247aff1d4adb44f32ee0b5821391d8d509761f5c73b4bfee135074db2c4d8fda"
+    },
+    {
+      "path": "matrix/arm64/commands/llgl-reference.stdout",
+      "bytes": 240,
+      "sha256": "78aca0cda63fdd7290d2c50c60ebd98b254720550c25ef85f3ac14efcda08a57"
+    },
+    {
+      "path": "matrix/arm64/commands/llgl-timing.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/llgl-timing.stdout",
+      "bytes": 238,
+      "sha256": "3a05b12e10c60335667f4a92f7af63146fea999b2b55323121990f48b8fcc9c2"
+    },
+    {
+      "path": "matrix/arm64/commands/os.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/os.stdout",
+      "bytes": 66,
+      "sha256": "e0a9e270c507499fb163b6bb80e62f10c6fca344ce2c93fa2987fe42caf94b29"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-arch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-arch.stdout",
+      "bytes": 6,
+      "sha256": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-build.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-build.stdout",
+      "bytes": 14507,
+      "sha256": "1313794944adb93d40a14a6ec67fce3b310def4b89314e2cd316b50e588a5e1f"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-configure.stderr",
+      "bytes": 147,
+      "sha256": "e1bb2ea33db11d7591d2f7aa0673a0905b3c23743ae1edb6e12a591078f8ca02"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-configure.stdout",
+      "bytes": 661,
+      "sha256": "e90f41f8191f64a9f1f5aac5d9fb7d280b6fd33f17ab32adbad5e4d4722ebdf0"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-install.stdout",
+      "bytes": 2557,
+      "sha256": "2b9f02e96c49978ce72b382620972e09da24f841cedfbfef9f17b213c82e116c"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-path.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-path.stdout",
+      "bytes": 104,
+      "sha256": "b965d7d8db9e3bfddbe97a5d44090aab2003ae49d0abf441beee55cca9162e2f"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-reference.stderr",
+      "bytes": 76,
+      "sha256": "e649f881a90598da84da7c4bc193efdc8f0dd7a78f28aaf1e44ccc8d30383d98"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-reference.stdout",
+      "bytes": 319,
+      "sha256": "061982ec09e8749ff27f9fb4185fd06a16dfd39651ccce885d52601bc00cfd93"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-timing.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/sdk-timing.stdout",
+      "bytes": 317,
+      "sha256": "a9dac4daa719178ecf75d7b56849f9ea7dac1404182cee0aaa29f462d624efdb"
+    },
+    {
+      "path": "matrix/arm64/commands/sdl-arch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/sdl-arch.stdout",
+      "bytes": 6,
+      "sha256": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01"
+    },
+    {
+      "path": "matrix/arm64/commands/sdl-reference.stderr",
+      "bytes": 76,
+      "sha256": "822a56598d583fe2437bc59fbd5d965c533be4243e768b7ec48c3a6a457664a1"
+    },
+    {
+      "path": "matrix/arm64/commands/sdl-reference.stdout",
+      "bytes": 271,
+      "sha256": "490ca002927167e5a31e3e32cf98432a390a8ca5f6ff9664c9fbb6f4562e0dac"
+    },
+    {
+      "path": "matrix/arm64/commands/sdl-timing.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/sdl-timing.stdout",
+      "bytes": 269,
+      "sha256": "43c5e318fb54e5fd167b5c3522d822aebe7bd693d5a25e1cad7e5f9805d8ebce"
+    },
+    {
+      "path": "matrix/arm64/commands/xcode.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/arm64/commands/xcode.stdout",
+      "bytes": 30,
+      "sha256": "a8be4f9af0a29137fe7e59b9928056d4a0df297bb46ba40f80eaa6b0ae982f12"
+    },
+    {
+      "path": "matrix/arm64/commands.json",
+      "bytes": 8354,
+      "sha256": "94b2f278dc0b1fc5726ea1e8672cbc46a00ef4a9a8842affafc2bb5f73f1f866"
+    },
+    {
+      "path": "matrix/arm64/Compare.mm",
+      "bytes": 19727,
+      "sha256": "90c5e26fddc40830a4c88f28a25b325b4c623ed3e4b794846d02a5981ec4e0c2"
+    },
+    {
+      "path": "matrix/arm64/compile_commands.json",
+      "bytes": 607520,
+      "sha256": "a3f19f789f1447d2ef3d1e833d11ddea862008c33ba07e270f040048724a6b6e"
+    },
+    {
+      "path": "matrix/arm64/Draw.metal",
+      "bytes": 289,
+      "sha256": "81f351b34d99e3a24a34057cdbad2707238677547dec0c4b64ab394631431b0d"
+    },
+    {
+      "path": "matrix/arm64/LLGL-LICENSE.txt",
+      "bytes": 1498,
+      "sha256": "03f822e8b006db9cc9a2e9150046b6d52463f0b620727f0ea4d37d6dd7302033"
+    },
+    {
+      "path": "matrix/arm64/llgl-reference/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/arm64/llgl-reference/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/arm64/llgl-reference/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/arm64/llgl-timing/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/arm64/llgl-timing/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/arm64/llgl-timing/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/arm64/llgl-timing/samples.csv",
+      "bytes": 944,
+      "sha256": "538535cc6dc2ad57e1fc6cd239c3bd0872ec73fd3fc5c0701f2cd15ea35f4c83"
+    },
+    {
+      "path": "matrix/arm64/receipt.json",
+      "bytes": 12659,
+      "sha256": "64d6d0803e51752377d590d193d1102e65933596195c8759ae1c3fc91c6f3ba1"
+    },
+    {
+      "path": "matrix/arm64/sdk-CMakeCache.txt",
+      "bytes": 20272,
+      "sha256": "bae10dc98fa791d0f922a9212ae4b9ece5713f44b79978df579da1aa75e0f170"
+    },
+    {
+      "path": "matrix/arm64/sdk-compile_commands.json",
+      "bytes": 5911,
+      "sha256": "76692433a1e9f487e732af1a1dddf51daea58cacb00fc34d642b24704fe91307"
+    },
+    {
+      "path": "matrix/arm64/sdk-reference/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/arm64/sdk-reference/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/arm64/sdk-reference/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/arm64/sdk-timing/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/arm64/sdk-timing/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/arm64/sdk-timing/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/arm64/sdk-timing/samples.csv",
+      "bytes": 1018,
+      "sha256": "01e541d92f13d5826ff7c1a6ff4678b7905b36ccb54d5596b531f32c7570ad21"
+    },
+    {
+      "path": "matrix/arm64/SDL-LICENSE.txt",
+      "bytes": 884,
+      "sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd"
+    },
+    {
+      "path": "matrix/arm64/sdl-reference/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/arm64/sdl-reference/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/arm64/sdl-reference/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/arm64/sdl-timing/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/arm64/sdl-timing/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/arm64/sdl-timing/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/arm64/sdl-timing/samples.csv",
+      "bytes": 954,
+      "sha256": "8ef7bba3291ec990f1738c0a06c23cd9a5bd504da1aaeafb2d308ef918d844d1"
+    },
+    {
+      "path": "matrix/runner.py",
+      "bytes": 15282,
+      "sha256": "a83f14f520cca6c4b3d59b357f8af1f74da613e48d78913ce6e7692f18e998d4"
+    },
+    {
+      "path": "matrix/SDL-notices/src/hidapi/LICENSE-bsd.txt",
+      "bytes": 1534,
+      "sha256": "30eb1bef29b46f8ba7ab8b416035dbd93cb034a45481dd97815b944284582cd2"
+    },
+    {
+      "path": "matrix/SDL-notices/src/hidapi/LICENSE-gpl3.txt",
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "path": "matrix/SDL-notices/src/hidapi/LICENSE-orig.txt",
+      "bytes": 264,
+      "sha256": "fb5436aa63d1b71a8dfbf74ecaf1a5b4e1ec4df7f80074d11fec99284f69ca5f"
+    },
+    {
+      "path": "matrix/SDL-notices/src/hidapi/LICENSE.txt",
+      "bytes": 530,
+      "sha256": "7d3b087c34f35d4d538e3bcddd1ff8f66e92f9ef336881999482800ddf840913"
+    },
+    {
+      "path": "matrix/SDL-notices/src/video/yuv2rgb/LICENSE",
+      "bytes": 1480,
+      "sha256": "f7d74004cc75778cae46c5f0139f244d67c07ef64cf51937e8272352197dcb18"
+    },
+    {
+      "path": "matrix/x86_64/CMakeCache.txt",
+      "bytes": 47288,
+      "sha256": "e3f2603d4f0f97275e152eaa1a50a7bb74013b8864291015f0d50c03d7a34eb7"
+    },
+    {
+      "path": "matrix/x86_64/CMakeLists.txt",
+      "bytes": 1525,
+      "sha256": "ad3f006c5177c8e95368ea038ff3f53dbe564f0c77302850ce5975b321be77d1"
+    },
+    {
+      "path": "matrix/x86_64/commands/build.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/build.stdout",
+      "bytes": 107678,
+      "sha256": "b07a3dafe489e33cedbcbab8d1b99776795c36267ab55746df261ee6330c7092"
+    },
+    {
+      "path": "matrix/x86_64/commands/configure.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/configure.stdout",
+      "bytes": 20755,
+      "sha256": "5990cb300d41c89e21d6eb2fc7cf52f82647190c48ecadcf2217342977a2431a"
+    },
+    {
+      "path": "matrix/x86_64/commands/llgl-arch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/llgl-arch.stdout",
+      "bytes": 7,
+      "sha256": "aaf631698ae5160ceb04a97681a14887fdcab47cd6e0f163c87485b3b1340b62"
+    },
+    {
+      "path": "matrix/x86_64/commands/llgl-reference.stderr",
+      "bytes": 77,
+      "sha256": "ca98d93b304b6fb193d0320b3f92ac266b92d362077295a20a4124bfdfee1eb9"
+    },
+    {
+      "path": "matrix/x86_64/commands/llgl-reference.stdout",
+      "bytes": 241,
+      "sha256": "b8ff4860dc70f356db06828d0e9921f267c4a4dbe2b827e9cd449e36c5ba22e6"
+    },
+    {
+      "path": "matrix/x86_64/commands/llgl-timing.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/llgl-timing.stdout",
+      "bytes": 239,
+      "sha256": "25c01c3b0bee1437fc1383d6f15526fb4e7aac8afb06b809e84ee0faf013b120"
+    },
+    {
+      "path": "matrix/x86_64/commands/os.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/os.stdout",
+      "bytes": 66,
+      "sha256": "31fd674ddb951680692d7b68cafdeab5baa6b3e82aae843269dad73b53f25fc5"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-arch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-arch.stdout",
+      "bytes": 7,
+      "sha256": "aaf631698ae5160ceb04a97681a14887fdcab47cd6e0f163c87485b3b1340b62"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-build.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-build.stdout",
+      "bytes": 14507,
+      "sha256": "1313794944adb93d40a14a6ec67fce3b310def4b89314e2cd316b50e588a5e1f"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-configure.stderr",
+      "bytes": 147,
+      "sha256": "e1bb2ea33db11d7591d2f7aa0673a0905b3c23743ae1edb6e12a591078f8ca02"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-configure.stdout",
+      "bytes": 661,
+      "sha256": "029aa877555ea41257dcf0834b4c9cd17120582bbca967290f5a6927d333278c"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-install.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-install.stdout",
+      "bytes": 2557,
+      "sha256": "2b9f02e96c49978ce72b382620972e09da24f841cedfbfef9f17b213c82e116c"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-path.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-path.stdout",
+      "bytes": 104,
+      "sha256": "b965d7d8db9e3bfddbe97a5d44090aab2003ae49d0abf441beee55cca9162e2f"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-reference.stderr",
+      "bytes": 76,
+      "sha256": "61f2d6dbcbf4fc6612b65496aaa27612f81ebcb95e470c9b03d2283512fe7177"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-reference.stdout",
+      "bytes": 320,
+      "sha256": "9c2cd416c628a0a897793e3cd677735e430a6bccbc55c918709572891e55ccb5"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-timing.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdk-timing.stdout",
+      "bytes": 318,
+      "sha256": "b21128c03b4115e81796cdead9f4c00799a1c81fbc9b60ecfd99fafa5037757a"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdl-arch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdl-arch.stdout",
+      "bytes": 7,
+      "sha256": "aaf631698ae5160ceb04a97681a14887fdcab47cd6e0f163c87485b3b1340b62"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdl-reference.stderr",
+      "bytes": 76,
+      "sha256": "474fb8270f822673d0f1f3adc29aa2ba91353211411dcc37e73265bb8981b5dd"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdl-reference.stdout",
+      "bytes": 271,
+      "sha256": "0bef15235cfb3d0e7147b69ab800df07ae92bc0d39055566ca498fc8e8ffd026"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdl-timing.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/sdl-timing.stdout",
+      "bytes": 269,
+      "sha256": "09b9c99b358e0f2874a691ad30df436f702630c6790a74795110538557dec91f"
+    },
+    {
+      "path": "matrix/x86_64/commands/xcode.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "matrix/x86_64/commands/xcode.stdout",
+      "bytes": 30,
+      "sha256": "a8be4f9af0a29137fe7e59b9928056d4a0df297bb46ba40f80eaa6b0ae982f12"
+    },
+    {
+      "path": "matrix/x86_64/commands.json",
+      "bytes": 8365,
+      "sha256": "445c97890e9333f1a478303cc2b449397f18faef136dcfe0c20207ff8fcb65c6"
+    },
+    {
+      "path": "matrix/x86_64/Compare.mm",
+      "bytes": 19727,
+      "sha256": "90c5e26fddc40830a4c88f28a25b325b4c623ed3e4b794846d02a5981ec4e0c2"
+    },
+    {
+      "path": "matrix/x86_64/compile_commands.json",
+      "bytes": 603910,
+      "sha256": "5a61d5aec43c7027983034d08ce4a1fa9608531d309167cbd87804343480bf7d"
+    },
+    {
+      "path": "matrix/x86_64/Draw.metal",
+      "bytes": 289,
+      "sha256": "81f351b34d99e3a24a34057cdbad2707238677547dec0c4b64ab394631431b0d"
+    },
+    {
+      "path": "matrix/x86_64/LLGL-LICENSE.txt",
+      "bytes": 1498,
+      "sha256": "03f822e8b006db9cc9a2e9150046b6d52463f0b620727f0ea4d37d6dd7302033"
+    },
+    {
+      "path": "matrix/x86_64/llgl-reference/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/x86_64/llgl-reference/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/x86_64/llgl-reference/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/x86_64/llgl-timing/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/x86_64/llgl-timing/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/x86_64/llgl-timing/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/x86_64/llgl-timing/samples.csv",
+      "bytes": 924,
+      "sha256": "4802af98ca9d3c47695e34083820c287ddacced4ebdd92790e02f40e481181c9"
+    },
+    {
+      "path": "matrix/x86_64/receipt.json",
+      "bytes": 12661,
+      "sha256": "8573e9a5dd09aee0c8082ebde830c2748f35dab3fc4b8aa1823a674fb465cce3"
+    },
+    {
+      "path": "matrix/x86_64/sdk-CMakeCache.txt",
+      "bytes": 20252,
+      "sha256": "fe478ad1a0be4ec4ecf538a272a84d93002c4305abe2516d2b54cfcea46450db"
+    },
+    {
+      "path": "matrix/x86_64/sdk-compile_commands.json",
+      "bytes": 5917,
+      "sha256": "5b91746131351585c678bd73e6dbd3f88dbf085b317a54df2b660f96f5008bda"
+    },
+    {
+      "path": "matrix/x86_64/sdk-reference/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/x86_64/sdk-reference/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/x86_64/sdk-reference/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/x86_64/sdk-timing/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/x86_64/sdk-timing/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/x86_64/sdk-timing/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/x86_64/sdk-timing/samples.csv",
+      "bytes": 1020,
+      "sha256": "e9d44f27de3274f994313cf8324b8326b52290c1d830f8f1230fdff81cb0c3d7"
+    },
+    {
+      "path": "matrix/x86_64/SDL-LICENSE.txt",
+      "bytes": 884,
+      "sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd"
+    },
+    {
+      "path": "matrix/x86_64/sdl-reference/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/x86_64/sdl-reference/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/x86_64/sdl-reference/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/x86_64/sdl-timing/1.rgba",
+      "bytes": 8192,
+      "sha256": "c91d79a18f358518f20721cb5f645e20f66a6d87be461df6e69fe826a2d0292f"
+    },
+    {
+      "path": "matrix/x86_64/sdl-timing/1024.rgba",
+      "bytes": 8192,
+      "sha256": "85128a720fd297e71ba440153de139f13556495df3fe4035a353416b072a7d25"
+    },
+    {
+      "path": "matrix/x86_64/sdl-timing/128.rgba",
+      "bytes": 8192,
+      "sha256": "52e35260111eb6c72d74c3cf721aa36155555eee8342aa61fa2e4c1e1d982605"
+    },
+    {
+      "path": "matrix/x86_64/sdl-timing/samples.csv",
+      "bytes": 958,
+      "sha256": "7e70aa5b64e05ed9cad35985c7cf4f7ebeac06b4660eebb97beedcf02b5952dc"
+    }
+  ]
+}

@@ -271,6 +271,10 @@ Metal API Validation 단계는 별도 프로세스에서 검증기를 켜고 정
 회귀 테스트를 실행한다. 진단과 readback은 다른 OS에서도 재검증할 수 있다.
 [Metal 검증 보고서](PHASE4_METAL_VALIDATION_REPORT.md)
 
+`macos-metal-comparison.yml`은 같은 가상 Metal 장치에서 GraphicsSDK·SDL3·LLGL의 오프스크린
+draw를 실행한다. 검증을 켠 전체 픽셀 비교와 CPU 시간 수집은 별도 프로세스에서 수행한다.
+[Metal 경쟁 비교와 재현 절차](PHASE4_METAL_COMPARISON_REPORT.md)
+
 ## 6. 실제 Linux GPU와 화면 수용
 
 `linux-hardware-acceptance.yml`은 `self-hosted, Linux, X64, graphicssdk-gpu` label의 runner를 요구한다. 해당 runner를 별도로 등록하고, runner에 설치된 실제 ICD와 그 ICD로 조회한 정확한 device UUID를 지정한다.
