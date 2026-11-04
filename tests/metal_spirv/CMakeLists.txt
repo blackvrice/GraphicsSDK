@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.25)
+project(GraphicsSDKSpirvMetalConsumer LANGUAGES CXX)
+if(NOT IS_ABSOLUTE "${PACKAGE_ROOT}")
+  message(FATAL_ERROR "Set PACKAGE_ROOT to the absolute path of an installed GraphicsSDK")
+endif()
+find_package(GraphicsSDK CONFIG REQUIRED PATHS "${PACKAGE_ROOT}/lib/cmake/GraphicsSDK" NO_DEFAULT_PATH)
+add_executable(metal_spirv_consumer main.cpp)
+target_link_libraries(metal_spirv_consumer PRIVATE GraphicsSDK::Core)
