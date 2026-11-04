@@ -23,6 +23,7 @@ VULKAN = ROOT/'benchmarks/reports/validation/2026-11-04-vulkan-spirv'
 RESOURCE_SHADER = ROOT/'tests/fixtures/spirv_bindings/sample.spvasm'
 STAGES = {'vert': ('vertex', 'gfx_vertex'), 'frag': ('fragment', 'gfx_fragment')}
 PROFILE_ERROR = 'Metal conversion requires no resources or user varyings and one float4 color output at location 0'
+METAL_STANDARD = '-std=macos-metal2.1'
 
 
 def prior_payload():
@@ -54,6 +55,9 @@ def check_msl(path, stage):
     source = path.read_text(encoding='utf-8')
     require(re.search(rf'\b{qualifier}\s+[^\n]+\b{entry}\s*\(', source) is not None and
             '\0' not in source, f'MSL has no expected {entry} entry')
+    attributes = {re.sub(r'\s+', '', value) for value in re.findall(r'\[\[([^\]]+)\]\]', source)}
+    require(('position' in attributes and attributes <= {'position', 'vertex_id', 'instance_id'}
+             if stage == 'vert' else attributes == {'color(0)'}), 'MSL uses attributes outside the graphics profile')
 
 
 def convert(cross, validator, module, stage, name, out, invoke):
@@ -107,6 +111,7 @@ def check(out):
             all(re.fullmatch('[0-9a-f]{64}', value) for value in receipt['tool_sha256'].values()),
             'Missing pinned tool identity')
     for stage in STAGES:
+        require(METAL_STANDARD in commands[stage+'-metal']['argv'], 'Apple compiler used a different MSL dialect')
         profile(read(out/f'{stage}-reflect.stdout'), stage)
         check_msl(out/f'{stage}.metal', stage)
     resource = read(out/'resource-reflect.stdout')
@@ -153,7 +158,7 @@ def run(out, work, cross, validator, invoke, jobs):
     xcrun = ('xcrun', '--sdk', 'macosx')
     invoke('xcode-version', 'xcodebuild', '-version')
     invoke('metal-version', *xcrun, 'metal', '--version')
-    metal = (*xcrun, 'metal', '-std=metal2.1', '-c')
+    metal = (*xcrun, 'metal', METAL_STANDARD, '-c')
     for stage in STAGES:
         invoke(stage+'-metal', *metal, out/f'{stage}.metal', '-o', work/f'{stage}.air')
     invoke('offline-library', *xcrun, 'metallib', work/'vert.air', work/'frag.air', '-o', work/'draw.metallib')
