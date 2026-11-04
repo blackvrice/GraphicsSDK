@@ -35,7 +35,9 @@ Windows x64의 별도 `compileHlslDxil` 경로는 HLSL 2021을 `vs_6_0` 또는 `
 Phase 5 오프라인 검사는 고정 DXC로 SM 6.0 DXIL과 Vulkan 1.1용 SPIR-V 1.3을 생성하고,
 SPIRV-Cross로 macOS MSL 2.1 소스를 생성한다. 각 경로의 버전, 지원 프로필, 라이선스와
 재현 절차는 [도구 계약 보고서](PHASE5_SHADER_TOOLCHAIN_REPORT.md)에 있다.
-SDK의 SPIR-V/MSL 변환 경로와 compile·pipeline cache는 후속 항목에서 다룬다.
+Vulkan용 오프라인 컴파일 명령은 DXC로 SPIR-V 1.3을 만들고 `spirv-val`을 통과한 모듈을
+`ShaderFormat::SPIRV`로 사용할 수 있게 한다. [Vulkan SPIR-V 실행 및 재현](PHASE5_VULKAN_SPIRV_REPORT.md)
+SDK의 MSL 변환 경로와 compile·pipeline cache는 후속 항목에서 다룬다.
 
 pipeline은 명시적 vertex layout과 graphics binding layout을 받는다. Texture2D/constant buffer의
 bounded array, register space, VS/PS/All visibility 및 scalar static sampler를 지원한다.

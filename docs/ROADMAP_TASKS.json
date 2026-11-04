@@ -2257,9 +2257,13 @@
       "depends_on": [
         "P5-SHD-02"
       ],
-      "work": "Vulkan target용 compile 및 외부 semantic validation 연결.",
+      "work": "고정 DXC의 Vulkan 1.1/SPIR-V 1.3 정점·픽셀 오프라인 컴파일을 고정 spirv-val과 연결했다. Linux x64 lavapipe에서 설치 SDK로 실제 draw를 실행해 13×7 RGBA8 전체 바이트를 D3D12 WARP의 DXIL·DXBC 두 참조와 대조했다. 외부 의미 검증과 SDK 인터페이스 거부 대조군이 통과했다. 선행 수용 조건이 남아 있다.",
       "done_when": "실제 Vulkan shader 사용·동일 참조와 잘못된 입력 거부.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE5_VULKAN_SPIRV_REPORT.md",
+        "benchmarks/reports/validation/2026-11-04-vulkan-spirv/summary.json",
+        "benchmarks/reports/validation/2026-11-04-vulkan-spirv/verify.py"
+      ],
       "requires": "지원 target의 실제 compiler/runtime"
     },
     {
