@@ -59,8 +59,10 @@ def load_dxc(pin, system, archive, work, out):
     return root, {name: sha(root/name) for name in asset['tools']}
 
 
-def build_spirv(sources, work, out, invoke, jobs):
+def build_spirv(sources, work, out, invoke, jobs, *, build_cross=True):
     for name, pin in sources.items():
+        if name == 'SPIRV-Cross' and not build_cross:
+            continue
         source = work/name
         source.mkdir()
         invoke(name+'-init', [*GIT, 'init', '--quiet', source])
@@ -80,6 +82,8 @@ def build_spirv(sources, work, out, invoke, jobs):
         ('tools', 'SPIRV-Tools', tools, 'spirv-val',
          ['-DSPIRV_SKIP_TESTS=ON', f'-DSPIRV-Headers_SOURCE_DIR={work/"SPIRV-Headers"}']),
     ]
+    if not build_cross:
+        configs = configs[1:]
     for name, source, build, target, options in configs:
         invoke(name+'-configure', ['cmake', '-S', work/source, '-B', build, '-G', 'Ninja',
                                    '-DCMAKE_BUILD_TYPE=Release', *options])

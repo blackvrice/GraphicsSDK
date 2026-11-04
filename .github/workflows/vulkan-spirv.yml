@@ -1,0 +1,54 @@
+name: Vulkan DXC SPIR-V installed consumer
+on:
+  push:
+    paths: &inputs
+      - '.github/workflows/vulkan-spirv.yml'
+      - 'tools/vulkan_spirv.py'
+      - 'tools/shader_toolchain.py'
+      - 'tools/shader-toolchain.lock.json'
+      - 'tools/d3d12_dxil.py'
+      - 'tests/vulkan_spirv/**'
+      - 'tests/fixtures/shader_toolchain/**'
+      - 'benchmarks/reports/validation/2026-11-04-d3d12-dxil/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'include/**'
+      - 'src/**'
+  pull_request:
+    paths: *inputs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lavapipe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Headers
+          ref: b379292b2ab6df5771ba9870d53cf8b2c9295daf
+          path: .deps/Vulkan-Headers
+          persist-credentials: false
+      - name: Install Linux build and software Vulkan prerequisites
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-validationlayers
+      - name: Compile, validate and draw with the installed Vulkan SDK
+        shell: bash
+        run: |
+          mapfile -t icds < <(find /usr/share/vulkan/icd.d -maxdepth 1 -name 'lvp_icd*.json')
+          test "${#icds[@]}" -eq 1
+          python3 tools/vulkan_spirv.py run --output out/vulkan-dxc-spirv --icd "${icds[0]}" \
+            --layer /usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+      - name: Replay SPIR-V controls and compare the archived D3D12 pixels
+        run: python3 tools/vulkan_spirv.py check --output out/vulkan-dxc-spirv
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vulkan-dxc-spirv-${{ github.sha }}
+          path: out/vulkan-dxc-spirv/
+          if-no-files-found: error
