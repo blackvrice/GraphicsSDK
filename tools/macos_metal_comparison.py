@@ -7,6 +7,7 @@ import os
 import pathlib
 import platform
 import re
+import shlex
 import shutil
 import statistics
 import subprocess
@@ -82,6 +83,30 @@ def inventory(folder):
             for p in sorted(folder.rglob('*'), key=lambda p:p.as_posix()) if p.is_file() and p != folder/'receipt.json']
 
 
+def verify_build(out, arch):
+    exact(cache(out/'CMakeCache.txt'), dict(CMAKE_BUILD_TYPE='Release', CMAKE_OSX_ARCHITECTURES=arch,
+                                           CMAKE_INTERPROCEDURAL_OPTIMIZATION='OFF', CMAKE_UNITY_BUILD='OFF',
+                                           SDL_SHARED='OFF', SDL_STATIC='ON', SDL_METAL='ON', SDL_VULKAN='OFF',
+                                           LLGL_BUILD_STATIC_LIB='ON', LLGL_BUILD_RENDERER_METAL='ON', LLGL_BUILD_RENDERER_VULKAN='OFF'))
+    exact(cache(out/'sdk-CMakeCache.txt'), dict(GFX_ENABLE_METAL='ON', GFX_ENABLE_D3D12='OFF', GFX_ENABLE_VULKAN='OFF'))
+    rows = read(out/'compile_commands.json')
+    sdk = read(out/'sdk-compile_commands.json')
+    units = ('/.deps/SDL/src/gpu/metal/SDL_gpu_metal.m', '/.deps/LLGL/sources/Renderer/Metal/MTRenderSystem.mm',
+             '/src/backends/metal/Metal.cpp')
+    selected = []
+    for unit in units:
+        matches = [r for r in (*rows, *sdk) if r['file'].endswith(unit)]
+        require(len(matches) == 1, f'Expected one native implementation of {unit}')
+        selected.extend(matches)
+    adapters = [r for r in rows if r['file'].endswith(f'/{BENCH}/Compare.mm')]
+    require(len(adapters) == 3, 'Expected all three independently linked comparison adapters')
+    for row in (*selected, *adapters):
+        args = shlex.split(row['command'])
+        require('-arch' in args and args[args.index('-arch')+1] == arch and '-O2' in args and '-DNDEBUG' in args
+                and not any(a in ('-O0','-O1','-O3','-Os','-Oz','-Ofast') or a.startswith('-flto') for a in args),
+                'Comparison build architecture or optimization differs')
+
+
 def check(out):
     receipt = read(out/'receipt.json')
     exact(receipt, dict(schema_version=1, scope='macos-metal-draw-diagnostic-v1',
@@ -92,6 +117,7 @@ def check(out):
         exact(receipt['competitors'][name], dict(commit=commit, license=license_name, license_sha256=digest))
         require(sha(out/f'{name}-LICENSE.txt') == digest, f'{name} license evidence differs')
     require(sha(out/'Draw.metal') == receipt['fixture_sha256'], 'Common shader differs')
+    verify_build(out, receipt['architecture'])
     expected = ['os', 'xcode', 'sdk-path', 'sdk-configure', 'sdk-build', 'sdk-install', 'configure', 'build',
                 *(f'{key}-arch' for key in ADAPTERS), *(f'{key}-{mode}' for mode in ('reference', 'timing') for key in ADAPTERS)]
     rows = read(out/'commands.json')

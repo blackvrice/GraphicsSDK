@@ -141,7 +141,8 @@ struct Renderer {
     const char* storage = "private";
 
     Renderer(const Host& host, const std::string& source) {
-        sdl(SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen"));
+        // The pinned Metal GPU backend requires a video driver with Metal_CreateView.
+        sdl(SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "cocoa"));
         sdl(SDL_Init(SDL_INIT_VIDEO));
         device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_MSL, false, "metal");
         sdl(device != nullptr);
@@ -159,7 +160,7 @@ struct Renderer {
         sdl(target != nullptr);
         SDL_GPUShaderCreateInfo shader{};
         shader.code = reinterpret_cast<const Uint8*>(source.c_str());
-        shader.code_size = source.size() + 1;
+        shader.code_size = source.size();
         shader.format = SDL_GPU_SHADERFORMAT_MSL;
         shader.entrypoint = "gfx_vertex";
         shader.stage = SDL_GPU_SHADERSTAGE_VERTEX;
@@ -319,7 +320,7 @@ struct Renderer {
         p.fragmentShader = fs;
         p.primitiveTopology = LLGL::PrimitiveTopology::TriangleList;
         p.rasterizer.scissorTestEnabled = true;
-        p.viewports.emplace_back(0, 0, width, height);
+        p.viewports.push_back(LLGL::Viewport{0, 0, width, height});
         pipeline = device->CreatePipelineState(p);
         require(pipeline, "LLGL Metal pipeline unavailable");
         if (auto* detail = pipeline->GetReport(); detail && detail->HasErrors()) throw std::runtime_error(detail->GetText());
