@@ -17,8 +17,9 @@ Vulkan depth-only layout은 fragment bytes를 생략할 수 있으며 VS Positio
 SDK의 framing/interface 검사는
 전체 semantic validator가 아니다. 자체 fixture는 고정 로컬 SPIRV-Tools로 검증하며
 이 외부 도구는 SDK에 링크·배포하지 않는다. [범위와 계약](VULKAN.md)을 따른다.
-기본 `ShaderFormat`은 DXBC이며 compileHlsl 결과도 DXBC다. Public reflectShader의
-SPIRV 요청은 Unsupported다. ShaderBinary의 trailing format 필드 추가로 소비자를 재빌드해야 한다.
+기본 `ShaderFormat`은 DXBC이며 `compileHlsl` 결과도 DXBC다. SPIR-V의 리소스는
+`reflectShader`로, 진입점·단계·입출력 위치까지 포함한 인터페이스는 `reflectSpirvInterface`로
+읽을 수 있다. [SPIR-V reflection 및 바인딩 검증](PHASE5_SPIRV_REFLECTION_REPORT.md)
 
 현재 동작하는 bootstrap 경로는 Windows `D3DCompile` → SM5.1 DXBC → D3D12다.
 entry point와 stage를 명시하고 최적화 level 3 및 warnings-as-errors를 사용한다.
@@ -38,7 +39,7 @@ Vulkan용 오프라인 컴파일 명령은 DXC로 SPIR-V 1.3을 만들고 `spirv
 `ShaderFormat::SPIRV`로 사용할 수 있게 한다. [Vulkan SPIR-V 실행 및 재현](PHASE5_VULKAN_SPIRV_REPORT.md)
 리소스 바인딩 없는 Vulkan 모듈은 고정 SPIRV-Cross로 MSL 2.1로 변환한 뒤 Metal SDK에
 소스로 전달할 수 있다. [Metal 변환과 실행 보고서](PHASE5_METAL_SPIRV_REPORT.md)
-일반 reflection과 compile·pipeline cache는 후속 항목에서 다룬다.
+Compile·pipeline cache는 후속 항목에서 다룬다.
 
 pipeline은 명시적 vertex layout과 graphics binding layout을 받는다. Texture2D/constant buffer의
 bounded array, register space, VS/PS/All visibility 및 scalar static sampler를 지원한다.

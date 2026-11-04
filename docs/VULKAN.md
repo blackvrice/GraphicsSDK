@@ -196,9 +196,9 @@ procedure are available, including validation-off devices. Otherwise it returns
 and active recording (inside or outside a render pass). Empty strings are allowed;
 embedded NUL, invalid UTF-8 and sizes above UINT32_MAX are rejected on supported devices.
 Substring/temporary text is copied to a null-terminated string for the native call.
-HLSL compilation remains the existing D3D bootstrap and supplies no SPIR-V.
-General shader compilation/reflection, Linux WSI/physical-device acceptance and
-matching Vulkan competitor measurements remain separate follow-up tasks.
+Use the [offline DXC profile](PHASE5_VULKAN_SPIRV_REPORT.md) to produce validated
+Vulkan SPIR-V from HLSL. Linux WSI, physical-device acceptance and matching Vulkan
+competitor measurements remain separate follow-up tasks.
 Earlier transfer evidence stays in the [implementation report](PHASE3_VULKAN_TRANSFER_REPORT.md).
 
 ## Generation recovery
@@ -310,9 +310,10 @@ The SDK performs bounded header/instruction framing and interface inspection, **
 full semantic validation**. Supply trusted compiler output already checked by a
 SPIR-V validator for the Vulkan environment. The repository fixture tool assembles
 and validates its own shaders using a pinned local SPIRV-Tools library; that library
-is not linked into or distributed with the SDK. `compileHlsl` remains DXBC only;
-`reflectShader` explicitly returns Unsupported for SPIRV. General DXC and SPIR-V
-reflection remain Phase 5 work.
+is an offline developer dependency. `reflectSpirvInterface` reports the graphics
+entry point, stage, locations and resource declarations. `reflectShader` returns
+the same resource declarations. The pipeline uses that metadata to check the
+Vulkan layout. [Reflection contract](PHASE5_SPIRV_REFLECTION_REPORT.md)
 
 Pipelines use triangle lists, no culling/MSAA, optional D32 depth and 0..8 floating
 color outputs bounded by the adapter limit. Layout/format count must match the active
@@ -390,8 +391,8 @@ samplers, and Uniform Block constant buffers. Blocks contain consecutive float4
 members at offsets 0,16,32,..., up to 64KiB; minimum bytes are inspected in both stages.
 Other uniform member shapes/layouts, combined image/samplers, storage, push constants,
 runtime arrays and dynamic/nonuniform descriptor indexing are outside this slice.
-Supply externally validated Vulkan 1.1 SPIR-V 1.3 modules. Inspection remains bounded
-interface checking, not full semantic validation or public general SPIR-V reflection.
+Supply externally validated Vulkan 1.1 SPIR-V 1.3 modules. Public reflection and
+pipeline creation share the same bounded interface parser.
 
 Static samplers use Point/Linear and Clamp/Repeat with one mip and no anisotropy or
 comparison. All color textures carry sampled usage and views. Transition initialized

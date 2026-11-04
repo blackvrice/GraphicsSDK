@@ -2295,9 +2295,14 @@
       "depends_on": [
         "P5-SHD-04"
       ],
-      "work": "현재 제한된 SPIR-V framing 검사를 일반 reflection으로 확장.",
+      "work": "외부 검증된 SPIR-V 1.3에서 단계·진입점·입출력 위치·descriptor set/binding·배열 크기·상수 블록 최소 바이트를 공개 reflection으로 읽는다. Vulkan 파이프라인이 같은 파서 결과로 main/set 0 및 리소스·단계·레이아웃을 검증한다. Linux lavapipe 설치 소비자의 바인딩 검사 291개와 이미지 40개, DXC 모듈의 reflection 및 렌더링이 통과했다. 선행 수용 조건이 남아 있다.",
       "done_when": "descriptor/stage/layout 일치와 잘못된 shader/layout 거부.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE5_SPIRV_REFLECTION_REPORT.md",
+        "tests/SpirvBindingTests.cpp",
+        "tests/VulkanBindingTests.cpp",
+        "tests/vulkan_spirv/main.cpp"
+      ],
       "requires": "지원 target의 실제 compiler/runtime"
     },
     {

@@ -62,6 +62,9 @@ version 검사는 유지하므로, 정상 기록 뒤의 upload 변경은 여전�
 `ShaderBinary`는 format·stage와 바이트 배열이다. Windows의 `compileHlsl`은 SM5.1 DXBC를 생성한다.
 DXC를 활성화한 빌드는 `compileHlslDxil`로 SM6.0 DXIL을 생성하며 `reflectShader`와 D3D12
 그래픽스 파이프라인에서 DXIL을 사용할 수 있다. [셰이더 파이프라인](SHADER_PIPELINE.md)
+`reflectSpirvInterface`는 외부 검증된 SPIR-V 1.3의 진입점·단계·입출력 위치·리소스를
+반환한다. `reflectShader`도 이 인터페이스의 리소스 목록을 반환한다.
+[지원 형식과 예제](PHASE5_SPIRV_REFLECTION_REPORT.md)
 caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을
 보장하지 않는다. Result 실패를 확인하는 전체 예제는 `examples/Triangle.cpp`에 있다.
 
@@ -259,8 +262,8 @@ Vulkan의 [별도 계약](VULKAN.md)은 set 0의 binding i를 layout entry i에,
 연속 float4 Uniform Block만 지원하며 block minimum과 visibility/count를 검사한다.
 Vulkan은 active pass에서 pipeline을 설정하고 각 새 pass와 setPipeline이 snapshot을 비운다.
 미초기화 texture는 거부하고 native descriptor/상수 alignment 한도도 적용한다.
-Recording당 resource descriptor 256개에 더해 snapshot 최대 256개이며 일반 SPIR-V reflection은
-제공하지 않는다. 이번 Vulkan 구현 추가는 공개 API 형태나 ABI를 바꾸지 않는다.
+Recording당 resource descriptor 256개와 snapshot 최대 256개를 지원한다.
+SPIR-V reflection의 `slot`·`space`는 모듈의 `Binding`·`DescriptorSet` 값이다.
 
 ## Depth/MRT와 render pass
 
