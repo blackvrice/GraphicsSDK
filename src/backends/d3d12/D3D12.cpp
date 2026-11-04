@@ -1,10 +1,10 @@
 #include <graphics/Graphics.hpp>
 #include "../../foundation/DeviceGeneration.hpp"
+#include "../../shader/D3D12Shader.hpp"
 #include "FenceWait.hpp"
 #include <Windows.h>
 #include <d3d12.h>
 #include <d3d12sdklayers.h>
-#include <d3d12shader.h>
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 #include <wrl/client.h>
@@ -843,6 +843,13 @@ public:
         status=validateRenderTargets(targets,desc.depthState);if(!status)return std::unexpected(status.error());
         const bool hasFragment=!desc.fragment.bytes.empty();
         if (desc.vertex.stage != ShaderStage::Vertex || desc.vertex.bytes.empty() || (hasFragment && desc.fragment.stage!=ShaderStage::Fragment) || (!hasFragment && !targets.colors.empty())) return invalid("Invalid graphics pipeline shaders", ErrorCode::InvalidArgument);
+        if (desc.vertex.format == ShaderFormat::DXIL || (hasFragment && desc.fragment.format == ShaderFormat::DXIL)) {
+            D3D12_FEATURE_DATA_SHADER_MODEL model{D3D_SHADER_MODEL_6_0};
+            const HRESULT hr = state->device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &model, sizeof(model));
+            if (hr == E_INVALIDARG || (SUCCEEDED(hr) && model.HighestShaderModel < D3D_SHADER_MODEL_6_0))
+                return invalid("DXIL requires a D3D12 device with Shader Model 6.0", ErrorCode::Unsupported);
+            if (FAILED(hr)) return state->failure(hr, "D3D12 Shader Model query failed");
+        }
         status=validateVertexLayout(desc.vertexLayout);if(!status)return std::unexpected(status.error());
         auto pipeline = std::make_shared<DXPipeline>(); pipeline->owner = state; pipeline->renderTargets=targets;pipeline->depthState=desc.depthState;pipeline->sampled = desc.sampledTexture;
         if(desc.sampledTexture && (!desc.bindingLayout.entries.empty() || !desc.bindingLayout.samplers.empty()))return invalid("Legacy sampledTexture and explicit bindingLayout cannot be combined",ErrorCode::InvalidArgument);
@@ -850,9 +857,8 @@ public:
         status=validateBindingLayout(pipeline->bindings);if(!status)return std::unexpected(status.error());
         pipeline->minimumBytes.resize(pipeline->bindings.entries.size());
         for(const auto& entry:pipeline->bindings.entries)pipeline->descriptorSize+=entry.count;
-        auto validateShader=[&](const ShaderBinary& shader)->Result<void> {
-            auto reflected=reflectShader(shader);if(!reflected)return std::unexpected(reflected.error());
-            const auto visibility=shader.stage==ShaderStage::Vertex?ShaderVisibility::Vertex:ShaderVisibility::Fragment;
+        auto validateBindings=[&](const D3D12ShaderReflection& reflection, ShaderVisibility visibility)->Result<void> {
+            auto reflected=d3d12ShaderBindings(reflection);if(!reflected)return std::unexpected(reflected.error());
             for(const auto& resource:*reflected) {
                 if(resource.type==ShaderResourceType::Unsupported || !resource.count || resource.count==UINT_MAX)
                     return invalid("Shader uses an unsupported resource type or unbounded array",ErrorCode::Unsupported);
@@ -876,14 +882,15 @@ public:
             }
             return {};
         };
-        status=validateShader(desc.vertex);if(!status)return std::unexpected(status.error());
-        if(hasFragment){status=validateShader(desc.fragment);if(!status)return std::unexpected(status.error());
-            ComPtr<ID3D12ShaderReflection> reflection;
-            HRESULT hr=D3DReflect(desc.fragment.bytes.data(),desc.fragment.bytes.size(),IID_PPV_ARGS(&reflection));
-            if(FAILED(hr))return state->failure(hr,"Pixel output reflection failed");
-            D3D12_SHADER_DESC shader{};hr=reflection->GetDesc(&shader);if(FAILED(hr))return state->failure(hr,"Pixel output description failed");
+        auto vertex = reflectD3D12Shader(desc.vertex);
+        if (!vertex) return std::unexpected(vertex.error());
+        status=validateBindings(*vertex, ShaderVisibility::Vertex);if(!status)return std::unexpected(status.error());
+        if(hasFragment){
+            auto fragment = reflectD3D12Shader(desc.fragment);
+            if (!fragment) return std::unexpected(fragment.error());
+            status=validateBindings(*fragment, ShaderVisibility::Fragment);if(!status)return std::unexpected(status.error());
             UINT mask=0;
-            for(UINT i=0;i<shader.OutputParameters;++i){D3D12_SIGNATURE_PARAMETER_DESC output{};hr=reflection->GetOutputParameterDesc(i,&output);if(FAILED(hr))return state->failure(hr,"Pixel output parameter failed");
+            for(UINT i=0;i<fragment->description.OutputParameters;++i){D3D12_SIGNATURE_PARAMETER_DESC output{};const HRESULT hr=fragment->native->GetOutputParameterDesc(i,&output);if(FAILED(hr))return state->failure(hr,"Pixel output parameter failed");
                 if(output.SystemValueType!=D3D_NAME_TARGET)return invalid("Only floating-point SV_Target color outputs are supported",ErrorCode::Unsupported);
                 if(output.SemanticIndex>=targets.colors.size() || output.ComponentType!=D3D_REGISTER_COMPONENT_FLOAT32)return invalid("Pixel output does not match color attachments",ErrorCode::InvalidArgument);
                 mask|=1u<<output.SemanticIndex;

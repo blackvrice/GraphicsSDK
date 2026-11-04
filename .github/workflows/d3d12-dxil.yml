@@ -1,0 +1,52 @@
+name: D3D12 installed DXIL consumer
+on:
+  push:
+    paths:
+      - '.github/workflows/d3d12-dxil.yml'
+      - 'tools/d3d12_dxil.py'
+      - 'tools/shader_toolchain.py'
+      - 'tools/shader-toolchain.lock.json'
+      - 'tests/d3d12_dxil/**'
+      - 'tests/fixtures/shader_toolchain/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'include/**'
+      - 'src/**'
+  pull_request:
+    paths:
+      - '.github/workflows/d3d12-dxil.yml'
+      - 'tools/d3d12_dxil.py'
+      - 'tools/shader_toolchain.py'
+      - 'tools/shader-toolchain.lock.json'
+      - 'tests/d3d12_dxil/**'
+      - 'tests/fixtures/shader_toolchain/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'include/**'
+      - 'src/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  warp:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and draw using an installed DXIL-enabled SDK
+        run: python tools/d3d12_dxil.py run --output out/d3d12-dxil
+      - name: Verify runtime diagnostics and both full readbacks
+        run: python tools/d3d12_dxil.py check --output out/d3d12-dxil
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: d3d12-dxil-warp-${{ github.sha }}
+          path: out/d3d12-dxil/
+          if-no-files-found: error
