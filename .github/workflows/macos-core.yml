@@ -73,6 +73,12 @@ jobs:
           else:
               assert window == dict(presentation_executed=False, reason='no AppKit screen')
           PY
+      - name: Validate Metal API usage with native blit controls and installed SDK regressions
+        run: |
+          python3 tools/macos_metal_validation.py run \
+            --backend out/macos-metal-backend-evidence \
+            --presentation out/macos-metal-presentation-build/metal_presentation \
+            --output out/macos-metal-validation
       - name: Run every Python contract without exclusions
         run: python3 tools/check_python_contracts.py --output out/macos-python
       - name: Bind native and Python evidence to the same source and architecture
@@ -109,6 +115,7 @@ jobs:
             out/macos-metal-evidence/
             out/macos-metal-backend-evidence/
             out/macos-metal-presentation/
+            out/macos-metal-validation/
             out/macos-python/
           if-no-files-found: error
           retention-days: 14
