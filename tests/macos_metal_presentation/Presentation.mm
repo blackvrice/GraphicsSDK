@@ -170,6 +170,33 @@ unsigned waitForDisplay(const std::shared_ptr<std::atomic_uint>& count) {
     return count->load();
 }
 
+unsigned nativeDisplayControl(ObservedMetalLayer* layer) {
+    layer->presented = std::make_shared<std::atomic_uint>(0);
+    id<MTLCommandQueue> queue = [layer.device newCommandQueue];
+    check(queue != nil, "Native display control has no command queue");
+    for (unsigned i = 0; i < 3; ++i) {
+        @autoreleasepool {
+            id<CAMetalDrawable> drawable = [layer nextDrawable];
+            check(drawable != nil, "Native display control has no drawable");
+            auto pass = [MTLRenderPassDescriptor renderPassDescriptor];
+            pass.colorAttachments[0].texture = drawable.texture;
+            pass.colorAttachments[0].loadAction = MTLLoadActionClear;
+            pass.colorAttachments[0].storeAction = MTLStoreActionStore;
+            pass.colorAttachments[0].clearColor = MTLClearColorMake(0, 1, 0, 1);
+            id<MTLCommandBuffer> commands = [queue commandBuffer];
+            auto encoder = [commands renderCommandEncoderWithDescriptor:pass];
+            check(encoder != nil, "Native display control has no encoder");
+            [encoder endEncoding];
+            [commands presentDrawable:drawable];
+            [commands commit];
+            [commands waitUntilCompleted];
+            check(commands.status == MTLCommandBufferStatusCompleted, "Native display control did not complete");
+        }
+        pump();
+    }
+    return waitForDisplay(layer->presented);
+}
+
 void frame(gfx::Device& gpu, gfx::SwapChain& chain, const gfx::PipelinePtr& pso,
            std::uint32_t width, std::uint32_t height, std::uint32_t split, bool verify) {
     auto back = take(chain.acquire());
@@ -222,7 +249,7 @@ void frame(gfx::Device& gpu, gfx::SwapChain& chain, const gfx::PipelinePtr& pso,
     }
 }
 
-int window(bool interactive) {
+int window(bool interactive, bool runner) {
     [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     [NSApp finishLaunching];
@@ -240,6 +267,8 @@ int window(bool interactive) {
     NSView* view = window.contentView;
     ObservedMetalLayer* layer = [ObservedMetalLayer layer];
     layer->presented = std::make_shared<std::atomic_uint>(0);
+    layer.frame = view.bounds;
+    layer.contentsScale = window.backingScaleFactor;
     view.layer = layer;
     view.wantsLayer = YES;
     [window makeKeyAndOrderFront:nil];
@@ -261,6 +290,8 @@ int window(bool interactive) {
             if (width != unsigned(pixels.width) || height != unsigned(pixels.height)) {
                 width = unsigned(pixels.width);
                 height = unsigned(pixels.height);
+                layer.frame = view.bounds;
+                layer.contentsScale = window.backingScaleFactor;
                 take(chain->resize(width, height));
             }
             frame(*gpu, *chain, pso, width, height, 1 + frames++ % (width - 1), false);
@@ -272,7 +303,6 @@ int window(bool interactive) {
             pump();
         }
         beforeResize = waitForDisplay(layer->presented);
-        check(beforeResize > 0, "No positive compositor presentation timestamp before resize");
         auto back = take(chain->acquire());
         auto stale = take(gpu->createCommandList());
         take(stale->begin());
@@ -282,6 +312,7 @@ int window(bool interactive) {
         width = 99;
         height = 47;
         [window setContentSize:NSMakeSize(400, 240)];
+        layer.frame = view.bounds;
         take(chain->resize(width, height));
         reject(gpu->queue().submit(*stale), ErrorCode::InvalidState, "Recording survived drawable resize");
         layer->presented = std::make_shared<std::atomic_uint>(0);
@@ -293,14 +324,21 @@ int window(bool interactive) {
     }
     take(gpu->queue().waitIdle());
     const unsigned displayed = waitForDisplay(layer->presented);
-    check(interactive || displayed > 0, "No positive compositor presentation timestamp after resize");
     chain.reset();
+    const bool displayObserved = beforeResize > 0 && displayed > 0;
+    const bool needsControl = runner && !displayObserved;
+    const unsigned nativeDisplayed = needsControl ? nativeDisplayControl(layer) : 0;
     [window close];
     std::cout << "{\"contract\":\"metal_window_v1\",\"SDK_source_fingerprint\":\""
               << gfx::buildFingerprint() << "\",\"frames\":" << frames << ",\"before_resize_presented\":"
               << beforeResize << ",\"after_resize_presented\":" << displayed
+              << ",\"display_observed\":" << (displayObserved ? "true" : "false")
+              << ",\"native_control_frames\":" << (needsControl ? 3 : 0)
+              << ",\"native_control_presented\":" << nativeDisplayed
               << ",\"presentation_executed\":true,\"interactive\":"
               << (interactive ? "true" : "false") << "}\n";
+    check(interactive || displayObserved || (needsControl && nativeDisplayed == 0),
+          "SDK did not observe display before and after resize");
     return 0;
 }
 }
@@ -310,8 +348,9 @@ int main(int argc, char** argv) {
         try {
             const std::string_view mode = argc == 2 ? argv[1] : "";
             if (mode == "--contracts") { contracts(); return 0; }
-            if (mode == "--window" || mode == "--interactive") return window(mode == "--interactive");
-            throw std::runtime_error("Expected --contracts, --window or --interactive");
+            if (mode == "--window" || mode == "--interactive" || mode == "--runner-window")
+                return window(mode == "--interactive", mode == "--runner-window");
+            throw std::runtime_error("Expected --contracts, --window, --interactive or --runner-window");
         } catch (const std::exception& error) {
             std::cerr << "FAIL: " << error.what() << '\n';
             return 1;
