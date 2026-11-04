@@ -257,9 +257,9 @@ Graphics는 고정 MSL fixture·native compiler/reflection과 실행당 18개 �
 
 Artifact `macos-core-<architecture>-<source commit>`에는 `macos-core-evidence`,
 `macos-metal-evidence`, `macos-metal-backend-evidence`, `macos-metal-presentation`,
-`macos-metal-validation`, `macos-python`을 보관한다.
-실패해도 원본 stdout/stderr·cache·compiler graph·receipt를 수집한다. native binary·
-system framework·외부 SDK는 업로드하지 않는다. 실제 범위와 보관 결과는
+`macos-metal-validation`, `macos-metal-package`, `macos-python`을 보관한다.
+실패해도 원본 stdout/stderr·cache·compiler graph·receipt를 수집한다.
+실행 파일·시스템 프레임워크·외부 SDK는 아티팩트에서 제외한다. 실제 범위와 보관 결과는
 [Core 보고서](PHASE4_MACOS_CORE_REPORT.md), [가용성 보고서](PHASE4_METAL_AVAILABILITY_REPORT.md),
 [SDK 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md), [버퍼 보고서](PHASE4_METAL_BUFFER_REPORT.md), [텍스처 보고서](PHASE4_METAL_TEXTURE_REPORT.md), [graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
 
@@ -274,6 +274,10 @@ Metal API Validation 단계는 별도 프로세스에서 검증기를 켜고 정
 `macos-metal-comparison.yml`은 같은 가상 Metal 장치에서 GraphicsSDK·SDL3·LLGL의 오프스크린
 draw를 실행한다. 검증을 켠 전체 픽셀 비교와 CPU 시간 수집은 별도 프로세스에서 수행한다.
 [Metal 경쟁 비교와 재현 절차](PHASE4_METAL_COMPARISON_REPORT.md)
+
+별도 아티팩트 `macos-metal-sdk-<architecture>-<source commit>`에는 재배치 가능한 Metal SDK ZIP을 담는다.
+macOS CI는 ZIP을 새 경로에 풀고 독립 C++ 소비자의 링크와 오프스크린 Metal 실행을 확인한다.
+[macOS 패키지 다운로드와 검증 절차](PHASE4_METAL_PACKAGE_REPORT.md)
 
 ## 6. 실제 Linux GPU와 화면 수용
 

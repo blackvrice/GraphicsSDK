@@ -57,6 +57,7 @@ Metal MSL graphics pipeline·입력/binding·전체 draw 이미지와 네 번째
 [graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다. macOS에서 `GFX_ENABLE_METAL=ON`과
 `GFX_BUILD_TESTS=ON`으로 빌드하면 CPU 11개와 Metal CTest 4개를 실행한다.
 설치한 SDK에 연결하는 AppKit 창 예제와 검증 명령은 [Metal 화면 출력 보고서](PHASE4_METAL_PRESENTATION_REPORT.md)에 있다.
+재배치 가능한 Metal SDK ZIP과 독립 C++ 소비자 검증 절차는 [macOS 패키지 보고서](PHASE4_METAL_PACKAGE_REPORT.md)에 있다.
 현재 host의 Linux 환경 가용성은 [P3-LNX-01 조사](PHASE3_LINUX_ENVIRONMENT.md)에
 기록한다. 로컬 WSL 미설치 관측은 보존하며, 후속 실제 Linux compile 근거는 별도 CI 보고서에 연결한다.
 Linux 전용 `linux-vulkan` / `linux-vulkan-validation` preset의 backend flag·외부 헤더·

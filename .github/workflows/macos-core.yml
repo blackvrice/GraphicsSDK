@@ -111,6 +111,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-11-04-metal-validation/verify.py
       - name: Replay saved Metal comparison references, intervals and notices
         run: python3 benchmarks/reports/validation/2026-11-04-metal-comparison/verify.py
+      - name: Replay saved relocated macOS SDK package evidence
+        run: python3 benchmarks/reports/validation/2026-11-04-metal-package/verify.py
       - name: Preserve diagnostics without system libraries or native binaries
         if: always()
         uses: actions/upload-artifact@v4
