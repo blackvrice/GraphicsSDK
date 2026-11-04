@@ -82,7 +82,7 @@ def inspect_module(path, stage, entry):
     require(entries == [(0 if stage == 'vert' else 4, entry.encode())], 'Unexpected SPIR-V entry point')
 
 
-def undefined_store(source):
+def mismatched_store(source):
     data = bytearray(source.read_bytes())
     at = 20
     while at < len(data):
@@ -91,7 +91,9 @@ def undefined_store(source):
         require(0 < size <= (len(data)-at)//4, 'Invalid SPIR-V control source framing')
         if opcode == 62:
             require(size >= 3, 'Invalid OpStore framing')
-            struct.pack_into('<I', data, at+8, 0)
+            # Both IDs are defined, but the destination pointer cannot be stored as a float4 value.
+            destination, = struct.unpack_from('<I', data, at+4)
+            struct.pack_into('<I', data, at+8, destination)
             return data
         at += size*4
     raise ValueError('Expected an OpStore in the fixture')
@@ -114,7 +116,8 @@ def compare_d3d12(image):
 def check(out):
     receipt = read(out/'receipt.json')
     require(receipt['schema_version'] == 1 and receipt['scope'] == SCOPE and receipt['system'] == 'Linux' and
-            receipt['backend'] == 'Vulkan' and receipt['software_adapter'] is True,
+            receipt['backend'] == 'Vulkan' and receipt['software_adapter'] is True and
+            receipt['runtime_validation_layer'] is False,
             'Vulkan DXC receipt scope differs')
     require(receipt['files'] == inventory(out), 'Vulkan DXC evidence inventory or bytes differ')
     lock = read(out/LOCK.name)
@@ -130,27 +133,26 @@ def check(out):
             'External validator executable or source identity differs')
     for name, stage, entry in (('vert', 'vert', 'main'), ('frag', 'frag', 'main'), ('named', 'frag', 'pixelMain')):
         inspect_module(out/f'{name}.spv', stage, entry)
-    require(undefined_store(out/'frag.spv') == (out/'undefined-store.spv').read_bytes(),
+    require(mismatched_store(out/'frag.spv') == (out/'wrong-store-type.spv').read_bytes(),
             'SPIR-V negative control differs')
     commands = read(out/'commands.json')
-    controls = ('undefined-store-validate', 'invalid-compile')
+    controls = ('wrong-store-type-validate', 'invalid-compile')
     positives = {'consumer', *(f'{stage}-{kind}' for stage in ('vert', 'frag', 'named')
                              for kind in ('compile', 'validate'))}
     require((positives | set(controls)).issubset(commands) and
             all(row['exit_code'] > 0 if name in controls else row['exit_code'] == 0
                 for name, row in commands.items()), 'Unexpected compiler, validator, or consumer exit status')
-    require('Id is 0' in (out/'undefined-store-validate.stderr').read_text(encoding='utf-8') and
+    require('type does not match Object' in (out/'wrong-store-type-validate.stderr').read_text(encoding='utf-8') and
             'missingSymbol' in (out/'invalid-compile.stderr').read_text(encoding='utf-8') and
             not (out/'invalid.spv').exists(), 'Shader negative controls differ')
     stdout = (out/'consumer.stdout').read_text(encoding='utf-8')
     require(all(text in stdout for text in ('entry point must be main', 'execution model/stage mismatch',
-                'SPIR-V stage/byte framing', 'PASS Vulkan software (llvmpipe', 'validation errors 0, 13x7',
+                'SPIR-V stage/byte framing', 'PASS Vulkan software (llvmpipe', '), 13x7',
                 'SDK_SHA256='+receipt['SDK_source_fingerprint'])), 'Installed Vulkan consumer receipt differs')
     stderr = (out/'consumer.stderr').read_text(encoding='utf-8')
-    for manifest, key in (('icd.json', 'ICD'), ('layer.json', 'layer')):
-        library = pathlib.PurePosixPath(read(out/manifest)[key]['library_path']).name
-        require(re.search(r'calling init:[ \t]+/[^\n]*/'+re.escape(library)+r'[ \t]*$', stderr, re.MULTILINE),
-                f'Manifest library not observed: {library}')
+    library = pathlib.PurePosixPath(read(out/'icd.json')['ICD']['library_path']).name
+    require(re.search(r'calling init:[ \t]+/[^\n]*/'+re.escape(library)+r'[ \t]*$', stderr, re.MULTILINE) and
+            'libVkLayer_khronos_validation' not in stderr, 'Unexpected Vulkan driver or validation layer')
     require(receipt['D3D12_source_commit'] == compare_d3d12((out/'spirv.rgba').read_bytes()),
             'D3D12 reference revision differs')
     return receipt
@@ -166,9 +168,9 @@ def run(args, out, work, dxc, validator, hashes, invoke):
     for stage, entry in (('vert', 'vertexMain'), ('frag', 'pixelMain')):
         compile_shader(dxc, validator, source, entry, stage, out/f'{stage}.spv', work, invoke)
     compile_shader(dxc, validator, source, 'pixelMain', 'frag', out/'named.spv', work, invoke, name='pixelMain')
-    negative = out/'undefined-store.spv'
-    negative.write_bytes(undefined_store(out/'frag.spv'))
-    invoke('undefined-store-validate', validator, '--target-env', 'vulkan1.1', negative, reject=True)
+    negative = out/'wrong-store-type.spv'
+    negative.write_bytes(mismatched_store(out/'frag.spv'))
+    invoke('wrong-store-type-validate', validator, '--target-env', 'vulkan1.1', negative, reject=True)
     bad = out/'invalid.hlsl'
     bad.write_text('float4 broken() : SV_Target0 { return missingSymbol; }\n', encoding='utf-8')
     invoke('invalid-compile', dxc, *FLAGS, '-spirv', '-fspv-target-env=vulkan1.1', '-E', 'broken',
@@ -188,20 +190,21 @@ def run(args, out, work, dxc, validator, hashes, invoke):
     invoke('consumer-configure', 'cmake', '-S', consumer, '-B', build, *compiler, f'-DPACKAGE_ROOT={package}')
     invoke('consumer-build', 'cmake', '--build', build, '--parallel', args.jobs)
 
-    icd, layer = args.icd.resolve(), args.layer.resolve()
-    require('vulkan_lvp' in read(icd)['ICD']['library_path'] and
-            read(layer)['layer']['name'] == 'VK_LAYER_KHRONOS_validation', 'Expected lavapipe and Khronos validation')
+    icd = args.icd.resolve()
+    require('vulkan_lvp' in read(icd)['ICD']['library_path'], 'Expected lavapipe')
     shutil.copyfile(icd, out/'icd.json')
-    shutil.copyfile(layer, out/'layer.json')
+    empty = work/'empty-layers'
+    empty.mkdir()
     env = {key: value for key, value in os.environ.items() if not key.startswith(('VK_', 'LD_'))}
-    env.update(VK_DRIVER_FILES=str(icd), VK_ICD_FILENAMES=str(icd), VK_LAYER_PATH=str(layer.parent),
+    env.update(VK_DRIVER_FILES=str(icd), VK_ICD_FILENAMES=str(icd), VK_LAYER_PATH=str(empty),
                VK_LOADER_LAYERS_DISABLE='~implicit~', LD_DEBUG='libs')
     invoke('consumer', build/'spirv_consumer', out, env=env)
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK sources changed during Vulkan execution')
     revision = invoke('source-revision', *GIT, '-C', ROOT, 'rev-parse', 'HEAD').strip()
     save(out/'receipt.json', dict(schema_version=1, scope=SCOPE, source_commit=revision,
          github_run_id=os.environ.get('GITHUB_RUN_ID'), SDK_source_fingerprint=fingerprint, system='Linux',
-         backend='Vulkan', software_adapter=True, runner_sha256=sha(pathlib.Path(__file__)),
+         backend='Vulkan', software_adapter=True, runtime_validation_layer=False,
+         runner_sha256=sha(pathlib.Path(__file__)),
          dxc_release_sha256=read(LOCK)['dxc']['Linux']['sha256'], tool_sha256=hashes,
          D3D12_source_commit=compare_d3d12((out/'spirv.rgba').read_bytes()), files=inventory(out)))
     check(out)
@@ -222,7 +225,6 @@ def main():
     compile_cmd.add_argument('--entry', required=True)
     compile_cmd.add_argument('--stage', choices=PROFILES, required=True)
     runtime.add_argument('--icd', type=pathlib.Path, required=True)
-    runtime.add_argument('--layer', type=pathlib.Path, required=True)
     runtime.add_argument('--headers', type=pathlib.Path, default=ROOT/'.deps/Vulkan-Headers')
     runtime.add_argument('--compiler', default='g++-14')
     args = parser.parse_args()

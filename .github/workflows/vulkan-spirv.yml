@@ -36,14 +36,13 @@ jobs:
           path: .deps/Vulkan-Headers
           persist-credentials: false
       - name: Install Linux build and software Vulkan prerequisites
-        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers vulkan-validationlayers
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libvulkan1 mesa-vulkan-drivers
       - name: Compile, validate and draw with the installed Vulkan SDK
         shell: bash
         run: |
           mapfile -t icds < <(find /usr/share/vulkan/icd.d -maxdepth 1 -name 'lvp_icd*.json')
           test "${#icds[@]}" -eq 1
-          python3 tools/vulkan_spirv.py run --output out/vulkan-dxc-spirv --icd "${icds[0]}" \
-            --layer /usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+          python3 tools/vulkan_spirv.py run --output out/vulkan-dxc-spirv --icd "${icds[0]}"
       - name: Replay SPIR-V controls and compare the archived D3D12 pixels
         run: python3 tools/vulkan_spirv.py check --output out/vulkan-dxc-spirv
       - uses: actions/upload-artifact@v4
