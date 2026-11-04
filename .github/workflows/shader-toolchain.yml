@@ -1,0 +1,50 @@
+name: P5 offline shader toolchain
+on:
+  push:
+    paths:
+      - '.github/workflows/shader-toolchain.yml'
+      - 'tools/shader_toolchain.py'
+      - 'tools/shader-toolchain.lock.json'
+      - 'tools/linux_comparison.py'
+      - 'tests/fixtures/shader_toolchain/**'
+  pull_request:
+    paths:
+      - '.github/workflows/shader-toolchain.yml'
+      - 'tools/shader_toolchain.py'
+      - 'tools/shader-toolchain.lock.json'
+      - 'tools/linux_comparison.py'
+      - 'tests/fixtures/shader_toolchain/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            profile: windows-x64
+          - runner: ubuntu-24.04
+            profile: linux-x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run pinned offline shader tools and negative controls
+        run: python tools/shader_toolchain.py run --output out/shader-toolchain --jobs 3
+      - name: Verify receipt and complete shader payloads
+        run: python tools/shader_toolchain.py check --output out/shader-toolchain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shader-toolchain-${{ matrix.profile }}-${{ github.sha }}
+          path: out/shader-toolchain/
+          if-no-files-found: error
