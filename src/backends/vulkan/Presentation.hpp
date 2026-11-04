@@ -1,6 +1,7 @@
 // Private implementation included inside Vulkan.cpp's anonymous namespace.
 // Win32 WSI deliberately uses host-fenced acquisition; no throughput claim.
 Result<std::shared_ptr<NativeSurface>> makeSurface(const std::shared_ptr<State>& owner, Surface surface) {
+    if (surface.kind == SurfaceKind::MetalLayer) return fail(ErrorCode::Unsupported, "CAMetalLayer surfaces require Metal");
     auto& in = *owner->native->instance;
 #ifdef _WIN32
     if (surface.kind == SurfaceKind::Xcb) return fail(ErrorCode::Unsupported, "XCB surfaces require Linux XCB support");

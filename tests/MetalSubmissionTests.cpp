@@ -49,7 +49,7 @@ int main(int argc, char** argv) try {
     const auto caps = device->caps();
     check(caps.backend == gfx::Backend::Metal && !caps.softwareAdapter, "Metal capabilities and selection policy");
     check(std::any_of(adapters.begin(), adapters.end(), [&](const auto& a) { return a.id == caps.adapterId && a.name == caps.adapterName; }), "Default adapter belongs to inventory");
-    check(!caps.compute && !caps.timestampQueries && !caps.swapChain && caps.resourceBinding && caps.vertexInput && caps.indexedDrawing &&
+    check(!caps.compute && !caps.timestampQueries && caps.swapChain && caps.resourceBinding && caps.vertexInput && caps.indexedDrawing &&
         caps.bindingLayouts && caps.depthAttachment && caps.multipleRenderTargets && !caps.deviceRecovery && !caps.deviceLossInjection, "Capabilities describe implemented graphics support");
     auto foreign = take(gfx::createDevice(description(caps.adapterId)));
     auto& queue = device->queue();

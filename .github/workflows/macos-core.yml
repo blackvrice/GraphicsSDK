@@ -31,6 +31,43 @@ jobs:
         run: python3 tools/macos_metal_probe.py run --core out/macos-core-evidence --output out/macos-metal-evidence
       - name: Execute SDK Metal submission, resources, graphics and installed public consumers
         run: python3 tools/macos_metal_backend.py run --availability out/macos-metal-evidence --output out/macos-metal-backend-evidence
+      - name: Build and run the installed Metal presentation consumer
+        run: |
+          set -euo pipefail
+          output=out/macos-metal-presentation
+          build=out/macos-metal-presentation-build
+          mkdir "$output"
+          cp tests/macos_metal_presentation/{CMakeLists.txt,Presentation.mm} "$output/"
+          cmake -S tests/macos_metal_presentation -B "$build" -G Ninja \
+            -DCMAKE_PREFIX_PATH="$PWD/out/macos-metal-backend-evidence-install" \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }} 2>&1 | tee "$output/configure.log"
+          cmake --build "$build" --verbose 2>&1 | tee "$output/build.log"
+          cp "$build/compile_commands.json" "$output/"
+          lipo -archs "$build/metal_presentation" | tee "$output/architecture.txt"
+          test "$(cat "$output/architecture.txt")" = '${{ matrix.architecture }}'
+          "$build/metal_presentation" --contracts 2> >(tee "$output/contracts.stderr" >&2) | tee "$output/contracts.json"
+          status=0
+          "$build/metal_presentation" --window 2> >(tee "$output/window.stderr" >&2) > "$output/window.json" || status=$?
+          cat "$output/window.json"
+          test "$status" -eq 0 || test "$status" -eq 77
+          python3 - "$output" "$status" <<'PY'
+          import json, pathlib, sys
+          out = pathlib.Path(sys.argv[1])
+          receipt = json.loads(pathlib.Path('out/macos-metal-backend-evidence/receipt.json').read_text())
+          contracts = json.loads((out/'contracts.json').read_text())
+          window = json.loads((out/'window.json').read_text())
+          fingerprint = receipt['SDK_source_fingerprint']
+          assert contracts == dict(contract='metal_layer_contracts_v1', SDK_source_fingerprint=fingerprint, presentation_executed=False)
+          if sys.argv[2] == '0':
+              assert window == dict(contract='metal_window_v1', SDK_source_fingerprint=fingerprint, frames=8,
+                  before_resize_presented=window['before_resize_presented'], after_resize_presented=window['after_resize_presented'],
+                  presentation_executed=True, interactive=False)
+              for key in ('before_resize_presented', 'after_resize_presented'):
+                  assert type(window[key]) is int and 0 < window[key] <= 4
+          else:
+              assert window == dict(presentation_executed=False, reason='no AppKit screen')
+          PY
       - name: Run every Python contract without exclusions
         run: python3 tools/check_python_contracts.py --output out/macos-python
       - name: Bind native and Python evidence to the same source and architecture
@@ -66,6 +103,7 @@ jobs:
             out/macos-core-evidence/
             out/macos-metal-evidence/
             out/macos-metal-backend-evidence/
+            out/macos-metal-presentation/
             out/macos-python/
           if-no-files-found: error
           retention-days: 14

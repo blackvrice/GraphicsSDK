@@ -3,6 +3,8 @@
 #include "../../foundation/DeviceGeneration.hpp"
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
+#import <QuartzCore/CAMetalLayer.h>
+#import <objc/runtime.h>
 #include <algorithm>
 #include <deque>
 #include <cstring>
@@ -20,6 +22,7 @@ struct Pending {
     id<MTLCommandBuffer> buffer;
     std::vector<std::shared_ptr<struct Allocation>> allocations;
     std::vector<std::shared_ptr<struct NativePipeline>> pipelines;
+    id<CAMetalDrawable> drawable{};
 };
 struct Allocation {
     id<MTLBuffer> buffer;
@@ -28,8 +31,27 @@ struct Allocation {
     TextureDesc textureDesc;
     TextureFootprint footprint;
     bool initialized{};
+    bool backbuffer{};
     ResourceState state{ResourceState::Common};
     std::uint64_t version{}, lastUse{}, bytes{};
+};
+char layerLeaseKey;
+struct DrawableScope {
+    CAMetalLayer* layer;
+    id<CAMetalDrawable> drawable;
+    std::shared_ptr<Allocation> current;
+
+    void discard() {
+        if (current) current->texture = nil;
+        current.reset();
+        drawable = nil;
+    }
+    void release() {
+        discard();
+        if (layer) objc_setAssociatedObject(layer, &layerLeaseKey, nil, OBJC_ASSOCIATION_RETAIN);
+        layer = nil;
+    }
+    ~DrawableScope() { release(); }
 };
 struct Use {
     std::shared_ptr<Allocation> allocation;
@@ -97,12 +119,14 @@ struct State {
     id<MTLComputePipelineState> tailPipeline;
     std::vector<std::weak_ptr<NativeRecording>> recordings;
     std::vector<std::weak_ptr<NativePipeline>> pipelines;
+    std::vector<std::weak_ptr<DrawableScope>> surfaces;
     void retire() {
         if (retired) return;
         @autoreleasepool {
             for (auto& p : pending) [p.buffer waitUntilCompleted];
             pending.clear();
             for (auto& w : recordings) if (auto r = w.lock()) r->buffer = nil;
+            for (auto& w : surfaces) if (auto surface = w.lock()) surface->release();
             for (auto& w : allocations) if (auto a = w.lock()) { a->buffer = nil; a->texture = nil; }
             for (auto& w : pipelines) if (auto p = w.lock()) p->release();
             tailPipeline = nil; queue = nil; device = nil;
@@ -164,7 +188,7 @@ struct State {
         }
         return {};
     }
-    // Presentation, timestamps and native validation remain unsupported.
+    // Timestamps and native validation remain unsupported.
     auto unsupported() const {
         if (auto ok = check(); !ok) return std::unexpected(ok.error());
         return fail(ErrorCode::Unsupported, "Not implemented by the Metal submission backend");
@@ -255,6 +279,19 @@ struct MetalCommands final : CommandList {
         if (auto ok = owner->check(); !ok) return ok;
         if (!open) return fail(ErrorCode::InvalidState, "Metal command list is not recording");
         if (inPass) return fail(ErrorCode::InvalidState, "Metal render pass must be ended first");
+        // A recording that may become stale must not keep a drawable texture
+        // alive in an unsubmitted native command buffer.
+        if (!usesDrawable()) {
+            if (auto ok = encode(); !ok) return ok;
+        }
+        open = false;
+        ended = true;
+        return {};
+    }
+    bool usesDrawable() const {
+        return std::any_of(uses.begin(), uses.end(), [](const Use& use) { return use.allocation->backbuffer; });
+    }
+    Result<void> encode() {
         // Finalize into a fresh native buffer. An encoder/compiler failure discards that
         // uncommitted buffer and leaves the accepted CPU recording open and retryable.
         @autoreleasepool {
@@ -382,7 +419,6 @@ struct MetalCommands final : CommandList {
             }
             native->buffer = next;
         }
-        open = false; ended = true;
         return {};
     }
     Result<void> debugMarker(std::string_view text) override {
@@ -442,7 +478,10 @@ struct MetalCommands final : CommandList {
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
+        if ((*a)->backbuffer) {
+            if (target != ResourceState::RenderTarget && target != ResourceState::CopySource && target != ResourceState::Present)
+                return fail(ErrorCode::Unsupported, "Metal drawable supports RenderTarget, CopySource and Present");
+        } else if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
             target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::ShaderRead)
             return fail(ErrorCode::Unsupported, "Metal texture state is outside the transfer/pass slice");
         if (target == ResourceState::RenderTarget && !(*a)->textureDesc.renderTarget)
@@ -608,6 +647,8 @@ Result<std::shared_ptr<Allocation>> MetalCommands::allocation(const TexturePtr& 
     auto texture = std::dynamic_pointer_cast<MetalTexture>(value);
     if (!texture) return fail(value ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Metal texture");
     if (texture->owner != owner) return fail(ErrorCode::WrongDevice, "Metal texture belongs to another generation");
+    if (texture->allocation->backbuffer && !texture->allocation->texture)
+        return fail(ErrorCode::InvalidState, "Metal drawable is no longer current");
     return texture->allocation;
 }
 struct MetalQueue final : CommandQueue {
@@ -620,8 +661,9 @@ struct MetalQueue final : CommandQueue {
         if (!commands->ended || commands->open || commands->submitted) return fail(ErrorCode::InvalidState, "Metal submission requires an ended, unsubmitted command list");
         if (owner->last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Metal fence sequence exhausted");
         for (const auto& use : commands->uses)
-            if (use.version != use.allocation->version || use.allocation->version == UINT64_MAX)
-                return fail(ErrorCode::InvalidState, "Stale Metal buffer observation");
+            if (use.version != use.allocation->version || use.allocation->version == UINT64_MAX ||
+                (use.allocation->backbuffer && !use.allocation->texture))
+                return fail(ErrorCode::InvalidState, "Stale Metal resource observation");
         // Allocate the retention node before commit; retain even if the caller destroys its list.
         std::vector<std::shared_ptr<Allocation>> allocations;
         allocations.reserve(commands->uses.size());
@@ -629,8 +671,14 @@ struct MetalQueue final : CommandQueue {
         std::vector<std::shared_ptr<NativePipeline>> pipelines;
         for(const auto& op:commands->operations)for(const auto& draw:op.draws)
             if(std::find(pipelines.begin(),pipelines.end(),draw.pipeline)==pipelines.end())pipelines.push_back(draw.pipeline);
-        owner->pending.push_back({owner->last + 1, commands->native->buffer, std::move(allocations),std::move(pipelines)});
-        @autoreleasepool { [commands->native->buffer commit]; }
+        const bool drawable = commands->usesDrawable();
+        if (drawable) {
+            if (auto ok = commands->encode(); !ok) return std::unexpected(ok.error());
+        }
+        id<MTLCommandBuffer> command = commands->native->buffer;
+        if (drawable) commands->native->buffer = nil;
+        owner->pending.push_back({owner->last + 1, command, std::move(allocations),std::move(pipelines)});
+        @autoreleasepool { [command commit]; }
         commands->submitted = ++owner->last;
         for (auto& use : commands->uses) {
             use.allocation->state = use.shadow; use.allocation->initialized = use.initialized;
@@ -664,6 +712,7 @@ struct MetalQueue final : CommandQueue {
         return owner->completed;
     }
 };
+#include "MetalPresentation.hpp"
 struct MetalDevice final : Device {
     std::shared_ptr<State> owner;
     DeviceCaps capabilities;
@@ -679,7 +728,7 @@ struct MetalDevice final : Device {
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
         result.trackedObjects = owner->objects.size();
-        for (const auto& weak : owner->allocations) if (auto a = weak.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
+        for (const auto& weak : owner->allocations) if (auto a = weak.lock(); a && (a->buffer || a->texture)) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
         for (const auto& p : owner->pending) result.pendingObjectReferences += p.allocations.size();
         return result;
     }
@@ -751,8 +800,14 @@ struct MetalDevice final : Device {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         return std::make_unique<MetalCommands>(owner);
     }
-    Result<void> checkSurfaceSupport(Surface) override { return owner->unsupported(); }
-    Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) override { return owner->unsupported(); }
+    Result<void> checkSurfaceSupport(Surface surface) override {
+        auto layer = checkedLayer(*owner, surface);
+        if (!layer) return std::unexpected(layer.error());
+        return {};
+    }
+    Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
+        return makeMetalSwapChain(owner, surface, desc);
+    }
     CommandQueue& queue() override { return commands; }
     Result<std::uint64_t> validationErrorCount() override { return owner->unsupported(); }
 };
@@ -799,6 +854,7 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         DeviceCaps caps;
         caps.backend = Backend::Metal; caps.adapterName = name; caps.adapterId = {Backend::Metal, selected.registryID};
         caps.depthAttachment = true; caps.multipleRenderTargets = true;
+    caps.swapChain = true;
         caps.vertexInput = true; caps.indexedDrawing = true; caps.resourceBinding = true; caps.bindingLayouts = true;
         return std::make_unique<MetalDevice>(std::move(state), std::move(caps));
     }

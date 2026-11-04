@@ -1002,6 +1002,7 @@ public:
     Result<void> checkSurfaceSupport(Surface surface) override {
         auto status = state->check(); if (!status) return status;
         if (surface.kind == SurfaceKind::Xcb) return invalid("XCB surfaces require Linux", ErrorCode::Unsupported);
+        if (surface.kind == SurfaceKind::MetalLayer) return invalid("CAMetalLayer surfaces require Metal", ErrorCode::Unsupported);
         DWORD process{}; auto thread = GetWindowThreadProcessId(static_cast<HWND>(surface.window), &process);
         if (surface.kind != SurfaceKind::Win32 || surface.connection || surface.windowId || !IsWindow(static_cast<HWND>(surface.window)) ||
             thread != GetCurrentThreadId() || process != GetCurrentProcessId())
@@ -1010,6 +1011,7 @@ public:
     }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (surface.kind == SurfaceKind::MetalLayer) return invalid("CAMetalLayer surfaces require Metal", ErrorCode::Unsupported);
         if (surface.kind != SurfaceKind::Win32 || !IsWindow(static_cast<HWND>(surface.window)) || !desc.width || !desc.height || desc.width > 16384 || desc.height > 16384 || desc.buffers < 2 || desc.buffers > 4)
             return invalid("Invalid Win32 surface or swapchain description", ErrorCode::InvalidArgument);
         auto swap = std::make_unique<DXSwapChain>(); swap->owner = state; swap->desc = desc;
