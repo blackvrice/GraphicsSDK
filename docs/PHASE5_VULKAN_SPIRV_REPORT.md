@@ -38,6 +38,8 @@ python3 tools/vulkan_spirv.py run --output out/vulkan-dxc-spirv \
 python3 tools/vulkan_spirv.py check --output out/vulkan-dxc-spirv
 ```
 
+같은 모듈을 macOS MSL로 변환하는 절차는 [Metal 변환과 실행 보고서](PHASE5_METAL_SPIRV_REPORT.md)에 있다.
+
 대조군은 잘못된 HLSL, `OpStore`에 다른 타입의 유효한 ID를 넣은 모듈, 외부 검증은 통과했으나
 진입점 이름이 다른 모듈, 단계 불일치, 잘린 헤더를 구분한다. 정상 실행은 13×7 RGBA8
 전체 픽셀과 행 패딩을 확인하고 D3D12 WARP의 보관된 DXIL·DXBC 이미지 둘과 바이트 단위로 비교한다.

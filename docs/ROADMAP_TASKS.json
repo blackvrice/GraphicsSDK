@@ -2276,9 +2276,13 @@
       "depends_on": [
         "P5-SHD-03"
       ],
-      "work": "Metal target 변환과 실제 Mac 사용 연결.",
+      "work": "고정 spirv-val과 SPIRV-Cross로 리소스 없는 정점·픽셀 SPIR-V를 macOS MSL 2.1로 변환했다. GitHub 호스팅 macOS ARM64·Intel에서 Apple 오프라인 컴파일과 설치 SDK Metal draw를 검증하고 Vulkan·D3D12의 13×7 RGBA8 전체 바이트와 대조했다. 리소스 프로필 거부와 Apple 컴파일 오류를 보관했다. 실제 Mac GPU 수용과 선행 조건이 남아 있다.",
       "done_when": "실제 Metal compile/runtime 참조와 변환 한계.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE5_METAL_SPIRV_REPORT.md",
+        "benchmarks/reports/validation/2026-11-04-metal-spirv/summary.json",
+        "benchmarks/reports/validation/2026-11-04-metal-spirv/verify.py"
+      ],
       "requires": "지원 target의 실제 compiler/runtime"
     },
     {

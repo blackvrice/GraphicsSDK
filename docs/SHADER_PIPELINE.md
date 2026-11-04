@@ -2,8 +2,7 @@
 
 Metal은 별도 `ShaderFormat::MSL`의 reviewed UTF-8 source를 native compiler에 전달한다.
 고정 entry는 `gfx_vertex`/`gfx_fragment`이며 pipeline 생성에서 active attribute와
-argument reflection을 layout과 대조한다. 공개 MSL reflection·HLSL 변환·metallib 입력은
-추가하지 않는다. 입력/binding profile과 전체 draw 근거는
+argument reflection을 layout과 대조한다. 입력/binding profile과 전체 draw 근거는
 [Metal graphics 보고서](PHASE4_METAL_GRAPHICS_REPORT.md)를 따른다.
 
 Vulkan은 별도의 `ShaderFormat::SPIRV` 입력으로 외부 검증된 SPIR-V 1.3/Vulkan 1.1
@@ -37,7 +36,9 @@ SPIRV-Cross로 macOS MSL 2.1 소스를 생성한다. 각 경로의 버전, 지�
 재현 절차는 [도구 계약 보고서](PHASE5_SHADER_TOOLCHAIN_REPORT.md)에 있다.
 Vulkan용 오프라인 컴파일 명령은 DXC로 SPIR-V 1.3을 만들고 `spirv-val`을 통과한 모듈을
 `ShaderFormat::SPIRV`로 사용할 수 있게 한다. [Vulkan SPIR-V 실행 및 재현](PHASE5_VULKAN_SPIRV_REPORT.md)
-SDK의 MSL 변환 경로와 compile·pipeline cache는 후속 항목에서 다룬다.
+리소스 바인딩 없는 Vulkan 모듈은 고정 SPIRV-Cross로 MSL 2.1로 변환한 뒤 Metal SDK에
+소스로 전달할 수 있다. [Metal 변환과 실행 보고서](PHASE5_METAL_SPIRV_REPORT.md)
+일반 reflection과 compile·pipeline cache는 후속 항목에서 다룬다.
 
 pipeline은 명시적 vertex layout과 graphics binding layout을 받는다. Texture2D/constant buffer의
 bounded array, register space, VS/PS/All visibility 및 scalar static sampler를 지원한다.

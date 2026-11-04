@@ -16,7 +16,7 @@ Linux에서는 같은 SPIR-V 1.3 모듈을 Vulkan 1.0 대상으로 검증해 버
 이 검사 범위는 파일 생성과 검증이다. D3D12 참조 렌더링은
 [P5-SHD-02 보고서](PHASE5_D3D12_DXIL_REPORT.md)에 있다. Vulkan 참조 렌더링은
 [P5-SHD-03 보고서](PHASE5_VULKAN_SPIRV_REPORT.md)에 있다. Apple MSL 컴파일과 Metal 실행은
-`P5-SHD-04`에서 다룬다.
+[P5-SHD-04 보고서](PHASE5_METAL_SPIRV_REPORT.md)에 있다.
 
 ## 고정 버전과 라이선스
 

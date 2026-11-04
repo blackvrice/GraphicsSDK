@@ -83,6 +83,8 @@ jobs:
         run: python benchmarks/reports/validation/2026-11-04-d3d12-dxil/verify.py
       - name: Replay Vulkan DXC SPIR-V and D3D12 image parity
         run: python benchmarks/reports/validation/2026-11-04-vulkan-spirv/verify.py
+      - name: Replay Metal SPIRV-Cross and Vulkan and D3D12 image parity
+        run: python benchmarks/reports/validation/2026-11-04-metal-spirv/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -198,6 +200,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-11-04-d3d12-dxil/verify.py
       - name: Replay Vulkan DXC SPIR-V and D3D12 image parity
         run: python3 benchmarks/reports/validation/2026-11-04-vulkan-spirv/verify.py
+      - name: Replay Metal SPIRV-Cross and Vulkan and D3D12 image parity
+        run: python3 benchmarks/reports/validation/2026-11-04-metal-spirv/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
