@@ -1,6 +1,7 @@
 """Build and audit an independent consumer of a relocated macOS Metal SDK ZIP."""
 
 import argparse
+import hashlib
 import json
 import os
 import pathlib
@@ -22,21 +23,36 @@ NOTICE = 'share/GraphicsSDK/LICENSE'
 CONFIG = 'lib/cmake/GraphicsSDK/'
 CONFIG_FILES = ('GraphicsSDKConfig.cmake', 'GraphicsSDKConfigVersion.cmake',
                 'GraphicsSDKTargets.cmake', 'GraphicsSDKTargets-release.cmake')
+HEADERS = {f'graphics/{name}.hpp' for name in ('Backend', 'Bindings', 'CommandList', 'CommandQueue', 'Device', 'Graphics',
+                                              'Pipeline', 'RenderPass', 'Resources', 'Shader', 'Surface', 'SwapChain', 'Types')}
+PAYLOAD_FILES = {LIBRARY, NOTICE, *(CONFIG+p for p in CONFIG_FILES), *('include/'+h for h in HEADERS)}
 SDK_UNITS = (*CORE, 'src/backends/metal/Metal.cpp')
 OBJECTS = {pathlib.PurePosixPath(p).name+'.o' for p in SDK_UNITS}
 FRAMEWORKS = {'Metal', 'Foundation', 'QuartzCore'}
 SYSTEM_LIBS = {'/usr/lib/libSystem.B.dylib', '/usr/lib/libc++.1.dylib', '/usr/lib/libobjc.A.dylib'}
+CORE_FOUNDATION = '/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation'
 
 
 def payload(prefix, headers):
-    expected = {LIBRARY, NOTICE, *(CONFIG+p for p in CONFIG_FILES), *('include/'+h['path'] for h in headers)}
+    require(len(headers) == len(HEADERS) and {h['path'] for h in headers} == HEADERS, 'Public header allowlist differs')
     nodes = list(prefix.rglob('*'))
     require(not any(p.is_symlink() for p in nodes), 'Package contains a symlink')
     files = {p.relative_to(prefix).as_posix() for p in nodes if p.is_file()}
-    require(files == expected, f'Unexpected package members: {sorted(files ^ expected)}')
+    require(files == PAYLOAD_FILES, f'Unexpected package members: {sorted(files ^ PAYLOAD_FILES)}')
     for h in headers:
         require(sha(prefix/'include'/h['path']) == h['sha256'], 'Public header bytes changed')
     return [dict(path=p, bytes=(prefix/p).stat().st_size, sha256=sha(prefix/p)) for p in sorted(files)]
+
+
+def verify_zip(archive, manifest, expected_sha):
+    require(sha(archive) == expected_sha, 'SDK ZIP hash differs from the audited package')
+    with zipfile.ZipFile(archive) as zip_file:
+        require(zip_file.namelist() == sorted(PAYLOAD_FILES), 'SDK ZIP contains missing or extra members')
+        for item in manifest:
+            info = zip_file.getinfo(item['path'])
+            require(info.file_size == item['bytes'] and (info.external_attr >> 16) & 0o170000 == 0o100000,
+                    'SDK ZIP file size or member type differs')
+            require(hashlib.sha256(zip_file.read(info)).hexdigest() == item['sha256'], 'SDK ZIP member bytes differ')
 
 
 def exports(folder):
@@ -108,11 +124,11 @@ def dylibs(text):
     paths = {line.strip().split(' (compatibility version ', 1)[0] for line in text.splitlines()[1:] if line.strip()}
     frameworks = {f'/System/Library/Frameworks/{name}.framework/Versions/{version}/{name}'
                   for name, version in (('Metal', 'A'), ('Foundation', 'C'), ('QuartzCore', 'A'))}
-    require(frameworks <= paths <= frameworks | SYSTEM_LIBS, f'Unexpected dynamic library list: {sorted(paths)}')
+    require(frameworks <= paths <= frameworks | SYSTEM_LIBS | {CORE_FOUNDATION}, f'Unexpected dynamic library list: {sorted(paths)}')
     return sorted(paths)
 
 
-def check(out):
+def check(out, archive=None):
     r = read(out/'receipt.json')
     exact(r, dict(schema_version=1, scope='macos-relocated-metal-package-v1', physical_GPU_accepted=False, performance_accepted=False))
     require(r['architecture'] in ('arm64', 'x86_64'), 'Unexpected Mach-O architecture')
@@ -128,10 +144,14 @@ def check(out):
     for name in ('package-arch','consumer-arch'):
         require((raw/f'{name}.stdout').read_text().strip() == r['architecture'], 'Package architecture differs')
     members = (raw/'archive-members.stdout').read_text().splitlines()
+    if members and members[0] in ('__.SYMDEF', '__.SYMDEF SORTED'):
+        members = members[1:]
     require(len(members) == len(OBJECTS) and set(members) == OBJECTS, 'Unexpected static archive members')
     exports(out/'package-config')
     manifest = read(out/'payload.json')
-    require(manifest == r['payload'] and len(manifest) == 19, 'Package manifest differs')
+    require(manifest == r['payload'] and [row['path'] for row in manifest] == sorted(PAYLOAD_FILES), 'Package manifest differs')
+    if archive:
+        verify_zip(archive, manifest, r['zip_sha256'])
     for item in manifest:
         name = item['path']
         if name.startswith(CONFIG):
@@ -146,6 +166,8 @@ def check(out):
     compile_graph(read(out/'consumer-compile.json'), [r['consumer_source']+'/Consumer.cpp'], r['architecture'], r['sysroot'])
     obj = 'CMakeFiles/package_consumer.dir/Consumer.cpp.o'
     compiler_roots = (r['sysroot'], r['clang_resources'], r['stdlib_headers'])
+    require(all(under(p, r['source_directory']+'/include') or under(p, r['source_directory']+'/src')
+                for p in r['sdk_input_paths']), 'Compiler allowlist escaped SDK source directories')
     sdk = dependencies((raw/'sdk-deps.stdout').read_text(), ['CMakeFiles/GraphicsSDKCore.dir/'+p+'.o' for p in SDK_UNITS],
                        set(r['sdk_input_paths']), compiler_roots)
     consumer = dependencies((raw/'consumer-deps.stdout').read_text(), [obj],
@@ -164,6 +186,7 @@ def run(evidence, out):
     require(platform.system() == 'Darwin', 'Native macOS required')
     baseline = read(evidence/'receipt.json')
     core = read(evidence/'availability/core/receipt.json')
+    exact(baseline, dict(scope='macos-metal-graphics-v4', status='completed', inputs_unchanged=True))
     arch, sysroot = baseline['architecture'], core['sdk_path']
     require(arch == platform.machine(), 'Native package architecture differs')
     install = pathlib.Path(baseline['install_directory'])
@@ -173,6 +196,10 @@ def run(evidence, out):
     (out/'commands').mkdir(parents=True)
     artifacts.mkdir()
     manifest = payload(install, baseline['installed_headers'])
+    library = next(row for row in manifest if row['path'] == LIBRARY)
+    original = [row for row in baseline['frozen_inputs'] if row['path'] == (install/LIBRARY).as_posix()]
+    require(len(original) == 1 and all(library[k] == original[0][k] for k in ('bytes', 'sha256')),
+            'Installed static archive changed since the native SDK test')
     require(sha(install/NOTICE) == sha(ROOT/'LICENSE'), 'Installed license differs from source')
     package = artifacts/f'GraphicsSDK-macos-metal-{arch}.zip'
     package_zip(install, package, manifest)
@@ -229,7 +256,7 @@ def run(evidence, out):
                                       stdlib_headers=str(stdlib),
                                       relocated_prefix=str(extracted),consumer_source=str(src),consumer_build=str(build),sdk_input_paths=sdk_inputs,
                                       payload=manifest,zip_sha256=sha(package),physical_GPU_accepted=False,performance_accepted=False))
-    return check(out)
+    return check(out, package)
 
 
 if __name__ == '__main__':
@@ -237,5 +264,8 @@ if __name__ == '__main__':
     parser.add_argument('stage', choices=('run','check'))
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--backend', type=pathlib.Path)
+    parser.add_argument('--package', type=pathlib.Path, help='Verify the downloadable SDK ZIP against saved evidence')
     a = parser.parse_args()
-    print(json.dumps(run(a.backend.resolve(), a.output.resolve()) if a.stage == 'run' else check(a.output.resolve()), indent=2))
+    if a.stage == 'run' and not a.backend:
+        parser.error('--backend is required when building package evidence')
+    print(json.dumps(run(a.backend.resolve(), a.output.resolve()) if a.stage == 'run' else check(a.output.resolve(), a.package), indent=2))

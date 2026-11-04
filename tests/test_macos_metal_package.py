@@ -4,12 +4,30 @@ import pathlib
 import sys
 import tempfile
 import unittest
+import zipfile
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]/'tools'))
 import macos_metal_package as package
 
 
 class MetalPackage(unittest.TestCase):
+    def test_zip_rejects_an_extra_vendor_binary_even_with_matching_outer_hash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            manifest = []
+            for name in sorted(package.PAYLOAD_FILES):
+                path = root/name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b'fixture')
+                manifest.append(dict(path=name, bytes=7, sha256=package.sha(path)))
+            archive = root/'sdk.zip'
+            package.package_zip(root, archive, manifest)
+            package.verify_zip(archive, manifest, package.sha(archive))
+            with zipfile.ZipFile(archive, 'a') as zip_file:
+                zip_file.writestr('lib/libLLGL.a', b'external')
+            with self.assertRaises(ValueError):
+                package.verify_zip(archive, manifest, package.sha(archive))
+
     def test_dependency_audit_allows_spaces_and_rejects_source_leakage(self):
         def deps(header):
             return f'consumer.o: #deps 2, deps mtime 100 (VALID)\n    /tmp/new source/Consumer.cpp\n    {header}\n\n'
