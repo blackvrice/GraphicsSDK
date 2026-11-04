@@ -75,6 +75,10 @@ timestamp·recovery·validation count·OS budget도 Unsupported이며
 caps의 vertexInput/indexedDrawing/resourceBinding/bindingLayouts는 true다. 세부 제출 계약은
 [Metal 제출 보고서](PHASE4_METAL_SUBMISSION_REPORT.md)를 따른다.
 
+Metal API Validation은 첫 Metal 장치 생성 전에 앱의 프로세스 환경에서 설정한다.
+CI는 `MTL_DEBUG_LAYER=1`로 설치 SDK를 실행하고, 범위를 벗어난 네이티브 blit을 별도
+프로세스에서 검출해 검증기가 활성화됐는지 확인한다. [Metal 검증 보고서](PHASE4_METAL_VALIDATION_REPORT.md)
+
 Metal 버퍼는 Upload의 write, Readback의 read, private Device의 명시적 transfer 상태를
 지원한다. tracked native hazard와 managed flush/readback synchronization을 사용하고
 GPU 완료 전 host 접근 및 stale CPU/submit version을 거부한다. 임의 byte 크기의 copy와

@@ -2159,9 +2159,13 @@
       "depends_on": [
         "P4-MTL-06"
       ],
-      "work": "지원되는 native validation과 오류 controls를 구성한다.",
+      "work": "macOS ARM/Intel에서 프로세스별 Metal API Validation을 실행한다. 정상 16바이트 blit의 검증 off/on, 범위 초과 blit의 네이티브 진단과 GPU 제출 전 SIGABRT, 검증 활성화 로그를 확인했다. 설치 SDK 제출·수명·버퍼·텍스처·draw·레이어/창 6개 회귀와 전체 readback을 검증하고 Windows/Linux에서 재생한다. 장치별 오류 카운터·Shader Validation·물리 GPU 수용은 별도 범위다.",
       "done_when": "Mac 실제 실행 결과와 진단 한계 명시.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE4_METAL_VALIDATION_REPORT.md",
+        "benchmarks/reports/validation/2026-11-04-metal-validation/summary.json",
+        "benchmarks/reports/validation/2026-11-04-metal-validation/verify.py"
+      ],
       "requires": "실제 Mac toolchain/GPU; compile/runtime/measurement를 구분"
     },
     {

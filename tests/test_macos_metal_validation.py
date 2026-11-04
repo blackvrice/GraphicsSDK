@@ -1,7 +1,6 @@
 """Parser controls only. The macOS CI runs the actual native assertion."""
 
 import pathlib
-import signal
 import sys
 import unittest
 
@@ -12,12 +11,13 @@ import macos_metal_validation as validation
 class MetalValidation(unittest.TestCase):
     def test_control_requires_native_abort_at_the_expected_copy(self):
         diagnostic = "-[MTLDebugBlitCommandEncoder copyFromBuffer:sourceOffset:toBuffer:destinationOffset:size:]: failed assertion 'sourceOffset + size exceeds source length'"
-        validation.negative_control(-signal.SIGABRT, validation.MARKER, diagnostic)
+        validation.negative_control(-6, validation.MARKER, diagnostic)
         for status, marker, error in (
             (0, validation.MARKER, diagnostic),
-            (-signal.SIGABRT, '', diagnostic),
-            (-signal.SIGABRT, validation.MARKER, 'Metal API Validation Enabled'),
-            (-signal.SIGABRT, validation.MARKER, diagnostic.replace('sourceOffset + size exceeds source length', 'encoder already closed')),
+            (-22, validation.MARKER, diagnostic),
+            (-6, '', diagnostic),
+            (-6, validation.MARKER, 'Metal API Validation Enabled'),
+            (-6, validation.MARKER, diagnostic.replace('sourceOffset + size exceeds source length', 'encoder already closed')),
         ):
             with self.subTest(status=status, error=error), self.assertRaises(ValueError):
                 validation.negative_control(status, marker, error)

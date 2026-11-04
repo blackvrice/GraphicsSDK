@@ -7,7 +7,6 @@ import pathlib
 import platform
 import re
 import shutil
-import signal
 import subprocess
 import time
 
@@ -26,10 +25,13 @@ FIXTURE = 'tests/fixtures/metal/graphics.metal'
 SDK_CASES = ('submission', 'buffer', 'texture', 'graphics', 'layer', 'window')
 COMMANDS = ('build-control', 'valid-off', 'valid-on', 'invalid-on', *SDK_CASES)
 MARKER = 'CONTROL: invalid blit source length=16 copy size=20 before commit'
+# These receipts describe a Darwin child, including when replayed on Windows.
+DARWIN_ABORT = -6
+ENABLED = 'Metal API Validation Enabled'
 
 
 def negative_control(status, stdout, stderr):
-    require(status == -signal.SIGABRT and stdout.strip() == MARKER,
+    require(status == DARWIN_ABORT and stdout.strip() == MARKER,
             'Invalid Metal control must reach the blit and terminate with SIGABRT')
     diagnostic = re.search(r'copyFromBuffer[^\n]*failed assertion([^\n]*(?:\n[^\n]*){0,2})', stderr, re.IGNORECASE)
     require(diagnostic and re.search(r'\bsource\b|sourceOffset', diagnostic[1], re.IGNORECASE)
@@ -70,15 +72,19 @@ def check(folder):
     for row in rows:
         name = row['name']
         expected = {} if name in ('build-control', 'valid-off') else PROFILE
-        status = {-signal.SIGABRT} if name == 'invalid-on' else {0, 77} if name == 'window' else {0}
+        status = {DARWIN_ABORT} if name == 'invalid-on' else {0, 77} if name == 'window' else {0}
         require(row['validation_environment'] == expected and type(row['returncode']) is int and row['returncode'] in status,
                 f'{name} did not run with the expected environment and exit status')
     def raw(name, stream):
         return (folder/'commands'/f'{name}.{stream}').read_text(encoding='utf-8')
 
-    for name in COMMANDS[1:]:
+    for row in rows[1:]:
+        name = row['name']
+        stderr = raw(name, 'stderr')
+        if row['returncode'] != 77:
+            require((ENABLED in stderr) == (name != 'valid-off'), f'Metal did not report the expected validation state in {name}')
         if name != 'invalid-on':
-            require(not re.search(r'failed assertion|Metal (?:API )?Validation Error', raw(name, 'stderr'), re.IGNORECASE),
+            require(not re.search(r'failed assertion|Metal (?:API )?Validation Error', stderr, re.IGNORECASE),
                     f'Unexpected native validation error in {name}')
     for name in ('valid-off', 'valid-on'):
         require(json.loads(raw(name, 'stdout')) == dict(contract='native_metal_valid_blit_v1', verified_bytes=16),
@@ -158,7 +164,7 @@ def run(evidence, presentation, folder):
     frozen = [record(p) for p in {control, ROOT/CONTROL, ROOT/FIXTURE, *(args[0] for _, args in commands)}]
     call('valid-off', [control, '--valid'], {}, {0})
     call('valid-on', [control, '--valid'], PROFILE, {0})
-    call('invalid-on', [control, '--invalid'], PROFILE, {-signal.SIGABRT})
+    call('invalid-on', [control, '--invalid'], PROFILE, {DARWIN_ABORT})
     for name, args in commands:
         call(name, args, PROFILE, {0, 77} if name == 'window' else {0})
     require(unchanged(frozen) and sdk_fingerprint(ROOT) == fp, 'Validation source or executable changed')

@@ -256,7 +256,8 @@ Graphics는 고정 MSL fixture·native compiler/reflection과 실행당 18개 �
 검사하며 직접/설치 실행의 36개 파일을 남긴다. snapshot·입력/배열 sampler·blend/scissor·depth/MRT를 포함한다.
 
 Artifact `macos-core-<architecture>-<source commit>`에는 `macos-core-evidence`,
-`macos-metal-evidence`, `macos-metal-backend-evidence`, `macos-metal-presentation`, `macos-python`을 보관한다.
+`macos-metal-evidence`, `macos-metal-backend-evidence`, `macos-metal-presentation`,
+`macos-metal-validation`, `macos-python`을 보관한다.
 실패해도 원본 stdout/stderr·cache·compiler graph·receipt를 수집한다. native binary·
 system framework·외부 SDK는 업로드하지 않는다. 실제 범위와 보관 결과는
 [Core 보고서](PHASE4_MACOS_CORE_REPORT.md), [가용성 보고서](PHASE4_METAL_AVAILABILITY_REPORT.md),
@@ -265,6 +266,10 @@ system framework·외부 SDK는 업로드하지 않는다. 실제 범위와 보�
 Metal 창 검사는 설치 SDK로 레이어 수명 계약을 실행하고, AppKit 화면이 있으면 크기 변경 전후
 전체 BGRA readback과 표시 콜백을 확인한다. 수동 창 조작과 실제 Mac에서의 재현 절차는
 [Metal 화면 출력 보고서](PHASE4_METAL_PRESENTATION_REPORT.md)에 있다.
+
+Metal API Validation 단계는 별도 프로세스에서 검증기를 켜고 정상·오류 blit과 설치 SDK
+회귀 테스트를 실행한다. 진단과 readback은 다른 OS에서도 재검증할 수 있다.
+[Metal 검증 보고서](PHASE4_METAL_VALIDATION_REPORT.md)
 
 ## 6. 실제 Linux GPU와 화면 수용
 
