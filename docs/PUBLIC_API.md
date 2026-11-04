@@ -59,8 +59,9 @@ version 검사는 유지하므로, 정상 기록 뒤의 upload 변경은 여전�
 실패한 요청의 인자에만 등장한 자원은 caller 참조 해제 뒤 회수할 수 있다.
 [복사 거부 원자성 보고서](PHASE2_COPY_ATOMICITY_REPORT.md)를 따른다.
 
-ShaderBinary는 format·stage와 바이트 배열이다. compileHlsl/reflectShader는 Windows bootstrap
-DXBC 경로이며 [SHADER_PIPELINE](SHADER_PIPELINE.md)의 한계를 따른다.
+`ShaderBinary`는 format·stage와 바이트 배열이다. Windows의 `compileHlsl`은 SM5.1 DXBC를 생성한다.
+DXC를 활성화한 빌드는 `compileHlslDxil`로 SM6.0 DXIL을 생성하며 `reflectShader`와 D3D12
+그래픽스 파이프라인에서 DXIL을 사용할 수 있다. [셰이더 파이프라인](SHADER_PIPELINE.md)
 caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을
 보장하지 않는다. Result 실패를 확인하는 전체 예제는 `examples/Triangle.cpp`에 있다.
 

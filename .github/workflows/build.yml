@@ -79,6 +79,8 @@ jobs:
         run: python benchmarks/reports/validation/2026-11-04-metal-package/verify.py
       - name: Replay offline shader toolchain receipts and outputs
         run: python benchmarks/reports/validation/2026-11-04-shader-toolchain/verify.py
+      - name: Replay installed D3D12 DXIL and DXBC references
+        run: python benchmarks/reports/validation/2026-11-04-d3d12-dxil/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements
@@ -190,6 +192,8 @@ jobs:
         run: python3 benchmarks/reports/validation/2026-11-04-metal-package/verify.py
       - name: Replay offline shader toolchain receipts and outputs
         run: python3 benchmarks/reports/validation/2026-11-04-shader-toolchain/verify.py
+      - name: Replay installed D3D12 DXIL and DXBC references
+        run: python3 benchmarks/reports/validation/2026-11-04-d3d12-dxil/verify.py
       - name: Independently replay native GPU counters and CPU instrumentation impact
         run: python3 benchmarks/reports/validation/2026-10-29-phase3-draw-gpu/verify.py
       - name: Independently replay fresh three-SDK resource measurements

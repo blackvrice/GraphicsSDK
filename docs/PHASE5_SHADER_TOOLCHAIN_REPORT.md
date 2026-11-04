@@ -13,8 +13,9 @@ include·define·리소스 바인딩이 없는 전체 화면 삼각형이며, �
 
 컴파일러는 선언되지 않은 식별자를 진단하고 DXIL 출력을 생성하지 않아야 한다.
 Linux에서는 같은 SPIR-V 1.3 모듈을 Vulkan 1.0 대상으로 검증해 버전 진단과 실패를 확인한다.
-이 검사 범위는 파일 생성과 검증이다. D3D12·Vulkan 참조 렌더링과 Apple MSL 컴파일·Metal 실행은
-각각 `P5-SHD-02`부터 `P5-SHD-04`에서 다룬다.
+이 검사 범위는 파일 생성과 검증이다. D3D12 참조 렌더링은
+[P5-SHD-02 보고서](PHASE5_D3D12_DXIL_REPORT.md)에 있다. Vulkan 참조 렌더링과 Apple MSL
+컴파일·Metal 실행은 `P5-SHD-03`과 `P5-SHD-04`에서 다룬다.
 
 ## 고정 버전과 라이선스
 

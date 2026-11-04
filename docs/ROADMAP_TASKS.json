@@ -2238,9 +2238,13 @@
       "depends_on": [
         "P5-SHD-01"
       ],
-      "work": "기존 DXBC bootstrap과 구분된 DXIL compile 경로.",
+      "work": "기존 DXBC bootstrap과 별도로 opt-in compileHlslDxil과 SM6.0 DXIL reflection·D3D12 PSO 경로를 구현했다. 고정 DXC로 설치 SDK 소비자가 생성한 DXIL 두 개를 dxv로 검증했고, Windows x64 WARP에서 DXIL·DXBC의 전체 13×7 RGBA8 참조와 실패 대조군이 통과했다. 선행 수용 조건이 남아 있다.",
       "done_when": "실제 D3D12 shader 사용·진단·참조 이미지.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE5_D3D12_DXIL_REPORT.md",
+        "benchmarks/reports/validation/2026-11-04-d3d12-dxil/summary.json",
+        "benchmarks/reports/validation/2026-11-04-d3d12-dxil/verify.py"
+      ],
       "requires": "지원 target의 실제 compiler/runtime"
     },
     {

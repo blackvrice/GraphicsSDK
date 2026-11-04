@@ -27,10 +27,15 @@ entry point와 stage를 명시하고 최적화 level 3 및 warnings-as-errors를
 제공하지 않는다. `D3DReflect`로 이름/register/count/space, 지원 resource 종류와 cbuffer의
 최소 byte 크기를 읽고 실제 bytecode stage도 검증한다.
 
+Windows x64의 별도 `compileHlslDxil` 경로는 HLSL 2021을 `vs_6_0` 또는 `ps_6_0` DXIL로
+컴파일한다. D3D12는 Shader Model 6.0을 확인하고 DXC reflection으로 DXIL의 단계, 리소스
+바인딩과 색상 출력을 검사한다. 빌드 설정과 애플리케이션 로컬 DXC DLL 준비 절차는
+[D3D12 DXIL 보고서](PHASE5_D3D12_DXIL_REPORT.md)에 있다.
+
 Phase 5 오프라인 검사는 고정 DXC로 SM 6.0 DXIL과 Vulkan 1.1용 SPIR-V 1.3을 생성하고,
 SPIRV-Cross로 macOS MSL 2.1 소스를 생성한다. 각 경로의 버전, 지원 프로필, 라이선스와
 재현 절차는 [도구 계약 보고서](PHASE5_SHADER_TOOLCHAIN_REPORT.md)에 있다.
-SDK의 DXIL·변환 셰이더 런타임 연동과 compile·pipeline cache는 후속 항목에서 다룬다.
+SDK의 SPIR-V/MSL 변환 경로와 compile·pipeline cache는 후속 항목에서 다룬다.
 
 pipeline은 명시적 vertex layout과 graphics binding layout을 받는다. Texture2D/constant buffer의
 bounded array, register space, VS/PS/All visibility 및 scalar static sampler를 지원한다.
