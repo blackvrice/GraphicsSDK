@@ -1,17 +1,15 @@
 """Record and replay the Windows Vulkan binding snapshot baseline."""
 
 import argparse
-import hashlib
 import itertools
 import json
-import os
 import pathlib
 import statistics
-import subprocess
 import zipfile
 
 from linux_comparison import ROOT, read, require, save, sha
 from run_vulkan_frame_slots import digest
+from windows_vulkan_baseline import collect
 
 
 COUNTS, PATTERNS = (1, 64, 256), ('same', 'alternating')
@@ -85,62 +83,13 @@ def summarize(campaign):
 
 
 def run(args):
-    require(os.name == 'nt', 'Windows Vulkan is required')
-    output = args.output.resolve()
-    require(output.is_relative_to(ROOT/'out') and not output.exists(), 'Use a fresh out/ path')
-    empty = output/'empty-layers'
-    empty.mkdir(parents=True)
-    env = {key: value for key, value in os.environ.items()
-           if not key.upper().startswith(('VK_', 'VVL_', 'GFX_EXPECT_', 'GFX_TRACE_'))}
-    env.update(VK_LAYER_PATH=str(empty), VK_LOADER_LAYERS_DISABLE='~implicit~')
-    receipt = read(ROOT/'out/vulkan-validation-runtime/receipt.json')
-    require(receipt['lock_sha256'] == sha(ROOT/'tools/vulkan-validation.lock.json') and all(
-            sha(ROOT/row['path']) == row['sha256'] for row in receipt['artifacts']), 'Pinned VVL runtime differs')
-    vvl = next(ROOT/row['path'] for row in receipt['artifacts'] if row['path'].endswith('.dll'))
-    vvl_manifest = next(ROOT/row['path'] for row in receipt['artifacts'] if row['path'].endswith('.json'))
-    binary = args.binary.resolve()
-    observer = binary.with_name(LAYER + '.dll')
-
-    def manifest(source, library, folder):
-        data = read(source)
-        data['layer']['library_path'] = str(library)
-        save(output/folder/source.name, data)
-        return str(output/folder)
-
-    environments = {
-        'timing': env,
-        'observe': dict(env, VK_LAYER_PATH=manifest(observer.with_suffix('.json'), observer, 'observer-layer'),
-                        VK_INSTANCE_LAYERS='VK_LAYER_GFX_descriptor_baseline', GFX_EXPECT_DESCRIPTOR_LAYER=str(observer)),
-        'validation': dict(env, VK_LAYER_PATH=manifest(vvl_manifest, vvl, 'validation-layer'), VK_LOADER_DEBUG='layer'),
-    }
     source = ROOT/'benchmarks/vulkan_descriptor_baseline'
-    inputs = dict(binary=binary, consumer=source/'main.cpp', observer_binary=observer,
-                  observer_source=source/'Layer.cpp', vvl=vvl)
-    hashes = {key: sha(path) for key, path in inputs.items()}
-
-    def invoke(name, arguments, mode):
-        proc = subprocess.run([str(binary), *arguments], cwd=ROOT, capture_output=True, timeout=120,
-                              env=environments[mode])
-        (output/f'{name}.stderr').write_bytes(proc.stderr)
-        require(proc.returncode == 0, f'{name} failed: {proc.stderr[-1800:]}')
-        if mode == 'validation':
-            log = proc.stderr.decode('utf-8', errors='replace').replace('\\', '/').casefold()
-            require(vvl.as_posix().casefold() in log and 'insert instance layer' in log, 'Pinned VVL module not loaded')
-        else:
-            require(not proc.stderr, f'{name}: unexpected diagnostics')
-        return json.loads(proc.stdout)
-
-    adapters = invoke('probe', ['--probe'], 'timing')
-    records = []
-    for index, job in enumerate(jobs(adapters)):
-        adapter, count, pattern, mode = (job[key] for key in ('adapter', 'count', 'pattern', 'mode'))
-        row = invoke(f'{index:02d}-{mode}', [adapter, str(count), pattern, mode], mode)
-        ids = [row.pop(key) for key in ('device_uuid', 'driver_uuid')]
-        require(all(digest(value, 32) for value in ids), 'Missing device or driver UUID')
-        row['device_driver_sha256'] = hashlib.sha256(':'.join(ids).encode()).hexdigest()
-        records.append(dict(job=job, result=row, pinned_layer_loaded=mode == 'validation'))
-        print(adapter, count, pattern, mode, f"block={job['block']} PASS", flush=True)
-    require(all(sha(path) == hashes[key] for key, path in inputs.items()), 'Campaign inputs changed')
+    adapters, records, hashes = collect(
+        args.binary, args.output, jobs,
+        lambda job: [job['adapter'], str(job['count']), job['pattern'], job['mode']],
+        layer=LAYER, layer_env='GFX_EXPECT_DESCRIPTOR_LAYER',
+        sources=dict(consumer=source/'main.cpp', observer_source=source/'Layer.cpp'))
+    output = args.output.resolve()
     build = dict(sdk=args.sdk, sdk_source_commit=args.sdk_source_commit, **hashes)
     campaign = dict(build=build, adapters=adapters, records=records)
     summary = summarize(campaign)

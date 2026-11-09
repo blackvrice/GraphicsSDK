@@ -2613,11 +2613,14 @@
       "status": "todo",
       "gate": "followup",
       "depends_on": [
-        "P5-SHD-08"
+        "P5-SHD-08",
+        "P6-OPT-14"
       ],
-      "work": "별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.",
+      "work": "Vulkan pass/query 기준선(P6-OPT-14)으로 query pool과 render pass/framebuffer 재사용 후보의 수명, 정확성과 비용을 비교한다.",
       "done_when": "새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_PASS_QUERY_BASELINE.md"
+      ]
     },
     {
       "id": "P6-OPT-06",
@@ -2747,6 +2750,22 @@
         "docs/PHASE6_VULKAN_DESCRIPTOR_BASELINE.md",
         "benchmarks/reports/validation/2026-11-09-vulkan-descriptor-baseline/summary.json",
         "tools/run_vulkan_descriptor_baseline.py"
+      ]
+    },
+    {
+      "id": "P6-OPT-14",
+      "phase": 6,
+      "group": "P6-OPT",
+      "title": "Vulkan Query pool·render pass 기준선",
+      "status": "done",
+      "gate": "followup",
+      "depends_on": [],
+      "work": "Windows Vulkan 두 GPU에서 타임스탬프 사용 여부와 동일 타깃의 pass 1·16회를 대조했다. 모든 pass 픽셀, query 결과, native 생성·반환과 CPU 기록 구간을 검증했다.",
+      "done_when": "타임스탬프 사용 여부별 native 객체·호출 수, 전체 참조·폐기·fence 수명과 반복 시간 기록.",
+      "evidence": [
+        "docs/PHASE6_VULKAN_PASS_QUERY_BASELINE.md",
+        "benchmarks/reports/validation/2026-11-09-vulkan-pass-query/summary.json",
+        "tools/run_vulkan_pass_query_baseline.py"
       ]
     },
     {
