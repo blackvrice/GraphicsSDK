@@ -39,7 +39,7 @@ python tools/roadmap.py --write
 | 3 — Vulkan | 60 | 11 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
-| 6 — GPU 자원 최적화 | 7 | 0 | 0 | 10 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
+| 6 — GPU 자원 최적화 | 8 | 0 | 0 | 9 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
 | 7 — 독립 SDK 배포 | 1 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
 
 ## 다음 권장 작업
@@ -303,7 +303,7 @@ DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing�
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
 | [x] `P6-POOL-01`<br>완료 · 후속 최적화 | **예약량 목표·workload 계약**<br>기존 6.2배 관측을 희소 원자료 8개에서 재검산했다. 논리 생성 순번으로 생존자를 고정하고 dedicated·기존 적응형·최대 4-slot 모델의 예약량과 호출 수를 대조했다. 혼합·기록 보유, 별도 정확성/성능 실행, 전용 할당 반복 편차에 기반한 지연 기준을 고정했다.<br>완료: 임의 우위 목표 대신 workload·bytes·지연의 측정/채택 기준. | 선행: `P6-EXP-06`<br>근거: [PHASE6_VULKAN_POOL_WORKLOAD](PHASE6_VULKAN_POOL_WORKLOAD.md), [check_vulkan_pool_workload.py](../tools/check_vulkan_pool_workload.py) |
-| [ ] `P6-POOL-02`<br>미완료 · 후속 최적화 | **예약량 제한 후보 구현**<br>block 크기·성장·대상 임계값 후보를 새 격리 source로 구현.<br>완료: 정책 diff·source receipt와 기존 후보/제품 보존. | 선행: `P6-POOL-01` |
+| [x] `P6-POOL-02`<br>완료 · 후속 최적화 | **예약량 제한 후보 구현**<br>같은 기준 커밋에서 dedicated·기존 적응형·4슬롯 정책을 격리 생성한다. 새 후보는 성장과 블록 생성에 4슬롯 상한을 적용한다. 소스·패치 해시와 공개 헤더를 대조하고 설치 소비자의 CPU 정책 검사를 통과했다.<br>완료: 정책 diff·source receipt와 기존 후보/제품 보존. | 선행: `P6-POOL-01`<br>근거: [PHASE6_VULKAN_POOL_FOUR_SLOT](PHASE6_VULKAN_POOL_FOUR_SLOT.md), [four-slot.patch](../experiments/vulkan_pool_four_slot/four-slot.patch), [source-receipts.json](../experiments/vulkan_pool_four_slot/source-receipts.json), [prepare_vulkan_pool_four_slot.py](../tools/prepare_vulkan_pool_four_slot.py) |
 | [ ] `P6-POOL-03`<br>미완료 · 후속 최적화 | **변경 후보의 정확성·장애 회귀**<br>바뀐 fingerprint에 CPU/GPU/혼합 보유/OOM/fallback를 다시 실행.<br>완료: 실제 새 후보의 참조·수명·rollback 통과. | 선행: `P6-POOL-02` |
 | [ ] `P6-POOL-04`<br>미완료 · 후속 최적화 | **현재 후보 fresh 성능 비교**<br>동일 payload·생존자 분포·환경에서 dedicated/후보/지원 경쟁 비교.<br>완료: 예약량·할당 calls·create/release 지연의 새 반복 통계. | 선행: `P6-POOL-03` |
 | [ ] `P6-POOL-05`<br>미완료 · 후속 최적화 | **후보 채택 또는 기각**<br>정확성·비용을 근거로 기본값/opt-in/기각을 결정.<br>완료: 결정 이유·회귀·API/통계 영향·최종 제품 증거. 채택을 전제하지 않음. | 선행: `P6-POOL-04` |

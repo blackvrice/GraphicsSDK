@@ -2468,14 +2468,19 @@
       "phase": 6,
       "group": "P6-POOL",
       "title": "예약량 제한 후보 구현",
-      "status": "todo",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P6-POOL-01"
       ],
-      "work": "block 크기·성장·대상 임계값 후보를 새 격리 source로 구현.",
+      "work": "같은 기준 커밋에서 dedicated·기존 적응형·4슬롯 정책을 격리 생성한다. 새 후보는 성장과 블록 생성에 4슬롯 상한을 적용한다. 소스·패치 해시와 공개 헤더를 대조하고 설치 소비자의 CPU 정책 검사를 통과했다.",
       "done_when": "정책 diff·source receipt와 기존 후보/제품 보존.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_POOL_FOUR_SLOT.md",
+        "experiments/vulkan_pool_four_slot/four-slot.patch",
+        "experiments/vulkan_pool_four_slot/source-receipts.json",
+        "tools/prepare_vulkan_pool_four_slot.py"
+      ]
     },
     {
       "id": "P6-POOL-03",

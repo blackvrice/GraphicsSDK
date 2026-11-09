@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "base_commit": "e75b658e5e61491f78519e714f6913123194fb48",
+  "production_adopted": false,
+  "policies": {
+    "dedicated": {
+      "sdk_source_fingerprint": "8d6659e4464b47b810ca89a0b492946421c3b19d748962a20f4733cd4dad8c16",
+      "source_receipt_sha256": "0ee89c8fc422d337e108031d5136acfeeded6b4743d38a298611751fc7fdcf9e",
+      "source_files": 507,
+      "changed_files": [],
+      "patches": []
+    },
+    "adaptive": {
+      "sdk_source_fingerprint": "4bcbfda1951a1f749bb0cbe66f505e171d4c9aa481106e87d5fb12dd8bf037c3",
+      "source_receipt_sha256": "ffacdbc9de2349cb3fdf3a25e998979c9dbf81beb4d13ec2bed2b0c92140a6b2",
+      "source_files": 509,
+      "changed_files": [
+        "src/backends/vulkan/BufferPool.hpp",
+        "src/backends/vulkan/BufferPoolRange.hpp",
+        "src/backends/vulkan/Vulkan.cpp"
+      ],
+      "patches": [
+        {
+          "path": "experiments/vulkan_pool_churn/candidate.patch",
+          "normalized_sha256": "2da6c3291e09e0794d66918387e265ec8c7e779981114ce2f769f887ec0117bd"
+        }
+      ]
+    },
+    "four-slot": {
+      "sdk_source_fingerprint": "544fa455e751d4908846d38fe2e5701b05d6e34986527fc16ed5cb8b4ee384af",
+      "source_receipt_sha256": "1c0de03c2031db0a1f16b25aecb47914552fc09359fbbdb022d63f5d1d567d91",
+      "source_files": 509,
+      "changed_files": [
+        "src/backends/vulkan/BufferPool.hpp",
+        "src/backends/vulkan/BufferPoolRange.hpp",
+        "src/backends/vulkan/Vulkan.cpp"
+      ],
+      "patches": [
+        {
+          "path": "experiments/vulkan_pool_churn/candidate.patch",
+          "normalized_sha256": "2da6c3291e09e0794d66918387e265ec8c7e779981114ce2f769f887ec0117bd"
+        },
+        {
+          "path": "experiments/vulkan_pool_four_slot/four-slot.patch",
+          "normalized_sha256": "8cdb80a20d647e9a46d0021beac1d186b82cd294f677ee9d9014127aec2c6291"
+        }
+      ]
+    }
+  }
+}

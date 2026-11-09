@@ -1,0 +1,26 @@
+diff --git a/src/backends/vulkan/BufferPoolRange.hpp b/src/backends/vulkan/BufferPoolRange.hpp
+--- a/src/backends/vulkan/BufferPoolRange.hpp
++++ b/src/backends/vulkan/BufferPoolRange.hpp
+@@ -13,4 +13,9 @@
+ public:
+     static constexpr std::uint32_t blockBytes=65536;
++private:
++    static constexpr std::uint32_t capacityLimit(std::uint32_t stride) {
++        return std::min(std::uint32_t{4}, blockBytes / stride);
++    }
++public:
+     static std::uint32_t stride(std::uint64_t size,std::uint64_t alignment,bool dedicated=false){
+         if(dedicated||!size||size>4096||!std::has_single_bit(alignment)||alignment>4096)return 0;
+@@ -21,10 +26,10 @@
+     static std::uint32_t nextCapacity(std::uint32_t stride,std::uint32_t largest){
+         if(!std::has_single_bit(stride)||stride<64||stride>4096)return 0;
+-        const auto limit=blockBytes/stride;
++        const auto limit=capacityLimit(stride);
+         if(largest&&(!std::has_single_bit(largest)||largest>limit))return 0;
+         return largest?std::min(largest*2,limit):1;
+     }
+     explicit BufferSlots(std::uint32_t s,std::uint32_t capacity):
+         stride_(std::has_single_bit(s)&&s>=64&&s<=4096?s:0){
+-        if(stride_&&std::has_single_bit(capacity)&&capacity<=blockBytes/stride_)capacity_=capacity;
++        if(stride_&&std::has_single_bit(capacity)&&capacity<=capacityLimit(stride_))capacity_=capacity;
+         else stride_=0;
