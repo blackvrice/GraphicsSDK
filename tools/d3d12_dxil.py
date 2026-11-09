@@ -75,6 +75,7 @@ def run(out, archive):
         dxc, tools = load_dxc(pin, 'Windows', archive, work, out)
         sdk, package, source, build, missing = (work/name for name in ('sdk', 'package', 'source', 'build', 'missing'))
         shutil.copytree(CONSUMER, source)
+        shutil.copyfile(ROOT/'tests/PipelineCacheSupport.hpp', source/'PipelineCacheSupport.hpp')
         shutil.copyfile(FIXTURE, source/FIXTURE.name)
         shutil.copytree(source, out/'consumer-source')
         shutil.copyfile(LOCK, out/LOCK.name)
@@ -105,6 +106,8 @@ def run(out, archive):
             dxc, source, 'pixelMain', 'frag', cache_out/f'{label}.dxil', work, cache_invoke, cache, identity))
         save(cache_out/'results.json', results)
         invoke('consumer', consumer, source/FIXTURE.name, out, cache_out/'warm.dxil')
+        require('PASS pipeline cache' in (out/'consumer.stdout').read_text(encoding='utf-8'),
+                'Missing D3D12 pipeline cache evidence')
         for stage in ('vert', 'frag'):
             invoke(f'{stage}-dxv', dxc/'bin/x64/dxv.exe', out/f'{stage}.dxil')
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK inputs changed during DXIL verification')

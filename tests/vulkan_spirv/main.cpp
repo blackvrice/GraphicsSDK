@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include "PipelineCacheSupport.hpp"
 
 namespace {
 constexpr unsigned width = 13;
@@ -40,9 +41,10 @@ void reject(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc, gfx::Err
     std::cout << result.error().message << '\n';
 }
 
-void draw(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc, const std::filesystem::path& output) {
+void draw(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc, const std::filesystem::path& output,
+          gfx::PipelinePtr pipeline = {}) {
     using State = gfx::ResourceState;
-    auto pipeline = take(device.createGraphicsPipeline(desc));
+    if (!pipeline) pipeline = take(device.createGraphicsPipeline(desc));
     auto texture = take(device.createTexture({width, height, gfx::Format::RGBA8UNorm, true}));
     const auto footprint = texture->footprint();
     check(footprint.rowBytes == width * 4 && footprint.rowPitch > footprint.rowBytes &&
@@ -108,8 +110,14 @@ int main(int argc, char** argv) try {
     invalid = desc;
     invalid.vertex.bytes.resize(12);
     reject(*device, invalid, ErrorCode::InvalidArgument, "SPIR-V stage/byte framing");
-    if (argc == 3) desc.fragment = shader(argv[2], ShaderStage::Fragment);
-    draw(*device, desc, out/(argc == 3 ? "cached.rgba" : "spirv.rgba"));
+    if (argc == 3) {
+        const std::filesystem::path cached(argv[2]);
+        desc.fragment = shader(cached, ShaderStage::Fragment);
+        const auto changed = shader(cached.parent_path()/"include-changed.spv", ShaderStage::Fragment);
+        draw(*device, desc, out/"cached.rgba", pipelineCacheTest::exercise(*device, selection, desc, changed));
+    } else {
+        draw(*device, desc, out/"spirv.rgba");
+    }
     std::cout << "SDK_SHA256=" << gfx::buildFingerprint() << '\n';
     std::cout << "PASS Vulkan software (" << device->caps().adapterName << "), 13x7\n";
     return 0;

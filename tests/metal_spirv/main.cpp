@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include "PipelineCacheSupport.hpp"
 
 namespace {
 void check(bool condition, const char* message) {
@@ -49,7 +50,11 @@ int main(int argc, char** argv) try {
           rejected.error().message.find("missingSymbol") != std::string::npos, "Missing native MSL diagnostic");
     std::cout << rejected.error().message << '\n';
 
-    auto pipeline = take(device->createGraphicsPipeline(desc));
+    const std::string_view green = "#include <metal_stdlib>\nusing namespace metal;\n"
+        "fragment float4 gfx_fragment() { return float4(0,1,0,1); }\n";
+    const auto source = std::as_bytes(std::span{green.data(), green.size()});
+    const gfx::ShaderBinary different{ShaderStage::Fragment, {source.begin(), source.end()}, gfx::ShaderFormat::MSL};
+    auto pipeline = pipelineCacheTest::exercise(*device, selection, desc, different);
     auto texture = take(device->createTexture({13, 7, gfx::Format::RGBA8UNorm, true}));
     const auto footprint = texture->footprint();
     check(footprint.height == 7 && footprint.rowBytes == 52 &&

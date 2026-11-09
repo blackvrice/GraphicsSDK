@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
+#include "PipelineCacheSupport.hpp"
 
 namespace {
 constexpr unsigned width = 13;
@@ -36,9 +37,9 @@ void write(const std::filesystem::path& path, const std::vector<std::byte>& byte
     check(static_cast<bool>(file), "Could not write shader or image evidence");
 }
 
-std::vector<std::byte> render(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc) {
+std::vector<std::byte> render(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc, gfx::PipelinePtr pipeline = {}) {
     using State = gfx::ResourceState;
-    auto pipeline = take(device.createGraphicsPipeline(desc));
+    if (!pipeline) pipeline = take(device.createGraphicsPipeline(desc));
     auto texture = take(device.createTexture({width, height, gfx::Format::RGBA8UNorm, true}));
     const auto footprint = texture->footprint();
     auto destination = take(device.createBuffer({footprint.size, gfx::Memory::Readback}));
@@ -151,7 +152,10 @@ int main(int argc, char** argv) try {
         auto warm = dxil;
         warm.fragment.bytes.resize(object.size());
         std::memcpy(warm.fragment.bytes.data(), object.data(), object.size());
-        const auto cachedImage = render(*device, warm);
+        const auto different = take(gfx::compileHlslDxil("float4 main() : SV_Target0 { return float4(0,1,0,1); }",
+                                                         "main", ShaderStage::Fragment));
+        const auto pipeline = pipelineCacheTest::exercise(*device, deviceDesc, warm, different);
+        const auto cachedImage = render(*device, warm, pipeline);
         check(cachedImage == dxilImage, "Cached DXIL differs from the uncached image");
         write(output/"cached.rgba", cachedImage);
     }

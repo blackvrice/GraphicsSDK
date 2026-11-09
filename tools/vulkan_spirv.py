@@ -176,7 +176,8 @@ def run(args, out, work, dxc, validator, hashes, invoke):
     fingerprint = sdk_fingerprint(ROOT)
     sdk, package, consumer, build = (work/name for name in ('sdk', 'package', 'source', 'build'))
     shutil.copytree(CONSUMER, consumer)
-    shutil.copytree(CONSUMER, out/'consumer-source')
+    shutil.copyfile(ROOT/'tests/PipelineCacheSupport.hpp', consumer/'PipelineCacheSupport.hpp')
+    shutil.copytree(consumer, out/'consumer-source')
     compiler = ('-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', f'-DCMAKE_CXX_COMPILER={args.compiler}')
     invoke('sdk-configure', 'cmake', '-S', ROOT, '-B', sdk, *compiler, '-DGFX_ENABLE_D3D12=OFF',
            '-DGFX_ENABLE_VULKAN=ON', '-DGFX_BUILD_TESTS=OFF', '-DGFX_BUILD_EXAMPLES=OFF',
@@ -201,7 +202,8 @@ def run(args, out, work, dxc, validator, hashes, invoke):
         dxc, validator, source, 'pixelMain', 'frag', cache_out/f'{label}.spv', work, cache_invoke,
         cache=cache, identity=compiler_identity()))
     save(cache_out/'results.json', results)
-    invoke('cached-consumer', build/'spirv_consumer', out, cache_out/'warm.spv', env=env)
+    require('PASS pipeline cache' in invoke('cached-consumer', build/'spirv_consumer', out,
+                                            cache_out/'warm.spv', env=env), 'Missing Vulkan pipeline cache evidence')
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK sources changed during Vulkan execution')
     revision = invoke('source-revision', *GIT, '-C', ROOT, 'rev-parse', 'HEAD').strip()
     save(out/'receipt.json', dict(schema_version=1, scope=SCOPE, source_commit=revision,

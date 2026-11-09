@@ -100,7 +100,9 @@ void presented(gfx::Device& d,gfx::SwapChain& swap,const Assets& a){
 #endif
 void blocked(gfx::Device& d,const Assets& old,gfx::CommandList& c,gfx::Fence fence,const gfx::GraphicsPipelineDesc& cpu){
     lost(d.checkStatus());lost(d.resourceStatistics());lost(d.queryMemoryBudget(gfx::MemorySegment::Local));lost(d.removeForTesting());
-    lost(d.createBuffer({16}));lost(d.createTexture({4,4}));lost(d.createGraphicsPipeline(cpu));lost(d.createCommandList());lost(d.createSwapChain({},{}));
+    lost(d.createBuffer({16}));lost(d.createTexture({4,4}));lost(d.createGraphicsPipeline(cpu));
+    lost(d.createCachedGraphicsPipeline(cpu));lost(d.clearGraphicsPipelineCache());
+    lost(d.createCommandList());lost(d.createSwapChain({},{}));
     lost(old.upload->write(0,{}));lost(old.readback->read(0,1));lost(c.begin());lost(c.end());lost(c.debugMarker("old"));lost(c.elapsedGpuMilliseconds());
     lost(d.queue().submit(c));lost(d.queue().wait(fence));lost(d.queue().waitIdle());lost(d.queue().completedValue());
     check(old.upload->description().size==4097&&old.target->description().width==33&&old.target->footprint().height==17,"Old CPU descriptions survive retirement");
@@ -108,7 +110,10 @@ void blocked(gfx::Device& d,const Assets& old,gfx::CommandList& c,gfx::Fence fen
 void exercise(Control& control,gfx::DeviceDesc desc,unsigned mode,bool automatic){
     const auto before=control.snapshot();if(automatic)desc.adapter.reset();auto d=take(gfx::createDevice(desc));const auto selected=d->caps().adapterId;
     check(d->caps().deviceRecovery&&!d->caps().deviceLossInjection,"Recovery selected; injection remains unavailable");reject(d->recover(),E::InvalidState);reject(d->removeForTesting(),E::Unsupported);
-    const auto cpu=pipeline();auto old=assets(*d,cpu,cycles+3);std::unique_ptr<gfx::CommandList> oldCommand;auto oldFence=frame(*d,old,oldCommand);
+    const auto cpu=pipeline();
+    const auto oldCache=take(d->createCachedGraphicsPipeline(cpu));
+    check(!oldCache.hit && take(d->createCachedGraphicsPipeline(cpu)).hit,"Live generation warms pipeline cache");
+    auto old=assets(*d,cpu,cycles+3);std::unique_ptr<gfx::CommandList> oldCommand;auto oldFence=frame(*d,old,oldCommand);
 #ifdef _WIN32
     std::unique_ptr<Window> window;std::unique_ptr<gfx::SwapChain> oldSwap;gfx::TexturePtr oldBack;
     if(d->caps().swapChain){window=std::make_unique<Window>();oldSwap=take(d->createSwapChain({gfx::SurfaceKind::Win32,window->handle},{33,17,2,true}));oldBack=take(oldSwap->acquire());}
@@ -126,6 +131,9 @@ void exercise(Control& control,gfx::DeviceDesc desc,unsigned mode,bool automatic
     control.arm(recoveryprobe::CreateLoss);lost(d->recover());lost(d->checkStatus());auto fresh=take(d->recover());if(automatic)control.reverse(0);
     check(fresh->caps().adapterId==selected&&fresh->caps().softwareAdapter==desc.softwareAdapter,"Recovery pins exact selected UUID and policy");reject(d->recover(),E::InvalidState);reject(fresh->recover(),E::InvalidState);
     const auto retired=control.snapshot();blocked(*d,old,*oldCommand,oldFence,cpu);check(control.snapshot().workCalls==retired.workCalls,"Retired operations issue no observed native work");
+    const auto newCache=take(fresh->createCachedGraphicsPipeline(cpu));
+    check(!newCache.hit && newCache.pipeline!=oldCache.pipeline,"Recovered generation starts with an empty pipeline cache");
+    take(fresh->clearGraphicsPipelineCache());
     auto a=assets(*fresh,cpu,cycles+101);auto current=take(fresh->createCommandList());take(current->begin());
     reject(current->copyBuffer(old.upload,a.readback,16),E::WrongDevice);reject(current->transition(old.target,S::RenderTarget),E::WrongDevice);
     take(current->transition(a.target,S::RenderTarget));take(current->beginRenderPass(a.target,{0,0,0,1}));reject(current->setPipeline(old.pipeline),E::WrongDevice);take(current->endRenderPass());take(current->end());

@@ -11,17 +11,23 @@ struct BindingLayoutEntry {
     BindingType type{BindingType::Texture2D};
     std::uint32_t slot{}, count{1}, space{};
     ShaderVisibility visibility{ShaderVisibility::Fragment};
+    bool operator==(const BindingLayoutEntry&) const = default;
 };
 struct StaticSampler {
     std::uint32_t slot{}, space{};
     ShaderVisibility visibility{ShaderVisibility::Fragment};
     SamplerFilter filter{SamplerFilter::Linear};
     SamplerAddress address{SamplerAddress::Clamp};
+    bool operator==(const StaticSampler&) const = default;
 };
 // Vulkan: set 0, entry i maps to binding i, static sampler i to binding 32+i.
 // Register slot/space are the D3D12 shader mapping; visibility applies to both backends.
 // Metal supports space 0: texture(slot+element), buffer(slot+element), sampler(slot).
-struct BindingLayout { std::vector<BindingLayoutEntry> entries; std::vector<StaticSampler> samplers; };
+struct BindingLayout {
+    std::vector<BindingLayoutEntry> entries;
+    std::vector<StaticSampler> samplers;
+    bool operator==(const BindingLayout&) const = default;
+};
 [[nodiscard]] Result<void> validateBindingLayout(const BindingLayout&);
 // binding indexes BindingLayout::entries; element indexes that entry's array.
 struct TextureBinding { std::uint32_t binding{}, element{}; TexturePtr texture; };

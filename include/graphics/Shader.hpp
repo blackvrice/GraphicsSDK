@@ -11,7 +11,12 @@ enum class ShaderStage { Vertex, Fragment };
 enum class ShaderFormat { DXBC, SPIRV, MSL, DXIL };
 // SPIRV input must already pass an external validator for the Vulkan environment.
 // The backend checks its supported interface, not complete SPIR-V semantics.
-struct ShaderBinary { ShaderStage stage{}; std::vector<std::byte> bytes; ShaderFormat format{ShaderFormat::DXBC}; };
+struct ShaderBinary {
+    ShaderStage stage{};
+    std::vector<std::byte> bytes;
+    ShaderFormat format{ShaderFormat::DXBC};
+    bool operator==(const ShaderBinary&) const = default;
+};
 enum class ShaderResourceType { Unsupported, Texture2D, ConstantBuffer, Sampler };
 struct ShaderBinding { std::string name; std::uint32_t slot{}, count{}, space{}; ShaderResourceType type{}; std::uint32_t minimumBytes{}; };
 struct ShaderLocation {

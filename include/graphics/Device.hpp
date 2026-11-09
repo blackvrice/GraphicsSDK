@@ -5,7 +5,10 @@
 namespace gfx {
 class Device {
 public:
-    virtual ~Device() = default;
+    Device() noexcept;
+    virtual ~Device();
+    Device(const Device&) = delete;
+    Device& operator=(const Device&) = delete;
     [[nodiscard]] virtual const DeviceCaps& caps() const = 0;
     [[nodiscard]] virtual Result<void> checkStatus() = 0;
     // Creating thread only. Diagnostic traversal; does not wait for in-flight work.
@@ -22,6 +25,11 @@ public:
     [[nodiscard]] virtual Result<BufferPtr> createBuffer(BufferDesc) = 0;
     [[nodiscard]] virtual Result<TexturePtr> createTexture(TextureDesc) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) = 0;
+    // Creating thread only. Exact descriptor match within this device generation.
+    // The cache retains up to eight pipelines. Oversized keys are created uncached.
+    [[nodiscard]] Result<CachedGraphicsPipeline> createCachedGraphicsPipeline(const GraphicsPipelineDesc&);
+    // Drops cache ownership. Existing handles and recorded work remain valid.
+    [[nodiscard]] Result<void> clearGraphicsPipelineCache();
     [[nodiscard]] virtual Result<std::unique_ptr<CommandList>> createCommandList() = 0;
     // Creating thread only. Validate a live native surface and selected queue;
     // does not create a swapchain or guarantee format/present support.
@@ -33,6 +41,9 @@ public:
     // Vulkan requires Khronos validation/debug utils, synchronization features and layer settings.
     // Vulkan counts delivered ERROR callbacks; external layer settings can filter/limit them.
     [[nodiscard]] virtual Result<std::uint64_t> validationErrorCount() = 0;
+private:
+    struct GraphicsCache;
+    std::unique_ptr<GraphicsCache> graphicsCache;
 };
 [[nodiscard]] Result<std::unique_ptr<Device>> createDevice(DeviceDesc desc = {});
 }

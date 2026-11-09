@@ -171,7 +171,8 @@ def run(out, work, cross, validator, invoke, jobs):
     fingerprint = sdk_fingerprint(ROOT)
     sdk, package, source, build = (work/name for name in ('sdk', 'installed SDK', 'consumer source', 'consumer build'))
     shutil.copytree(CONSUMER, source)
-    shutil.copytree(CONSUMER, out/'consumer-source')
+    shutil.copyfile(ROOT/'tests/PipelineCacheSupport.hpp', source/'PipelineCacheSupport.hpp')
+    shutil.copytree(source, out/'consumer-source')
     clang = invoke('clang-path', *xcrun, '--find', 'clang++').strip()
     sysroot = invoke('sysroot', *xcrun, '--show-sdk-path').strip()
     flags = ('-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', f'-DCMAKE_OSX_ARCHITECTURES={architecture}',
@@ -184,7 +185,7 @@ def run(out, work, cross, validator, invoke, jobs):
     invoke('consumer-build', 'cmake', '--build', build, '--parallel', jobs)
     binary = build/'metal_spirv_consumer'
     invoke('consumer-arch', 'lipo', '-archs', binary)
-    invoke('consumer', binary, out)
+    require('PASS pipeline cache' in invoke('consumer', binary, out), 'Missing Metal pipeline cache evidence')
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK sources changed during Metal execution')
     revision = invoke('source-revision', *GIT, '-C', ROOT, 'rev-parse', 'HEAD').strip()
     vulkan, d3d12 = compare_image(out)
