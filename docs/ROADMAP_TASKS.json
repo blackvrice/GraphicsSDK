@@ -2505,14 +2505,18 @@
       "phase": 6,
       "group": "P6-POOL",
       "title": "현재 후보 fresh 성능 비교",
-      "status": "todo",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P6-POOL-03"
       ],
-      "work": "동일 payload·생존자 분포·환경에서 dedicated/후보/지원 경쟁 비교.",
+      "work": "동일 payload·생존자 분포로 dedicated·기존 적응형·4슬롯을 두 Windows GPU에서 비교했다. native 관측 18개와 계측을 끈 A/A·A/B/C 312개를 검증했다. 고정 생존 20개의 예약량은 27,200/168,640/81,600바이트이며, 4슬롯은 전용 할당 대비 여섯 환경·프로필의 생성·해제 p50이 반복 편차를 넘어 빨랐다.",
       "done_when": "예약량·할당 calls·create/release 지연의 새 반복 통계.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_POOL_PERFORMANCE.md",
+        "benchmarks/reports/validation/2026-11-09-vulkan-pool-performance/summary.json",
+        "tools/run_vulkan_pool_performance.py"
+      ]
     },
     {
       "id": "P6-POOL-05",

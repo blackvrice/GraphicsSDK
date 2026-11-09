@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.25)
+project(GraphicsSDKPoolPerformance LANGUAGES CXX)
+if(NOT WIN32 OR NOT MSVC)
+  message(FATAL_ERROR "Windows x64 MSVC is required for the Vulkan observer")
+endif()
+get_filename_component(root "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
+set(GFX_INSTALLED_SDK "" CACHE PATH "Pinned GraphicsSDK installation")
+find_package(GraphicsSDK CONFIG REQUIRED PATHS "${GFX_INSTALLED_SDK}" NO_DEFAULT_PATH)
+add_executable(pool_performance main.cpp "${root}/benchmarks/common/Environment.cpp")
+target_compile_features(pool_performance PRIVATE cxx_std_23)
+target_compile_definitions(pool_performance PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+target_compile_options(pool_performance PRIVATE /W4 /permissive- /EHsc /utf-8)
+target_link_libraries(pool_performance PRIVATE GraphicsSDK::Core dxgi advapi32)
+target_include_directories(pool_performance PRIVATE "${root}/experiments/vulkan_buffer_pool_fault"
+    "${root}/experiments/vulkan_pool_churn" "${root}/benchmarks/common" "${root}/benchmarks/vulkan_upload"
+    "${root}/.deps/Vulkan-Headers/include")
