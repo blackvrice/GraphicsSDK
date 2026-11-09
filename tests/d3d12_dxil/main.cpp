@@ -1,5 +1,6 @@
 #include <graphics/Graphics.hpp>
 #include <array>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -92,7 +93,7 @@ int main(int argc, char** argv) try {
         std::cout << "PASS missing app-local DXC and working DXBC bootstrap\n";
         return 0;
     }
-    check(argc == 3, "Expected HLSL fixture and output directory");
+    check(argc == 3 || argc == 4, "Expected HLSL fixture, output directory and optional cached fragment");
     std::ifstream input(argv[1], std::ios::binary);
     check(static_cast<bool>(input), "Could not open HLSL fixture");
     const std::string source{std::istreambuf_iterator<char>(input), {}};
@@ -142,6 +143,18 @@ int main(int argc, char** argv) try {
     const auto dxilImage = render(*device, dxil);
     const auto dxbcImage = render(*device, dxbc);
     check(dxilImage == dxbcImage, "DXBC and DXIL must produce identical reference images");
+    if (argc == 4) {
+        std::ifstream cache(argv[3], std::ios::binary);
+        check(static_cast<bool>(cache), "Could not open cached DXIL");
+        const std::string object{std::istreambuf_iterator<char>(cache), {}};
+        check(!object.empty(), "Cached DXIL was empty");
+        auto warm = dxil;
+        warm.fragment.bytes.resize(object.size());
+        std::memcpy(warm.fragment.bytes.data(), object.data(), object.size());
+        const auto cachedImage = render(*device, warm);
+        check(cachedImage == dxilImage, "Cached DXIL differs from the uncached image");
+        write(output/"cached.rgba", cachedImage);
+    }
     write(output/"vert.dxil", dxil.vertex.bytes);
     write(output/"frag.dxil", dxil.fragment.bytes);
     write(output/"dxil.rgba", dxilImage);

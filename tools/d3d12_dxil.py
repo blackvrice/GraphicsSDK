@@ -4,12 +4,14 @@ import argparse
 import os
 import pathlib
 import platform
+import re
 import shutil
 import subprocess
 import tempfile
 
 from audit_licenses import sdk_fingerprint
 from linux_comparison import GIT, ROOT, read, require, save, sha
+from shader_cache import PROFILES, check_campaign, command_runner, compile_dxil, exercise_cache
 from shader_toolchain import FIXTURE, LOCK, inventory, load_dxc, verify_payload
 
 
@@ -43,6 +45,9 @@ def check(out):
     verify_payload(out, 'Windows')
     for name in ('dxil', 'dxbc'):
         require((out/f'{name}.rgba').read_bytes() == reference(), f'{name} full RGBA reference differs')
+    if (out/'cache-evidence/results.json').is_file():
+        check_campaign(out/'cache-evidence', 'dxil', 'DXIL ps_6_0')
+        require((out/'cached.rgba').read_bytes() == reference(), 'Cached DXIL full RGBA reference differs')
     return receipt
 
 
@@ -93,7 +98,13 @@ def run(out, archive):
             shutil.copyfile(dxc/name, binaries/dll)
             require(sha(binaries/dll) == tools[name], f'Staged {dll} differs from the checked release')
         invoke('dxc-version', dxc/'bin/x64/dxc.exe', '--version')
-        invoke('consumer', consumer, source/FIXTURE.name, out)
+        cache_out = out/'cache-evidence'
+        cache_invoke = command_runner(cache_out)
+        identity = {'dxc': pin['Windows']['sha256']}
+        results = exercise_cache(cache_out, lambda source, label, cache: compile_dxil(
+            dxc, source, 'pixelMain', 'frag', cache_out/f'{label}.dxil', work, cache_invoke, cache, identity))
+        save(cache_out/'results.json', results)
+        invoke('consumer', consumer, source/FIXTURE.name, out, cache_out/'warm.dxil')
         for stage in ('vert', 'frag'):
             invoke(f'{stage}-dxv', dxc/'bin/x64/dxv.exe', out/f'{stage}.dxil')
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK inputs changed during DXIL verification')
@@ -106,13 +117,37 @@ def run(out, archive):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('run', 'check'))
+    parser.add_argument('action', choices=('run', 'check', 'compile'))
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--dxc-archive', type=pathlib.Path)
+    parser.add_argument('--source', type=pathlib.Path)
+    parser.add_argument('--entry')
+    parser.add_argument('--stage', choices=PROFILES)
+    parser.add_argument('--cache-dir', type=pathlib.Path)
     args = parser.parse_args()
     out = args.output.resolve()
     if args.action == 'run':
         run(out, args.dxc_archive)
+    elif args.action == 'compile':
+        if not args.source or not args.source.is_file() or not args.stage or not re.fullmatch(
+                r'[A-Za-z_][A-Za-z_0-9]*', args.entry or ''):
+            parser.error('compile requires --source, --entry and --stage')
+        require(platform.system() == 'Windows' and platform.machine().lower() in ('amd64', 'x86_64'),
+                'DXIL compilation requires Windows x64')
+        out.mkdir(parents=True, exist_ok=False)
+        with tempfile.TemporaryDirectory(dir=out.parent, prefix='dxc-dxil-') as directory:
+            work = pathlib.Path(directory)
+            pin = read(LOCK)['dxc']
+            dxc, _ = load_dxc(pin, 'Windows', args.dxc_archive, work, out)
+            cache = args.cache_dir.resolve() if args.cache_dir else None
+            try:
+                result = compile_dxil(dxc, args.source.resolve(), args.entry, args.stage, out/'shader.dxil',
+                                      work, command_runner(out), cache, {'dxc': pin['Windows']['sha256']})
+            except ValueError as error:
+                parser.exit(1, f'{error}\n')
+            save(out/'compile-receipt.json', result)
+        print(out/'shader.dxil')
+        return
     else:
         check(out)
     print('PASS installed D3D12 WARP DXIL and DXBC, two complete 13x7 RGBA images')

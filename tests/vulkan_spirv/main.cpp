@@ -80,7 +80,7 @@ void draw(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc, const std:
 int main(int argc, char** argv) try {
     using gfx::ErrorCode;
     using gfx::ShaderStage;
-    check(argc == 2, "Expected path containing the validated shader files");
+    check(argc == 2 || argc == 3, "Expected shader directory and optional cached fragment");
     const std::filesystem::path out(argv[1]);
     gfx::DeviceDesc selection;
     selection.backend = gfx::Backend::Vulkan;
@@ -108,7 +108,8 @@ int main(int argc, char** argv) try {
     invalid = desc;
     invalid.vertex.bytes.resize(12);
     reject(*device, invalid, ErrorCode::InvalidArgument, "SPIR-V stage/byte framing");
-    draw(*device, desc, out/"spirv.rgba");
+    if (argc == 3) desc.fragment = shader(argv[2], ShaderStage::Fragment);
+    draw(*device, desc, out/(argc == 3 ? "cached.rgba" : "spirv.rgba"));
     std::cout << "SDK_SHA256=" << gfx::buildFingerprint() << '\n';
     std::cout << "PASS Vulkan software (" << device->caps().adapterName << "), 13x7\n";
     return 0;

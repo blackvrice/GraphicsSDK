@@ -8,38 +8,20 @@ import platform
 import re
 import shutil
 import struct
-import subprocess
 import tempfile
 import zipfile
 
 from audit_licenses import sdk_fingerprint
 from d3d12_dxil import reference
 from linux_comparison import GIT, ROOT, read, require, save, sha
+from shader_cache import PROFILES, check_campaign, command_runner, compile_dxc, exercise_cache
 from shader_toolchain import FIXTURE, FLAGS, LOCK, build_spirv, inventory, load_dxc
 
 
 SCOPE = 'p5-shd-03-vulkan-software-v1'
 CONSUMER = ROOT/'tests/vulkan_spirv'
 D3D12 = ROOT/'benchmarks/reports/validation/2026-11-04-d3d12-dxil'
-PROFILES = {'vert': 'vs_6_0', 'frag': 'ps_6_0'}
 HEADERS_COMMIT = 'b379292b2ab6df5771ba9870d53cf8b2c9295daf'
-
-
-def command_runner(out):
-    commands = {}
-
-    def invoke(name, *args, env=None, reject=False):
-        args = [str(arg) for arg in args]
-        process = subprocess.run(args, cwd=out, env=env, capture_output=True, timeout=900)
-        (out/f'{name}.stdout').write_bytes(process.stdout)
-        (out/f'{name}.stderr').write_bytes(process.stderr)
-        commands[name] = dict(argv=args, exit_code=process.returncode)
-        save(out/'commands.json', commands)
-        require(process.returncode > 0 if reject else process.returncode == 0,
-                f'{name}: unexpected exit {process.returncode}; see {out}/{name}.stderr')
-        return process.stdout.decode('utf-8', errors='replace')
-
-    return invoke
 
 
 def provision(out, work, archive, invoke, jobs):
@@ -54,13 +36,23 @@ def provision(out, work, archive, invoke, jobs):
     return root/'bin/dxc', validator, hashes
 
 
-def compile_shader(dxc, validator, source, entry, stage, output, work, invoke, *, name='main'):
-    intermediate = work/output.name
-    invoke(output.stem+'-compile', dxc, *FLAGS, '-spirv', '-fspv-target-env=vulkan1.1',
-           f'-fspv-entrypoint-name={name}', '-E', entry, '-T', PROFILES[stage], source, '-Fo', intermediate)
-    invoke(output.stem+'-validate', validator, '--target-env', 'vulkan1.1', intermediate)
-    inspect_module(intermediate, stage, name)
-    intermediate.replace(output)
+def compile_shader(dxc, validator, source, entry, stage, output, work, invoke, *,
+                   name='main', cache=None, identity=None):
+    arguments = (*FLAGS, '-spirv', '-fspv-target-env=vulkan1.1',
+                 f'-fspv-entrypoint-name={name}', '-E', entry, '-T', PROFILES[stage])
+
+    def validate(path, step):
+        step(output.stem+'-validate', validator, '--target-env', 'vulkan1.1', path)
+        inspect_module(path, stage, name)
+
+    return compile_dxc(dxc, arguments, source, output, work, invoke, validate,
+                       target=f'Vulkan 1.1 / SPIR-V 1.3 {PROFILES[stage]}', cache=cache, identity=identity)
+
+
+def compiler_identity():
+    lock = read(LOCK)
+    return dict(dxc=lock['dxc']['Linux']['sha256'], validator=lock['sources']['SPIRV-Tools']['commit'],
+                spirv_headers=lock['sources']['SPIRV-Headers']['commit'])
 
 
 def inspect_module(path, stage, entry):
@@ -155,6 +147,10 @@ def check(out):
             'libVkLayer_khronos_validation' not in stderr, 'Unexpected Vulkan driver or validation layer')
     require(receipt['D3D12_source_commit'] == compare_d3d12((out/'spirv.rgba').read_bytes()),
             'D3D12 reference revision differs')
+    if (out/'cache-evidence/results.json').is_file():
+        check_campaign(out/'cache-evidence', 'spv', 'Vulkan 1.1 / SPIR-V 1.3 ps_6_0')
+        require((out/'cached.rgba').read_bytes() == (out/'spirv.rgba').read_bytes(),
+                'Cached Vulkan draw differs from the original')
     return receipt
 
 
@@ -199,6 +195,13 @@ def run(args, out, work, dxc, validator, hashes, invoke):
     env.update(VK_DRIVER_FILES=str(icd), VK_ICD_FILENAMES=str(icd), VK_LAYER_PATH=str(empty),
                VK_LOADER_LAYERS_DISABLE='~implicit~', LD_DEBUG='libs')
     invoke('consumer', build/'spirv_consumer', out, env=env)
+    cache_out = out/'cache-evidence'
+    cache_invoke = command_runner(cache_out)
+    results = exercise_cache(cache_out, lambda source, label, cache: compile_shader(
+        dxc, validator, source, 'pixelMain', 'frag', cache_out/f'{label}.spv', work, cache_invoke,
+        cache=cache, identity=compiler_identity()))
+    save(cache_out/'results.json', results)
+    invoke('cached-consumer', build/'spirv_consumer', out, cache_out/'warm.spv', env=env)
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK sources changed during Vulkan execution')
     revision = invoke('source-revision', *GIT, '-C', ROOT, 'rev-parse', 'HEAD').strip()
     save(out/'receipt.json', dict(schema_version=1, scope=SCOPE, source_commit=revision,
@@ -224,6 +227,7 @@ def main():
     compile_cmd.add_argument('--source', type=pathlib.Path, required=True)
     compile_cmd.add_argument('--entry', required=True)
     compile_cmd.add_argument('--stage', choices=PROFILES, required=True)
+    compile_cmd.add_argument('--cache-dir', type=pathlib.Path)
     runtime.add_argument('--icd', type=pathlib.Path, required=True)
     runtime.add_argument('--headers', type=pathlib.Path, default=ROOT/'.deps/Vulkan-Headers')
     runtime.add_argument('--compiler', default='g++-14')
@@ -243,7 +247,13 @@ def main():
             work = pathlib.Path(tmp)
             dxc, validator, hashes = provision(out, work, args.dxc_archive, invoke, args.jobs)
             if args.action == 'compile':
-                compile_shader(dxc, validator, args.source.resolve(), args.entry, args.stage, out/'shader.spv', work, invoke)
+                cache = args.cache_dir.resolve() if args.cache_dir else None
+                try:
+                    result = compile_shader(dxc, validator, args.source.resolve(), args.entry, args.stage,
+                                            out/'shader.spv', work, invoke, cache=cache, identity=compiler_identity())
+                except ValueError as error:
+                    parser.exit(1, f'{error}\n')
+                save(out/'compile-receipt.json', result)
                 print(out/'shader.spv')
                 return
             run(args, out, work, dxc, validator, hashes, invoke)
