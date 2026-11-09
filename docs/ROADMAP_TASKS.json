@@ -2487,14 +2487,18 @@
       "phase": 6,
       "group": "P6-POOL",
       "title": "변경 후보의 정확성·장애 회귀",
-      "status": "todo",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P6-POOL-02"
       ],
-      "work": "바뀐 fingerprint에 CPU/GPU/혼합 보유/OOM/fallback를 다시 실행.",
+      "work": "4슬롯 설치 SDK의 CPU 정책·모델·오류 계획과 두 Windows GPU의 validation ON/OFF 104개 프로세스를 검증했다. 혼합·고정 희소·기록 보유, 16KiB 확장 OOM과 4KiB 대체 할당, 이중 실패 정리·정상 재시도를 확인했다.",
       "done_when": "실제 새 후보의 참조·수명·rollback 통과.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_POOL_REGRESSION.md",
+        "benchmarks/reports/validation/2026-11-09-vulkan-four-slot/summary.json",
+        "tools/run_vulkan_pool_four_slot.py"
+      ]
     },
     {
       "id": "P6-POOL-04",

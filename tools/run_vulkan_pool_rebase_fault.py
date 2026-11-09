@@ -42,9 +42,9 @@ def snapshots(s):
             if old['memory']==e['memory']:require(old['type']==e['type'] and (old['offset']+old['required']<=e['offset'] or e['offset']+e['required']<=old['offset']),'Live ranges overlap')
         seen[e['buffer']]=e
     require(s['memories']==len(memories) and s['bytes']==sum(memories.values()),'Native memory conservation/no empty cache');return seen
-def validate_mixed(r,case,validation):
+def validate_mixed(r,case,validation,*,sdk=None):
     a,b,bind,success,reuse,held=MIXED[case]
-    expected=dict(schema_version=1,contract='vulkan_mixed_fallback_v1',case=case,validation=validation,SDK_source_fingerprint=CANDIDATE,source_fingerprint=fingerprint(),verified_buffers=3*(7+3*reuse),verified_bytes=3*(28800+12288*reuse))
+    expected=dict(schema_version=1,contract='vulkan_mixed_fallback_v1',case=case,validation=validation,SDK_source_fingerprint=sdk or CANDIDATE,source_fingerprint=fingerprint(),verified_buffers=3*(7+3*reuse),verified_bytes=3*(28800+12288*reuse))
     require(all(k in r and type(r[k]) is type(v) and r[k]==v for k,v in expected.items()),'Mixed fault metadata/readback work');identity(r,validation)
     expected_checks=(85 if held else 79 if not success or reuse else 61)+int(validation)
     require(type(r['assertions']) is int and r['assertions']==expected_checks and len(r['cycles'])==3,'Mixed assertions/cycles')

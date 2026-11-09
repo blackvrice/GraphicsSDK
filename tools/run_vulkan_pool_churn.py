@@ -24,17 +24,20 @@ def fingerprint():
     return hashlib.sha256(''.join(f'{p.relative_to(ROOT).as_posix()}|{audit.sha256(p.read_bytes())}\n' for p in sorted(own,key=lambda p:p.as_posix())).encode()).hexdigest()
 def same(a,b):return json.dumps(a,sort_keys=True,separators=(',',':'))==json.dumps(b,sort_keys=True,separators=(',',':'))
 def integer(v):return type(v) is int and v>=0
-def validate(r,profile,validation,candidate):
+def validate(r,profile,validation,candidate,*,sdk=None,source=None,fixed_sparse=False):
     require(type(r['schema_version']) is int and r['schema_version']==1 and r['contract']=='vulkan_pool_churn_v1','Contract')
     require(r['profile']==profile and r['validation'] is validation and r['candidate'] is candidate,'Profile')
-    require(r['SDK_source_fingerprint']==(CANDIDATE if candidate else SDK) and r['source_fingerprint']==fingerprint(),'Source identity')
+    sdk = sdk or (CANDIDATE if candidate else SDK)
+    source = source or fingerprint()
+    require(r['SDK_source_fingerprint']==sdk and r['source_fingerprint']==source,'Source identity')
     require(bool(r['loaded_validation_layer'])==validation and integer(r['assertions']) and r['assertions']>500,'Validation/assertions')
     require(len(r['strides'])>=(3 if profile=='sparse' else 4) and sorted(set(r['strides']))==r['strides'] and all(type(s) is int and s in (64,128,256,512,1024,2048,4096) for s in r['strides']),'Actual native size classes')
     model=r['model'];require(set(model)=={'creates','reuses','growths','dedicated','checks'} and all(integer(v) for v in model.values()),'Model schema/counters')
     require(model['creates']==model['reuses']+model['growths']+model['dedicated'],'Model operation partition')
     require((model['reuses']>0 and model['growths']>0) if candidate else (model['reuses']==model['growths']==0),'Candidate actually shared/dedicated baseline')
     rows=r['checkpoints'];expected=[('initial',0)];count=PROFILES[profile]
-    labels={'mixed':('full','sparse','survivors','released'),'sparse':('full','one-per-block','holes-refilled','empty','reset-singleton','reset-empty'),'held':('ended-retained','replacements','pending-retained','completed','empty')}[profile]
+    sparse_label = 'fixed-survivors' if fixed_sparse else 'one-per-block'
+    labels={'mixed':('full','sparse','survivors','released'),'sparse':('full',sparse_label,'holes-refilled','empty','reset-singleton','reset-empty'),'held':('ended-retained','replacements','pending-retained','completed','empty')}[profile]
     expected += [(label,i) for i in range(count) for label in labels]
     if profile=='mixed':expected.append(('empty',16))
     expected.append(('final',99));require([(a['label'],a['round']) for a in rows]==expected,'Checkpoint matrix')
@@ -60,8 +63,11 @@ def validate(r,profile,validation,candidate):
             row('released',i,len(live),sum(live))
     elif profile=='sparse':
         for i in range(count):
-            full=row('full',i,124,31*(64+256+1024+4096));one=by['one-per-block',i]
-            require(one['buffers']==full['allocations'] and one['allocations']==full['allocations'] and one['reserved']==full['reserved'],'One live lease per native block')
+            full=row('full',i,124,31*(64+256+1024+4096));one=by[sparse_label,i]
+            if fixed_sparse:
+                row(sparse_label,i,20,5*(64+256+1024+4096))
+            else:
+                require(one['buffers']==full['allocations'] and one['allocations']==full['allocations'] and one['reserved']==full['reserved'],'One live lease per native block')
             row('holes-refilled',i,one['buffers']+32,one['payload']+8*(64+256+1024+4096))
             row('reset-singleton',i,1,4096);require(by['reset-singleton',i]['reserved']==4096,'Empty class resets to one 4KiB slot')
             creates+=157;initializes+=156;verified+=156+2*one['buffers'];byte_count+=31*5440+8*5440+2*one['payload']
@@ -70,7 +76,7 @@ def validate(r,profile,validation,candidate):
             row('ended-retained',i,48,2*sum(SIZES));row('replacements',i,120,5*sum(SIZES));row('pending-retained',i,120,5*sum(SIZES));row('completed',i,72,3*sum(SIZES))
         creates=120*count;initializes=96*count;verified=192*count;held_reads=24*count;byte_count=8*sum(SIZES)*count
     require(model['creates']==creates and integer(r['verified_buffers']) and r['verified_buffers']==verified and integer(r['verified_bytes']) and r['verified_bytes']==byte_count,'Exact data verification work')
-    t=r['native_trace'];require(type(t['schema_version']) is int and t['schema_version']==1 and t['source_fingerprint']==fingerprint() and all(type(t[k]) is int and t[k]==0 for k in ('errors','dropped_events','device_cleanup_resources','device_cleanup_bytes')),'Native trace scope/errors')
+    t=r['native_trace'];require(type(t['schema_version']) is int and t['schema_version']==1 and t['source_fingerprint']==source and all(type(t[k]) is int and t[k]==0 for k in ('errors','dropped_events','device_cleanup_resources','device_cleanup_bytes')),'Native trace scope/errors')
     zero=dict(memories=0,bytes=0,buffers=0,images=0);require(same(t['live'],zero),'Native final live')
     frames=t['frames'];require([(f['phase'],f['iteration']) for f in frames]==[(phase,i) for i in range(count) for phase in (1,2,3,4)]+[(6,99)],'Native phase matrix')
     require(all(type(f[k]) is int for f in frames for k in ('phase','iteration')),'Phase scalar types')
