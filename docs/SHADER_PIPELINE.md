@@ -42,6 +42,7 @@ Vulkan용 오프라인 컴파일 명령은 DXC로 SPIR-V 1.3을 만들고 `spirv
 오프라인 DXC 명령은 선택적 컴파일 캐시를 지원한다. 설치 SDK는 같은 장치에서 그래픽스
 파이프라인 객체를 재사용하는 별도 API를 제공한다.
 [컴파일 캐시 계약](PHASE5_SHADER_CACHE_REPORT.md) · [파이프라인 캐시 계약](PHASE5_PIPELINE_CACHE_REPORT.md)
+[셰이더 컴파일·파이프라인 생성 측정](PHASE5_SHADER_PSO_TIMING_REPORT.md)
 
 pipeline은 명시적 vertex layout과 graphics binding layout을 받는다. Texture2D/constant buffer의
 bounded array, register space, VS/PS/All visibility 및 scalar static sampler를 지원한다.

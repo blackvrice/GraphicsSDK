@@ -2353,9 +2353,13 @@
       "depends_on": [
         "P5-SHD-07"
       ],
-      "work": "Compile/cache와 pipeline 생성 구간을 분리해 비교.",
+      "work": "Windows WARP, Linux lavapipe, macOS Metal ARM64·Intel의 Release 설치 소비자에서 동일 셰이더와 장치의 CPU 경과 시간을 경로별로 10회 측정했다. DXC 전처리·컴파일·검증 및 캐시 미스·적중, Metal 오프라인 컴파일·링크, SDK 파이프라인 캐시 미사용·미스·적중을 분리했다. 세 파이프라인의 전체 참조 이미지와 원자료를 검증했다. 선행 수용 조건이 남아 있다.",
       "done_when": "같은 target·cache 상태·참조를 가진 반복 수치.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE5_SHADER_PSO_TIMING_REPORT.md",
+        "benchmarks/reports/validation/2026-11-09-shader-pso/measurements.json",
+        "tools/shader_pso_timing.py"
+      ],
       "requires": "지원 target의 실제 compiler/runtime"
     },
     {
