@@ -1,6 +1,7 @@
 #pragma once
 
 #include <graphics/Graphics.hpp>
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
@@ -19,6 +20,56 @@ T take(gfx::Result<T> result) {
 inline void clear(gfx::Device& device) {
     auto status = device.clearGraphicsPipelineCache();
     if (!status) throw std::runtime_error(status.error().message);
+}
+
+template<class Draw>
+void measure(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc, Draw draw) {
+    using Clock = std::chrono::steady_clock;
+    const auto elapsed = [](Clock::time_point start) {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - start);
+    };
+    struct Sample {
+        gfx::PipelinePtr uncached, miss, hit;
+        std::chrono::nanoseconds uncachedTime, missTime, hitTime;
+    };
+    const auto sample = [&](bool uncachedFirst) {
+        Sample row;
+        const auto uncached = [&] {
+            const auto start = Clock::now();
+            auto result = device.createGraphicsPipeline(desc);
+            row.uncachedTime = elapsed(start);
+            row.uncached = take(std::move(result));
+        };
+        if (uncachedFirst) uncached();
+        clear(device);
+        auto start = Clock::now();
+        auto miss = device.createCachedGraphicsPipeline(desc);
+        row.missTime = elapsed(start);
+        start = Clock::now();
+        auto hit = device.createCachedGraphicsPipeline(desc);
+        row.hitTime = elapsed(start);
+        auto cold = take(std::move(miss));
+        auto warm = take(std::move(hit));
+        check(!cold.hit && warm.hit && cold.pipeline == warm.pipeline, "Unexpected measured cache state");
+        row.miss = std::move(cold.pipeline);
+        row.hit = std::move(warm.pipeline);
+        if (!uncachedFirst) uncached();
+        check(row.uncached != row.hit, "Uncached call must create a distinct pipeline");
+        return row;
+    };
+    sample(true); // Discard a full warmup cycle.
+    constexpr unsigned repetitions = 10;
+    for (unsigned i = 0; i < repetitions; ++i) {
+        const auto row = sample(i % 2 == 0);
+        std::cout << "PIPELINE_NS " << row.uncachedTime.count() << ' ' << row.missTime.count() << ' '
+                  << row.hitTime.count() << '\n';
+        if (i + 1 == repetitions) {
+            draw("uncached", row.uncached);
+            draw("miss", row.miss);
+            draw("hit", row.hit);
+        }
+    }
+    clear(device);
 }
 
 inline gfx::PipelinePtr exercise(gfx::Device& device, gfx::DeviceDesc selection,

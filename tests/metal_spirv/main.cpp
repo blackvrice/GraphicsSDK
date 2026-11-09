@@ -29,12 +29,41 @@ gfx::ShaderBinary shader(const std::filesystem::path& path, gfx::ShaderStage sta
     check(static_cast<bool>(file), "Could not read MSL");
     return result;
 }
+
+void draw(gfx::Device& device, gfx::PipelinePtr pipeline, const std::filesystem::path& path) {
+    using State = gfx::ResourceState;
+    auto texture = take(device.createTexture({13, 7, gfx::Format::RGBA8UNorm, true}));
+    const auto footprint = texture->footprint();
+    check(footprint.height == 7 && footprint.rowBytes == 52 &&
+          footprint.rowPitch == 256 && footprint.size == 1792, "Unexpected RGBA8 readback footprint");
+    auto destination = take(device.createBuffer({footprint.size, gfx::Memory::Readback}));
+    auto prefill = take(device.createBuffer({footprint.size, gfx::Memory::Upload}));
+    take(prefill->write(0, std::vector<std::byte>(footprint.size, std::byte{0xB7})));
+    auto commands = take(device.createCommandList());
+    take(commands->begin());
+    take(commands->copyBuffer(prefill, destination, footprint.size));
+    take(commands->transition(texture, State::RenderTarget));
+    take(commands->beginRenderPass(texture, {0, 0, 1, 1}));
+    take(commands->setPipeline(pipeline));
+    take(commands->setScissor(2, 1, 8, 4));
+    take(commands->draw(3));
+    take(commands->endRenderPass());
+    take(commands->transition(texture, State::CopySource));
+    take(commands->copyTextureToBuffer(texture, destination));
+    take(commands->end());
+    take(device.queue().wait(take(device.queue().submit(*commands))));
+    const auto bytes = take(destination->read(0, footprint.size));
+    std::ofstream raw(path, std::ios::binary);
+    raw.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+    raw.close();
+    check(static_cast<bool>(raw), "Could not save Metal readback");
+}
 }
 
 int main(int argc, char** argv) try {
     using gfx::ShaderStage;
-    using State = gfx::ResourceState;
-    check(argc == 2, "Expected directory with the generated MSL");
+    const bool measure = argc == 3 && std::string_view(argv[2]) == "--measure";
+    check(argc == 2 || measure, "Expected directory with the generated MSL and optional --measure");
     const std::filesystem::path out(argv[1]);
     gfx::DeviceDesc selection;
     selection.backend = gfx::Backend::Metal;
@@ -55,31 +84,12 @@ int main(int argc, char** argv) try {
     const auto source = std::as_bytes(std::span{green.data(), green.size()});
     const gfx::ShaderBinary different{ShaderStage::Fragment, {source.begin(), source.end()}, gfx::ShaderFormat::MSL};
     auto pipeline = pipelineCacheTest::exercise(*device, selection, desc, different);
-    auto texture = take(device->createTexture({13, 7, gfx::Format::RGBA8UNorm, true}));
-    const auto footprint = texture->footprint();
-    check(footprint.height == 7 && footprint.rowBytes == 52 &&
-          footprint.rowPitch == 256 && footprint.size == 1792, "Unexpected RGBA8 readback footprint");
-    auto destination = take(device->createBuffer({footprint.size, gfx::Memory::Readback}));
-    auto prefill = take(device->createBuffer({footprint.size, gfx::Memory::Upload}));
-    take(prefill->write(0, std::vector<std::byte>(footprint.size, std::byte{0xB7})));
-    auto commands = take(device->createCommandList());
-    take(commands->begin());
-    take(commands->copyBuffer(prefill, destination, footprint.size));
-    take(commands->transition(texture, State::RenderTarget));
-    take(commands->beginRenderPass(texture, {0, 0, 1, 1}));
-    take(commands->setPipeline(pipeline));
-    take(commands->setScissor(2, 1, 8, 4));
-    take(commands->draw(3));
-    take(commands->endRenderPass());
-    take(commands->transition(texture, State::CopySource));
-    take(commands->copyTextureToBuffer(texture, destination));
-    take(commands->end());
-    take(device->queue().wait(take(device->queue().submit(*commands))));
-    const auto bytes = take(destination->read(0, footprint.size));
-    std::ofstream raw(out/"metal.bin", std::ios::binary);
-    raw.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
-    raw.close();
-    check(static_cast<bool>(raw), "Could not save Metal readback");
+    draw(*device, std::move(pipeline), out/"metal.bin");
+    if (measure) {
+        pipelineCacheTest::measure(*device, desc, [&](std::string name, gfx::PipelinePtr measured) {
+            draw(*device, std::move(measured), out/"timing"/(name+".bin"));
+        });
+    }
     std::cout << "SDK_SHA256=" << gfx::buildFingerprint() << '\n';
     std::cout << "PASS Metal (" << device->caps().adapterName << "), 13x7\n";
     return 0;

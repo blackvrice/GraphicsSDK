@@ -5,6 +5,7 @@ on:
       - '.github/workflows/d3d12-dxil.yml'
       - 'tools/d3d12_dxil.py'
       - 'tools/shader_cache.py'
+      - 'tools/shader_pso_timing.py'
       - 'tools/shader_toolchain.py'
       - 'tools/shader-toolchain.lock.json'
       - 'tests/d3d12_dxil/**'
@@ -19,6 +20,7 @@ on:
       - '.github/workflows/d3d12-dxil.yml'
       - 'tools/d3d12_dxil.py'
       - 'tools/shader_cache.py'
+      - 'tools/shader_pso_timing.py'
       - 'tools/shader_toolchain.py'
       - 'tools/shader-toolchain.lock.json'
       - 'tests/d3d12_dxil/**'
@@ -45,7 +47,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile and draw using an installed DXIL-enabled SDK
-        run: python tools/d3d12_dxil.py run --output out/d3d12-dxil
+        run: python tools/d3d12_dxil.py run --measure --output out/d3d12-dxil
       - name: Verify runtime diagnostics and both full readbacks
         run: python tools/d3d12_dxil.py check --output out/d3d12-dxil
       - uses: actions/upload-artifact@v4

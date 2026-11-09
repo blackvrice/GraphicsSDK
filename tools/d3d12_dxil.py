@@ -12,6 +12,7 @@ import tempfile
 from audit_licenses import sdk_fingerprint
 from linux_comparison import GIT, ROOT, read, require, save, sha
 from shader_cache import PROFILES, check_campaign, command_runner, compile_dxil, exercise_cache
+from shader_pso_timing import check_timing, finish_timing, measure_dxc
 from shader_toolchain import FIXTURE, LOCK, inventory, load_dxc, verify_payload
 
 
@@ -48,10 +49,11 @@ def check(out):
     if (out/'cache-evidence/results.json').is_file():
         check_campaign(out/'cache-evidence', 'dxil', 'DXIL ps_6_0')
         require((out/'cached.rgba').read_bytes() == reference(), 'Cached DXIL full RGBA reference differs')
+    check_timing(out, 'dxil', reference())
     return receipt
 
 
-def run(out, archive):
+def run(out, archive, measure=False):
     require(platform.system() == 'Windows' and platform.machine().lower() in ('amd64', 'x86_64'),
             'D3D12 DXIL runner requires Windows x64')
     out.mkdir(parents=True, exist_ok=False)
@@ -105,11 +107,18 @@ def run(out, archive):
         results = exercise_cache(cache_out, lambda source, label, cache: compile_dxil(
             dxc, source, 'pixelMain', 'frag', cache_out/f'{label}.dxil', work, cache_invoke, cache, identity))
         save(cache_out/'results.json', results)
-        invoke('consumer', consumer, source/FIXTURE.name, out, cache_out/'warm.dxil')
+        flags = []
+        if measure:
+            measure_dxc(out, work, source/FIXTURE.name, 'dxil', lambda hlsl, entry, stage, output, invoke, cache:
+                        compile_dxil(dxc, hlsl, entry, stage, output, work, invoke, cache, identity))
+            flags.append('--measure')
+        invoke('consumer', consumer, source/FIXTURE.name, out, cache_out/'warm.dxil', *flags)
         require('PASS pipeline cache' in (out/'consumer.stdout').read_text(encoding='utf-8'),
                 'Missing D3D12 pipeline cache evidence')
         for stage in ('vert', 'frag'):
             invoke(f'{stage}-dxv', dxc/'bin/x64/dxv.exe', out/f'{stage}.dxil')
+    if measure:
+        finish_timing(out, 'dxil', reference())
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK inputs changed during DXIL verification')
     save(out/'receipt.json', dict(schema_version=1, scope=SCOPE, source_commit=revision,
          github_run_id=os.environ.get('GITHUB_RUN_ID'), SDK_source_fingerprint=fingerprint,
@@ -127,10 +136,13 @@ def main():
     parser.add_argument('--entry')
     parser.add_argument('--stage', choices=PROFILES)
     parser.add_argument('--cache-dir', type=pathlib.Path)
+    parser.add_argument('--measure', action='store_true', help='Measure compile cache and pipeline CPU wall time in run')
     args = parser.parse_args()
     out = args.output.resolve()
+    if args.measure and args.action != 'run':
+        parser.error('--measure requires run')
     if args.action == 'run':
-        run(out, args.dxc_archive)
+        run(out, args.dxc_archive, args.measure)
     elif args.action == 'compile':
         if not args.source or not args.source.is_file() or not args.stage or not re.fullmatch(
                 r'[A-Za-z_][A-Za-z_0-9]*', args.entry or ''):

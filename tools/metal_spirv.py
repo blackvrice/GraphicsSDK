@@ -13,6 +13,7 @@ import zipfile
 
 from audit_licenses import sdk_fingerprint
 from linux_comparison import GIT, ROOT, read, require, save, sha
+from shader_pso_timing import check_timing, finish_timing, measure_metal
 from shader_toolchain import LOCK, build_spirv, inventory
 from vulkan_spirv import command_runner, compare_d3d12, inspect_module
 
@@ -128,10 +129,11 @@ def check(out):
                 'SDK_SHA256='+receipt['SDK_source_fingerprint'])), 'Installed Metal runtime receipt differs')
     require((receipt['Vulkan_source_commit'], receipt['D3D12_source_commit']) == compare_image(out),
             'Reference revisions differ')
+    check_timing(out, 'metal', (out/'metal.bin').read_bytes())
     return receipt
 
 
-def run(out, work, cross, validator, invoke, jobs):
+def run(out, work, cross, validator, invoke, jobs, measure=False):
     architecture = platform.machine()
     require(platform.system() == 'Darwin' and architecture in ('arm64', 'x86_64'), 'Native macOS required')
     expected_arch = os.environ.get('GFX_METAL_SPIRV_ARCH', architecture)
@@ -185,7 +187,13 @@ def run(out, work, cross, validator, invoke, jobs):
     invoke('consumer-build', 'cmake', '--build', build, '--parallel', jobs)
     binary = build/'metal_spirv_consumer'
     invoke('consumer-arch', 'lipo', '-archs', binary)
-    require('PASS pipeline cache' in invoke('consumer', binary, out), 'Missing Metal pipeline cache evidence')
+    flags = []
+    if measure:
+        measure_metal(out, work, metal, xcrun)
+        flags.append('--measure')
+    require('PASS pipeline cache' in invoke('consumer', binary, out, *flags), 'Missing Metal pipeline cache evidence')
+    if measure:
+        finish_timing(out, 'metal', (out/'metal.bin').read_bytes())
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK sources changed during Metal execution')
     revision = invoke('source-revision', *GIT, '-C', ROOT, 'rev-parse', 'HEAD').strip()
     vulkan, d3d12 = compare_image(out)
@@ -210,6 +218,8 @@ def main():
         if action == 'convert':
             command.add_argument('--module', type=pathlib.Path, required=True)
             command.add_argument('--stage', choices=STAGES, required=True)
+        if action == 'run':
+            command.add_argument('--measure', action='store_true', help='Measure offline compile and pipeline CPU wall time')
     args = parser.parse_args()
     out = args.output.resolve()
     if args.action == 'check':
@@ -226,7 +236,7 @@ def main():
                 convert(cross, validator, args.module.resolve(), args.stage, 'shader', out, invoke)
                 print(out/'shader.metal')
                 return
-            run(out, work, cross, validator, invoke, args.jobs)
+            run(out, work, cross, validator, invoke, args.jobs, args.measure)
     print('PASS Metal offline compile, installed Metal draw and Vulkan/D3D12 image parity')
 
 

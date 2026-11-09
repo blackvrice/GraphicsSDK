@@ -84,6 +84,7 @@ int main(int argc, char** argv) try {
     using gfx::ShaderStage;
     check(argc == 2 || argc == 3, "Expected shader directory and optional cached fragment");
     const std::filesystem::path out(argv[1]);
+    const bool measure = argc == 3 && std::string_view(argv[2]) == "--measure";
     gfx::DeviceDesc selection;
     selection.backend = gfx::Backend::Vulkan;
     selection.softwareAdapter = true;
@@ -110,7 +111,15 @@ int main(int argc, char** argv) try {
     invalid = desc;
     invalid.vertex.bytes.resize(12);
     reject(*device, invalid, ErrorCode::InvalidArgument, "SPIR-V stage/byte framing");
-    if (argc == 3) {
+    if (measure) {
+        const auto timing = out/"timing";
+        auto measured = desc;
+        measured.vertex = shader(timing/"vert.spv", ShaderStage::Vertex);
+        measured.fragment = shader(timing/"frag.spv", ShaderStage::Fragment);
+        pipelineCacheTest::measure(*device, measured, [&](std::string name, gfx::PipelinePtr pipeline) {
+            draw(*device, measured, timing/(name+".rgba"), std::move(pipeline));
+        });
+    } else if (argc == 3) {
         const std::filesystem::path cached(argv[2]);
         desc.fragment = shader(cached, ShaderStage::Fragment);
         const auto changed = shader(cached.parent_path()/"include-changed.spv", ShaderStage::Fragment);

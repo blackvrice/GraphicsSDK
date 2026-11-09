@@ -5,6 +5,7 @@ on:
       - '.github/workflows/vulkan-spirv.yml'
       - 'tools/vulkan_spirv.py'
       - 'tools/shader_cache.py'
+      - 'tools/shader_pso_timing.py'
       - 'tools/shader_toolchain.py'
       - 'tools/shader-toolchain.lock.json'
       - 'tools/d3d12_dxil.py'
@@ -44,7 +45,7 @@ jobs:
         run: |
           mapfile -t icds < <(find /usr/share/vulkan/icd.d -maxdepth 1 -name 'lvp_icd*.json')
           test "${#icds[@]}" -eq 1
-          python3 tools/vulkan_spirv.py run --output out/vulkan-dxc-spirv --icd "${icds[0]}"
+          python3 tools/vulkan_spirv.py run --measure --output out/vulkan-dxc-spirv --icd "${icds[0]}"
       - name: Replay SPIR-V controls and compare the archived D3D12 pixels
         run: python3 tools/vulkan_spirv.py check --output out/vulkan-dxc-spirv
       - uses: actions/upload-artifact@v4

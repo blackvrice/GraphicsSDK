@@ -6,6 +6,7 @@ on:
       - 'tools/metal_spirv.py'
       - 'tools/shader_toolchain.py'
       - 'tools/shader_cache.py'
+      - 'tools/shader_pso_timing.py'
       - 'tools/shader-toolchain.lock.json'
       - 'tools/vulkan_spirv.py'
       - 'tools/d3d12_dxil.py'
@@ -51,7 +52,7 @@ jobs:
           if ! command -v cmake >/dev/null; then brew install cmake; fi
           if ! command -v ninja >/dev/null; then brew install ninja; fi
       - name: Convert validated SPIR-V, compile MSL and execute the installed Metal SDK
-        run: python3 tools/metal_spirv.py run --output out/metal-spirv
+        run: python3 tools/metal_spirv.py run --measure --output out/metal-spirv
       - name: Replay Metal controls and compare Vulkan and D3D12 images
         run: python3 tools/metal_spirv.py check --output out/metal-spirv
       - uses: actions/upload-artifact@v4

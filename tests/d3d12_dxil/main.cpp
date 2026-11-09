@@ -37,6 +37,16 @@ void write(const std::filesystem::path& path, const std::vector<std::byte>& byte
     check(static_cast<bool>(file), "Could not write shader or image evidence");
 }
 
+gfx::ShaderBinary shader(const std::filesystem::path& path, gfx::ShaderStage stage) {
+    std::ifstream file(path, std::ios::binary);
+    check(static_cast<bool>(file), "Could not open offline DXIL");
+    const std::string object{std::istreambuf_iterator<char>(file), {}};
+    check(!object.empty(), "Offline DXIL was empty");
+    gfx::ShaderBinary result{stage, std::vector<std::byte>(object.size()), gfx::ShaderFormat::DXIL};
+    std::memcpy(result.bytes.data(), object.data(), object.size());
+    return result;
+}
+
 std::vector<std::byte> render(gfx::Device& device, const gfx::GraphicsPipelineDesc& desc, gfx::PipelinePtr pipeline = {}) {
     using State = gfx::ResourceState;
     if (!pipeline) pipeline = take(device.createGraphicsPipeline(desc));
@@ -94,7 +104,8 @@ int main(int argc, char** argv) try {
         std::cout << "PASS missing app-local DXC and working DXBC bootstrap\n";
         return 0;
     }
-    check(argc == 3 || argc == 4, "Expected HLSL fixture, output directory and optional cached fragment");
+    const bool measure = argc == 5 && std::string_view(argv[4]) == "--measure";
+    check(argc == 3 || argc == 4 || measure, "Expected HLSL, output, optional cached fragment and --measure");
     std::ifstream input(argv[1], std::ios::binary);
     check(static_cast<bool>(input), "Could not open HLSL fixture");
     const std::string source{std::istreambuf_iterator<char>(input), {}};
@@ -144,20 +155,24 @@ int main(int argc, char** argv) try {
     const auto dxilImage = render(*device, dxil);
     const auto dxbcImage = render(*device, dxbc);
     check(dxilImage == dxbcImage, "DXBC and DXIL must produce identical reference images");
-    if (argc == 4) {
-        std::ifstream cache(argv[3], std::ios::binary);
-        check(static_cast<bool>(cache), "Could not open cached DXIL");
-        const std::string object{std::istreambuf_iterator<char>(cache), {}};
-        check(!object.empty(), "Cached DXIL was empty");
+    if (argc >= 4) {
         auto warm = dxil;
-        warm.fragment.bytes.resize(object.size());
-        std::memcpy(warm.fragment.bytes.data(), object.data(), object.size());
+        warm.fragment = shader(argv[3], ShaderStage::Fragment);
         const auto different = take(gfx::compileHlslDxil("float4 main() : SV_Target0 { return float4(0,1,0,1); }",
                                                          "main", ShaderStage::Fragment));
         const auto pipeline = pipelineCacheTest::exercise(*device, deviceDesc, warm, different);
         const auto cachedImage = render(*device, warm, pipeline);
         check(cachedImage == dxilImage, "Cached DXIL differs from the uncached image");
         write(output/"cached.rgba", cachedImage);
+    }
+    if (measure) {
+        const auto timing = output/"timing";
+        auto desc = dxil;
+        desc.vertex = shader(timing/"vert.dxil", ShaderStage::Vertex);
+        desc.fragment = shader(timing/"frag.dxil", ShaderStage::Fragment);
+        pipelineCacheTest::measure(*device, desc, [&](std::string name, gfx::PipelinePtr pipeline) {
+            write(timing/(name+".rgba"), render(*device, desc, std::move(pipeline)));
+        });
     }
     write(output/"vert.dxil", dxil.vertex.bytes);
     write(output/"frag.dxil", dxil.fragment.bytes);

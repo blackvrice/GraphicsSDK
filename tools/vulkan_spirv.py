@@ -15,6 +15,7 @@ from audit_licenses import sdk_fingerprint
 from d3d12_dxil import reference
 from linux_comparison import GIT, ROOT, read, require, save, sha
 from shader_cache import PROFILES, check_campaign, command_runner, compile_dxc, exercise_cache
+from shader_pso_timing import check_timing, finish_timing, measure_dxc
 from shader_toolchain import FIXTURE, FLAGS, LOCK, build_spirv, inventory, load_dxc
 
 
@@ -151,6 +152,7 @@ def check(out):
         check_campaign(out/'cache-evidence', 'spv', 'Vulkan 1.1 / SPIR-V 1.3 ps_6_0')
         require((out/'cached.rgba').read_bytes() == (out/'spirv.rgba').read_bytes(),
                 'Cached Vulkan draw differs from the original')
+    check_timing(out, 'spv', (out/'spirv.rgba').read_bytes())
     return receipt
 
 
@@ -196,6 +198,13 @@ def run(args, out, work, dxc, validator, hashes, invoke):
     env.update(VK_DRIVER_FILES=str(icd), VK_ICD_FILENAMES=str(icd), VK_LAYER_PATH=str(empty),
                VK_LOADER_LAYERS_DISABLE='~implicit~', LD_DEBUG='libs')
     invoke('consumer', build/'spirv_consumer', out, env=env)
+    if args.measure:
+        identity = compiler_identity()
+        measure_dxc(out, work, source, 'spv', lambda hlsl, entry, stage, output, invoke, cache:
+                    compile_shader(dxc, validator, hlsl, entry, stage, output, work, invoke,
+                                   cache=cache, identity=identity))
+        timing_env = {key: value for key, value in env.items() if key != 'LD_DEBUG'}
+        invoke('timed-consumer', build/'spirv_consumer', out, '--measure', env=timing_env)
     cache_out = out/'cache-evidence'
     cache_invoke = command_runner(cache_out)
     results = exercise_cache(cache_out, lambda source, label, cache: compile_shader(
@@ -204,6 +213,8 @@ def run(args, out, work, dxc, validator, hashes, invoke):
     save(cache_out/'results.json', results)
     require('PASS pipeline cache' in invoke('cached-consumer', build/'spirv_consumer', out,
                                             cache_out/'warm.spv', env=env), 'Missing Vulkan pipeline cache evidence')
+    if args.measure:
+        finish_timing(out, 'spv', (out/'spirv.rgba').read_bytes())
     require(sdk_fingerprint(ROOT) == fingerprint, 'SDK sources changed during Vulkan execution')
     revision = invoke('source-revision', *GIT, '-C', ROOT, 'rev-parse', 'HEAD').strip()
     save(out/'receipt.json', dict(schema_version=1, scope=SCOPE, source_commit=revision,
@@ -233,6 +244,7 @@ def main():
     runtime.add_argument('--icd', type=pathlib.Path, required=True)
     runtime.add_argument('--headers', type=pathlib.Path, default=ROOT/'.deps/Vulkan-Headers')
     runtime.add_argument('--compiler', default='g++-14')
+    runtime.add_argument('--measure', action='store_true', help='Measure compile cache and pipeline CPU wall time')
     args = parser.parse_args()
     out = args.output.resolve()
     if args.action == 'check':
