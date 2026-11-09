@@ -2596,11 +2596,14 @@
       "status": "todo",
       "gate": "followup",
       "depends_on": [
-        "P5-SHD-08"
+        "P5-SHD-08",
+        "P6-OPT-13"
       ],
-      "work": "별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.",
+      "work": "Vulkan descriptor 기준선(P6-OPT-13)과 같은 반복·교대 바인딩으로 후보의 set/pool 재사용, 스냅샷·fence 수명과 비용을 비교한다.",
       "done_when": "새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_DESCRIPTOR_BASELINE.md"
+      ]
     },
     {
       "id": "P6-OPT-05",
@@ -2728,6 +2731,22 @@
         "docs/PHASE6_VULKAN_DEFERRED_RELEASE_BASELINE.md",
         "benchmarks/reports/validation/2026-11-09-vulkan-deferred-release/summary.json",
         "tools/run_vulkan_deferred_release.py"
+      ]
+    },
+    {
+      "id": "P6-OPT-13",
+      "phase": 6,
+      "group": "P6-OPT",
+      "title": "Vulkan Descriptor cache/pool 기준선",
+      "status": "done",
+      "gate": "followup",
+      "depends_on": [],
+      "work": "Windows Vulkan 두 GPU에서 단일 sampled image의 반복·교대 바인딩 1·64·256회에 대한 전체 프레임, 스냅샷 한도·fence 수명, native 풀·set 호출과 CPU 반복 시간을 검증했다.",
+      "done_when": "기존 descriptor 경로의 전체 참조, 한도·스냅샷 회수와 native 호출, 분리 측정 및 후보 비교 계약.",
+      "evidence": [
+        "docs/PHASE6_VULKAN_DESCRIPTOR_BASELINE.md",
+        "benchmarks/reports/validation/2026-11-09-vulkan-descriptor-baseline/summary.json",
+        "tools/run_vulkan_descriptor_baseline.py"
       ]
     },
     {
