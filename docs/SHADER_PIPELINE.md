@@ -39,7 +39,8 @@ Vulkan용 오프라인 컴파일 명령은 DXC로 SPIR-V 1.3을 만들고 `spirv
 `ShaderFormat::SPIRV`로 사용할 수 있게 한다. [Vulkan SPIR-V 실행 및 재현](PHASE5_VULKAN_SPIRV_REPORT.md)
 리소스 바인딩 없는 Vulkan 모듈은 고정 SPIRV-Cross로 MSL 2.1로 변환한 뒤 Metal SDK에
 소스로 전달할 수 있다. [Metal 변환과 실행 보고서](PHASE5_METAL_SPIRV_REPORT.md)
-Compile·pipeline cache는 후속 항목에서 다룬다.
+오프라인 DXC 명령은 선택적 컴파일 캐시를 지원한다. Pipeline cache는 별도 후속 항목이다.
+[컴파일 캐시 계약](PHASE5_SHADER_CACHE_REPORT.md)
 
 pipeline은 명시적 vertex layout과 graphics binding layout을 받는다. Texture2D/constant buffer의
 bounded array, register space, VS/PS/All visibility 및 scalar static sampler를 지원한다.
@@ -60,6 +61,6 @@ fragment depth/coverage/stencil export는 현재 Unsupported다. [Depth/MRT 범�
 전달한다. compile 시간은 draw 측정 밖이다. 결과에 bytecode FNV-1a hash를 기록한다.
 이 hash는 재현성 식별자이며 보안용 digest가 아니다.
 
-추후 compile cache key에는 source/include 전체 content, compiler version,
-entry/stage/profile/flags/defines와 target을 포함한다. disk cache의 cold/warm 상태와
-driver PSO cache 상태를 구분해 D 벤치마크에서 검증해야 한다.
+오프라인 컴파일 캐시 키에는 원본 소스·전처리 결과, 고정 도구 식별자와 대상·진입점·프로필·
+컴파일 인자를 포함한다. D 벤치마크에서는 컴파일 캐시의 cold/warm 상태와 드라이버 PSO
+캐시 상태를 별도로 다룬다.

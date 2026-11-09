@@ -2315,9 +2315,13 @@
       "depends_on": [
         "P5-SHD-05"
       ],
-      "work": "오류 위치/target diagnostics와 명시적 cache key·무효화 구현.",
+      "work": "Windows DXIL 및 Linux Vulkan SPIR-V 오프라인 DXC 경로에 대상·원본 오류 위치 진단과 선택적 디스크 캐시를 구현했다. 소스와 전처리된 중첩 include, 고정 도구, 대상·컴파일 인자가 키에 반영된다. WARP와 lavapipe에서 cold/warm·include 변경·손상 복구·실패 출력 차단과 캐시 적중 셰이더의 전체 이미지 일치를 확인했다. 선행 수용 조건이 남아 있다.",
       "done_when": "cold/warm·변경 입력·손상 cache의 정확성 검증.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE5_SHADER_CACHE_REPORT.md",
+        "tools/shader_cache.py",
+        "tests/test_shader_cache.py"
+      ],
       "requires": "지원 target의 실제 compiler/runtime"
     },
     {
