@@ -65,6 +65,10 @@ DXC를 활성화한 빌드는 `compileHlslDxil`로 SM6.0 DXIL을 생성하며 `r
 `reflectSpirvInterface`는 외부 검증된 SPIR-V 1.3의 진입점·단계·입출력 위치·리소스를
 반환한다. `reflectShader`도 이 인터페이스의 리소스 목록을 반환한다.
 [지원 형식과 예제](PHASE5_SPIRV_REFLECTION_REPORT.md)
+
+`createCachedGraphicsPipeline`은 같은 장치의 전체 descriptor가 일치하는 파이프라인을
+재사용하고 적중 여부를 반환한다. `clearGraphicsPipelineCache`는 캐시 소유권을 해제한다.
+[키·수명·무효화 계약](PHASE5_PIPELINE_CACHE_REPORT.md)
 caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을
 보장하지 않는다. Result 실패를 확인하는 전체 예제는 `examples/Triangle.cpp`에 있다.
 

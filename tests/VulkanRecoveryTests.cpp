@@ -111,8 +111,12 @@ void exercise(Control& control,gfx::DeviceDesc desc,unsigned mode,bool automatic
     const auto before=control.snapshot();if(automatic)desc.adapter.reset();auto d=take(gfx::createDevice(desc));const auto selected=d->caps().adapterId;
     check(d->caps().deviceRecovery&&!d->caps().deviceLossInjection,"Recovery selected; injection remains unavailable");reject(d->recover(),E::InvalidState);reject(d->removeForTesting(),E::Unsupported);
     const auto cpu=pipeline();
-    const auto oldCache=take(d->createCachedGraphicsPipeline(cpu));
-    check(!oldCache.hit && take(d->createCachedGraphicsPipeline(cpu)).hit,"Live generation warms pipeline cache");
+    std::weak_ptr<gfx::Pipeline> oldCache;
+    {
+        const auto cached=take(d->createCachedGraphicsPipeline(cpu));
+        check(!cached.hit && take(d->createCachedGraphicsPipeline(cpu)).hit,"Live generation warms pipeline cache");
+        oldCache=cached.pipeline;
+    }
     auto old=assets(*d,cpu,cycles+3);std::unique_ptr<gfx::CommandList> oldCommand;auto oldFence=frame(*d,old,oldCommand);
 #ifdef _WIN32
     std::unique_ptr<Window> window;std::unique_ptr<gfx::SwapChain> oldSwap;gfx::TexturePtr oldBack;
@@ -131,9 +135,11 @@ void exercise(Control& control,gfx::DeviceDesc desc,unsigned mode,bool automatic
     control.arm(recoveryprobe::CreateLoss);lost(d->recover());lost(d->checkStatus());auto fresh=take(d->recover());if(automatic)control.reverse(0);
     check(fresh->caps().adapterId==selected&&fresh->caps().softwareAdapter==desc.softwareAdapter,"Recovery pins exact selected UUID and policy");reject(d->recover(),E::InvalidState);reject(fresh->recover(),E::InvalidState);
     const auto retired=control.snapshot();blocked(*d,old,*oldCommand,oldFence,cpu);check(control.snapshot().workCalls==retired.workCalls,"Retired operations issue no observed native work");
-    const auto newCache=take(fresh->createCachedGraphicsPipeline(cpu));
-    check(!newCache.hit && newCache.pipeline!=oldCache.pipeline,"Recovered generation starts with an empty pipeline cache");
-    take(fresh->clearGraphicsPipelineCache());
+    {
+        const auto newCache=take(fresh->createCachedGraphicsPipeline(cpu));
+        check(!newCache.hit && newCache.pipeline!=oldCache.lock(),"Recovered generation starts with an empty pipeline cache");
+        take(fresh->clearGraphicsPipelineCache());
+    }
     auto a=assets(*fresh,cpu,cycles+101);auto current=take(fresh->createCommandList());take(current->begin());
     reject(current->copyBuffer(old.upload,a.readback,16),E::WrongDevice);reject(current->transition(old.target,S::RenderTarget),E::WrongDevice);
     take(current->transition(a.target,S::RenderTarget));take(current->beginRenderPass(a.target,{0,0,0,1}));reject(current->setPipeline(old.pipeline),E::WrongDevice);take(current->endRenderPass());take(current->end());

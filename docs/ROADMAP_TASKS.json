@@ -2334,9 +2334,13 @@
       "depends_on": [
         "P5-SHD-06"
       ],
-      "work": "지원 backend cache key·수명·무효화 의미 정의.",
+      "work": "D3D12·Vulkan·Metal 공통의 선택형 장치별 그래픽스 파이프라인 캐시를 구현했다. 전체 descriptor 키, 최대 8개 LRU, 비우기, 생성 스레드와 장치 세대 수명 계약을 적용한다. 설치 소비자에서 shader/layout/device 변경 미스, 적중·퇴출·비우기와 전체 이미지를 확인하고 Vulkan 손실·복구 캐시 분리를 검증했다. 선행 수용 조건이 남아 있다.",
       "done_when": "실제 hit/miss와 shader/layout/device 변경 검증.",
-      "evidence": [],
+      "evidence": [
+        "docs/PHASE5_PIPELINE_CACHE_REPORT.md",
+        "tests/PipelineCacheSupport.hpp",
+        "tests/VulkanRecoveryTests.cpp"
+      ],
       "requires": "지원 target의 실제 compiler/runtime"
     },
     {
