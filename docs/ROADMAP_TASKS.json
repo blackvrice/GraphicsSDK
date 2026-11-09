@@ -2630,11 +2630,14 @@
       "status": "todo",
       "gate": "followup",
       "depends_on": [
-        "P5-SHD-08"
+        "P5-SHD-08",
+        "P6-OPT-15"
       ],
-      "work": "별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.",
+      "work": "Vulkan 명령 기록·제출 기준선(P6-OPT-15)의 동일 복사와 완료 범위에서 기록·제출·fence 처리·반환 후보를 격리해 비교한다.",
       "done_when": "새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_SUBMIT_BASELINE.md"
+      ]
     },
     {
       "id": "P6-OPT-07",
@@ -2766,6 +2769,22 @@
         "docs/PHASE6_VULKAN_PASS_QUERY_BASELINE.md",
         "benchmarks/reports/validation/2026-11-09-vulkan-pass-query/summary.json",
         "tools/run_vulkan_pass_query_baseline.py"
+      ]
+    },
+    {
+      "id": "P6-OPT-15",
+      "phase": 6,
+      "group": "P6-OPT",
+      "title": "Vulkan 동기화·명령 기록 기준선",
+      "status": "done",
+      "gate": "followup",
+      "depends_on": [],
+      "work": "Windows Vulkan GPU 두 종에서 동일한 16개 복사를 명령당 1·4·16개로 묶었다. 전체 바이트·마지막 fence·자원 회수와 native 명령 풀·fence·poll·wait 호출, 분리된 CPU 반복 시간을 확인했다.",
+      "done_when": "동일 작업과 완료 경계의 전체 참조·native 관측·반복 비용 및 후보 비교 계약.",
+      "evidence": [
+        "docs/PHASE6_VULKAN_SUBMIT_BASELINE.md",
+        "benchmarks/reports/validation/2026-11-09-vulkan-submit/summary.json",
+        "tools/run_vulkan_submit_baseline.py"
       ]
     },
     {
