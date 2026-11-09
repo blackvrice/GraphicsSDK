@@ -2545,11 +2545,14 @@
       "status": "todo",
       "gate": "followup",
       "depends_on": [
-        "P5-SHD-08"
+        "P5-SHD-08",
+        "P6-OPT-09"
       ],
-      "work": "별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.",
+      "work": "현재 제품의 Transient·Reuse 기준선(P6-OPT-07), 격리 후보(P6-OPT-08), 같은 조건 비교와 판정(P6-OPT-09)으로 분리했다.",
       "done_when": "새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md"
+      ]
     },
     {
       "id": "P6-OPT-02",
@@ -2619,6 +2622,53 @@
       ],
       "work": "별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.",
       "done_when": "새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유.",
+      "evidence": []
+    },
+    {
+      "id": "P6-OPT-07",
+      "phase": 6,
+      "group": "P6-OPT",
+      "title": "Upload ring 기준선·병목 계약",
+      "status": "done",
+      "gate": "followup",
+      "depends_on": [
+        "P6-POOL-05"
+      ],
+      "work": "두 Windows Vulkan GPU에서 배치 1·16·64의 전용 staging 생성·재사용을 같은 payload로 검증했다. 전체 readback, native 할당, 배치의 생성·쓰기·기록·제출·대기·해제 시간을 분리했다.",
+      "done_when": "현재 제품의 전체 참조, 관측과 분리된 반복 수치, 후보 수명 및 비교 계약.",
+      "evidence": [
+        "docs/PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md",
+        "benchmarks/reports/validation/2026-11-09-vulkan-upload-staging/summary.json",
+        "tools/run_vulkan_upload_staging.py"
+      ]
+    },
+    {
+      "id": "P6-OPT-08",
+      "phase": 6,
+      "group": "P6-OPT",
+      "title": "Upload ring 격리 후보·수명 회귀",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P6-OPT-07",
+        "P5-SHD-08"
+      ],
+      "work": "버퍼 staging 범위를 recording과 fence에 연결하고 용량·정렬·wrap·포화·오류 경계를 구현한다.",
+      "done_when": "격리 후보 source receipt와 여러 in-flight 배치의 전체 참조, wrap·미제출·실패/재시도·장치 손실·최종 반환 증거.",
+      "evidence": []
+    },
+    {
+      "id": "P6-OPT-09",
+      "phase": 6,
+      "group": "P6-OPT",
+      "title": "Upload ring 동일 조건 비교·판정",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P6-OPT-08"
+      ],
+      "work": "현재 제품 Reuse를 주 기준으로 동일 payload·큐·완료 범위에서 후보를 비교한다. Transient는 할당 비용 대조로 사용한다.",
+      "done_when": "같은 대상의 전체 참조, native 호출·예약량 및 구간별 새 반복 수치, 채택 또는 기각 근거.",
       "evidence": []
     },
     {
