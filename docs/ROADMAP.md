@@ -39,7 +39,7 @@ python tools/roadmap.py --write
 | 3 — Vulkan | 60 | 11 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
-| 6 — GPU 자원 최적화 | 12 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
+| 6 — GPU 자원 최적화 | 13 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
 | 7 — 독립 SDK 배포 | 1 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
 
 ## 다음 권장 작업
@@ -312,15 +312,16 @@ DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing�
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P6-OPT-01`<br>미완료 · 후속 최적화 | **Upload ring**<br>현재 제품의 Transient·Reuse 기준선(P6-OPT-07), 격리 후보(P6-OPT-08), 같은 조건 비교와 판정(P6-OPT-09)으로 분리했다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08`, `P6-OPT-09`<br>근거: [PHASE6_VULKAN_UPLOAD_STAGING_BASELINE](PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md) |
+| [ ] `P6-OPT-01`<br>미완료 · 후속 최적화 | **Upload ring**<br>현재 제품의 Transient·Reuse 기준선(P6-OPT-07), CPU 범위·수명 모델(P6-OPT-10), Vulkan 격리 후보(P6-OPT-08), 같은 조건 비교와 판정(P6-OPT-09)으로 분리했다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08`, `P6-OPT-09`<br>근거: [PHASE6_VULKAN_UPLOAD_STAGING_BASELINE](PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md) |
 | [ ] `P6-OPT-02`<br>미완료 · 후속 최적화 | **Frame-in-flight slots**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
 | [ ] `P6-OPT-03`<br>미완료 · 후속 최적화 | **Deferred destruction**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
 | [ ] `P6-OPT-04`<br>미완료 · 후속 최적화 | **Descriptor cache/pool**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
 | [ ] `P6-OPT-05`<br>미완료 · 후속 최적화 | **Query/render-pass 등 cache 재사용**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
 | [ ] `P6-OPT-06`<br>미완료 · 후속 최적화 | **동기화·command recording 비용**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
 | [x] `P6-OPT-07`<br>완료 · 후속 최적화 | **Upload ring 기준선·병목 계약**<br>두 Windows Vulkan GPU에서 배치 1·16·64의 전용 staging 생성·재사용을 같은 payload로 검증했다. 전체 readback, native 할당, 배치의 생성·쓰기·기록·제출·대기·해제 시간을 분리했다.<br>완료: 현재 제품의 전체 참조, 관측과 분리된 반복 수치, 후보 수명 및 비교 계약. | 선행: `P6-POOL-05`<br>근거: [PHASE6_VULKAN_UPLOAD_STAGING_BASELINE](PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md), [summary.json](../benchmarks/reports/validation/2026-11-09-vulkan-upload-staging/summary.json), [run_vulkan_upload_staging.py](../tools/run_vulkan_upload_staging.py) |
-| [ ] `P6-OPT-08`<br>미완료 · 후속 최적화 | **Upload ring 격리 후보·수명 회귀**<br>버퍼 staging 범위를 recording과 fence에 연결하고 용량·정렬·wrap·포화·오류 경계를 구현한다.<br>완료: 격리 후보 source receipt와 여러 in-flight 배치의 전체 참조, wrap·미제출·실패/재시도·장치 손실·최종 반환 증거. | 선행: `P6-OPT-07`, `P5-SHD-08` |
+| [ ] `P6-OPT-08`<br>미완료 · 후속 최적화 | **Upload ring 격리 후보·수명 회귀**<br>CPU 범위 계약을 바탕으로 Vulkan staging 버퍼를 매핑하고 복사 오프셋, recording 소유권과 native fence를 연결한다.<br>완료: 격리 후보 source receipt와 여러 in-flight 배치의 전체 참조, wrap·미제출·실패/재시도·장치 손실·최종 반환 증거. | 선행: `P6-OPT-07`, `P6-OPT-10`, `P5-SHD-08`<br>근거: [PHASE6_VULKAN_UPLOAD_RING_RANGES](PHASE6_VULKAN_UPLOAD_RING_RANGES.md) |
 | [ ] `P6-OPT-09`<br>미완료 · 후속 최적화 | **Upload ring 동일 조건 비교·판정**<br>현재 제품 Reuse를 주 기준으로 동일 payload·큐·완료 범위에서 후보를 비교한다. Transient는 할당 비용 대조로 사용한다.<br>완료: 같은 대상의 전체 참조, native 호출·예약량 및 구간별 새 반복 수치, 채택 또는 기각 근거. | 선행: `P6-OPT-08` |
+| [x] `P6-OPT-10`<br>완료 · 후속 최적화 | **Upload ring CPU 범위·소유권 모델**<br>독립 CPU 링에서 정렬·wrap·포화, 기록과 제출의 범위 보유, 취소와 fence 완료 후 순차 반환을 구현했다. Windows MSVC와 Linux GCC에서 절대 위치 참조 모델과 120,000개 연산을 각각 비교했다.<br>완료: 두 환경의 CPU 회귀 통과와 Vulkan 후보가 따를 범위·소유권 계약 기록. | 선행: `P6-OPT-07`<br>근거: [PHASE6_VULKAN_UPLOAD_RING_RANGES](PHASE6_VULKAN_UPLOAD_RING_RANGES.md), [RingRanges.hpp](../experiments/vulkan_upload_ring/RingRanges.hpp), [RangeTests.cpp](../experiments/vulkan_upload_ring/RangeTests.cpp) |
 
 ## Phase 7 — 독립 SDK 배포
 
