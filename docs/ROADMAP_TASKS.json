@@ -2451,14 +2451,17 @@
       "phase": 6,
       "group": "P6-POOL",
       "title": "예약량 목표·workload 계약",
-      "status": "todo",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P6-EXP-06"
       ],
-      "work": "관측 6.2배 사례를 포함해 허용 비용·same-survivor 비교를 명시.",
+      "work": "기존 6.2배 관측을 희소 원자료 8개에서 재검산했다. 논리 생성 순번으로 생존자를 고정하고 dedicated·기존 적응형·최대 4-slot 모델의 예약량과 호출 수를 대조했다. 혼합·기록 보유, 별도 정확성/성능 실행, 전용 할당 반복 편차에 기반한 지연 기준을 고정했다.",
       "done_when": "임의 우위 목표 대신 workload·bytes·지연의 측정/채택 기준.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_POOL_WORKLOAD.md",
+        "tools/check_vulkan_pool_workload.py"
+      ]
     },
     {
       "id": "P6-POOL-02",
