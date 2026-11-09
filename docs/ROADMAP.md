@@ -39,7 +39,7 @@ python tools/roadmap.py --write
 | 3 — Vulkan | 60 | 11 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
-| 6 — GPU 자원 최적화 | 10 | 0 | 0 | 7 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
+| 6 — GPU 자원 최적화 | 11 | 0 | 0 | 6 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
 | 7 — 독립 SDK 배포 | 1 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
 
 ## 다음 권장 작업
@@ -306,7 +306,7 @@ DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing�
 | [x] `P6-POOL-02`<br>완료 · 후속 최적화 | **예약량 제한 후보 구현**<br>같은 기준 커밋에서 dedicated·기존 적응형·4슬롯 정책을 격리 생성한다. 새 후보는 성장과 블록 생성에 4슬롯 상한을 적용한다. 소스·패치 해시와 공개 헤더를 대조하고 설치 소비자의 CPU 정책 검사를 통과했다.<br>완료: 정책 diff·source receipt와 기존 후보/제품 보존. | 선행: `P6-POOL-01`<br>근거: [PHASE6_VULKAN_POOL_FOUR_SLOT](PHASE6_VULKAN_POOL_FOUR_SLOT.md), [four-slot.patch](../experiments/vulkan_pool_four_slot/four-slot.patch), [source-receipts.json](../experiments/vulkan_pool_four_slot/source-receipts.json), [prepare_vulkan_pool_four_slot.py](../tools/prepare_vulkan_pool_four_slot.py) |
 | [x] `P6-POOL-03`<br>완료 · 후속 최적화 | **변경 후보의 정확성·장애 회귀**<br>4슬롯 설치 SDK의 CPU 정책·모델·오류 계획과 두 Windows GPU의 validation ON/OFF 104개 프로세스를 검증했다. 혼합·고정 희소·기록 보유, 16KiB 확장 OOM과 4KiB 대체 할당, 이중 실패 정리·정상 재시도를 확인했다.<br>완료: 실제 새 후보의 참조·수명·rollback 통과. | 선행: `P6-POOL-02`<br>근거: [PHASE6_VULKAN_POOL_REGRESSION](PHASE6_VULKAN_POOL_REGRESSION.md), [summary.json](../benchmarks/reports/validation/2026-11-09-vulkan-four-slot/summary.json), [run_vulkan_pool_four_slot.py](../tools/run_vulkan_pool_four_slot.py) |
 | [x] `P6-POOL-04`<br>완료 · 후속 최적화 | **현재 후보 fresh 성능 비교**<br>동일 payload·생존자 분포로 dedicated·기존 적응형·4슬롯을 두 Windows GPU에서 비교했다. native 관측 18개와 계측을 끈 A/A·A/B/C 312개를 검증했다. 고정 생존 20개의 예약량은 27,200/168,640/81,600바이트이며, 4슬롯은 전용 할당 대비 여섯 환경·프로필의 생성·해제 p50이 반복 편차를 넘어 빨랐다.<br>완료: 예약량·할당 calls·create/release 지연의 새 반복 통계. | 선행: `P6-POOL-03`<br>근거: [PHASE6_VULKAN_POOL_PERFORMANCE](PHASE6_VULKAN_POOL_PERFORMANCE.md), [summary.json](../benchmarks/reports/validation/2026-11-09-vulkan-pool-performance/summary.json), [run_vulkan_pool_performance.py](../tools/run_vulkan_pool_performance.py) |
-| [ ] `P6-POOL-05`<br>미완료 · 후속 최적화 | **후보 채택 또는 기각**<br>정확성·비용을 근거로 기본값/opt-in/기각을 결정.<br>완료: 결정 이유·회귀·API/통계 영향·최종 제품 증거. 채택을 전제하지 않음. | 선행: `P6-POOL-04` |
+| [x] `P6-POOL-05`<br>완료 · 후속 최적화 | **후보 채택 또는 기각**<br>4슬롯 후보의 제품 승격을 기각하고 Vulkan 전용 할당을 유지한다. 생성·해제 이점과 희소 점유의 전용 대비 3배 예약을 대조했다. Windows·Linux 제품 설치본의 공개 헤더와 fingerprint를 확인하고, 두 Windows GPU의 native 관측 6개가 전용 기준군과 일치했다.<br>완료: 결정 이유·회귀·API/통계 영향·최종 제품 증거. 채택을 전제하지 않음. | 선행: `P6-POOL-04`<br>근거: [PHASE6_VULKAN_POOL_DECISION](PHASE6_VULKAN_POOL_DECISION.md), [evidence.json](../benchmarks/reports/validation/2026-11-09-vulkan-pool-decision/evidence.json) |
 
 ### P6-OPT — 다른 최적화 — 병목 증거 후 개별 진행
 

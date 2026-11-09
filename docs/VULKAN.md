@@ -642,6 +642,10 @@ It is applied only to a copied SDK. Public ABI and product sources remain unchan
 Empty blocks are freed, existing slots retain native lifetimes, and occupied large
 blocks do not compact automatically. Request-byte accounting is not physical residency.
 
+The [Phase 6 pool decision](PHASE6_VULKAN_POOL_DECISION.md) retains dedicated allocations
+for the product. The four-slot candidate stays in the isolated benchmark suite. Product
+allocation diagnostics sum the native request bytes of the unique SDK-held resources.
+
 The [buffer failure study](PHASE3_VULKAN_BUFFER_POOL_FAULT_REPORT.md)
 changes a separate adaptive candidate to acquire buffer memory output ownership only
 after allocation succeeds. Guarded poison-output controls reproduce the prior invalid

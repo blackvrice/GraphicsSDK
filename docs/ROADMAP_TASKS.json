@@ -2523,14 +2523,17 @@
       "phase": 6,
       "group": "P6-POOL",
       "title": "후보 채택 또는 기각",
-      "status": "todo",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P6-POOL-04"
       ],
-      "work": "정확성·비용을 근거로 기본값/opt-in/기각을 결정.",
+      "work": "4슬롯 후보의 제품 승격을 기각하고 Vulkan 전용 할당을 유지한다. 생성·해제 이점과 희소 점유의 전용 대비 3배 예약을 대조했다. Windows·Linux 제품 설치본의 공개 헤더와 fingerprint를 확인하고, 두 Windows GPU의 native 관측 6개가 전용 기준군과 일치했다.",
       "done_when": "결정 이유·회귀·API/통계 영향·최종 제품 증거. 채택을 전제하지 않음.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE6_VULKAN_POOL_DECISION.md",
+        "benchmarks/reports/validation/2026-11-09-vulkan-pool-decision/evidence.json"
+      ]
     },
     {
       "id": "P6-OPT-01",
