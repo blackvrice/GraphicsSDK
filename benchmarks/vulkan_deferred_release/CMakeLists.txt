@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.25)
+project(GraphicsSDKVulkanDeferredRelease LANGUAGES CXX)
+if(NOT WIN32 OR NOT MSVC)
+  message(FATAL_ERROR "Windows MSVC is required for this baseline")
+endif()
+set(GFX_INSTALLED_SDK "" CACHE PATH "Installed Vulkan SDK")
+find_package(GraphicsSDK CONFIG REQUIRED PATHS "${GFX_INSTALLED_SDK}" NO_DEFAULT_PATH)
+set(root "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+add_executable(vulkan_deferred_release main.cpp "${root}/benchmarks/common/Environment.cpp")
+target_link_libraries(vulkan_deferred_release PRIVATE GraphicsSDK::Core dxgi advapi32)
+target_compile_features(vulkan_deferred_release PRIVATE cxx_std_23)
+target_compile_definitions(vulkan_deferred_release PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+target_compile_options(vulkan_deferred_release PRIVATE /W4 /permissive- /EHsc /utf-8)
+target_include_directories(vulkan_deferred_release PRIVATE "${root}/benchmarks/common"
+    "${root}/benchmarks/vulkan_upload" "${root}/experiments/vulkan_buffer_pool_fault"
+    "${root}/.deps/Vulkan-Headers/include")

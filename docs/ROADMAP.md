@@ -39,7 +39,7 @@ python tools/roadmap.py --write
 | 3 — Vulkan | 60 | 11 | 8 | 0 | 0 | 현재 개발 단계. Windows 완료 항목, Linux native/WSI, 현재 제품 비교, 조건부 기능, 최종 수용을 독립 체크한다. |
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
-| 6 — GPU 자원 최적화 | 14 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
+| 6 — GPU 자원 최적화 | 15 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
 | 7 — 독립 SDK 배포 | 1 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
 
 ## 다음 권장 작업
@@ -314,7 +314,7 @@ DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing�
 |---|---|---|
 | [ ] `P6-OPT-01`<br>미완료 · 후속 최적화 | **Upload ring**<br>현재 제품의 Transient·Reuse 기준선(P6-OPT-07), CPU 범위·수명 모델(P6-OPT-10), Vulkan 격리 후보(P6-OPT-08), 같은 조건 비교와 판정(P6-OPT-09)으로 분리했다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08`, `P6-OPT-09`<br>근거: [PHASE6_VULKAN_UPLOAD_STAGING_BASELINE](PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md) |
 | [ ] `P6-OPT-02`<br>미완료 · 후속 최적화 | **Frame-in-flight slots**<br>Windows Vulkan 오프스크린 슬롯 기준선(P6-OPT-11)을 바탕으로 후속 후보의 기록·fence·회수 정책을 격리하고 같은 프레임으로 비교한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08`, `P6-OPT-11`<br>근거: [PHASE6_VULKAN_FRAME_SLOTS_BASELINE](PHASE6_VULKAN_FRAME_SLOTS_BASELINE.md) |
-| [ ] `P6-OPT-03`<br>미완료 · 후속 최적화 | **Deferred destruction**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
+| [ ] `P6-OPT-03`<br>미완료 · 후속 최적화 | **Deferred destruction**<br>Windows Vulkan 기준선(P6-OPT-12)의 기록·제출 보유 계약과 native 반환 비용을 바탕으로 후보 회수 정책을 격리하고 검증한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08`, `P6-OPT-12`<br>근거: [PHASE6_VULKAN_DEFERRED_RELEASE_BASELINE](PHASE6_VULKAN_DEFERRED_RELEASE_BASELINE.md) |
 | [ ] `P6-OPT-04`<br>미완료 · 후속 최적화 | **Descriptor cache/pool**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
 | [ ] `P6-OPT-05`<br>미완료 · 후속 최적화 | **Query/render-pass 등 cache 재사용**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
 | [ ] `P6-OPT-06`<br>미완료 · 후속 최적화 | **동기화·command recording 비용**<br>별도 baseline/병목·정확성 계약을 먼저 만들고 구현/측정 ID로 추가 분할한다.<br>완료: 새 후보별 참조·수명 회귀와 전후 실제 수치, 채택/기각 이유. | 선행: `P5-SHD-08` |
@@ -323,6 +323,7 @@ DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing�
 | [ ] `P6-OPT-09`<br>미완료 · 후속 최적화 | **Upload ring 동일 조건 비교·판정**<br>현재 제품 Reuse를 주 기준으로 동일 payload·큐·완료 범위에서 후보를 비교한다. Transient는 할당 비용 대조로 사용한다.<br>완료: 같은 대상의 전체 참조, native 호출·예약량 및 구간별 새 반복 수치, 채택 또는 기각 근거. | 선행: `P6-OPT-08` |
 | [x] `P6-OPT-10`<br>완료 · 후속 최적화 | **Upload ring CPU 범위·소유권 모델**<br>독립 CPU 링에서 정렬·wrap·포화, 기록과 제출의 범위 보유, 취소와 fence 완료 후 순차 반환을 구현했다. Windows MSVC와 Linux GCC에서 절대 위치 참조 모델과 120,000개 연산을 각각 비교했다.<br>완료: 두 환경의 CPU 회귀 통과와 Vulkan 후보가 따를 범위·소유권 계약 기록. | 선행: `P6-OPT-07`<br>근거: [PHASE6_VULKAN_UPLOAD_RING_RANGES](PHASE6_VULKAN_UPLOAD_RING_RANGES.md), [RingRanges.hpp](../experiments/vulkan_upload_ring/RingRanges.hpp), [RangeTests.cpp](../experiments/vulkan_upload_ring/RangeTests.cpp) |
 | [x] `P6-OPT-11`<br>완료 · 후속 최적화 | **Vulkan Frame-in-flight slots 기준선**<br>현재 Windows Vulkan 설치 SDK로 같은 RGBA8 오프스크린 프레임을 슬롯 1·2·4개에서 처리했다. 두 GPU의 고정 validation, 전체 픽셀·fence·최종 자원 회수와 독립 프로세스 반복 시간·SDK 슬롯 자원량을 확인했다.<br>완료: 같은 프레임·큐의 슬롯별 전체 참조, 수명·자원량과 분리한 반복 수치, 후속 후보의 비교 계약. | 선행: 없음<br>근거: [PHASE6_VULKAN_FRAME_SLOTS_BASELINE](PHASE6_VULKAN_FRAME_SLOTS_BASELINE.md), [summary.json](../benchmarks/reports/validation/2026-11-09-vulkan-frame-slots/summary.json), [run_vulkan_frame_slots.py](../tools/run_vulkan_frame_slots.py) |
+| [x] `P6-OPT-12`<br>완료 · 후속 최적화 | **Vulkan Deferred destruction 기준선**<br>두 Windows Vulkan GPU에서 미제출 명령의 보유·폐기, 제출 뒤 공개 핸들을 fence 대기 전후에 해제하는 경로를 검증했다. native 버퍼·메모리 반환 구간과 반복 CPU 시간을 분리하고 전체 payload·최종 자원 회수를 확인했다.<br>완료: 공개 해제·fence 대기별 native 반환 증거, 동일 복사의 반복 수치와 전체 참조, 후보 비교 계약. | 선행: 없음<br>근거: [PHASE6_VULKAN_DEFERRED_RELEASE_BASELINE](PHASE6_VULKAN_DEFERRED_RELEASE_BASELINE.md), [summary.json](../benchmarks/reports/validation/2026-11-09-vulkan-deferred-release/summary.json), [run_vulkan_deferred_release.py](../tools/run_vulkan_deferred_release.py) |
 
 ## Phase 7 — 독립 SDK 배포
 
