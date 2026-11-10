@@ -1,4 +1,5 @@
 """P3-LNX-12: actual GNU inputs and a relocated, installed Linux SDK consumer."""
+import argparse
 import hashlib
 import json
 import os
@@ -18,6 +19,9 @@ from run_linux_validation import SUITES, EXPECTED
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--xcb', action='store_true', help='Audit the X11/XCB-enabled installation')
+    xcb = parser.parse_args().xcb
     require(platform.system() == 'Linux', 'Actual Linux host required')
     output = ROOT / 'out/linux-package-evidence'
     build = ROOT / 'out/linux-package-sdk'
@@ -58,15 +62,19 @@ def main():
     require(not run('headers-status', ['git', '-C', headers_root, 'status', '--porcelain']).strip(), 'Headers changed')
     policy = json.loads((ROOT / 'licenses/linux-vulkan-policy.json').read_text())
     own = {(ROOT / p).resolve() for p in policy['own_compiler_inputs']}
-    vendor = {(headers_root / row['path']).resolve(): row['sha256'] for row in policy['dependency']['reviewed_headers']}
+    reviewed = policy['dependency']['reviewed_headers'] + (policy['xcb_reviewed_headers'] if xcb else [])
+    vendor = {(headers_root / row['path']).resolve(): row['sha256'] for row in reviewed}
     require(policy['dependency']['commit'] == HEADERS, 'Policy pin differs')
     for path, digest in vendor.items():
         require(audit.sha(path) == digest, 'Reviewed native Vulkan header changed: ' + str(path))
     fp = sdk_fingerprint(ROOT)
     run('compiler-version', ['g++-14', '--version'])
     run('linker-version', ['ld', '--version'])
-    run('packages', ['dpkg-query', '-W', '-f=${Package} ${Version}\n', 'g++-14', 'binutils', 'libvulkan1', 'mesa-vulkan-drivers', 'vulkan-tools'])
-    run('vulkaninfo', ['vulkaninfo', '--summary'])
+    packages = ['pkg-config', 'libxcb1-dev'] if xcb else ['vulkan-tools']
+    run('packages', ['dpkg-query', '-W', '-f=${Package} ${Version}\n', 'g++-14', 'binutils', 'libvulkan1',
+                     'mesa-vulkan-drivers', *packages])
+    if not xcb:
+        run('vulkaninfo', ['vulkaninfo', '--summary'])
     captured = {}
     input_inventory = {}
 
@@ -95,6 +103,8 @@ def main():
         return ['-DCMAKE_CXX_COMPILER_LAUNCHER=' + ';'.join((sys.executable, launcher, 'compile', str(directory))), '-DCMAKE_CXX_LINKER_LAUNCHER=' + ';'.join((sys.executable, launcher, 'link', str(directory)))]
 
     config = ['cmake', '--preset', 'linux-vulkan', '-B', build, '-DCMAKE_INSTALL_PREFIX=' + str(install), '-DCMAKE_CXX_COMPILER=g++-14', '-DGFX_BUILD_TESTS=OFF', '-DGFX_BUILD_EXAMPLES=OFF', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON']
+    if xcb:
+        config.append('-DGFX_VULKAN_XCB=ON')
     run('configure-sdk', config)
     run('configure-sdk-capture', [*config, *launchers(output / 'sdk-capture')])
     run('build-sdk', ['cmake', '--build', build, '--parallel', '1', '--verbose'])
@@ -102,6 +112,8 @@ def main():
     require(len(rows) == 6 and all(r['mode'] == 'compile' for r in rows), 'Exact six SDK compilation units required')
     actual_vendor = {pathlib.Path(p) for row in rows for p in row['inputs'] if pathlib.Path(p) in vendor}
     require(actual_vendor == set(vendor), 'Actual Vulkan header set differs from reviewed policy')
+    require(any(p.endswith('/xcb/xcb.h') for row in rows for p in row['inputs']) == xcb,
+            'Actual XCB header use differs from the build profile')
     library = build / 'libGraphicsSDKCore.a'
     library_sha = audit.sha(library)
     members = run('archive-members', ['ar', 't', library]).splitlines()
@@ -206,7 +218,8 @@ def main():
         debug = (output / ('installed-' + name + '.stderr')).read_text()
         require('calling init:' in debug and 'libvulkan_lvp.so' in debug and 'libVkLayer_khronos_validation.so' not in debug, 'Actual driver-only runtime differs')
         dynamic = run('elf-' + name, ['readelf', '-d', executable])
-        require(not re.search(r'NEEDED.*(?:vulkan|VkLayer|lvp)', dynamic, re.I), 'External runtime statically imported into client')
+        require(not re.search(r'NEEDED.*(?:vulkan|VkLayer|lvp|libxcb)', dynamic, re.I),
+                'External Vulkan/XCB runtime directly linked into Core consumer')
         results.append(dict(suite=name, **counts, executable_sha256=audit.sha(executable), validation=False))
     inventory = audit.payload(prefix, headers, notices, library_sha)
     require((prefix / 'share/GraphicsSDK/LICENSE').read_bytes() == (ROOT / 'LICENSE').read_bytes(), 'Own MIT license changed')
@@ -224,7 +237,8 @@ def main():
         external_project=str(external), original_build_absent=not build.exists(), original_install_absent=not install.exists(), relocated_prefix=str(prefix),
         SDK_library=dict(bytes=(prefix / 'lib/libGraphicsSDKCore.a').stat().st_size, sha256=library_sha), archive_members=member_hashes,
         captured_commands=captured, actual_inputs=sorted(input_inventory.values(), key=lambda r:r['path']), external_client_copies=copies,
-        reviewed_headers=policy['dependency'], apache_license=dict(sha256=audit.sha(apache), bytes=apache.stat().st_size),
+        reviewed_headers=dict(policy['dependency'], reviewed_headers=reviewed),
+        apache_license=dict(sha256=audit.sha(apache), bytes=apache.stat().st_size),
         payload=inventory, package=record(package), notice=record(output / 'THIRD_PARTY_NOTICES.txt'), results=results,
         cpu_consumer='version/binding/render-target CPU contracts; D3D12-specific branch not executed',
         hardware_GPU_accepted=False, required_validation_this_run=False, notice_added_by='post-install audit packaging step, not plain cmake --install',

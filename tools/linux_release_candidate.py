@@ -1,4 +1,4 @@
-"""Version and smoke-test an audited Ubuntu x86_64 Vulkan headless SDK ZIP."""
+"""Version and smoke-test an audited Ubuntu x86_64 Vulkan SDK ZIP."""
 
 import argparse
 import hashlib
@@ -18,6 +18,7 @@ from run_linux_validation import EXPECTED, SUITES
 
 
 PROFILE = 'linux-x86_64-vulkan-headless-release'
+XCB_PROFILE = 'linux-x86_64-vulkan-xcb-release'
 PACKAGE = 'GraphicsSDK-linux-verification.zip'
 LIBRARY = 'lib/libGraphicsSDKCore.a'
 CONFIG = 'lib/cmake/GraphicsSDK/'
@@ -54,7 +55,7 @@ def package_entries(archive, payload):
         yield info.filename, data
 
 
-def inspect_audit(folder, expected_sha):
+def inspect_audit(folder, expected_sha, xcb=False):
     receipt_path = folder / 'receipt.json'
     require(digest(expected_sha) and sha(receipt_path) == expected_sha, 'Pinned audit receipt hash differs')
     receipt = read(receipt_path)
@@ -71,8 +72,14 @@ def inspect_audit(folder, expected_sha):
         require(len(rows) == 1, f'Expected one audited {name}')
         check_file(folder / name, rows[0])
     configured = cache(folder / DIAGNOSTICS[0])
-    require(all(configured.get(key) == value for key, value in FLAGS.items()) and
+    flags = dict(FLAGS, GFX_VULKAN_XCB='ON' if xcb else 'OFF')
+    require(all(configured.get(key) == value for key, value in flags.items()) and
             pathlib.PurePosixPath(configured['CMAKE_CXX_COMPILER']).name == 'g++-14', 'Audited build profile differs')
+    if xcb:
+        inputs = receipt.get('actual_inputs', [])
+        require(any(row['category'] == 'system' and row['path'].endswith('/xcb/xcb.h') for row in inputs) and
+                any(row['category'] == 'vendor' and row['path'].endswith('/vulkan/vulkan_xcb.h') for row in inputs),
+                'Audited XCB compiler inputs missing')
     compiler = (folder / DIAGNOSTICS[1]).read_text().splitlines()[0]
     require(re.match(r'g\+\+-14 \(Ubuntu .*\) 14\.', compiler), 'Audited GNU compiler differs')
     require(receipt['package']['path'] == f'out/linux-package-evidence/{PACKAGE}', 'Audit package path differs')
@@ -90,10 +97,11 @@ def inspect_audit(folder, expected_sha):
     versions = re.findall(r'^set\(PACKAGE_VERSION "([0-9]+\.[0-9]+\.[0-9]+)"\)$', version_text, re.M)
     require(len(versions) == 1, 'Audited CMake package version missing')
     version = versions[0]
-    stem = f'GraphicsSDK-{version}-{PROFILE}-{commit[:12]}-{receipt["package"]["sha256"][:12]}'
-    identity = dict(profile=PROFILE, version=version, source_commit=commit, sdk_source_fingerprint=fingerprint,
+    profile = XCB_PROFILE if xcb else PROFILE
+    stem = f'GraphicsSDK-{version}-{profile}-{commit[:12]}-{receipt["package"]["sha256"][:12]}'
+    identity = dict(profile=profile, version=version, source_commit=commit, sdk_source_fingerprint=fingerprint,
                     audit_receipt_sha256=expected_sha, audit_package_sha256=receipt['package']['sha256'],
-                    compiler=compiler, build_flags=FLAGS, release_cxx_flags=configured['CMAKE_CXX_FLAGS_RELEASE'],
+                    compiler=compiler, build_flags=flags, release_cxx_flags=configured['CMAKE_CXX_FLAGS_RELEASE'],
                     archive_members=receipt['archive_members'], payload=receipt['payload'])
     return stem, package, payload, identity, receipt['archive_members']
 
@@ -105,7 +113,7 @@ def run(args, cwd, env):
     return child.stdout
 
 
-def check_smoke(smoke):
+def check_smoke(smoke, xcb=False):
     suite = SUITES['buffer']
     require(smoke['cpu'] is True and smoke['software'] == 'lavapipe' and smoke['validation'] is False
             and all(type(smoke[key]) is int for key in suite['fields']) and smoke['adapters'] == 1
@@ -115,10 +123,26 @@ def check_smoke(smoke):
     require(isinstance(linked, list) and linked and linked == sorted(set(linked)) and
             not any(re.search(r'vulkan|VkLayer|lvp|libxcb', name, re.I) for name in linked),
             'Unexpected Vulkan/XCB dynamic link dependency')
+    require(('display' in smoke) == xcb, 'Display evidence differs from the profile')
+    if xcb:
+        display = smoke['display']
+        require(display['server'] == 'Xvfb' and type(display['presents']) is int and display['presents'] == 3
+                and type(display['resizes']) is int and display['resizes'] == 1
+                and display['verified_bytes'] == 3836 and display['human_display_accepted'] is False,
+                'Installed XCB present or readback coverage differs')
+        linked = display['direct_needed']
+        require('libxcb.so.1' in linked and not any(re.search(r'vulkan|VkLayer|lvp', name, re.I) for name in linked),
+                'Unexpected XCB application dynamic link dependency')
+
+
+def direct_dependencies(executable, work, env):
+    dynamic = run(['readelf', '-d', str(executable)], work, env)
+    return sorted(re.findall(r'\(NEEDED\).*?\[([^]]+)\]', dynamic))
 
 
 def inspect_and_smoke(package, payload, identity, members):
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64', 'Linux x86_64 is required to build and run')
+    xcb = identity['profile'] == XCB_PROFILE
     env = {k: v for k, v in os.environ.items() if not k.upper().startswith(('VK_', 'VVL_', 'LD_', 'GFX_EXPECT_'))}
     env['LC_ALL'] = 'C'
     with tempfile.TemporaryDirectory(prefix='graphics-release-') as temp:
@@ -145,9 +169,12 @@ def inspect_and_smoke(package, payload, identity, members):
         for source, name in (('tests/linux_release_consumer/CMakeLists.txt', 'CMakeLists.txt'),
                              ('tests/consumer/main.cpp', 'cpu.cpp'), ('tests/VulkanTests.cpp', 'transfer.cpp')):
             shutil.copyfile(ROOT / source, client / name)
+        if xcb:
+            shutil.copyfile(ROOT / 'tests/linux_release_consumer/Xcb.cpp', client / 'xcb.cpp')
         build = work / 'consumer build'
         run(['cmake', '-S', str(client), '-B', str(build), '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release',
-             '-DCMAKE_CXX_COMPILER=g++-14', f'-DPACKAGE_ROOT={prefix}', f'-DPACKAGE_VERSION={identity["version"]}'], work, env)
+             '-DCMAKE_CXX_COMPILER=g++-14', f'-DPACKAGE_ROOT={prefix}', f'-DPACKAGE_VERSION={identity["version"]}',
+             f'-DTEST_XCB={"ON" if xcb else "OFF"}'], work, env)
         run(['cmake', '--build', str(build), '--parallel', '1'], work, env)
         cpu = run([str(build / 'cpu_consumer')], work, env)
         require(f'GraphicsSDK {identity["version"]}' in cpu, 'Installed CPU version differs')
@@ -165,9 +192,18 @@ def inspect_and_smoke(package, payload, identity, members):
         require(len(matches) == 1 and 'llvmpipe (' in result and 'software=1' in result and
                 f'source={identity["sdk_source_fingerprint"]} validation=0' in result, 'Wrong installed Vulkan runtime')
         counts = dict(zip(suite['fields'], map(int, matches[0]), strict=True))
-        linked = sorted(re.findall(r'\(NEEDED\).*?\[([^]]+)\]', run(['readelf', '-d', str(executable)], work, env)))
+        linked = direct_dependencies(executable, work, env)
         smoke = dict(cpu=True, software='lavapipe', validation=False, direct_needed=linked, **counts)
-        check_smoke(smoke)
+        if xcb:
+            display_client = build / 'xcb_consumer'
+            result = run(['xvfb-run', '-a', '-s', '-screen 0 800x600x24', str(display_client)], work, runtime)
+            report = re.fullmatch(r'PASS source=([0-9a-f]{64}) presents=(\d+) resizes=(\d+) verified_bytes=(\d+)\n',
+                                  result)
+            require(report and report[1] == identity['sdk_source_fingerprint'], 'Wrong installed XCB runtime')
+            smoke['display'] = dict(server='Xvfb', presents=int(report[2]), resizes=int(report[3]),
+                                    verified_bytes=int(report[4]), human_display_accepted=False,
+                                    direct_needed=direct_dependencies(display_client, work, env))
+        check_smoke(smoke, xcb)
         return symbols, smoke
 
 
@@ -195,17 +231,18 @@ def check(stem, identity, output):
     check_file(package, manifest['package'])
     require(manifest['package']['sha256'] == identity['audit_package_sha256'], 'Release ZIP differs from the pinned audit')
     check_file(output / manifest['symbols']['name'], manifest['symbols'])
-    check_smoke(manifest['smoke'])
+    check_smoke(manifest['smoke'], identity['profile'] == XCB_PROFILE)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('pack', 'check'))
+    parser.add_argument('--profile', choices=('headless', 'xcb'), default='headless')
     parser.add_argument('--audit', required=True, type=pathlib.Path)
     parser.add_argument('--audit-sha256', required=True)
     parser.add_argument('--output', required=True, type=pathlib.Path)
     args = parser.parse_args()
-    stem, source, payload, identity, members = inspect_audit(args.audit, args.audit_sha256)
+    stem, source, payload, identity, members = inspect_audit(args.audit, args.audit_sha256, args.profile == 'xcb')
     if args.action == 'pack':
         pack(stem, source, payload, identity, members, args.output)
     check(stem, identity, args.output)

@@ -69,11 +69,11 @@ class LinuxReleaseCandidateTests(unittest.TestCase):
         return dict(path=f'out/linux-package-evidence/{path.name}', bytes=path.stat().st_size,
                     sha256=release.sha(path))
 
-    def inspect(self, digest=None):
+    def inspect(self, digest=None, xcb=False):
         self.receipt['package'] = self.audit_record(self.zip_path)
         receipt = self.source / 'receipt.json'
         receipt.write_text(json.dumps(self.receipt), encoding='utf-8')
-        return release.inspect_audit(self.source, digest or release.sha(receipt))
+        return release.inspect_audit(self.source, digest or release.sha(receipt), xcb)
 
     def test_version_name_and_manifest_binding(self):
         stem, _, _, identity, _ = self.inspect()
@@ -104,6 +104,32 @@ class LinuxReleaseCandidateTests(unittest.TestCase):
         self.write_build_profile(GFX_VULKAN_XCB='ON')
         with self.assertRaisesRegex(ValueError, 'build profile'):
             self.inspect()
+
+    def test_xcb_requires_audited_private_inputs(self):
+        self.write_build_profile(GFX_VULKAN_XCB='ON')
+        with self.assertRaisesRegex(ValueError, 'XCB compiler inputs'):
+            self.inspect(xcb=True)
+        self.receipt['actual_inputs'] = [
+            dict(category='system', path='/usr/include/xcb/xcb.h'),
+            dict(category='vendor', path='/repo/.deps/Vulkan-Headers/include/vulkan/vulkan_xcb.h'),
+        ]
+        stem, _, _, identity, _ = self.inspect(xcb=True)
+        self.assertIn(release.XCB_PROFILE, stem)
+        self.assertEqual(identity['build_flags']['GFX_VULKAN_XCB'], 'ON')
+
+    def test_xcb_requires_full_display_smoke(self):
+        smoke = dict(cpu=True, software='lavapipe', validation=False, adapters=1, assertions=361,
+                     transfers=24, verified_bytes=28521273, direct_needed=['libc.so.6'])
+        with self.assertRaisesRegex(ValueError, 'Display evidence'):
+            release.check_smoke(smoke, xcb=True)
+        smoke['display'] = dict(server='Xvfb', presents=3, resizes=1, verified_bytes=3836,
+                                human_display_accepted=False, direct_needed=['libxcb.so.1'])
+        release.check_smoke(smoke, xcb=True)
+        with self.assertRaisesRegex(ValueError, 'Display evidence'):
+            release.check_smoke(smoke)
+        smoke['display']['resizes'] = 0
+        with self.assertRaisesRegex(ValueError, 'XCB present'):
+            release.check_smoke(smoke, xcb=True)
 
     def test_extra_archive_entry_rejected(self):
         self.write_zip(dict(self.files, **{'../outside': b'extra'}))
