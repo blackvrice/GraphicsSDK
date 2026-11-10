@@ -2809,11 +2809,14 @@
       "status": "todo",
       "gate": "required",
       "depends_on": [
-        "P5-SHD-08"
+        "P5-SHD-08",
+        "P7-PKG-08"
       ],
-      "work": "지원 platform/compiler/backend·version/ABI 범위를 정리.",
+      "work": "P7-PKG-08의 OS·툴체인·backend 후보, API/ABI와 설치 계약 초안을 기반으로 수용된 프로필을 확정한다.",
       "done_when": "지원/미지원 표와 릴리스 수용 기준.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE7_RELEASE_CONTRACT_DRAFT.md"
+      ]
     },
     {
       "id": "P7-PKG-03",
@@ -2884,6 +2887,25 @@
       "work": "예제·설치·API·재현 명령·알려진 제한을 종합한다.",
       "done_when": "지원 범위별 증거와 versioned artifact·release notes.",
       "evidence": []
+    },
+    {
+      "id": "P7-PKG-08",
+      "phase": 7,
+      "group": "P7-PKG",
+      "title": "배포 후보와 API·ABI 계약 초안",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P7-PKG-01"
+      ],
+      "work": "플랫폼·툴체인별 배포 후보와 기존 증거, 버전 선택·ABI·파일·릴리스 수용 기준을 정리했다. Windows의 D3D12/Vulkan 재배치 소비자로 정확한 버전 선택과 거부 경계를 검증했다.",
+      "done_when": "후보와 실제 실행 범위가 연결된 초안 및 설치 버전·패키지 경로의 정상·거부 검증.",
+      "evidence": [
+        "docs/PHASE7_RELEASE_CONTRACT_DRAFT.md",
+        "cmake/GraphicsSDKConfig.cmake.in",
+        "docs/PHASE3_LINUX_INPUT_AUDIT_REFRESH.md",
+        "docs/PHASE4_METAL_PACKAGE_REPORT.md"
+      ]
     }
   ]
 }

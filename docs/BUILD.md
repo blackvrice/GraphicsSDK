@@ -3,6 +3,8 @@
 Windows에서 Docker·GitHub CLI로 Linux 검사·CI 실행·원본 수집을 하려면
 [다른 OS 검사 가이드](CROSS_PLATFORM_TESTING.md)를 따른다. macOS arm64/Intel native Core·Metal workflow와
 software/물리 GPU·사람의 화면 확인 범위도 구분한다.
+배포 후보 구성, 정확한 CMake 버전 선택과 프로필별 ABI 수용 조건은
+[초기 배포 계약 초안](PHASE7_RELEASE_CONTRACT_DRAFT.md)에 정리했다.
 
 Linux XCB native surface 연결은 `-DGFX_ENABLE_VULKAN=ON -DGFX_VULKAN_XCB=ON`으로 켠다.
 pkg-config와 `libxcb1-dev`가 private compile 입력이며 Core는 필요한 호출에서만 libxcb를 동적 로드한다.
