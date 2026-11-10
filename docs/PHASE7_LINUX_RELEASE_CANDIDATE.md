@@ -58,6 +58,6 @@ python3 tools/linux_release_candidate.py check \
   --output out/linux-release-candidate
 ```
 
-X11/XCB 프로필은 [별도 배포 후보](PHASE7_LINUX_XCB_RELEASE_CANDIDATE.md)로
-검증한다. `P7-PKG-03`은 디버그 심볼 배포 정책과 지원표 확정 후의 최종 Linux
-payload 수용을 다룬다.
+X11/XCB는 [별도 배포 후보](PHASE7_LINUX_XCB_RELEASE_CANDIDATE.md)로 검증한다.
+소스 줄 디버깅이 필요한 배포에는 [DWARF 분리 절차](PHASE7_LINUX_DEBUG_SYMBOLS.md)를
+적용한다. `P7-PKG-03`은 지원표 확정 후의 최종 Linux payload 수용을 다룬다.

@@ -65,6 +65,6 @@ python3 tools/linux_release_candidate.py check --profile xcb \
 ```
 
 보관 자료를 다른 환경에서 검사할 때는 독립적으로 확인한 receipt SHA-256을
-사용한다. 후보는 Xvfb/lavapipe에서 검증한다. 실제 X11 표시와 사용자 조작은
-`P3-WSI-08`, 디버그 심볼 배포 정책과 최종 Linux 수용은
-`P7-PKG-03`의 후속 범위다.
+사용한다. 후보는 Xvfb/lavapipe에서 검증한다. 디버그 재링크 패키지는
+[DWARF 분리 절차](PHASE7_LINUX_DEBUG_SYMBOLS.md)를 따른다. 실제 X11 표시와
+사용자 조작은 `P3-WSI-08`, 최종 Linux 수용은 `P7-PKG-03`에서 판단한다.

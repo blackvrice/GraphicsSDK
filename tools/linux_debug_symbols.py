@@ -76,8 +76,8 @@ def split_library(full, runtime, audited_members, mapped_root):
     return members, hashlib.sha256(symbols.encode()).hexdigest()
 
 
-def artifact_stem(stem, runtime_sha):
-    return stem.rsplit('-', 1)[0] + f'-split-{runtime_sha[:12]}'
+def artifact_stem(stem, runtime_sha, debug_sha):
+    return stem.rsplit('-', 1)[0] + f'-split-{runtime_sha[:12]}-{debug_sha[:12]}'
 
 
 def pack(stem, source, payload, identity, members, output):
@@ -107,7 +107,7 @@ def pack(stem, source, payload, identity, members, output):
         _, restored = inspect_and_smoke(restored_zip, payload, identity, members, expect_debug=True)
         require(restored == smoke, 'Debug relink differs from the stripped runtime smoke')
 
-        name = artifact_stem(stem, sha(runtime_zip))
+        name = artifact_stem(stem, sha(runtime_zip), sha(debug_zip))
         output.mkdir(parents=True)
         runtime_file, debug_file = output / f'{name}.zip', output / f'{name}.debug.zip'
         shutil.copyfile(runtime_zip, runtime_file)
@@ -129,7 +129,8 @@ def check(stem, payload, identity, output):
     require(set(manifest['runtime_archive_members']) == set(identity['archive_members']) and
             all(digest(sha256) for sha256 in manifest['runtime_archive_members'].values()) and
             digest(manifest['global_symbols_sha256']), 'Split archive member or symbol identity differs')
-    name = artifact_stem(stem, manifest['runtime']['sha256'])
+    require(all(digest(manifest[key]['sha256']) for key in ('runtime', 'debug')), 'Split ZIP hash is invalid')
+    name = artifact_stem(stem, manifest['runtime']['sha256'], manifest['debug']['sha256'])
     files = {'runtime': f'{name}.zip', 'debug': f'{name}.debug.zip'}
     require({p.name for p in output.iterdir()} == {'manifest.json', *files.values()}, 'Unexpected split output entries')
     for key, filename in files.items():

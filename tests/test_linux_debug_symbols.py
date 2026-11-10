@@ -43,7 +43,7 @@ class LinuxDebugSymbolsTests(unittest.TestCase):
                 path.write_bytes(data)
             debug.package_zip(folder, self.root / name, [self.row(key, files[key]) for key in sorted(files)])
         runtime_file = self.root / 'runtime.zip'
-        name = debug.artifact_stem(self.stem, debug.sha(runtime_file))
+        name = debug.artifact_stem(self.stem, debug.sha(runtime_file), debug.sha(self.root / 'debug.zip'))
         runtime_file.rename(output / f'{name}.zip')
         (self.root / 'debug.zip').rename(output / f'{name}.debug.zip')
         manifest = dict(schema_version=1, source=self.identity, runtime=debug.record(output / f'{name}.zip'),

@@ -2828,13 +2828,15 @@
       "depends_on": [
         "P7-PKG-02",
         "P7-PKG-09",
-        "P7-PKG-10"
+        "P7-PKG-10",
+        "P7-PKG-11"
       ],
-      "work": "P7-PKG-09 헤드리스와 P7-PKG-10 X11/XCB 후보를 바탕으로 디버그 심볼 배포 정책과 지원 Linux 구성의 최종 수용을 진행한다.",
+      "work": "헤드리스(P7-PKG-09), X11/XCB(P7-PKG-10), DWARF 분리(P7-PKG-11) 후보의 근거를 승인된 지원 구성에 연결하고 최종 Linux payload를 수용한다.",
       "done_when": "정확한 package member/notice·외부 소비자 검사.",
       "evidence": [
         "docs/PHASE7_LINUX_RELEASE_CANDIDATE.md",
-        "docs/PHASE7_LINUX_XCB_RELEASE_CANDIDATE.md"
+        "docs/PHASE7_LINUX_XCB_RELEASE_CANDIDATE.md",
+        "docs/PHASE7_LINUX_DEBUG_SYMBOLS.md"
       ]
     },
     {
@@ -2950,6 +2952,25 @@
         "tools/linux_package.py",
         "tools/linux_release_candidate.py",
         "tests/linux_release_consumer/Xcb.cpp"
+      ]
+    },
+    {
+      "id": "P7-PKG-11",
+      "phase": 7,
+      "group": "P7-PKG",
+      "title": "Linux SDK DWARF 분리·디버그 재링크",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P7-PKG-09",
+        "P7-PKG-10"
+      ],
+      "work": "헤드리스와 XCB의 감사된 Release SDK에서 일반 ZIP과 원본 DWARF 아카이브를 분리했다. 링크 심볼 일치, 설치 소비자, 재링크 ELF의 SDK 소스 줄, 산출물 무결성을 검증했다.",
+      "done_when": "두 프로필의 일반·디버그 ZIP, 객체·심볼 보존, 소비자 실행과 DWARF 재링크 및 변조 거부.",
+      "evidence": [
+        "docs/PHASE7_LINUX_DEBUG_SYMBOLS.md",
+        "tools/linux_debug_symbols.py",
+        "tests/test_linux_debug_symbols.py"
       ]
     }
   ]
