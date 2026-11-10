@@ -120,8 +120,12 @@ def pack(stem, source, payload, identity, members, output):
 
 
 def check(stem, payload, identity, output):
-    source_map(identity)
     manifest = read(output / 'manifest.json')
+    check_manifest(stem, payload, identity, output, manifest)
+
+
+def check_manifest(stem, payload, identity, output, manifest):
+    source_map(identity)
     require(manifest['schema_version'] == 1 and manifest['source'] == identity, 'Split manifest source differs from audit')
     rows = {row['path']: row for row in manifest['runtime_payload']}
     require(len(rows) == len(manifest['runtime_payload']) and rows == runtime_inventory(payload, rows[LIBRARY]),

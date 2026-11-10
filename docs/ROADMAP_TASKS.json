@@ -2865,12 +2865,13 @@
       "gate": "required",
       "depends_on": [
         "P7-PKG-04",
-        "P7-PKG-13"
+        "P7-PKG-14"
       ],
-      "work": "Windows 후보(P7-PKG-13)와 승인된 Linux·macOS payload를 공통 감사에 연결한다. OS/config별 실제 compiler/linker closure·출처·notice·추가파일을 검사한다.",
+      "work": "공통 후보 무결성 검사(P7-PKG-14)에 승인된 Windows·Linux·macOS 배포 프로필과 실제 컴파일·링크 입력, 출처, 고지 및 실행 수용 근거를 연결한다.",
       "done_when": "누락/변경/추가 payload 거부와 재현 receipt.",
       "evidence": [
-        "docs/PHASE7_WINDOWS_RELEASE_CANDIDATE.md"
+        "docs/PHASE7_WINDOWS_RELEASE_CANDIDATE.md",
+        "docs/PHASE7_COMMON_CANDIDATE_AUDIT.md"
       ]
     },
     {
@@ -3014,6 +3015,26 @@
         "tools/windows_release_candidate.py",
         "tests/test_windows_release_candidate.py",
         "tests/windows_release_consumer/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "P7-PKG-14",
+      "phase": 7,
+      "group": "P7-PKG",
+      "title": "공통 배포 후보 무결성 검사",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P7-PKG-11",
+        "P7-PKG-12",
+        "P7-PKG-13"
+      ],
+      "work": "네 매니페스트의 해시를 고정해 여섯 설치 ZIP과 Linux 디버그 ZIP 두 개의 프로필·버전·파일·고지 및 소스 식별자를 확인했다.",
+      "done_when": "Windows와 Linux의 공통 검사 결과 일치, 누락·추가·변조·프로필 교체 거부와 재현 가능한 JSON.",
+      "evidence": [
+        "docs/PHASE7_COMMON_CANDIDATE_AUDIT.md",
+        "tools/release_candidate_audit.py",
+        "tests/test_release_candidate_audit.py"
       ]
     }
   ]

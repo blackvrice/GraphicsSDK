@@ -197,6 +197,11 @@ def check(output, manifest_sha):
     require(digest(manifest_sha) and path.is_file() and not path.is_symlink() and sha(path) == manifest_sha,
             'Pinned candidate manifest SHA-256 differs')
     manifest = json.loads(path.read_bytes())
+    check_manifest(output, manifest)
+    return manifest
+
+
+def check_manifest(output, manifest):
     require(manifest['schema_version'] == 1 and manifest['platform'] == 'windows-x64'
             and manifest['configuration'] == 'Release' and set(manifest['packages']) == set(PROFILES)
             and digest(manifest['source_commit'], 40) and digest(manifest['SDK_source_fingerprint'])
@@ -215,7 +220,6 @@ def check(output, manifest_sha):
             for _ in package_entries(archive, payload):
                 pass
     require({p.name for p in output.iterdir()} == expected, 'Unexpected candidate files')
-    return manifest
 
 
 def build(output):

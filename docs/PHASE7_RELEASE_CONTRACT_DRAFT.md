@@ -27,6 +27,8 @@ Linux 헤드리스 후보의 실제 ZIP과 소비자 검증은
 별도 표시 프로필은 [X11/XCB 배포 후보 절차](PHASE7_LINUX_XCB_RELEASE_CANDIDATE.md)에 정리했다.
 macOS의 아키텍처별 ZIP과 호스팅 검증은
 [Metal 배포 후보 절차](PHASE7_MACOS_RELEASE_CANDIDATE.md)에 연결했다.
+여섯 프로필의 ZIP과 Linux DWARF 동반 파일은
+[공통 후보 무결성 검사](PHASE7_COMMON_CANDIDATE_AUDIT.md)로 확인한다.
 
 ## 설치와 소비자 호환
 
