@@ -58,5 +58,6 @@ python3 tools/linux_release_candidate.py check \
   --output out/linux-release-candidate
 ```
 
-`P7-PKG-03`의 남은 범위는 배포 지원표 확정 이후의 X11/XCB 후보,
-디버그 심볼 배포 정책과 최종 Linux payload 수용이다.
+X11/XCB 프로필은 [별도 배포 후보](PHASE7_LINUX_XCB_RELEASE_CANDIDATE.md)로
+검증한다. `P7-PKG-03`은 디버그 심볼 배포 정책과 지원표 확정 후의 최종 Linux
+payload 수용을 다룬다.
