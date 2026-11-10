@@ -41,8 +41,9 @@ def source_identity():
     return dict(source_commit=git('rev-parse', 'HEAD'), SDK_source_fingerprint=audit.sdk_fingerprint(ROOT))
 
 
-def run(log, command, failure=None):
-    env = {key: value for key, value in os.environ.items() if key.upper() not in BUILD_OVERRIDES}
+def run(log, command, failure=None, *, env=None):
+    inherited = os.environ if env is None else env
+    env = {key: value for key, value in inherited.items() if key.upper() not in BUILD_OVERRIDES}
     child = subprocess.run(list(map(str, command)), cwd=log.parent, stdin=subprocess.DEVNULL,
                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, timeout=300)
     log.write_bytes(child.stdout)
@@ -90,6 +91,18 @@ def compiler_inputs(paths, own, target_dir, vendor=()):
     require(paths & own, 'No compiler-read evidence for project files')
 
 
+def consumer_inputs(target, sources, prefix):
+    paths = trace(target, 'CL.read.1.tlog')
+    headers = set((prefix / 'include/graphics').glob('*.hpp'))
+    compiler_inputs(paths, headers | sources, target)
+    require(prefix / 'include/graphics/Graphics.hpp' in paths, 'Consumer did not read the relocated SDK header')
+    libraries = {p for p in trace(target, 'link.read.1.tlog') if p.suffix.casefold() == '.lib'}
+    require(prefix / LIBRARY in libraries and all(system_input(p) for p in libraries - {prefix / LIBRARY}),
+            'Consumer did not link the relocated SDK and reviewed system libraries')
+    return dict(installed_headers=len(paths & headers),
+                linked_system_libraries=sorted(p.name.lower() for p in libraries - {prefix / LIBRARY}))
+
+
 def installed_payload(prefix, built_library, license_notice):
     expected = {LIBRARY: built_library, LICENSE: ROOT / 'LICENSE'}
     expected.update({p.relative_to(ROOT).as_posix(): p for p in (ROOT / 'include/graphics').glob('*.hpp')})
@@ -129,19 +142,18 @@ def smoke(work, profile, version, fingerprint, prefix, original):
          f'-DCMAKE_PREFIX_PATH={original.as_posix()}', f'-DPACKAGE_VERSION={version}'],
         'Could not find a package configuration file')
     run(work / 'consumer-build.log', ['cmake', '--build', build, '--config', 'Release', '--parallel', '1'])
-    target = build / 'consumer.dir/Release'
-    paths = trace(target, 'CL.read.1.tlog')
-    headers = set((prefix / 'include/graphics').glob('*.hpp'))
-    compiler_inputs(paths, headers | {source / 'main.cpp'}, target)
-    require(prefix / 'include/graphics/Graphics.hpp' in paths, 'Consumer did not read the relocated SDK header')
-    libraries = {p for p in trace(target, 'link.read.1.tlog') if p.suffix.casefold() == '.lib'}
-    require(prefix / LIBRARY in libraries and all(system_input(p) for p in libraries - {prefix / LIBRARY}),
-            'Consumer did not link the relocated SDK and reviewed system libraries')
+    inputs = consumer_inputs(build / 'consumer.dir/Release', {source / 'main.cpp'}, prefix)
     result = run(work / 'consumer-run.log', [build / 'Release/consumer.exe', profile, version, fingerprint])
     require(result.strip() == f'PASS {profile} {version} {fingerprint}', 'Consumer identity differs')
-    return dict(installed_headers=len(paths & headers), linked_system_libraries=sorted(p.name.lower()
-                for p in libraries - {prefix / LIBRARY}), exact_version=True, wrong_version_rejected=True,
+    return dict(**inputs, exact_version=True, wrong_version_rejected=True,
                 missing_prefix_rejected=True, CPU_executed=True, GPU_executed=False)
+
+
+def toolchain(configured):
+    compiler = re.search(r'CXX compiler identification is MSVC ([0-9.]+)', configured)
+    windows_sdk = re.search(r'Selecting Windows SDK version ([0-9.]+)', configured)
+    require(compiler and windows_sdk, 'Missing MSVC or Windows SDK identity')
+    return dict(MSVC=compiler[1], windows_sdk=windows_sdk[1], CRT='MD')
 
 
 def build_profile(work, staging, profile, identity, own):
@@ -159,9 +171,7 @@ def build_profile(work, staging, profile, identity, own):
     if vulkan:
         flags.append(f'-DGFX_VULKAN_HEADERS={headers}')
     configured = run(work / 'sdk-configure.log', ['cmake', '-S', ROOT, '-B', build, *MSVC, *flags])
-    compiler = re.search(r'CXX compiler identification is MSVC ([0-9.]+)', configured)
-    windows_sdk = re.search(r'Selecting Windows SDK version ([0-9.]+)', configured)
-    require(compiler and windows_sdk, 'Missing MSVC or Windows SDK identity')
+    tools = toolchain(configured)
     cache = (build / 'CMakeCache.txt').read_text(encoding='utf-8')
     version, = re.findall(r'^CMAKE_PROJECT_VERSION:STATIC=(\d+\.\d+\.\d+)$', cache, re.MULTILINE)
     run(work / 'sdk-build.log', ['cmake', '--build', build, '--config', 'Release', '--parallel', '1'])
@@ -183,7 +193,7 @@ def build_profile(work, staging, profile, identity, own):
     prefix = work / 'relocated SDK'
     unpack(zip_path, payload, prefix)
     result = smoke(work, profile, version, identity['SDK_source_fingerprint'], prefix, install)
-    return dict(version=version, MSVC=compiler[1], windows_sdk=windows_sdk[1], CRT='MD'), dict(
+    return dict(version=version, **tools), dict(
         package=record(zip_path), payload=payload, installed_consumer=result, compiled_vendor_headers=len(paths & vendor),
         vulkan_headers_commit=dependency['commit'] if vulkan else None)
 

@@ -2882,11 +2882,14 @@
       "status": "todo",
       "gate": "required",
       "depends_on": [
-        "P7-PKG-05"
+        "P7-PKG-05",
+        "P7-PKG-15"
       ],
-      "work": "native build/CPU/software/GPU 검사 차이를 명확히 분리.",
+      "work": "Windows 후보 오프스크린 실행(P7-PKG-15)과 플랫폼별 native build·CPU·software·GPU 결과를 지원 구성 CI에 연결한다.",
       "done_when": "실제 CI 결과와 hardware 미실행 범위 명시.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE7_WINDOWS_CANDIDATE_GPU.md"
+      ]
     },
     {
       "id": "P7-PKG-07",
@@ -3035,6 +3038,24 @@
         "docs/PHASE7_COMMON_CANDIDATE_AUDIT.md",
         "tools/release_candidate_audit.py",
         "tests/test_release_candidate_audit.py"
+      ]
+    },
+    {
+      "id": "P7-PKG-15",
+      "phase": 7,
+      "group": "P7-PKG",
+      "title": "Windows 배포 후보의 오프스크린 GPU 검사",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P7-PKG-13"
+      ],
+      "work": "고정 Windows ZIP에서 독립 소비자를 빌드하고 재배치 설치본의 헤더·라이브러리를 확인했다. D3D12 WARP와 하드웨어의 렌더링, Vulkan 하드웨어의 전송과 그리기를 검증했다.",
+      "done_when": "ZIP·SDK 지문·실행별 어댑터와 전체 참조 결과 연결, WARP·하드웨어 및 전송·그리기 결과 구분.",
+      "evidence": [
+        "docs/PHASE7_WINDOWS_CANDIDATE_GPU.md",
+        "tools/windows_release_gpu.py",
+        "tests/test_windows_release_gpu.py"
       ]
     }
   ]

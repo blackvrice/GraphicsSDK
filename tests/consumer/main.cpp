@@ -1,20 +1,34 @@
 #include <graphics/Graphics.hpp>
 #include <iostream>
+#include <string_view>
 
-int main() {
+int main(int argc, char** argv) {
+    const std::string_view mode = argc == 2 ? argv[1] : "";
+    const bool warp = mode == "--warp";
+    if (argc != 1 && !warp && mode != "--hardware") {
+        std::cerr << "Usage: consumer [--hardware | --warp]\n";
+        return 1;
+    }
     if (gfx::buildFingerprint().size() != 64) return 1;
     std::cout << "GraphicsSDK " << gfx::version << "\n";
     gfx::BindingLayout bindings{{{gfx::BindingType::ConstantBuffer,0,1,2,gfx::ShaderVisibility::All}}, {}};
     if(!gfx::validateBindingLayout(bindings))return 1;
     gfx::RenderTargetLayout renderTargets{{gfx::Format::RGBA8UNorm,gfx::Format::RGBA16Float},gfx::Format::D32Float};
     if(!gfx::validateRenderTargets(renderTargets,{true,true,gfx::CompareOp::Less}))return 1;
-    if (!gfx::backendCompiled(gfx::Backend::D3D12)) return 0;
-    auto device = gfx::createDevice();
-    if (!device && device.error().code == gfx::ErrorCode::Unsupported) {
+    if (!gfx::backendCompiled(gfx::Backend::D3D12)) return argc == 1 ? 0 : 1;
+    auto device = gfx::createDevice({gfx::Backend::D3D12, false, warp});
+    if (argc == 1 && !device && device.error().code == gfx::ErrorCode::Unsupported) {
         std::cout << "Hardware unavailable; consumer smoke explicitly requests WARP\n";
         device=gfx::createDevice({gfx::Backend::D3D12,false,true});
     }
     if (!device) { std::cerr << device.error().message; return 1; }
+    if (argc == 2) {
+        const auto& caps = (*device)->caps();
+        if (caps.backend != gfx::Backend::D3D12 || caps.softwareAdapter != warp) return 1;
+        std::cout << "source=" << gfx::buildFingerprint() << " validation=0\n"
+                  << "adapter=" << caps.adapterName << " id=" << caps.adapterId.value
+                  << " software=" << caps.softwareAdapter << '\n';
+    }
     if(!(*device)->checkStatus())return 1;
     auto empty=(*device)->resourceStatistics();if(!empty||empty->trackedObjects||empty->uniqueResources||empty->resourceAllocationBytes||empty->pendingSubmissions||empty->pendingObjectReferences)return 1;
     {auto held=(*device)->createBuffer({67108864});if(!held)return 1;auto stats=(*device)->resourceStatistics();if(!stats||stats->uniqueResources!=1||stats->trackedObjects!=1||stats->resourceAllocationBytes!=67108864)return 1;}
