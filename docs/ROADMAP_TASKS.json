@@ -2847,11 +2847,14 @@
       "status": "todo",
       "gate": "required",
       "depends_on": [
-        "P7-PKG-03"
+        "P7-PKG-03",
+        "P7-PKG-12"
       ],
-      "work": "실제 Mac library/header/metadata와 배포 전제 정리.",
+      "work": "arm64·Intel Metal 후보(P7-PKG-12)를 승인된 지원 구성과 연결하고 Mac library/header/metadata와 runtime 근거를 수용한다.",
       "done_when": "실제 package·consumer·runtime 수용.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE7_MACOS_RELEASE_CANDIDATE.md"
+      ]
     },
     {
       "id": "P7-PKG-05",
@@ -2971,6 +2974,24 @@
         "docs/PHASE7_LINUX_DEBUG_SYMBOLS.md",
         "tools/linux_debug_symbols.py",
         "tests/test_linux_debug_symbols.py"
+      ]
+    },
+    {
+      "id": "P7-PKG-12",
+      "phase": 7,
+      "group": "P7-PKG",
+      "title": "macOS Metal arm64·Intel 배포 후보",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P7-PKG-08"
+      ],
+      "work": "동일 호스팅 CI 실행의 arm64·Intel SDK ZIP에 버전·소스·해시를 연결했다. 정적 라이브러리의 Mach-O 객체와 설치 소비자·전체 픽셀 기록을 재검사했다.",
+      "done_when": "아키텍처별 Release ZIP과 공동 매니페스트 재현, 감사 receipt 확인, 혼합·변조 거부.",
+      "evidence": [
+        "docs/PHASE7_MACOS_RELEASE_CANDIDATE.md",
+        "tools/macos_release_candidate.py",
+        "tests/test_macos_release_candidate.py"
       ]
     }
   ]

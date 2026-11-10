@@ -24,6 +24,8 @@ Windows ARM64·x86, Linux ARM64, macOS universal, Debug 배포, 다른 배포판
 Linux 헤드리스 후보의 실제 ZIP과 소비자 검증은
 [Linux 헤드리스 배포 후보 절차](PHASE7_LINUX_RELEASE_CANDIDATE.md)를 따른다.
 별도 표시 프로필은 [X11/XCB 배포 후보 절차](PHASE7_LINUX_XCB_RELEASE_CANDIDATE.md)에 정리했다.
+macOS의 아키텍처별 ZIP과 호스팅 검증은
+[Metal 배포 후보 절차](PHASE7_MACOS_RELEASE_CANDIDATE.md)에 연결했다.
 
 ## 설치와 소비자 호환
 
