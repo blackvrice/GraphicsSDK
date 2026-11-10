@@ -2864,11 +2864,14 @@
       "status": "todo",
       "gate": "required",
       "depends_on": [
-        "P7-PKG-04"
+        "P7-PKG-04",
+        "P7-PKG-13"
       ],
-      "work": "OS/config별 실제 compiler/linker closure·출처·notice·추가파일 검사.",
+      "work": "Windows 후보(P7-PKG-13)와 승인된 Linux·macOS payload를 공통 감사에 연결한다. OS/config별 실제 compiler/linker closure·출처·notice·추가파일을 검사한다.",
       "done_when": "누락/변경/추가 payload 거부와 재현 receipt.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE7_WINDOWS_RELEASE_CANDIDATE.md"
+      ]
     },
     {
       "id": "P7-PKG-06",
@@ -2992,6 +2995,25 @@
         "docs/PHASE7_MACOS_RELEASE_CANDIDATE.md",
         "tools/macos_release_candidate.py",
         "tests/test_macos_release_candidate.py"
+      ]
+    },
+    {
+      "id": "P7-PKG-13",
+      "phase": 7,
+      "group": "P7-PKG",
+      "title": "Windows x64 D3D12·Vulkan 배포 후보",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P7-PKG-08"
+      ],
+      "work": "MSVC Release의 D3D12·Vulkan 전용 ZIP과 매니페스트를 생성했다. Vulkan 컴파일 고지, 재배치 설치·링크, 소비자 버전·backend 및 무결성을 검사했다.",
+      "done_when": "두 후보의 출처·바이트·고지 확인, 독립 CPU 소비자 및 버전·경로·변조 거부.",
+      "evidence": [
+        "docs/PHASE7_WINDOWS_RELEASE_CANDIDATE.md",
+        "tools/windows_release_candidate.py",
+        "tests/test_windows_release_candidate.py",
+        "tests/windows_release_consumer/CMakeLists.txt"
       ]
     }
   ]
