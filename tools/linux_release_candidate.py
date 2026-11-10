@@ -140,7 +140,7 @@ def direct_dependencies(executable, work, env):
     return sorted(re.findall(r'\(NEEDED\).*?\[([^]]+)\]', dynamic))
 
 
-def inspect_and_smoke(package, payload, identity, members):
+def inspect_and_smoke(package, payload, identity, members, expect_debug=None):
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64', 'Linux x86_64 is required to build and run')
     xcb = identity['profile'] == XCB_PROFILE
     env = {k: v for k, v in os.environ.items() if not k.upper().startswith(('VK_', 'VVL_', 'LD_', 'GFX_EXPECT_'))}
@@ -186,6 +186,14 @@ def inspect_and_smoke(package, payload, identity, members):
         runtime = dict(env, VK_DRIVER_FILES=str(drivers[0]), VK_ICD_FILENAMES=str(drivers[0]), VK_LAYER_PATH=str(layers),
                        VK_LOADER_LAYERS_DISABLE='~implicit~', XDG_RUNTIME_DIR=str(xdg), LP_NUM_THREADS='2')
         executable = build / 'transfer_consumer'
+        if expect_debug is not None:
+            sections = run(['readelf', '-SW', str(executable)], work, env)
+            debug_info = bool(re.search(r'\s\.debug_info\s', sections))
+            debug_line = bool(re.search(r'\s\.debug_line\s', sections))
+            require(debug_info == debug_line == expect_debug, 'Linked consumer DWARF differs from the archive policy')
+            if expect_debug:
+                lines = run(['readelf', '--debug-dump=decodedline', str(executable)], work, env)
+                require('Vulkan.cpp' in lines and 'Backend.cpp' in lines, 'SDK source lines missing from linked DWARF')
         result = run([str(executable)], work, runtime)
         suite = SUITES['buffer']
         matches = re.findall(suite['pattern'], result)

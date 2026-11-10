@@ -6,6 +6,7 @@ import os
 import pathlib
 import platform
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -21,7 +22,9 @@ from run_linux_validation import SUITES, EXPECTED
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--xcb', action='store_true', help='Audit the X11/XCB-enabled installation')
-    xcb = parser.parse_args().xcb
+    parser.add_argument('--debug-info', action='store_true', help='Keep DWARF in the audited Release archive')
+    args = parser.parse_args()
+    xcb = args.xcb
     require(platform.system() == 'Linux', 'Actual Linux host required')
     output = ROOT / 'out/linux-package-evidence'
     build = ROOT / 'out/linux-package-sdk'
@@ -70,10 +73,12 @@ def main():
     fp = sdk_fingerprint(ROOT)
     run('compiler-version', ['g++-14', '--version'])
     run('linker-version', ['ld', '--version'])
-    packages = ['pkg-config', 'libxcb1-dev'] if xcb else ['vulkan-tools']
+    packages = ['pkg-config', 'libxcb1-dev'] if xcb else []
+    if not xcb and not args.debug_info:
+        packages.append('vulkan-tools')
     run('packages', ['dpkg-query', '-W', '-f=${Package} ${Version}\n', 'g++-14', 'binutils', 'libvulkan1',
                      'mesa-vulkan-drivers', *packages])
-    if not xcb:
+    if 'vulkan-tools' in packages:
         run('vulkaninfo', ['vulkaninfo', '--summary'])
     captured = {}
     input_inventory = {}
@@ -105,6 +110,9 @@ def main():
     config = ['cmake', '--preset', 'linux-vulkan', '-B', build, '-DCMAKE_INSTALL_PREFIX=' + str(install), '-DCMAKE_CXX_COMPILER=g++-14', '-DGFX_BUILD_TESTS=OFF', '-DGFX_BUILD_EXAMPLES=OFF', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON']
     if xcb:
         config.append('-DGFX_VULKAN_XCB=ON')
+    if args.debug_info:
+        mapped_source = shlex.quote(f'-ffile-prefix-map={ROOT}=.')
+        config.append(f'-DCMAKE_CXX_FLAGS_RELEASE=-O3 -DNDEBUG -g {mapped_source}')
     run('configure-sdk', config)
     run('configure-sdk-capture', [*config, *launchers(output / 'sdk-capture')])
     run('build-sdk', ['cmake', '--build', build, '--parallel', '1', '--verbose'])
