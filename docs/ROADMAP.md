@@ -40,7 +40,7 @@ python tools/roadmap.py --write
 | 4 — Metal | 0 | 9 | 0 | 0 | 0 | 후속 단계. 실제 Mac compile/runtime/performance를 구분하며 환경 부재를 완료로 표시하지 않는다. |
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 18 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
-| 7 — 독립 SDK 배포 | 2 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
+| 7 — 독립 SDK 배포 | 3 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
 
 ## 다음 권장 작업
 
@@ -338,9 +338,10 @@ Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·
 |---|---|---|
 | [x] `P7-PKG-01`<br>완료 · 필수 | **Windows 설치·외부 소비자 기반**<br>현재 Windows install/find_package smoke와 좁은 package 검증. 전체 다중 플랫폼 배포 아님.<br>완료: 연결된 보고서의 당시 플랫폼·입력·실행 범위에서 확인됨. | 선행: 없음<br>근거: [BUILD](BUILD.md) |
 | [ ] `P7-PKG-02`<br>미완료 · 필수 | **배포 OS/configuration·API 계약 고정**<br>P7-PKG-08의 OS·툴체인·backend 후보, API/ABI와 설치 계약 초안을 기반으로 수용된 프로필을 확정한다.<br>완료: 지원/미지원 표와 릴리스 수용 기준. | 선행: `P5-SHD-08`, `P7-PKG-08`<br>근거: [PHASE7_RELEASE_CONTRACT_DRAFT](PHASE7_RELEASE_CONTRACT_DRAFT.md) |
-| [ ] `P7-PKG-03`<br>미완료 · 필수 | **Linux release payload**<br>Phase 3 설치 검증과 별도로 배포 payload·symbols·의존성 구성.<br>완료: 정확한 package member/notice·외부 소비자 검사. | 선행: `P7-PKG-02` |
+| [ ] `P7-PKG-03`<br>미완료 · 필수 | **Linux release payload**<br>P7-PKG-09의 헤드리스 후보를 바탕으로 X11/XCB payload, 디버그 심볼 배포 정책과 지원 Linux 구성의 최종 수용을 진행한다.<br>완료: 정확한 package member/notice·외부 소비자 검사. | 선행: `P7-PKG-02`, `P7-PKG-09`<br>근거: [PHASE7_LINUX_RELEASE_CANDIDATE](PHASE7_LINUX_RELEASE_CANDIDATE.md) |
 | [ ] `P7-PKG-04`<br>미완료 · 필수 | **Mac release payload**<br>실제 Mac library/header/metadata와 배포 전제 정리.<br>완료: 실제 package·consumer·runtime 수용. | 선행: `P7-PKG-03` |
 | [ ] `P7-PKG-05`<br>미완료 · 필수 | **공통 배포 감사·무결성**<br>OS/config별 실제 compiler/linker closure·출처·notice·추가파일 검사.<br>완료: 누락/변경/추가 payload 거부와 재현 receipt. | 선행: `P7-PKG-04` |
 | [ ] `P7-PKG-06`<br>미완료 · 필수 | **지원 구성 CI·release smoke**<br>native build/CPU/software/GPU 검사 차이를 명확히 분리.<br>완료: 실제 CI 결과와 hardware 미실행 범위 명시. | 선행: `P7-PKG-05` |
 | [ ] `P7-PKG-07`<br>미완료 · 필수 | **릴리스 최종 수용·문서**<br>예제·설치·API·재현 명령·알려진 제한을 종합한다.<br>완료: 지원 범위별 증거와 versioned artifact·release notes. | 선행: `P7-PKG-06` |
 | [x] `P7-PKG-08`<br>완료 · 필수 | **배포 후보와 API·ABI 계약 초안**<br>플랫폼·툴체인별 배포 후보와 기존 증거, 버전 선택·ABI·파일·릴리스 수용 기준을 정리했다. Windows의 D3D12/Vulkan 재배치 소비자로 정확한 버전 선택과 거부 경계를 검증했다.<br>완료: 후보와 실제 실행 범위가 연결된 초안 및 설치 버전·패키지 경로의 정상·거부 검증. | 선행: `P7-PKG-01`<br>근거: [PHASE7_RELEASE_CONTRACT_DRAFT](PHASE7_RELEASE_CONTRACT_DRAFT.md), [GraphicsSDKConfig.cmake.in](../cmake/GraphicsSDKConfig.cmake.in), [PHASE3_LINUX_INPUT_AUDIT_REFRESH](PHASE3_LINUX_INPUT_AUDIT_REFRESH.md), [PHASE4_METAL_PACKAGE_REPORT](PHASE4_METAL_PACKAGE_REPORT.md) |
+| [x] `P7-PKG-09`<br>완료 · 필수 | **Linux Vulkan 헤드리스 배포 후보·재배치 검사**<br>감사된 Ubuntu x86_64 Release ZIP 20개 파일에 버전·프로필·소스·해시를 연결했다. ELF 객체 6개와 링크 심볼 목록을 검증하고 Docker에서 재배치한 CPU/Vulkan 소비자를 실행했다.<br>완료: 정확한 감사 ZIP·manifest·링크 심볼 목록, 외부 CPU/lavapipe 소비자와 거부 대조, 두 번의 동일 산출물. | 선행: `P7-PKG-08`, `P3-LNX-12`<br>근거: [PHASE7_LINUX_RELEASE_CANDIDATE](PHASE7_LINUX_RELEASE_CANDIDATE.md), [linux_release_candidate.py](../tools/linux_release_candidate.py), [test_linux_release_candidate.py](../tests/test_linux_release_candidate.py), [CMakeLists.txt](../tests/linux_release_consumer/CMakeLists.txt) |

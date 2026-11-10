@@ -21,6 +21,8 @@ Linux headless와 XCB는 서로 다른 프로필로 기록한다. 통합 backend
 Windows ARM64·x86, Linux ARM64, macOS universal, Debug 배포, 다른 배포판이나
 툴체인은 개별 후보 등록과 검증이 필요한 범위다. Native Wayland와 XWayland는
 초기 XCB 지원 범위 밖이다. 모든 backend를 끈 Core는 CPU 검증용 구성이다.
+Linux 헤드리스 후보의 실제 ZIP과 소비자 검증은
+[Linux 배포 후보 절차](PHASE7_LINUX_RELEASE_CANDIDATE.md)를 따른다.
 
 ## 설치와 소비자 호환
 

@@ -2826,11 +2826,14 @@
       "status": "todo",
       "gate": "required",
       "depends_on": [
-        "P7-PKG-02"
+        "P7-PKG-02",
+        "P7-PKG-09"
       ],
-      "work": "Phase 3 설치 검증과 별도로 배포 payload·symbols·의존성 구성.",
+      "work": "P7-PKG-09의 헤드리스 후보를 바탕으로 X11/XCB payload, 디버그 심볼 배포 정책과 지원 Linux 구성의 최종 수용을 진행한다.",
       "done_when": "정확한 package member/notice·외부 소비자 검사.",
-      "evidence": []
+      "evidence": [
+        "docs/PHASE7_LINUX_RELEASE_CANDIDATE.md"
+      ]
     },
     {
       "id": "P7-PKG-04",
@@ -2905,6 +2908,26 @@
         "cmake/GraphicsSDKConfig.cmake.in",
         "docs/PHASE3_LINUX_INPUT_AUDIT_REFRESH.md",
         "docs/PHASE4_METAL_PACKAGE_REPORT.md"
+      ]
+    },
+    {
+      "id": "P7-PKG-09",
+      "phase": 7,
+      "group": "P7-PKG",
+      "title": "Linux Vulkan 헤드리스 배포 후보·재배치 검사",
+      "status": "done",
+      "gate": "required",
+      "depends_on": [
+        "P7-PKG-08",
+        "P3-LNX-12"
+      ],
+      "work": "감사된 Ubuntu x86_64 Release ZIP 20개 파일에 버전·프로필·소스·해시를 연결했다. ELF 객체 6개와 링크 심볼 목록을 검증하고 Docker에서 재배치한 CPU/Vulkan 소비자를 실행했다.",
+      "done_when": "정확한 감사 ZIP·manifest·링크 심볼 목록, 외부 CPU/lavapipe 소비자와 거부 대조, 두 번의 동일 산출물.",
+      "evidence": [
+        "docs/PHASE7_LINUX_RELEASE_CANDIDATE.md",
+        "tools/linux_release_candidate.py",
+        "tests/test_linux_release_candidate.py",
+        "tests/linux_release_consumer/CMakeLists.txt"
       ]
     }
   ]
