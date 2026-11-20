@@ -84,6 +84,16 @@ power-of-two 정렬 패킹·wrap·Fence 회수·`discardPending()`·포화 시 `
 `BudgetPressurePolicy`(D3D12 실측 OS VRAM 예산 조회 / Vulkan `Unavailable` 정직 반환 및 결정적 `Soft`/`Hard`
 축출)를 지원한다. [공개 Upload Ring · Resource Pool 보고서](PHASE8_MEMORY_POOL_REPORT.md)를 따른다.
 
+`RenderGraph`는 직접 `CommandList`/`CommandQueue` API를 대체하지 않는 상위 선택 모듈로,
+`createBuffer`/`createTexture`/`importBuffer`/`importTexture`와 `addPass(RGPassDesc)`로 패스 간
+RAW/WAW/WAR 및 명시적 `dependsOn` 의존성을 선언한다. `compile()`은 Kahn 위상 정렬·순환 검출(`InvalidState`),
+`sideEffect` 및 imported 쓰기 루트 기준 역방향 BFS Dead Pass/Transient Culling, 비겹침 수명 구간 기반
+Transient 물리 슬롯 Aliasing, 자동 상태 전이(`transition`)·연속 UAV `uavBarrier`·교차 큐 `Common` 해제 배리어,
+다중 큐 `TimelineFence` 배치 스케줄링을 수행하고 `dumpText()`/`dumpDot()` 진단을 제공한다.
+`execute(Device&, TransientResourcePool*)`는 단일 배치를 경량 `Fence`로, 다중 배치를 GPU-to-GPU 전용 타임라인과
+큐별 호스트 완료 타임라인으로 실행하며, `TransientResourcePool` 전달 시 물리 슬롯을 자동 획득·반납한다.
+[선택적 Render Graph 보고서](PHASE9_RENDER_GRAPH_REPORT.md)를 따른다.
+
 Vulkan `debugMarker(text)`는 debug-utils 확장과 함수가 있을 때 실제 label을 넣는다.
 정상 recording에서 함수가 없으면 Unsupported이며 creating thread·recording·퇴역 검사를 먼저 한다.
 지원 시 빈 문자열은 허용하고, NUL-free UTF-8과 UINT32_MAX 이하 길이를 요구한다. Substring·임시

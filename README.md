@@ -10,13 +10,13 @@ For AI-assisted development, start with [repository instructions](AGENTS.md),
 | --- | --- |
 | 현재 버전 | `0.0.1` (개발 스냅샷 · `v0.0.2` 확장 슬라이스 진행 중) |
 | 현재 Phase | **Phase 3 (Vulkan)** 활성 · Phase 8~12 범용 SDK 확장 병행 ([전체 대시보드](docs/DEVELOPMENT_DASHBOARD.md)) |
-| 완료 기능 | D3D12/Vulkan/Metal 코어 RHI, 버퍼·2D 텍스처 전송, **오프셋 버퍼 복사·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(SRV/RTV/DSV/UAV)·MSAA(2x/4x/8x)·`resolveTexture`·공개 `UploadRing`/Readback·Transient Resource Pool·동적 `setViewport`·명시적 `CommandPool`·병렬 명령 기록/일괄 제출·Graphics/Compute/Copy 다중 큐/Timeline Fence·Compute Pipeline/UAV/Dispatch**, Depth/MRT, 정점/바인딩 레이아웃, GPU Timestamp(D3D12/Vulkan), 파이프라인 캐시, 6프로필 배포 후보·공통 무결성 감사 (`119/201` ID 완료) |
-| 최근 완료 작업 | `P8-MEM-01` (공개 `UploadRing`·`ReadbackPool`·`TransientResourcePool` + `BudgetPressurePolicy` 공통 구현·D3D12/Windows Vulkan 실기·Validation·WARP 소멸/손실복구·설치 소비자 전체 어댑터 검증 및 24프레임 전후 실측), `P9-CMD-03`, `P9-CMD-02`, `P8-TEX-03`, `P9-CMP-01`, `P8-TEX-01`, `P9-CMD-01`, `P9-CMD-04`, `P8-CAP-01`, `P8-XFER-01/02/03/05` |
+| 완료 기능 | D3D12/Vulkan/Metal 코어 RHI, 버퍼·2D 텍스처 전송, **오프셋 버퍼 복사·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(SRV/RTV/DSV/UAV)·MSAA(2x/4x/8x)·`resolveTexture`·공개 `UploadRing`/Readback·Transient Resource Pool·동적 `setViewport`·명시적 `CommandPool`·병렬 명령 기록/일괄 제출·Graphics/Compute/Copy 다중 큐/Timeline Fence·Compute Pipeline/UAV/Dispatch·선택적 `RenderGraph`(DAG/자동 배리어/Aliasing/Culling/진단)**, Depth/MRT, 정점/바인딩 레이아웃, GPU Timestamp(D3D12/Vulkan), 파이프라인 캐시, 6프로필 배포 후보·공통 무결성 감사 (`120/202` ID 완료) |
+| 최근 완료 작업 | `P9-RG-01` (선택적 `RenderGraph` 공통 구현·D3D12/Windows Vulkan 실기·Debug+GBV/고정 VVL 1.3.290 오류 0·WARP 손실복구·설치 소비자 전체 어댑터 검증 및 24프레임 수동 배리어 대비 성능 비교), `P8-MEM-01`, `P9-CMD-03`, `P9-CMD-02`, `P8-TEX-03`, `P9-CMP-01`, `P8-TEX-01`, `P9-CMD-01`, `P9-CMD-04`, `P8-CAP-01`, `P8-XFER-01/02/03/05` |
 | 미완료 작업 | 필수 잔여 `38` · 조건부 잔여 `8` · 후속 확장 잔여 `36` ([세부 로드맵](docs/ROADMAP.md)) |
 | Windows | D3D12·Vulkan 물리 GPU/Validation/WARP 및 설치 소비자 검증 완료 (장시간 GBV 메모리·DPI·물리 TDR·Intel Vulkan WSI 미완료) |
-| Linux | Vulkan headless·XCB 빌드·lavapipe/Xvfb SW 검증 및 배포 후보 완료 (물리 GPU `P3-LNX-15`·수동 표시 `P3-WSI-08`·`P8-XFER-04/06`·`P8-CAP-02`·`P8-TEX-05/06`·`P8-MEM-03`·`P9-CMD-05/06/07/08`·`P9-CMP-03` 미완료) |
-| macOS | 호스팅 arm64/Intel Metal 빌드·가상 장치 검증 및 배포 후보 완료 (물리 Mac 실기·성능 및 `P8-XFER-04/06`·`P8-CAP-02`·`P8-TEX-05/06`·`P8-MEM-03`·`P9-CMD-05/06/07/08`·`P9-CMP-03` 미완료) |
-| 다음 추천 작업 | `P8-TEX-02`(다중 Mipmap·Array·Cubemap), `P9-RG-01`(선택적 Render Graph), `P9-CMP-02`(Indirect/Bindless), `P11-PROF-01`(GPU Profiling 확장), `P8/P9` Linux/Metal 검증 · 기존 필수 게이트 `P3-LNX-15` |
+| Linux | Vulkan headless·XCB 빌드·lavapipe/Xvfb SW 검증 및 배포 후보 완료 (물리 GPU `P3-LNX-15`·수동 표시 `P3-WSI-08`·`P8-XFER-04/06`·`P8-CAP-02`·`P8-TEX-05/06`·`P8-MEM-03`·`P9-CMD-05/06/07/08`·`P9-CMP-03`·`P9-RG-02` 미완료) |
+| macOS | 호스팅 arm64/Intel Metal 빌드·가상 장치 검증 및 배포 후보 완료 (물리 Mac 실기·성능 및 `P8-XFER-04/06`·`P8-CAP-02`·`P8-TEX-05/06`·`P8-MEM-03`·`P9-CMD-05/06/07/08`·`P9-CMP-03`·`P9-RG-02` 미완료) |
+| 다음 추천 작업 | `P8-TEX-02`(다중 Mipmap·Array·Cubemap), `P11-PROF-01`(GPU Profiling 확장), `P9-CMP-02`(Indirect/Bindless), `P10-PRES-01`(Frame Pacing/VRR), `P8/P9` Linux/Metal 검증 · 기존 필수 게이트 `P3-LNX-15` |
 | 주요 문제 | 장시간 GBV 메모리 기준(`P2-ACC-01`)·과거 Intel AV 원인(`P2-ACC-02`)·기존 로컬 `fence_wait` 예외 2건·Linux 물리 GPU/물리 Mac 환경 부재 |
 
 **Initial development snapshot 0.0.1:** real Windows D3D12 implementation and an opt-in

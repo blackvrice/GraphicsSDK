@@ -42,7 +42,7 @@ python tools/roadmap.py --write
 | 6 — GPU 자원 최적화 | 18 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
 | 7 — 독립 SDK 배포 | 9 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
 | 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+) | 8 | 0 | 0 | 9 | 0 | 기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다. |
-| 9 — Command·멀티스레드·Shader·Compute·Render Graph | 5 | 0 | 0 | 8 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
+| 9 — Command·멀티스레드·Shader·Compute·Render Graph | 6 | 0 | 0 | 8 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
 | 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region | 0 | 0 | 0 | 4 | 0 | 저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다. |
 | 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 0 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
 | 12 — GraphicsUI·Sandbox RHI 호환성 | 0 | 0 | 0 | 2 | 0 | GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다. |
@@ -433,7 +433,8 @@ Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P9-RG-01`<br>미완료 · 후속 최적화 | **선택적 Render Graph (의존성·자동 배리어·Aliasing·Pass Culling·진단)**<br>직접 CommandList API를 유지한 채 상위 선택 모듈로 Render Pass 의존성 분석, 자동 배리어 삽입, Transient Aliasing, 미사용 Pass Culling, 다중 큐 스케줄링과 진단 덤프를 제공한다.<br>완료: 복합 그래픽스+컴퓨트 그래프 전체 이미지 참조, sync validation 오류 0, 수동 배리어 대비 성능 비교. | 선행: `P8-MEM-01`, `P9-CMD-03`, `P9-CMP-01` |
+| [x] `P9-RG-01`<br>완료 · 후속 최적화 | **선택적 Render Graph (의존성·자동 배리어·Aliasing·Pass Culling·진단)**<br>직접 CommandList API와 13개 공개 헤더/5개 CORE 유닛 계약을 유지한 채 상위 선택 모듈 gfx::RenderGraph를 include/graphics/Device.hpp와 src/foundation/Backend.cpp에 구현했다. RAW/WAW/WAR 및 명시적 dependsOn DAG 구축, Kahn 위상 정렬 및 순환 검출, sideEffect·imported 쓰기 기준 역방향 BFS Dead Pass/Transient Culling, 비겹침 수명 구간 기반 물리 슬롯 Aliasing, 자동 상태 전이/UAV 배리어/교차 큐 Common 해제 배리어, GPU-to-GPU 및 큐별 호스트 완료 타임라인 분리 멀티큐 배치 실행, dumpText/dumpDot 진단을 구현하고 Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290(오류 0)/WARP 손실복구/설치 소비자 전체 어댑터 및 24프레임 수동 배리어 대비 성능 비교(D3D12 precompiled -3.08%·compile 9.47us, Vulkan precompiled -2.02%·compile 7.86us)로 검증했다.<br>완료: 복합 그래픽스+컴퓨트 그래프 전체 이미지 참조, sync validation 오류 0, 수동 배리어 대비 성능 비교. | 선행: `P8-MEM-01`, `P9-CMD-03`, `P9-CMP-01`<br>근거: [Device.hpp](../include/graphics/Device.hpp), [Backend.cpp](../src/foundation/Backend.cpp), [RenderGraphTests.cpp](../tests/RenderGraphTests.cpp), [PHASE9_RENDER_GRAPH_REPORT](PHASE9_RENDER_GRAPH_REPORT.md) |
+| [ ] `P9-RG-02`<br>미완료 · 후속 최적화 | **선택적 Render Graph Linux Vulkan 및 macOS Metal 실기/CI 검증**<br>공통 RenderGraph 구현을 Linux Vulkan(lavapipe/물리 GPU, 고정 VVL)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·복합 그래픽스+컴퓨트 전체 이미지 참조·Aliasing·Culling·Validation 오류 0으로 검증한다.<br>완료: Linux Vulkan 및 macOS Metal CI/실기에서 RenderGraph 복합 그래프, 자동 배리어, Aliasing, Culling, 자원 회수 통과. | 선행: `P9-RG-01`, `P8-MEM-03`, `P9-CMD-08`, `P9-CMP-03`<br>환경: Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)<br>근거: [Backend.cpp](../src/foundation/Backend.cpp), [RenderGraphTests.cpp](../tests/RenderGraphTests.cpp), [PHASE9_RENDER_GRAPH_REPORT](PHASE9_RENDER_GRAPH_REPORT.md) |
 
 ## Phase 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region
 

@@ -356,3 +356,35 @@
   - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
   - `P11-PROF-01`: GPU Profiling 확장.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P9-RG-01` 선택적 Render Graph 구현·실기 검증 및 수동 배리어 대비 성능 비교
+
+- **기준 커밋**: `e1c7f62f` (`Add UploadRing, ReadbackPool, and TransientResourcePool with budget pressure policy`)
+- **작업 목적**:
+  - 선행 충족 작업 `P9-RG-01` 구현: 기존 직접 `CommandList` API, 13개 공개 헤더(`Device.hpp`), 5개 `CORE` `.cpp`(`Backend.cpp`) 및 Vulkan 기본 전용 할당 계약을 유지한 채 상위 선택 모듈 `gfx::RenderGraph`를 구현하고 Windows 실기(GTX 1660 SUPER + Intel UHD 770)·Validation(D3D12 Debug+GBV / 고정 VVL 1.3.290 core+sync 오류 0)·WARP 손실복구·설치 소비자 전체 어댑터 및 24프레임 수동 배리어 대비 성능 비교로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P9-RG-02`로 정직하게 분리 유지.
+- **수정 파일 (12개)**:
+  - `include/graphics/Device.hpp`, `src/foundation/Backend.cpp`
+  - `tests/RenderGraphTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE9_RENDER_GRAPH_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 벤치마크 결과** (격리 빌드 `out/p9-render-graph`, 설치 `out/p9-render-graph-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `D206BD2E35C6478FEB3361845C477348F5CA178869B412CD2DA927EA32DF321E`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 전체 타겟 빌드 경고 0, 오류 0, 13개 공개 헤더 계약 유지.
+  - `gfx_render_graph_tests --d3d12 --benchmark` (GTX 1660 SUPER): 통과 (`assertions=9116, graphs_compiled=6, graphs_executed=6, rejections=20`).
+  - `gfx_render_graph_tests --d3d12 --validation` (Debug + GBV, GTX 1660 SUPER): 통과 (`assertions=175, val_errors=0`).
+  - `gfx_render_graph_tests --d3d12 --warp` (WARP `removeForTesting` → `DeviceLost` → `recover()`): 통과 (`assertions=178, rejections=21`).
+  - `gfx_render_graph_tests --vulkan --benchmark` (GTX 1660 SUPER): 통과 (`assertions=9109, graphs_compiled=6, graphs_executed=6, rejections=20`).
+  - `gfx_render_graph_tests --vulkan --validation` (고정 VVL 1.3.290 core+sync, GTX 1660 SUPER): 통과 (`assertions=171, val_errors=0`; GPU-to-GPU 타임라인 `syncTimelines`와 큐별 호스트 완료 타임라인 `hostTimelines` 분리로 반복 프레임 SyncVal 호환성 확보).
+  - 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)`): D3D12(GTX 1660 SUPER·Intel UHD 770·WARP) 및 Vulkan(GTX 1660 SUPER·Intel UHD 770 공유 큐 폴백) 비검증·검증 9/9 전체 통과 (`val_errors=0`).
+  - 전체 CTest 회귀: **127/127 통과** (`179.26s`, 실패·건너뜀 0).
+  - **수동 배리어 대비 성능 비교** (GTX 1660 SUPER, 24프레임 4단계 복합 Copy+Compute+Graphics+Copy, Warmup 2 + Measured 5 중앙값, `TransientResourcePool` `hits=1005, misses=3`):
+    - D3D12: 수동 `59.149 ms` vs RenderGraph precompiled **`57.328 ms`** (**`-3.08%`**) / 매프레임 재구축 `65.953 ms` (`+11.50%`), 평균 `compile()` **`9.473 µs`**.
+    - Vulkan: 수동 `43.684 ms` vs RenderGraph precompiled **`42.800 ms`** (**`-2.02%`**) / 매프레임 재구축 `45.483 ms` (`+4.12%`), 평균 `compile()` **`7.857 µs`**.
+  - `tools/roadmap.py --check`: PASS (202 task IDs: 120 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P11-PROF-01`: GPU Profiling 확장 (다중 Timestamp Scope·카운터·Stall 진단).
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`, `P9-RG-02`: Linux Vulkan 및 macOS Metal CI/실기 검증.

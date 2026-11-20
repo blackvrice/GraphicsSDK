@@ -1,8 +1,74 @@
 #pragma once
 #include "CommandQueue.hpp"
 #include "SwapChain.hpp"
+#include <functional>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace gfx {
+struct RGResourceHandle {
+    std::uint32_t id{};
+    bool operator==(const RGResourceHandle&) const = default;
+    explicit operator bool() const noexcept { return id != 0; }
+};
+
+struct RGResourceUse {
+    RGResourceHandle resource;
+    ResourceState state{ResourceState::Common};
+};
+
+class RenderGraphResources {
+public:
+    virtual ~RenderGraphResources() = default;
+    [[nodiscard]] virtual Result<BufferPtr> buffer(RGResourceHandle handle) const = 0;
+    [[nodiscard]] virtual Result<TexturePtr> texture(RGResourceHandle handle) const = 0;
+};
+
+struct RGPassDesc {
+    std::string name;
+    QueueType queue{QueueType::Graphics};
+    bool sideEffect{};
+    std::vector<RGResourceUse> reads;
+    std::vector<RGResourceUse> writes;
+    std::vector<std::uint32_t> dependsOn;
+    std::function<Result<void>(CommandList&, const RenderGraphResources&)> execute;
+};
+
+struct RGBarrierInfo {
+    std::uint32_t passIndex{};
+    std::uint32_t executionOrder{};
+    RGResourceHandle resource;
+    std::uint32_t physicalSlot{};
+    ResourceState before{ResourceState::Common};
+    ResourceState after{ResourceState::Common};
+    bool isUavBarrier{};
+    bool afterPass{};
+};
+
+struct RGSyncEdge {
+    std::uint32_t producerBatch{};
+    std::uint32_t consumerBatch{};
+    QueueType producerQueue{QueueType::Graphics};
+    QueueType consumerQueue{QueueType::Graphics};
+    std::uint64_t timelineValue{};
+};
+
+struct RGCompileStats {
+    std::uint32_t totalPasses{};
+    std::uint32_t executedPasses{};
+    std::uint32_t culledPasses{};
+    std::uint32_t importedResources{};
+    std::uint32_t transientResourcesDeclared{};
+    std::uint32_t transientResourcesCulled{};
+    std::uint32_t physicalTransientSlots{};
+    std::uint32_t aliasedResources{};
+    std::uint32_t insertedBarriers{};
+    std::uint32_t insertedUavBarriers{};
+    std::uint32_t queueBatches{};
+    std::uint32_t crossQueueSyncs{};
+};
+
 class Device {
 public:
     Device() noexcept;
@@ -61,9 +127,59 @@ public:
     // Vulkan counts delivered ERROR callbacks; external layer settings can filter/limit them.
     [[nodiscard]] virtual Result<std::uint64_t> validationErrorCount() = 0;
 private:
+    friend class RenderGraph;
     struct GraphicsCache;
     std::unique_ptr<GraphicsCache> graphicsCache;
     std::shared_ptr<bool> lifetimeGuard;
 };
+
+class RenderGraph {
+public:
+    RenderGraph();
+    ~RenderGraph();
+    RenderGraph(const RenderGraph&) = delete;
+    RenderGraph& operator=(const RenderGraph&) = delete;
+    RenderGraph(RenderGraph&&) noexcept;
+    RenderGraph& operator=(RenderGraph&&) noexcept;
+
+    [[nodiscard]] Result<RGResourceHandle> createBuffer(std::string name, BufferDesc desc);
+    [[nodiscard]] Result<RGResourceHandle> createTexture(std::string name, TextureDesc desc);
+    [[nodiscard]] Result<RGResourceHandle> importBuffer(
+        std::string name,
+        BufferPtr buffer,
+        std::optional<ResourceState> initialState = std::nullopt,
+        std::optional<ResourceState> finalState = std::nullopt);
+    [[nodiscard]] Result<RGResourceHandle> importTexture(
+        std::string name,
+        TexturePtr texture,
+        std::optional<ResourceState> initialState = std::nullopt,
+        std::optional<ResourceState> finalState = std::nullopt);
+    [[nodiscard]] Result<std::uint32_t> addPass(RGPassDesc desc);
+
+    // Compiles DAG dependencies, culls dead passes/transients, computes transient aliasing slots,
+    // plans automatic state transitions/UAV barriers, and groups multi-queue timeline batches.
+    [[nodiscard]] Result<RGCompileStats> compile();
+
+    // Executes the compiled graph on the device's Graphics/Compute/Copy queues.
+    // When transientPool is non-null, physical transient slots are acquired from and recycled back to it.
+    [[nodiscard]] Result<void> execute(Device& device, TransientResourcePool* transientPool = nullptr);
+
+    // Clears declared passes and resources for the next frame while preserving cached command pools.
+    void reset();
+    // Releases cached command pools and timeline fence held for repeated execute() calls.
+    void releaseGpuResources();
+
+    [[nodiscard]] bool isCompiled() const noexcept;
+    [[nodiscard]] const RGCompileStats& stats() const noexcept;
+    [[nodiscard]] const std::vector<RGBarrierInfo>& barriers() const noexcept;
+    [[nodiscard]] const std::vector<RGSyncEdge>& syncEdges() const noexcept;
+    [[nodiscard]] std::string dumpText() const;
+    [[nodiscard]] std::string dumpDot() const;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl;
+};
+
 [[nodiscard]] Result<std::unique_ptr<Device>> createDevice(DeviceDesc desc = {});
 }
