@@ -41,6 +41,17 @@ struct Viewport {
 };
 struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; };
 struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA8UNorm}; bool renderTarget{}, depthStencil{}; };
+enum class TextureViewUsage { ShaderRead, RenderTarget, DepthStencil, Storage };
+// Subresource view descriptor over a Texture. When format is unset, inherits the parent texture format.
+struct TextureViewDesc {
+    std::optional<Format> format;
+    TextureViewUsage usage{TextureViewUsage::ShaderRead};
+    std::uint32_t baseMipLevel{};
+    std::uint32_t mipLevelCount{1};
+    std::uint32_t baseArrayLayer{};
+    std::uint32_t arrayLayerCount{1};
+    bool operator==(const TextureViewDesc&) const = default;
+};
 struct TextureFootprint { std::uint64_t size{}; std::uint32_t rowPitch{}, rowBytes{}, height{}; };
 // Portable 2D buffer<->texture copy region. bufferOffset must be a multiple of 512 bytes.
 // bufferRowPitch=0 selects the 256-byte aligned pitch for width; non-zero must be a

@@ -30,7 +30,8 @@ struct BindingLayout {
 };
 [[nodiscard]] Result<void> validateBindingLayout(const BindingLayout&);
 // binding indexes BindingLayout::entries; element indexes that entry's array.
-struct TextureBinding { std::uint32_t binding{}, element{}; TexturePtr texture; };
+// Specify either texture or view (with ShaderRead usage), never both.
+struct TextureBinding { std::uint32_t binding{}, element{}; TexturePtr texture; TextureViewPtr view; };
 struct ConstantBufferBinding {
     std::uint32_t binding{}, element{}; BufferPtr buffer;
     std::uint64_t offset{}, size{}; // Both multiples of 256; size is 256..65536.

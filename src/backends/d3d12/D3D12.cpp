@@ -288,6 +288,20 @@ struct DXTexture final : Texture, Retirable {
         return {};
     }
 };
+struct DXTextureView final : TextureView, Retirable {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<DXTexture> parent;
+    TextureViewDesc desc;
+    ComPtr<ID3D12DescriptorHeap> rtv;
+    ComPtr<ID3D12DescriptorHeap> dsv;
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+    void releaseNative() override { rtv.Reset(); dsv.Reset(); }
+    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {
+        if (parent && parent->resource) out.push_back(parent->resource);
+    }
+    TextureViewDesc description() const override { return desc; }
+    TexturePtr texture() const override { return parent; }
+};
 struct VertexRequirement { UINT slot{},stride{},extent{},alignment{}; VertexInputRate rate{}; };
 struct DXPipeline final : Pipeline, Retirable {
     std::shared_ptr<State> owner;
@@ -351,7 +365,7 @@ struct DXCommands final : CommandList {
     std::uint64_t submitted{};
     std::uint64_t recordedEpoch{};
     UINT descriptorCount{};
-    struct BoundResource { std::shared_ptr<DXTexture> texture; std::shared_ptr<DXBuffer> buffer; std::uint64_t offset{},size{}; };
+    struct BoundResource { std::shared_ptr<DXTexture> texture; std::shared_ptr<DXTextureView> textureView; std::shared_ptr<DXBuffer> buffer; std::uint64_t offset{},size{}; };
     std::vector<BoundResource> boundResources;
     bool recording{}, ended{}, renderPass{}, textureBound{}, timestampsResolved{};
     std::array<bool, 2> timestampWritten{};
@@ -397,6 +411,13 @@ struct DXCommands final : CommandList {
         auto object = std::dynamic_pointer_cast<T>(ptr);
         if (!object || object->owner != owner) return invalid("Null or foreign resource", ErrorCode::WrongDevice);
         if (!object->tracker->available()) return invalid("Backbuffer is not current or its swapchain has been destroyed");
+        return object;
+    }
+    Result<std::shared_ptr<DXTextureView>> ownedView(const TextureViewPtr& ptr) {
+        if (!ptr) return invalid("Null texture view", ErrorCode::InvalidArgument);
+        auto object = std::dynamic_pointer_cast<DXTextureView>(ptr);
+        if (!object || object->owner != owner) return invalid("Texture view belongs to another device", ErrorCode::WrongDevice);
+        if (!object->parent || !object->parent->tracker->available()) return invalid("Backbuffer is not current or its swapchain has been destroyed");
         return object;
     }
     template<class T> ResourceState current(const T& buffer) const {
@@ -580,28 +601,50 @@ struct DXCommands final : CommandList {
         auto status=ready(true);if(!status)return status;
         status=validateRenderPass(pass);if(!status)return status;
         std::vector<std::shared_ptr<DXTexture>> colors;
+        std::vector<ComPtr<ID3D12DescriptorHeap>> colorHeaps;
         std::shared_ptr<DXTexture> depth;
+        ComPtr<ID3D12DescriptorHeap> depthHeap;
         // Validate all attachments before clearing or mutating the current pass.
         for(const auto& attachment:pass.colors) {
-            auto object=owned<DXTexture>(attachment.texture);if(!object)return std::unexpected(object.error());
-            if(current(**object)!=ResourceState::RenderTarget)return invalid("Color attachment requires RenderTarget state");
-            colors.push_back(*object);
+            if (attachment.view) {
+                auto view = ownedView(attachment.view); if (!view) return std::unexpected(view.error());
+                if ((*view)->desc.usage != TextureViewUsage::RenderTarget || !(*view)->rtv)
+                    return invalid("Color attachment view requires RenderTarget usage", ErrorCode::InvalidArgument);
+                if (current(*(*view)->parent) != ResourceState::RenderTarget)
+                    return invalid("Color attachment requires RenderTarget state");
+                colors.push_back((*view)->parent);
+                colorHeaps.push_back((*view)->rtv);
+            } else {
+                auto object=owned<DXTexture>(attachment.texture);if(!object)return std::unexpected(object.error());
+                if(current(**object)!=ResourceState::RenderTarget)return invalid("Color attachment requires RenderTarget state");
+                colors.push_back(*object);
+                colorHeaps.push_back((*object)->rtv);
+            }
         }
-        if(pass.depth.texture) {
+        if(pass.depth.view) {
+            auto view = ownedView(pass.depth.view); if (!view) return std::unexpected(view.error());
+            if ((*view)->desc.usage != TextureViewUsage::DepthStencil || !(*view)->dsv)
+                return invalid("Depth attachment view requires DepthStencil usage", ErrorCode::InvalidArgument);
+            if (current(*(*view)->parent) != (pass.depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite))
+                return invalid("Depth attachment state does not match pass access");
+            depth = (*view)->parent;
+            depthHeap = (*view)->dsv;
+        } else if(pass.depth.texture) {
             auto object=owned<DXTexture>(pass.depth.texture);if(!object)return std::unexpected(object.error());
             if(current(**object)!=(pass.depth.readOnly?ResourceState::DepthRead:ResourceState::DepthWrite))return invalid("Depth attachment state does not match pass access");
             depth=*object;
+            depthHeap=(*object)->dsv;
         }
         const auto& extent=colors.empty()?depth:colors.front();
         passWidth=extent->desc.width;passHeight=extent->desc.height;
         std::array<D3D12_CPU_DESCRIPTOR_HANDLE,8> handles{};
         for(UINT i=0;i<colors.size();++i) {
-            use(colors[i]->tracker,colors[i]->resource);retain(colors[i]->rtv);handles[i]=colors[i]->rtv->GetCPUDescriptorHandleForHeapStart();
+            use(colors[i]->tracker,colors[i]->resource);retain(colorHeaps[i]);handles[i]=colorHeaps[i]->GetCPUDescriptorHandleForHeapStart();
             if(pass.colors[i].load==LoadOp::Clear){const auto c=pass.colors[i].clear;float clear[]{c.r,c.g,c.b,c.a};list->ClearRenderTargetView(handles[i],clear,0,nullptr);}
         }
         D3D12_CPU_DESCRIPTOR_HANDLE depthHandle{};
         if(depth) {
-            use(depth->tracker,depth->resource);retain(depth->dsv);depthHandle=depth->dsv->GetCPUDescriptorHandleForHeapStart();
+            use(depth->tracker,depth->resource);retain(depthHeap);depthHandle=depthHeap->GetCPUDescriptorHandleForHeapStart();
             if(pass.depth.readOnly)depthHandle.ptr+=owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
             if(pass.depth.load==LoadOp::Clear)list->ClearDepthStencilView(depthHandle,D3D12_CLEAR_FLAG_DEPTH,pass.depth.clear,0,0,nullptr);
         }
@@ -629,6 +672,12 @@ struct DXCommands final : CommandList {
         if (!pipeline || !pipeline->sampled) return invalid("bindTexture requires the legacy sampledTexture pipeline");
         return bindResources({{{0,0,ptr}}, {}});
     }
+    Result<void> bindTextureView(const TextureViewPtr& ptr) override {
+        auto status = ready(); if (!status) return status;
+        if (!pipeline || !pipeline->sampled) return invalid("bindTextureView requires the legacy sampledTexture pipeline");
+        if (!ptr) return invalid("Null texture view", ErrorCode::InvalidArgument);
+        return bindResources({{{0,0,nullptr,ptr}}, {}});
+    }
     Result<void> bindResources(const ResourceBindings& bindings) override {
         auto status=ready();if(!status)return status;
         if(!pipeline)return invalid("Resource binding requires a pipeline");
@@ -646,9 +695,22 @@ struct DXCommands final : CommandList {
         // Validate the entire set before consuming descriptors or changing native bindings.
         for(const auto& binding:bindings.textures) {
             auto at=slot(binding.binding,binding.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());
-            auto object=owned<DXTexture>(binding.texture);if(!object)return std::unexpected(object.error());
-            if((*object)->backbuffer || (*object)->desc.depthStencil || current(**object)!=ResourceState::ShaderRead)return invalid("Texture binding requires a color texture in ShaderRead");
-            snapshot[*at].texture=*object;
+            if (binding.texture && binding.view)
+                return invalid("Specify either texture or view in TextureBinding, not both", ErrorCode::InvalidArgument);
+            if (binding.view) {
+                auto view = ownedView(binding.view); if (!view) return std::unexpected(view.error());
+                if ((*view)->desc.usage != TextureViewUsage::ShaderRead)
+                    return invalid("Texture binding view requires ShaderRead usage", ErrorCode::InvalidArgument);
+                const auto& parent = (*view)->parent;
+                if (parent->backbuffer || parent->desc.depthStencil || current(*parent) != ResourceState::ShaderRead)
+                    return invalid("Texture binding requires a color texture in ShaderRead");
+                snapshot[*at].texture = parent;
+                snapshot[*at].textureView = *view;
+            } else {
+                auto object=owned<DXTexture>(binding.texture);if(!object)return std::unexpected(object.error());
+                if((*object)->backbuffer || (*object)->desc.depthStencil || current(**object)!=ResourceState::ShaderRead)return invalid("Texture binding requires a color texture in ShaderRead");
+                snapshot[*at].texture=*object;
+            }
         }
         for(const auto& binding:bindings.constants) {
             auto at=slot(binding.binding,binding.element,BindingType::ConstantBuffer);if(!at)return std::unexpected(at.error());
@@ -658,7 +720,7 @@ struct DXCommands final : CommandList {
                binding.offset>buffer.desc.size || binding.size>buffer.desc.size-binding.offset || binding.size<pipeline->minimumBytes[binding.binding])
                 return invalid("Invalid constant buffer view: alignment, bounds or shader size",ErrorCode::InvalidArgument);
             if(current(buffer)!=ResourceState::ConstantBuffer)return invalid("Constant buffer binding requires ConstantBuffer state");
-            snapshot[*at]={nullptr,*object,binding.offset,binding.size};
+            snapshot[*at]={nullptr,nullptr,*object,binding.offset,binding.size};
         }
         for(const auto& resource:snapshot) {
             if(!resource.texture && !resource.buffer)return invalid("Missing binding array element",ErrorCode::InvalidArgument);
@@ -675,9 +737,13 @@ struct DXCommands final : CommandList {
             for(UINT element=0;element<pipeline->bindings.entries[i].count;++element) {
                 const auto& resource=snapshot[at++];
                 if(resource.texture) {
-                    D3D12_SHADER_RESOURCE_VIEW_DESC view{};view.Format=native(resource.texture->desc.format);view.ViewDimension=D3D12_SRV_DIMENSION_TEXTURE2D;
-                    view.Shader4ComponentMapping=D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;view.Texture2D.MipLevels=1;
-                    owner->device->CreateShaderResourceView(resource.texture->resource.Get(),&view,cpu);
+                    if (resource.textureView) {
+                        owner->device->CreateShaderResourceView(resource.texture->resource.Get(), &resource.textureView->srvDesc, cpu);
+                    } else {
+                        D3D12_SHADER_RESOURCE_VIEW_DESC view{};view.Format=native(resource.texture->desc.format);view.ViewDimension=D3D12_SRV_DIMENSION_TEXTURE2D;
+                        view.Shader4ComponentMapping=D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;view.Texture2D.MipLevels=1;
+                        owner->device->CreateShaderResourceView(resource.texture->resource.Get(),&view,cpu);
+                    }
                 } else {
                     D3D12_CONSTANT_BUFFER_VIEW_DESC view{resource.buffer->resource->GetGPUVirtualAddress()+resource.offset,static_cast<UINT>(resource.size)};
                     owner->device->CreateConstantBufferView(&view,cpu);
@@ -1052,6 +1118,58 @@ public:
         status = texture->initViews(); if (!status) return std::unexpected(status.error());
         state->track(texture);
         return texture;
+    }
+    Result<TextureViewPtr> createTextureView(const TexturePtr& ptr, TextureViewDesc viewDesc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (!ptr) return invalid("Null texture", ErrorCode::InvalidArgument);
+        auto parent = std::dynamic_pointer_cast<DXTexture>(ptr);
+        if (!parent || parent->owner != state) return invalid("Texture belongs to another device", ErrorCode::WrongDevice);
+        if (!parent->tracker->available()) return invalid("Backbuffer is not current or its swapchain has been destroyed");
+        auto resolved = validateTextureView(parent->desc, viewDesc);
+        if (!resolved) return std::unexpected(resolved.error());
+        if (resolved->usage == TextureViewUsage::ShaderRead && parent->backbuffer) {
+            return invalid("Swapchain backbuffer cannot create a ShaderRead view", ErrorCode::InvalidArgument);
+        }
+        auto view = std::make_shared<DXTextureView>();
+        view->owner = state;
+        view->parent = parent;
+        view->desc = *resolved;
+        const DXGI_FORMAT viewFormat = native(*resolved->format);
+        if (resolved->usage == TextureViewUsage::RenderTarget) {
+            D3D12_DESCRIPTOR_HEAP_DESC heap{};
+            heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            heap.NumDescriptors = 1;
+            HRESULT hr = state->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&view->rtv));
+            if (FAILED(hr)) return state->failure(hr, "Create TextureView RTV heap failed");
+            D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+            rtvDesc.Format = viewFormat;
+            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+            rtvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
+            state->device->CreateRenderTargetView(parent->resource.Get(), &rtvDesc, view->rtv->GetCPUDescriptorHandleForHeapStart());
+        } else if (resolved->usage == TextureViewUsage::DepthStencil) {
+            D3D12_DESCRIPTOR_HEAP_DESC heap{};
+            heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+            heap.NumDescriptors = 2;
+            HRESULT hr = state->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&view->dsv));
+            if (FAILED(hr)) return state->failure(hr, "Create TextureView DSV heap failed");
+            auto handle = view->dsv->GetCPUDescriptorHandleForHeapStart();
+            D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+            dsvDesc.Format = viewFormat;
+            dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+            dsvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
+            state->device->CreateDepthStencilView(parent->resource.Get(), &dsvDesc, handle);
+            handle.ptr += state->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+            dsvDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH;
+            state->device->CreateDepthStencilView(parent->resource.Get(), &dsvDesc, handle);
+        } else {
+            view->srvDesc.Format = viewFormat;
+            view->srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            view->srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            view->srvDesc.Texture2D.MostDetailedMip = resolved->baseMipLevel;
+            view->srvDesc.Texture2D.MipLevels = resolved->mipLevelCount;
+        }
+        state->track(view);
+        return TextureViewPtr(view);
     }
     Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());

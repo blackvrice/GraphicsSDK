@@ -35,6 +35,7 @@ public:
     [[nodiscard]] virtual Result<void> setPipeline(const PipelinePtr&) = 0;
     // A sampled pipeline declares a single fragment texture t0, space0, sampler s0.
     [[nodiscard]] virtual Result<void> bindTexture(const TexturePtr&) = 0;
+    [[nodiscard]] virtual Result<void> bindTextureView(const TextureViewPtr&) = 0;
     // Complete immutable snapshot for the current pipeline. Failure preserves the previous set.
     [[nodiscard]] virtual Result<void> bindResources(const ResourceBindings&) = 0;
     // size=0 means the remaining bytes. Layout stride must match at draw time.

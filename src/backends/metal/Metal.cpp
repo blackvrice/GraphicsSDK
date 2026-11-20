@@ -23,6 +23,14 @@ struct Pending {
     std::vector<std::shared_ptr<struct Allocation>> allocations;
     std::vector<std::shared_ptr<struct NativePipeline>> pipelines;
     id<CAMetalDrawable> drawable{};
+    std::vector<std::shared_ptr<struct NativeTextureView>> textureViews;
+};
+struct NativeTextureView {
+    std::shared_ptr<struct Allocation> allocation;
+    id<MTLTexture> texture;
+    TextureViewDesc desc;
+    void release() { texture = nil; allocation.reset(); }
+    ~NativeTextureView() { release(); }
 };
 struct Allocation {
     id<MTLBuffer> buffer;
@@ -76,7 +84,7 @@ struct BufferView {
     std::uint64_t offset{},bytes{};
     std::uint32_t stride{};
 };
-struct ResourceView { std::shared_ptr<Allocation> allocation; std::uint64_t offset{},size{}; };
+struct ResourceView { std::shared_ptr<Allocation> allocation; std::uint64_t offset{},size{}; std::shared_ptr<NativeTextureView> textureView; };
 struct Draw {
     std::shared_ptr<NativePipeline> pipeline;
     std::shared_ptr<const std::vector<ResourceView>> bindings;
@@ -94,6 +102,7 @@ struct Attachment {
     Color clear;
     float clearDepth{};
     bool readOnly{};
+    std::shared_ptr<NativeTextureView> textureView;
 };
 enum class OperationKind { Buffer, UploadTexture, ReadTexture, Pass };
 struct Operation {
@@ -120,6 +129,7 @@ struct State {
     std::optional<Error> failure;
     std::deque<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
+    std::vector<std::weak_ptr<NativeTextureView>> imageViews;
     std::vector<std::weak_ptr<int>> objects;
     id<MTLComputePipelineState> tailPipeline;
     std::vector<std::weak_ptr<NativeRecording>> recordings;
@@ -132,6 +142,7 @@ struct State {
             pending.clear();
             for (auto& w : recordings) if (auto r = w.lock()) r->buffer = nil;
             for (auto& w : surfaces) if (auto surface = w.lock()) surface->release();
+            for (auto& w : imageViews) if (auto v = w.lock()) v->release();
             for (auto& w : allocations) if (auto a = w.lock()) { a->buffer = nil; a->texture = nil; }
             for (auto& w : pipelines) if (auto p = w.lock()) p->release();
             tailPipeline = nil; queue = nil; device = nil;
@@ -240,6 +251,14 @@ struct MetalTexture final : Texture {
     std::shared_ptr<int> token;
     TextureDesc description() const override { return allocation->textureDesc; }
     TextureFootprint footprint() const override { return allocation->footprint; }
+};
+struct MetalTextureView final : TextureView {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<MetalTexture> parent;
+    std::shared_ptr<NativeTextureView> native;
+    std::shared_ptr<int> token;
+    TextureViewDesc description() const override { return native->desc; }
+    TexturePtr texture() const override { return parent; }
 };
 struct MetalPipeline final : Pipeline {
     std::shared_ptr<State> owner;
@@ -359,14 +378,15 @@ struct MetalCommands final : CommandList {
                     if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal pass descriptor allocation failed");
                     unsigned index = 0;
                     for (const auto& a : op.attachments) {
+                        id<MTLTexture> targetTexture = a.textureView ? a.textureView->texture : a.allocation->texture;
                         if (a.allocation->textureDesc.depthStencil) {
-                            descriptor.depthAttachment.texture = a.allocation->texture;
+                            descriptor.depthAttachment.texture = targetTexture;
                             descriptor.depthAttachment.loadAction = a.load == LoadOp::Clear ? MTLLoadActionClear : MTLLoadActionLoad;
                             descriptor.depthAttachment.storeAction = MTLStoreActionStore;
                             if (a.load == LoadOp::Clear) descriptor.depthAttachment.clearDepth = a.clearDepth;
                         } else {
                             auto color = descriptor.colorAttachments[index++];
-                            color.texture = a.allocation->texture;
+                            color.texture = targetTexture;
                             color.loadAction = a.load == LoadOp::Clear ? MTLLoadActionClear : MTLLoadActionLoad;
                             color.storeAction = MTLStoreActionStore;
                             if (a.load == LoadOp::Clear) color.clearColor = MTLClearColorMake(a.clear.r,a.clear.g,a.clear.b,a.clear.a);
@@ -397,8 +417,9 @@ struct MetalCommands final : CommandList {
                             const auto& view = (*draw.bindings)[offset++];
                             for (unsigned stage=0;stage<2;++stage) if (visible(entry.visibility,stage)) {
                                 if (entry.type == BindingType::Texture2D) {
-                                    if (stage==0) [encoder setVertexTexture:view.allocation->texture atIndex:entry.slot+element];
-                                    else [encoder setFragmentTexture:view.allocation->texture atIndex:entry.slot+element];
+                                    id<MTLTexture> sampledTexture = view.textureView ? view.textureView->texture : view.allocation->texture;
+                                    if (stage==0) [encoder setVertexTexture:sampledTexture atIndex:entry.slot+element];
+                                    else [encoder setFragmentTexture:sampledTexture atIndex:entry.slot+element];
                                 } else {
                                     if (stage==0) [encoder setVertexBuffer:view.allocation->buffer offset:view.offset atIndex:entry.slot+element];
                                     else [encoder setFragmentBuffer:view.allocation->buffer offset:view.offset atIndex:entry.slot+element];
@@ -516,6 +537,14 @@ struct MetalCommands final : CommandList {
         return buffer->allocation;
     }
     Result<std::shared_ptr<Allocation>> allocation(const TexturePtr& value) const;
+    Result<std::shared_ptr<NativeTextureView>> textureView(const TextureViewPtr& value) const {
+        if (!value) return fail(ErrorCode::InvalidArgument, "Null Metal texture view");
+        auto view = std::dynamic_pointer_cast<MetalTextureView>(value);
+        if (!view || view->owner != owner) return fail(ErrorCode::WrongDevice, "Metal texture view belongs to another generation");
+        if (!view->native || !view->native->allocation || (view->native->allocation->backbuffer && !view->native->allocation->texture))
+            return fail(ErrorCode::InvalidState, "Metal drawable is no longer current");
+        return view->native;
+    }
     Use* find(const std::shared_ptr<Allocation>& a) {
         auto it = std::find_if(uses.begin(), uses.end(), [&](auto& u) { return u.allocation == a; });
         return it == uses.end() ? nullptr : &*it;
@@ -653,17 +682,37 @@ struct MetalCommands final : CommandList {
         if (auto ok = validateRenderPass(desc); !ok) return ok;
         Operation op; op.kind = OperationKind::Pass;
         for (const auto& color : desc.colors) {
-            auto a = allocation(color.texture); if (!a) return std::unexpected(a.error());
-            if (shadow(*a) != ResourceState::RenderTarget || (color.load == LoadOp::Load && !initialized(*a)))
+            std::shared_ptr<Allocation> a;
+            std::shared_ptr<NativeTextureView> v;
+            if (color.view) {
+                auto found = textureView(color.view); if (!found) return std::unexpected(found.error());
+                if ((*found)->desc.usage != TextureViewUsage::RenderTarget)
+                    return fail(ErrorCode::InvalidArgument, "Metal color attachment view requires RenderTarget usage");
+                v = *found; a = v->allocation;
+            } else {
+                auto found = allocation(color.texture); if (!found) return std::unexpected(found.error());
+                a = *found;
+            }
+            if (shadow(a) != ResourceState::RenderTarget || (color.load == LoadOp::Load && !initialized(a)))
                 return fail(ErrorCode::InvalidState, "Metal color pass requires state and initialized Load contents");
-            op.attachments.push_back(Attachment{*a,color.load,color.clear,0});
+            op.attachments.push_back(Attachment{a,color.load,color.clear,0,false,v});
         }
-        if (desc.depth.texture) {
-            auto a = allocation(desc.depth.texture); if (!a) return std::unexpected(a.error());
-            if (shadow(*a) != (desc.depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite) ||
-                (desc.depth.load == LoadOp::Load && !initialized(*a)))
+        if (desc.depth.texture || desc.depth.view) {
+            std::shared_ptr<Allocation> a;
+            std::shared_ptr<NativeTextureView> v;
+            if (desc.depth.view) {
+                auto found = textureView(desc.depth.view); if (!found) return std::unexpected(found.error());
+                if ((*found)->desc.usage != TextureViewUsage::DepthStencil)
+                    return fail(ErrorCode::InvalidArgument, "Metal depth attachment view requires DepthStencil usage");
+                v = *found; a = v->allocation;
+            } else {
+                auto found = allocation(desc.depth.texture); if (!found) return std::unexpected(found.error());
+                a = *found;
+            }
+            if (shadow(a) != (desc.depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite) ||
+                (desc.depth.load == LoadOp::Load && !initialized(a)))
                 return fail(ErrorCode::InvalidState, "Metal depth pass requires state and initialized Load contents");
-            op.attachments.push_back(Attachment{*a,desc.depth.load,{},desc.depth.clear,desc.depth.readOnly});
+            op.attachments.push_back(Attachment{a,desc.depth.load,{},desc.depth.clear,desc.depth.readOnly,v});
         }
         uses.reserve(uses.size()+op.attachments.size()); operations.reserve(operations.size()+1);
         for (const auto& a : op.attachments) retain(a.allocation).initialized = true;
@@ -693,6 +742,11 @@ struct MetalCommands final : CommandList {
         if(!inPass||!selected||!selected->sampled)return fail(ErrorCode::InvalidState,"Metal bindTexture requires sampledTexture pipeline");
         ResourceBindings data;data.textures={{0,0,value}};return bindResources(data);
     }
+    Result<void> bindTextureView(const TextureViewPtr& value) override {
+        if(auto ok=ready();!ok)return ok;
+        if(!inPass||!selected||!selected->sampled)return fail(ErrorCode::InvalidState,"Metal bindTextureView requires sampledTexture pipeline");
+        ResourceBindings data;data.textures={{0,0,nullptr,value}};return bindResources(data);
+    }
     Result<void> bindResources(const ResourceBindings& data) override {
         if(auto ok=ready();!ok)return ok;
         if(!inPass||!selected)return fail(ErrorCode::InvalidState,"Metal bindings require pass/pipeline");
@@ -703,9 +757,24 @@ struct MetalCommands final : CommandList {
             const auto& e=selected->bindings.entries[index];if(e.type!=type||element>=e.count)return fail(ErrorCode::InvalidArgument,"Metal binding type/array mismatch");
             std::size_t at=element;for(unsigned i=0;i<index;++i)at+=selected->bindings.entries[i].count;
             if((*next)[at].allocation)return fail(ErrorCode::InvalidArgument,"Duplicate Metal binding element");return at;};
-        for(const auto& view:data.textures){auto at=slot(view.binding,view.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());auto a=allocation(view.texture);if(!a)return std::unexpected(a.error());
-            if((*a)->textureDesc.depthStencil)return fail(ErrorCode::Unsupported,"Metal depth sampling unsupported");
-            if(shadow(*a)!=ResourceState::ShaderRead||!initialized(*a))return fail(ErrorCode::InvalidState,"Metal sampling requires initialized ShaderRead texture");(*next)[*at].allocation=*a;}
+        for(const auto& view:data.textures){
+            auto at=slot(view.binding,view.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());
+            if(view.texture&&view.view)return fail(ErrorCode::InvalidArgument,"Specify either texture or view in TextureBinding, not both");
+            std::shared_ptr<Allocation> a;
+            std::shared_ptr<NativeTextureView> v;
+            if(view.view){
+                auto found=textureView(view.view);if(!found)return std::unexpected(found.error());
+                if((*found)->desc.usage!=TextureViewUsage::ShaderRead)return fail(ErrorCode::InvalidArgument,"Metal texture binding view requires ShaderRead usage");
+                v=*found;a=v->allocation;
+            }else{
+                auto found=allocation(view.texture);if(!found)return std::unexpected(found.error());
+                a=*found;
+            }
+            if(a->backbuffer)return fail(ErrorCode::InvalidArgument,"Metal backbuffer sampling unsupported");
+            if(a->textureDesc.depthStencil)return fail(ErrorCode::Unsupported,"Metal depth sampling unsupported");
+            if(shadow(a)!=ResourceState::ShaderRead||!initialized(a))return fail(ErrorCode::InvalidState,"Metal sampling requires initialized ShaderRead texture");
+            (*next)[*at].allocation=a;(*next)[*at].textureView=v;
+        }
         for(const auto& view:data.constants){auto at=slot(view.binding,view.element,BindingType::ConstantBuffer);if(!at)return std::unexpected(at.error());auto a=allocation(view.buffer);if(!a)return std::unexpected(a.error());
             if((*a)->desc.memory==Memory::Readback||view.offset%256||!view.size||view.size%256||view.size>65536||view.offset>(*a)->desc.size||view.size>(*a)->desc.size-view.offset||view.size<selected->minimumBytes[view.binding])return fail(ErrorCode::InvalidArgument,"Metal constant view range/alignment/size invalid");
             if(shadow(*a)!=ResourceState::ConstantBuffer)return fail(ErrorCode::InvalidState,"Metal constants require ConstantBuffer state");(*next)[*at]={*a,view.offset,view.size};}
@@ -831,15 +900,21 @@ struct MetalQueue final : CommandQueue {
         allocations.reserve(commands->uses.size());
         for (auto& use : commands->uses) allocations.push_back(use.allocation);
         std::vector<std::shared_ptr<NativePipeline>> pipelines;
-        for(const auto& op:commands->operations)for(const auto& draw:op.draws)
-            if(std::find(pipelines.begin(),pipelines.end(),draw.pipeline)==pipelines.end())pipelines.push_back(draw.pipeline);
+        std::vector<std::shared_ptr<NativeTextureView>> textureViews;
+        for(const auto& op:commands->operations){
+            for(const auto& a:op.attachments)if(a.textureView&&std::find(textureViews.begin(),textureViews.end(),a.textureView)==textureViews.end())textureViews.push_back(a.textureView);
+            for(const auto& draw:op.draws){
+                if(std::find(pipelines.begin(),pipelines.end(),draw.pipeline)==pipelines.end())pipelines.push_back(draw.pipeline);
+                if(draw.bindings)for(const auto& rv:*draw.bindings)if(rv.textureView&&std::find(textureViews.begin(),textureViews.end(),rv.textureView)==textureViews.end())textureViews.push_back(rv.textureView);
+            }
+        }
         const bool drawable = commands->usesDrawable();
         if (drawable) {
             if (auto ok = commands->encode(); !ok) return std::unexpected(ok.error());
         }
         id<MTLCommandBuffer> command = commands->native->buffer;
         if (drawable) commands->native->buffer = nil;
-        owner->pending.push_back({owner->last + 1, command, std::move(allocations),std::move(pipelines)});
+        owner->pending.push_back({owner->last + 1, command, std::move(allocations),std::move(pipelines),nil,std::move(textureViews)});
         @autoreleasepool { [command commit]; }
         commands->submitted = ++owner->last;
         if (commands->pool) {
@@ -973,6 +1048,41 @@ struct MetalDevice final : Device {
             std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
             owner->allocations.push_back(a); owner->objects.push_back(value->token);
             return TexturePtr(value);
+        }
+    }
+    Result<TextureViewPtr> createTextureView(const TexturePtr& ptr, TextureViewDesc viewDesc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (!ptr) return fail(ErrorCode::InvalidArgument, "Null Metal texture");
+        auto parent = std::dynamic_pointer_cast<MetalTexture>(ptr);
+        if (!parent || parent->owner != owner) return fail(ErrorCode::WrongDevice, "Metal texture belongs to another generation");
+        if (parent->allocation->backbuffer && !parent->allocation->texture) return fail(ErrorCode::InvalidState, "Metal drawable is no longer current");
+        auto resolved = validateTextureView(parent->allocation->textureDesc, viewDesc);
+        if (!resolved) return std::unexpected(resolved.error());
+        if (resolved->usage == TextureViewUsage::ShaderRead && parent->allocation->backbuffer) {
+            return fail(ErrorCode::InvalidArgument, "Metal drawable cannot create a ShaderRead view");
+        }
+        @autoreleasepool {
+            const MTLPixelFormat format = pixelFormat(*resolved->format);
+            id<MTLTexture> nativeTex = [parent->allocation->texture
+                newTextureViewWithPixelFormat:format
+                textureType:MTLTextureType2D
+                levels:NSMakeRange(resolved->baseMipLevel, resolved->mipLevelCount)
+                slices:NSMakeRange(resolved->baseArrayLayer, resolved->arrayLayerCount)];
+            if (!nativeTex) return fail(ErrorCode::OutOfMemory, "Metal texture view creation failed");
+            auto nativeView = std::make_shared<NativeTextureView>();
+            nativeView->allocation = parent->allocation;
+            nativeView->texture = nativeTex;
+            nativeView->desc = *resolved;
+            auto value = std::make_shared<MetalTextureView>();
+            value->owner = owner;
+            value->parent = parent;
+            value->native = nativeView;
+            value->token = std::make_shared<int>();
+            std::erase_if(owner->imageViews, [](auto& w) { return w.expired(); });
+            std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+            owner->imageViews.push_back(nativeView);
+            owner->objects.push_back(value->token);
+            return TextureViewPtr(value);
         }
     }
     Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {

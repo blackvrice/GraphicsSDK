@@ -20,4 +20,11 @@ public:
 };
 using BufferPtr = std::shared_ptr<Buffer>;
 using TexturePtr = std::shared_ptr<Texture>;
+class TextureView {
+public:
+    virtual ~TextureView() = default;
+    [[nodiscard]] virtual TextureViewDesc description() const = 0;
+    [[nodiscard]] virtual TexturePtr texture() const = 0;
+};
+using TextureViewPtr = std::shared_ptr<TextureView>;
 }

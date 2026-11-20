@@ -31,6 +31,12 @@ native 호출/스케줄링 시간까지 포함하는 hard real-time 상한은 �
 
 Texture::footprint는 buffer-texture copy의 총 바이트, aligned rowPitch,
 유효 rowBytes 및 높이를 반환한다. 행 padding을 이미지 데이터로 해석하지 않는다.
+`Device::createTextureView(texture, desc)`는 지정 용도(`ShaderRead`, `RenderTarget`, `DepthStencil`;
+`Storage`는 Compute 전까지 `Unsupported`)와 subresource 범위의 `TextureView`를 생성한다.
+`desc.format`이 비어 있으면 부모 텍스처 포맷을 상속하며, `ColorAttachment::view`, `DepthAttachment::view`,
+`TextureBinding::view`, `CommandList::bindTextureView`로 바인딩할 수 있다(`texture`와 `view` 동시 지정은 거부).
+뷰는 부모 텍스처 수명을 유지하며 GPU 제출 완료 전 조기 파괴되어도 네이티브 뷰 수명이 보존된다.
+[Texture View 보고서](PHASE8_TEXTURE_VIEW_REPORT.md)를 따른다.
 Buffer::write는 Upload, Buffer::read는 Readback 메모리에만 허용한다.
 
 CommandList는 transition, copy, color/depth render pass, pipeline, resource/vertex/index binding,

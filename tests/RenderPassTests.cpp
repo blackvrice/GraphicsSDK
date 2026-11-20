@@ -16,6 +16,7 @@ void take(gfx::Result<void> r){if(!r)throw std::runtime_error(r.error().message)
 template<class T>void reject(gfx::Result<T> r,gfx::ErrorCode code,const char* message){check(!r&&r.error().code==code,message);}
 using F=gfx::Format;using S=gfx::ResourceState;using L=gfx::LoadOp;using C=gfx::CompareOp;using Pixel=std::array<float,4>;
 struct Stub final:gfx::Texture {gfx::TextureDesc d;explicit Stub(gfx::TextureDesc value):d(value){}gfx::TextureDesc description()const override{return d;}gfx::TextureFootprint footprint()const override{return {};}};
+struct StubView final:gfx::TextureView {gfx::TexturePtr parent;gfx::TextureViewDesc d;StubView(gfx::TexturePtr p,gfx::TextureViewDesc v):parent(std::move(p)),d(v){}gfx::TextureViewDesc description()const override{return d;}gfx::TexturePtr texture()const override{return parent;}};
 void cpu(){
     take(gfx::validateTextureDescription({3,7,F::BGRA8UNorm,true}));take(gfx::validateRenderTargets({{F::BGRA8UNorm,F::RGBA8UNorm},{}},{}));
     take(gfx::validateTextureDescription({3,7,F::D32Float,false,true}));take(gfx::validateRenderTargets({{},F::D32Float},{true,true,C::Less}));
@@ -69,6 +70,59 @@ void cpu(){
            gfx::ErrorCode::InvalidArgument, "NaN viewport coordinate");
     reject(gfx::validateViewport({0.0f, 0.0f, std::numeric_limits<float>::infinity(), 16.0f, 0.0f, 1.0f}, 64, 64),
            gfx::ErrorCode::InvalidArgument, "Infinite viewport width");
+
+    // TextureView portable CPU contracts
+    const gfx::TextureDesc colorRtDesc{16, 16, F::RGBA8UNorm, true, false};
+    const gfx::TextureDesc colorOnlyDesc{16, 16, F::RGBA8UNorm, false, false};
+    const gfx::TextureDesc depthDesc{16, 16, F::D32Float, false, true};
+    const auto resolvedSrv = take(gfx::validateTextureView(colorOnlyDesc, {}));
+    check(resolvedSrv.format == F::RGBA8UNorm && resolvedSrv.usage == gfx::TextureViewUsage::ShaderRead &&
+          resolvedSrv.baseMipLevel == 0 && resolvedSrv.mipLevelCount == 1 &&
+          resolvedSrv.baseArrayLayer == 0 && resolvedSrv.arrayLayerCount == 1,
+          "Default TextureView inherits parent format and single subresource");
+    const auto resolvedRtv = take(gfx::validateTextureView(colorRtDesc, {F::RGBA8UNorm, gfx::TextureViewUsage::RenderTarget}));
+    check(resolvedRtv.format == F::RGBA8UNorm && resolvedRtv.usage == gfx::TextureViewUsage::RenderTarget, "Valid RTV TextureView");
+    const auto resolvedDsv = take(gfx::validateTextureView(depthDesc, {std::nullopt, gfx::TextureViewUsage::DepthStencil}));
+    check(resolvedDsv.format == F::D32Float && resolvedDsv.usage == gfx::TextureViewUsage::DepthStencil, "Valid DSV TextureView");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::Storage}),
+           gfx::ErrorCode::Unsupported, "Storage/UAV view unsupported");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, static_cast<gfx::TextureViewUsage>(99)}),
+           gfx::ErrorCode::InvalidArgument, "Unknown TextureView usage");
+    reject(gfx::validateTextureView(colorRtDesc, {F::BGRA8UNorm, gfx::TextureViewUsage::ShaderRead}),
+           gfx::ErrorCode::Unsupported, "Cross-format color view unsupported");
+    reject(gfx::validateTextureView(colorRtDesc, {F::D32Float, gfx::TextureViewUsage::ShaderRead}),
+           gfx::ErrorCode::InvalidArgument, "Color-to-depth format mismatch");
+    reject(gfx::validateTextureView(depthDesc, {F::RGBA8UNorm, gfx::TextureViewUsage::DepthStencil}),
+           gfx::ErrorCode::InvalidArgument, "Depth-to-color format mismatch");
+    reject(gfx::validateTextureView(depthDesc, {std::nullopt, gfx::TextureViewUsage::ShaderRead}),
+           gfx::ErrorCode::Unsupported, "Depth sampling view unsupported");
+    reject(gfx::validateTextureView(colorOnlyDesc, {std::nullopt, gfx::TextureViewUsage::RenderTarget}),
+           gfx::ErrorCode::InvalidArgument, "RTV view on non-RT texture");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::DepthStencil}),
+           gfx::ErrorCode::InvalidArgument, "DSV view on color texture");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::ShaderRead, 1, 1, 0, 1}),
+           gfx::ErrorCode::InvalidArgument, "Out-of-bounds baseMipLevel");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::ShaderRead, 0, 0, 0, 1}),
+           gfx::ErrorCode::InvalidArgument, "Zero mipLevelCount");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::ShaderRead, 0, 2, 0, 1}),
+           gfx::ErrorCode::InvalidArgument, "Excess mipLevelCount");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::ShaderRead, 0, 1, 1, 1}),
+           gfx::ErrorCode::InvalidArgument, "Out-of-bounds baseArrayLayer");
+    reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::ShaderRead, 0, 1, 0, 0}),
+           gfx::ErrorCode::InvalidArgument, "Zero arrayLayerCount");
+
+    auto colorRtvView = std::make_shared<StubView>(color, resolvedRtv);
+    auto colorSrvView = std::make_shared<StubView>(color, resolvedSrv);
+    auto depthDsvView = std::make_shared<StubView>(depth, resolvedDsv);
+    take(gfx::validateRenderPass({{{nullptr, L::Clear, {}, colorRtvView}}, {nullptr, L::Clear, 1.0f, false, depthDsvView}}));
+    reject(gfx::validateRenderPass({{{color, L::Clear, {}, colorRtvView}}, {}}),
+           gfx::ErrorCode::InvalidArgument, "Attachment cannot specify both texture and view");
+    reject(gfx::validateRenderPass({{{nullptr, L::Clear, {}, colorSrvView}}, {}}),
+           gfx::ErrorCode::InvalidArgument, "Color attachment rejects ShaderRead view");
+    reject(gfx::validateRenderPass({{}, {nullptr, L::Clear, 1.0f, false, colorRtvView}}),
+           gfx::ErrorCode::InvalidArgument, "Depth attachment rejects RenderTarget view");
+    reject(gfx::validateRenderPass({{{color, L::Clear, {}}, {nullptr, L::Clear, {}, colorRtvView}}, {}}),
+           gfx::ErrorCode::InvalidArgument, "Duplicate underlying texture via raw+view rejected");
 }
 constexpr auto vertex=R"(
 cbuffer Draw:register(b0){float4 color;float4 geometry;}

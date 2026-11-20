@@ -398,10 +398,23 @@ struct NativePipeline {
 };
 struct VertexView { std::shared_ptr<Allocation> allocation; std::uint64_t offset{}, bytes{}; std::uint32_t stride{}; };
 struct IndexView { std::shared_ptr<Allocation> allocation; std::uint64_t bytes{}; std::uint32_t element{}; };
+struct NativeTextureView {
+    std::shared_ptr<NativeDevice> native;
+    std::shared_ptr<Allocation> allocation;
+    VkImageView view{};
+    TextureViewDesc desc;
+    void release() {
+        if (view) native->DestroyImageView(native->handle, view, nullptr);
+        view = {};
+        allocation.reset();
+    }
+    ~NativeTextureView() { release(); }
+};
 struct NativeBindings {
     std::shared_ptr<NativeDevice> native;
     std::shared_ptr<NativePipeline> pipeline;
     std::vector<std::shared_ptr<Allocation>> resources;
+    std::vector<std::shared_ptr<NativeTextureView>> textureViews;
     VkDescriptorPool pool{};
     VkDescriptorSet set{};
     ~NativeBindings() { if (pool) native->DestroyDescriptorPool(native->handle, pool, nullptr); }
@@ -442,6 +455,7 @@ struct Recording {
     std::uint64_t submitted{};
     std::vector<Use> uses;
     std::vector<std::unique_ptr<NativePass>> passes;
+    std::vector<std::shared_ptr<NativeTextureView>> textureViews;
     std::vector<std::shared_ptr<NativePipeline>> pipelines;
     std::shared_ptr<NativePipeline> selectedPipeline;
     std::vector<Format> passColors;
@@ -463,7 +477,7 @@ struct Recording {
         if (queries) native->DestroyQueryPool(native->handle, queries, nullptr);
         queries = {}; timestampWritten = {}; timestampsResolved = timestampStartFirst = false; timestampResult.reset();
         pool = {}; command = {}; sharedQueries.reset(); sharedPool.reset();
-        selectedBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); uses.clear(); open = ended = inPass = false;
+        selectedBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); textureViews.clear(); uses.clear(); open = ended = inPass = false;
     }
     ~Recording() { release(); }
 };
@@ -483,6 +497,7 @@ struct State {
     bool retired{}, lost{};
     std::list<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
+    std::vector<std::weak_ptr<NativeTextureView>> imageViews;
     std::vector<std::weak_ptr<Recording>> recordings;
     std::vector<std::weak_ptr<NativeCommandPool>> commandPools;
     std::vector<std::weak_ptr<NativeQueryPool>> queryPools;
@@ -521,10 +536,11 @@ struct State {
         for (auto& weak : commandPools) if (auto value = weak.lock()) value->release();
         for (auto& weak : queryPools) if (auto value = weak.lock()) value->release();
         for (auto& weak : pipelines) if (auto value = weak.lock()) value->release();
+        for (auto& weak : imageViews) if (auto value = weak.lock()) value->release();
         for (auto& weak : allocations) if (auto value = weak.lock()) value->release();
         for (auto& weak : swapchains) if (auto value = weak.lock()) value->release();
         swapchains.clear();
-        recordings.clear(); commandPools.clear(); queryPools.clear(); pipelines.clear(); allocations.clear(); objects.clear();
+        recordings.clear(); commandPools.clear(); queryPools.clear(); pipelines.clear(); imageViews.clear(); allocations.clear(); objects.clear();
         native->release(); retired = true;
     }
     ~State() { retire(); }
@@ -578,6 +594,14 @@ struct VulkanTexture final : Texture {
     std::shared_ptr<int> token;
     TextureDesc description() const override { return allocation->textureDesc; }
     TextureFootprint footprint() const override { return allocation->footprint; }
+};
+struct VulkanTextureView final : TextureView {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<VulkanTexture> parent;
+    std::shared_ptr<NativeTextureView> native;
+    std::shared_ptr<int> token;
+    TextureViewDesc description() const override { return native->desc; }
+    TexturePtr texture() const override { return parent; }
 };
 struct VulkanPipeline final : Pipeline {
     std::shared_ptr<State> owner;
@@ -690,6 +714,14 @@ struct VulkanCommands final : CommandList {
         if (value->owner != owner) return fail(ErrorCode::WrongDevice, "Texture belongs to another device generation");
         if (!currentBackbuffer(*value->allocation)) return fail(ErrorCode::InvalidState, "Backbuffer is not current or its swapchain/window expired");
         return value->allocation;
+    }
+    Result<std::shared_ptr<NativeTextureView>> textureView(const TextureViewPtr& view) const {
+        if (!view) return fail(ErrorCode::InvalidArgument, "Null Vulkan texture view");
+        auto value = std::dynamic_pointer_cast<VulkanTextureView>(view);
+        if (!value || value->owner != owner) return fail(ErrorCode::WrongDevice, "Texture view belongs to another device generation");
+        if (!value->native || !value->native->allocation || !currentBackbuffer(*value->native->allocation))
+            return fail(ErrorCode::InvalidState, "Backbuffer is not current or its swapchain/window expired");
+        return value->native;
     }
     Use* find(const std::shared_ptr<Allocation>& a) {
         const auto it = std::find_if(record->uses.begin(), record->uses.end(), [&](auto& use) { return use.allocation == a; });
@@ -955,21 +987,35 @@ struct VulkanCommands final : CommandList {
         if (description.colors.size() > owner->maxColorAttachments)
             return fail(ErrorCode::Unsupported, "Color attachment count exceeds adapter limit");
         std::vector<std::shared_ptr<Allocation>> colors;
+        std::vector<std::shared_ptr<NativeTextureView>> retainedViews;
         std::vector<VkAttachmentDescription> attachments;
         std::vector<VkAttachmentReference> references;
         std::vector<VkImageView> views;
         std::vector<VkClearValue> clears;
         std::vector<Format> formats;
         for (const auto& color : description.colors) {
-            auto a = texture(color.texture); if (!a) return std::unexpected(a.error());
-            if (shadow(*a) != ResourceState::RenderTarget) return fail(ErrorCode::InvalidState, "Attachment requires RenderTarget state");
-            const auto use = find(*a);
-            if (color.load == LoadOp::Load && !(use ? use->contentsInitialized : (*a)->contentsInitialized))
+            std::shared_ptr<Allocation> a;
+            VkImageView nativeView{};
+            if (color.view) {
+                auto v = textureView(color.view); if (!v) return std::unexpected(v.error());
+                if ((*v)->desc.usage != TextureViewUsage::RenderTarget)
+                    return fail(ErrorCode::InvalidArgument, "Color attachment view requires RenderTarget usage");
+                a = (*v)->allocation;
+                nativeView = (*v)->view;
+                retainedViews.push_back(*v);
+            } else {
+                auto tex = texture(color.texture); if (!tex) return std::unexpected(tex.error());
+                a = *tex;
+                nativeView = a->view;
+            }
+            if (shadow(a) != ResourceState::RenderTarget) return fail(ErrorCode::InvalidState, "Attachment requires RenderTarget state");
+            const auto use = find(a);
+            if (color.load == LoadOp::Load && !(use ? use->contentsInitialized : a->contentsInitialized))
                 return fail(ErrorCode::InvalidState, "Load requires initialized attachment contents");
-            colors.push_back(*a); views.push_back((*a)->view);
-            formats.push_back((*a)->textureDesc.format);
+            colors.push_back(a); views.push_back(nativeView);
+            formats.push_back(a->textureDesc.format);
             VkAttachmentDescription attachment{};
-            attachment.format = textureFormat((*a)->textureDesc.format);
+            attachment.format = textureFormat(a->textureDesc.format);
             attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             attachment.loadOp = color.load == LoadOp::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -980,26 +1026,41 @@ struct VulkanCommands final : CommandList {
             VkClearValue clear{}; clear.color = {{color.clear.r, color.clear.g, color.clear.b, color.clear.a}}; clears.push_back(clear);
         }
         VkAttachmentReference depthReference{};
-        if (description.depth.texture) {
+        const bool hasDepth = description.depth.texture || description.depth.view;
+        if (hasDepth) {
             const auto& depth = description.depth;
-            auto a = texture(depth.texture); if (!a) return std::unexpected(a.error());
-            if (shadow(*a) != (depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite)) return fail(ErrorCode::InvalidState, "Depth attachment read/write state mismatch");
-            const auto use = find(*a);
-            if (depth.load == LoadOp::Load && !(use ? use->contentsInitialized : (*a)->contentsInitialized)) return fail(ErrorCode::InvalidState, "Depth Load requires initialized contents");
-            colors.push_back(*a); views.push_back((*a)->view);
+            std::shared_ptr<Allocation> a;
+            VkImageView nativeView{};
+            if (depth.view) {
+                auto v = textureView(depth.view); if (!v) return std::unexpected(v.error());
+                if ((*v)->desc.usage != TextureViewUsage::DepthStencil)
+                    return fail(ErrorCode::InvalidArgument, "Depth attachment view requires DepthStencil usage");
+                a = (*v)->allocation;
+                nativeView = (*v)->view;
+                retainedViews.push_back(*v);
+            } else {
+                auto tex = texture(depth.texture); if (!tex) return std::unexpected(tex.error());
+                a = *tex;
+                nativeView = a->view;
+            }
+            if (shadow(a) != (depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite)) return fail(ErrorCode::InvalidState, "Depth attachment read/write state mismatch");
+            const auto use = find(a);
+            if (depth.load == LoadOp::Load && !(use ? use->contentsInitialized : a->contentsInitialized)) return fail(ErrorCode::InvalidState, "Depth Load requires initialized contents");
+            colors.push_back(a); views.push_back(nativeView);
             VkAttachmentDescription attachment{}; attachment.format = VK_FORMAT_D32_SFLOAT; attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             attachment.loadOp = depth.load == LoadOp::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachment.initialLayout = attachment.finalLayout = imageLayout(shadow(*a));
+            attachment.initialLayout = attachment.finalLayout = imageLayout(shadow(a));
             depthReference = {static_cast<unsigned>(attachments.size()), attachment.initialLayout}; attachments.push_back(attachment);
             VkClearValue clear{}; clear.depthStencil = {depth.clear, 0}; clears.push_back(clear);
         }
         // Complete validation and reserve every retention slot before changing recording state.
         record->uses.reserve(record->uses.size() + colors.size()); record->passes.reserve(record->passes.size() + 1);
+        record->textureViews.reserve(record->textureViews.size() + retainedViews.size());
         auto pass = std::make_unique<NativePass>(); pass->native = owner->native;
         VkSubpassDescription subpass{}; subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = static_cast<std::uint32_t>(references.size()); subpass.pColorAttachments = references.data();
-        if (description.depth.texture) subpass.pDepthStencilAttachment = &depthReference;
+        if (hasDepth) subpass.pDepthStencilAttachment = &depthReference;
         const auto dependencies = passDependencies();
         VkRenderPassCreateInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
         info.attachmentCount = static_cast<std::uint32_t>(attachments.size()); info.pAttachments = attachments.data();
@@ -1013,8 +1074,9 @@ struct VulkanCommands final : CommandList {
         VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}; begin.renderPass = pass->pass; begin.framebuffer = pass->framebuffer;
         begin.renderArea.extent = {desc.width, desc.height}; begin.clearValueCount = static_cast<std::uint32_t>(clears.size()); begin.pClearValues = clears.data();
         for (const auto& a : colors) retain(a).contentsInitialized = true;
+        for (auto& v : retainedViews) record->textureViews.push_back(std::move(v));
         record->passes.push_back(std::move(pass));
-        record->passDepth = bool(description.depth.texture); record->depthReadOnly = description.depth.readOnly;
+        record->passDepth = hasDepth; record->depthReadOnly = description.depth.readOnly;
         record->passColors = std::move(formats); record->width = desc.width; record->height = desc.height; record->selectedPipeline.reset(); record->selectedBindings = {};
         owner->native->CmdBeginRenderPass(record->command, &begin, VK_SUBPASS_CONTENTS_INLINE);
         const VkViewport viewport{0, float(desc.height), float(desc.width), -float(desc.height), 0, 1};
@@ -1044,6 +1106,11 @@ struct VulkanCommands final : CommandList {
         if (!record->selectedPipeline || !record->selectedPipeline->sampled) return fail(ErrorCode::InvalidState, "bindTexture requires sampledTexture pipeline");
         return bindResources({{{0, 0, texture}}, {}});
     }
+    Result<void> bindTextureView(const TextureViewPtr& view) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->selectedPipeline || !record->selectedPipeline->sampled) return fail(ErrorCode::InvalidState, "bindTextureView requires sampledTexture pipeline");
+        return bindResources({{{0, 0, nullptr, view}}, {}});
+    }
     Result<void> bindResources(const ResourceBindings& bindings) override {
         if (auto ok = ready(); !ok) return ok;
         const auto p = record->selectedPipeline;
@@ -1064,18 +1131,32 @@ struct VulkanCommands final : CommandList {
         };
         for (const auto& b : bindings.textures) {
             auto at = slot(b.binding, b.element, BindingType::Texture2D); if (!at) return std::unexpected(at.error());
-            auto a = texture(b.texture); if (!a) return std::unexpected(a.error());
-            if ((*a)->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Depth texture sampling unsupported");
-            if (shadow(*a) != ResourceState::ShaderRead) return fail(ErrorCode::InvalidState, "Texture binding requires ShaderRead");
-            const auto use = find(*a);
-            if (!(use ? use->contentsInitialized : (*a)->contentsInitialized)) return fail(ErrorCode::InvalidState, "Sampled texture must have initialized contents");
+            if (b.texture && b.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in TextureBinding, not both");
+            std::shared_ptr<Allocation> a;
+            VkImageView nativeView{};
+            if (b.view) {
+                auto v = textureView(b.view); if (!v) return std::unexpected(v.error());
+                if ((*v)->desc.usage != TextureViewUsage::ShaderRead) return fail(ErrorCode::InvalidArgument, "Texture binding view requires ShaderRead usage");
+                a = (*v)->allocation;
+                nativeView = (*v)->view;
+                snapshot->textureViews.push_back(*v);
+            } else {
+                auto tex = texture(b.texture); if (!tex) return std::unexpected(tex.error());
+                a = *tex;
+                nativeView = a->view;
+            }
+            if (a->swapchain) return fail(ErrorCode::InvalidArgument, "Swapchain backbuffer sampling unsupported");
+            if (a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Depth texture sampling unsupported");
+            if (shadow(a) != ResourceState::ShaderRead) return fail(ErrorCode::InvalidState, "Texture binding requires ShaderRead");
+            const auto use = find(a);
+            if (!(use ? use->contentsInitialized : a->contentsInitialized)) return fail(ErrorCode::InvalidState, "Sampled texture must have initialized contents");
             if (p->linear) {
                 VkFormatProperties properties{};
-                owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, textureFormat((*a)->textureDesc.format), &properties);
+                owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, textureFormat(a->textureDesc.format), &properties);
                 if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) return fail(ErrorCode::Unsupported, "Texture lacks linear filtering support");
             }
-            snapshot->resources[*at] = *a;
-            images[*at] = {VK_NULL_HANDLE, (*a)->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            snapshot->resources[*at] = a;
+            images[*at] = {VK_NULL_HANDLE, nativeView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
             VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET}; w.dstBinding = b.binding; w.dstArrayElement = b.element; w.descriptorCount = 1;
             w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; w.pImageInfo = &images[*at]; writes.push_back(w);
         }
@@ -1521,6 +1602,46 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->allocations.push_back(a); owner->objects.push_back(value->token); return TexturePtr(value);
+    }
+    Result<TextureViewPtr> createTextureView(const TexturePtr& ptr, TextureViewDesc viewDesc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!ptr) return fail(ErrorCode::InvalidArgument, "Null texture");
+        auto parent = std::dynamic_pointer_cast<VulkanTexture>(ptr);
+        if (!parent || parent->owner != owner) return fail(ErrorCode::WrongDevice, "Texture belongs to another device generation");
+        if (!currentBackbuffer(*parent->allocation)) return fail(ErrorCode::InvalidState, "Backbuffer is not current or its swapchain/window expired");
+        auto resolved = validateTextureView(parent->allocation->textureDesc, viewDesc);
+        if (!resolved) return std::unexpected(resolved.error());
+        if (resolved->usage == TextureViewUsage::ShaderRead && parent->allocation->swapchain) {
+            return fail(ErrorCode::InvalidArgument, "Swapchain backbuffer cannot create a ShaderRead view");
+        }
+        auto nativeView = std::make_shared<NativeTextureView>();
+        nativeView->native = owner->native;
+        nativeView->allocation = parent->allocation;
+        nativeView->desc = *resolved;
+        VkImageViewCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+        info.image = parent->allocation->image;
+        info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        info.format = textureFormat(*resolved->format);
+        info.subresourceRange = {
+            imageAspect(*parent->allocation),
+            resolved->baseMipLevel,
+            resolved->mipLevelCount,
+            resolved->baseArrayLayer,
+            resolved->arrayLayerCount
+        };
+        if (auto ok = owner->accept(vulkan::acquireOutput(nativeView->view, owner->native->CreateImageView, owner->native->handle, &info, nullptr), "vkCreateImageView"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        auto value = std::make_shared<VulkanTextureView>();
+        value->owner = owner;
+        value->parent = parent;
+        value->native = nativeView;
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->imageViews, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->imageViews.push_back(nativeView);
+        owner->objects.push_back(value->token);
+        return TextureViewPtr(value);
     }
     Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc& desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());

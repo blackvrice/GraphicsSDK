@@ -166,3 +166,33 @@
   - `P9-CMP-01`: Compute Shader·UAV·Dispatch.
   - `P9-CMD-02`: 병렬 명령 기록·Thread-local Command Allocator 및 벤치마크.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P9-CMD-05/06`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P8-TEX-01` Texture View 및 Subresource View (SRV/RTV/DSV) 구현·실기 검증
+
+- **기준 커밋**: `60e8be8e` (`Add explicit CommandPool and reusable pooled CommandList API`)
+- **작업 목적**:
+  - 선행 충족 작업 `P8-TEX-01` 구현: `TextureViewUsage`, `TextureViewDesc`, `TextureView`, `validateTextureView`, `Device::createTextureView` 및 `ColorAttachment`/`DepthAttachment`/`TextureBinding`/`bindTextureView` 뷰 바인딩을 D3D12·Vulkan·Metal에 구현하고 CPU 계약·Windows 실기·Validation·WARP·손실복구·설치 소비자로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P8-TEX-05`로 정직하게 분리 유지.
+- **수정 파일 (21개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/Resources.hpp`, `include/graphics/RenderPass.hpp`, `include/graphics/Bindings.hpp`, `include/graphics/CommandList.hpp`, `include/graphics/Device.hpp`
+  - `src/foundation/RenderPass.cpp`, `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/RenderPassTests.cpp`, `tests/TextureViewTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE8_TEXTURE_VIEW_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 내용과 결과** (격리 빌드 `out/p8-texture-view`, 설치 `out/p8-texture-view-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `c2341cba84da39505617e27aee9812a1f74cf634a32c20e8f0679590346fcda9`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0.
+  - `gfx_render_tests --cpu`: 통과 (`65 assertions`).
+  - `gfx_texture_view_tests --d3d12` (물리 GPU 2종): 통과 (`assertions=260, views=14, images=12, rejections=42, errors=0`).
+  - `gfx_texture_view_tests --d3d12 --validation` (Debug + GBV, 2종): 통과 (`assertions=264, views=14, images=12, rejections=42, errors=0`).
+  - `gfx_texture_view_tests --d3d12 --warp` (WARP + `removeForTesting`/`recover`): 통과 (`assertions=162, views=9, images=7, rejections=23, errors=0`).
+  - `gfx_texture_view_tests --vulkan` (Windows Vulkan 2종): 통과 (`assertions=256, views=14, images=12, rejections=42, errors=0`).
+  - `gfx_texture_view_tests --vulkan --validation` (고정 VVL 1.3.290, 2종): 통과 (`assertions=260, views=14, images=12, rejections=42, errors=0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12 하드웨어/GBV/WARP 및 Vulkan 하드웨어/고정 VVL **5/5 모드 통과**.
+  - CTest 38종 회귀(`core_contracts`, `render_pass_contracts`, `vulkan_draw*`, `vulkan_resource_bindings`, `vulkan_binding_validation`, `vulkan_depth*`, `buffer_region_*`, `texture_region_*`, `capabilities_*`, `viewport_*`, `command_pool_*`, `texture_view_*`): **38/38 통과** (43.34s).
+  - `tools/roadmap.py --check`: PASS (196 task IDs: 114 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P9-CMP-01`: Compute Shader·Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch.
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P9-CMD-02`: 병렬 명령 기록·Thread-local Command Allocator 및 벤치마크.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05`, `P9-CMD-05/06`: Linux Vulkan 및 macOS Metal CI/실기 검증.
