@@ -1,12 +1,17 @@
 #pragma once
 #include "CommandList.hpp"
 #include <chrono>
+#include <span>
 
 namespace gfx {
 class CommandQueue {
 public:
     virtual ~CommandQueue() = default;
     [[nodiscard]] virtual Result<Fence> submit(CommandList&) = 0;
+    // Creating thread only. Atomically validates and submits an ordered batch of recorded
+    // command lists in a single queue submission. Lists in a batch may share read-only
+    // resources; mutated or transitioned resources must be disjoint within the batch.
+    [[nodiscard]] virtual Result<Fence> submit(std::span<CommandList* const> lists) = 0;
     // Creating thread only. Zero polls without creating/registering a wait event.
     // Finite timeout range: 0..4294967294ms, including already completed fences.
     // Timeout keeps submissions/resources alive and permits retrying the same fence.

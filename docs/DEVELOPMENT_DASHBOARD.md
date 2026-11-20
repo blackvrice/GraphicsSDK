@@ -24,11 +24,11 @@
 | Phase 6 | GPU 자원 최적화 | 26 | 18 | 0 | 0 | 8 | 기준선·4슬롯 기각·링 모델 완료 · 후보/판정 잔여 |
 | Phase 7 | 독립 SDK 배포 | 15 | 9 | 6 | 0 | 0 | 6프로필 후보·공통 감사·Windows GPU smoke 완료 · CI/최종 수용 잔여 |
 | Phase 8 | GPU 자원·전송·Capability·Texture 확장 | 16 | 7 | 0 | 0 | 9 | `copyBufferRegion`·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(`P8-TEX-01`)·MSAA/Resolve(`P8-TEX-03`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 다중 차원/압축/Pool 잔여 |
-| Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 11 | 3 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·Compute/UAV(`P9-CMP-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 병렬 기록·RG 대기 |
+| Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 12 | 4 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·병렬 기록/일괄 제출(`P9-CMD-02`)·Compute/UAV(`P9-CMP-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 다중 큐·RG 대기 |
 | Phase 10 | Frame Pacing·HDR·Multi-Surface·Dirty Region | 4 | 0 | 0 | 0 | 4 | 계획 등록 완료 · 순차 구현 대기 |
 | Phase 11 | Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 5 | 0 | 0 | 0 | 5 | 계획 등록 완료 · 순차 구현 대기 |
 | Phase 12 | GraphicsUI·Sandbox RHI 호환성 | 2 | 0 | 0 | 0 | 2 | 계획 등록 완료 · 비교 완료 및 어댑터 대기 |
-| **합계** | **전체 13 Phases** | **198** | **116** | **38** | **8** | **36** | **진행 중** |
+| **합계** | **전체 13 Phases** | **199** | **117** | **38** | **8** | **36** | **진행 중** |
 
 ---
 
@@ -44,7 +44,7 @@
 | `v0.0.4` | Texture View·Subresource View·Mipmap·Texture Array·Cubemap | `P8-TEX-01`, `P8-TEX-02`, `P8-TEX-05` | `01`(`TextureView`) 완료 · `05`(Linux/Metal) 및 `02` 잔여 |
 | `v0.0.5` | MSAA 텍스처·Resolve·압축 텍스처(BC1~BC7/ASTC/ETC2) | `P8-TEX-03`, `P8-TEX-06`, `P8-TEX-04` | `03`(MSAA·Resolve) 완료 · `06`(Linux/Metal) 및 `04` 잔여 |
 | `v0.0.6` | 공개 Upload Ring·Staging/Readback/Transient Pool·VRAM Budget | `P8-MEM-01`, `P8-MEM-02`, `P6-OPT-*` | CPU 모델(`P6-OPT-10`) 완료 |
-| `v0.0.7` | 동적 Viewport·Command Pool·병렬 명령 기록·다중 큐·Timeline Fence | `P9-CMD-01`~`06` | `01, 04` 완료 · `05, 06`(Linux/Metal) 및 `02, 03` 잔여 |
+| `v0.0.7` | 동적 Viewport·Command Pool·병렬 명령 기록·다중 큐·Timeline Fence | `P9-CMD-01`~`07` | `01, 02, 04` 완료 · `05, 06, 07`(Linux/Metal) 및 `03` 잔여 |
 | `v0.0.8` | Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch·Indirect/Bindless | `P9-CMP-01`~`03` | `01`(Compute/UAV/Dispatch) 완료 · `03`(Linux/Metal) 및 `02` 잔여 |
 | `v0.0.9` | Frame Pacing·HDR/Color Space·Multi-Surface·Dirty Region 기반 | `P10-PRES-01`~`P10-DIRTY-01` | 미완료 |
 | `v0.0.10` | 선택적 Render Graph·Native Interop·Zero-Copy Video·GPU Profiling/Diagnostics | `P9-RG-01`, `P11-*`, `P12-*` | 미완료 |
@@ -71,6 +71,7 @@
 | MSAA 텍스처(2x/4x/8x)·`resolveTexture` | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P8-TEX-06`) | 구현(macOS CI 대기, `P8-TEX-06`) |
 | 동적 Viewport (`setViewport`) | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P9-CMD-05`) | 구현(macOS CI 대기, `P9-CMD-05`) |
 | 명시적 Command Pool·재사용 (`CommandPool`) | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P9-CMD-06`) | 구현(macOS CI 대기, `P9-CMD-06`) |
+| 병렬 명령 기록·일괄 제출 (`bindRecordingThread`·`submit(span)`) | **물리 GPU + GBV + WARP (4T 3.86x)** | **물리 GPU + 고정 VVL (4T 3.55x)** | 구현(Linux CI 대기, `P9-CMD-07`) | 구현(macOS CI 대기, `P9-CMD-07`) |
 | Depth/MRT·Clear/Load·Scissor·Alpha Blend | 물리 GPU + GBV + WARP | 물리 GPU + 고정 VVL | SW + 고정 VVL | 호스팅 가상 + Validation |
 | Vertex/Index/Instance 입력·Binding Layout | 물리 GPU + GBV + WARP | 물리 GPU + 고정 VVL | SW + 고정 VVL | 호스팅 가상 + Validation |
 | GPU Timestamp (2-slot) | 물리 GPU 검증 | 물리 GPU + 고정 VVL | SW + 고정 VVL | 미지원 (`Unsupported`) |
@@ -113,4 +114,4 @@ Sandbox 참고 기준: 읽기 전용 스냅샷 `.deps/references/sandbox` (`afe5
 | Shader / PSO 캐시 타이밍 | [PHASE5_SHADER_PSO_TIMING_REPORT.md](PHASE5_SHADER_PSO_TIMING_REPORT.md) |
 | Vulkan 자원 최적화 기준선 및 4슬롯 풀 판정 | [PHASE6_VULKAN_POOL_DECISION.md](PHASE6_VULKAN_POOL_DECISION.md), [PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md](PHASE6_VULKAN_UPLOAD_STAGING_BASELINE.md), [PHASE6_VULKAN_SUBMIT_BASELINE.md](PHASE6_VULKAN_SUBMIT_BASELINE.md) |
 | 6프로필 배포 후보 무결성 및 Windows GPU Smoke | [PHASE7_COMMON_CANDIDATE_AUDIT.md](PHASE7_COMMON_CANDIDATE_AUDIT.md), [PHASE7_WINDOWS_CANDIDATE_GPU.md](PHASE7_WINDOWS_CANDIDATE_GPU.md) |
-| Phase 8·9 전송·Capability·View·MSAA·Viewport·CommandPool·Compute | [PHASE8_BUFFER_REGION_REPORT.md](PHASE8_BUFFER_REGION_REPORT.md), [PHASE8_TEXTURE_REGION_REPORT.md](PHASE8_TEXTURE_REGION_REPORT.md), [PHASE8_CAPABILITY_REPORT.md](PHASE8_CAPABILITY_REPORT.md), [PHASE8_TEXTURE_VIEW_REPORT.md](PHASE8_TEXTURE_VIEW_REPORT.md), [PHASE8_MSAA_REPORT.md](PHASE8_MSAA_REPORT.md), [PHASE9_VIEWPORT_REPORT.md](PHASE9_VIEWPORT_REPORT.md), [PHASE9_COMMAND_POOL_REPORT.md](PHASE9_COMMAND_POOL_REPORT.md), [PHASE9_COMPUTE_REPORT.md](PHASE9_COMPUTE_REPORT.md) |
+| Phase 8·9 전송·Capability·View·MSAA·Viewport·CommandPool·병렬 기록·Compute | [PHASE8_BUFFER_REGION_REPORT.md](PHASE8_BUFFER_REGION_REPORT.md), [PHASE8_TEXTURE_REGION_REPORT.md](PHASE8_TEXTURE_REGION_REPORT.md), [PHASE8_CAPABILITY_REPORT.md](PHASE8_CAPABILITY_REPORT.md), [PHASE8_TEXTURE_VIEW_REPORT.md](PHASE8_TEXTURE_VIEW_REPORT.md), [PHASE8_MSAA_REPORT.md](PHASE8_MSAA_REPORT.md), [PHASE9_VIEWPORT_REPORT.md](PHASE9_VIEWPORT_REPORT.md), [PHASE9_COMMAND_POOL_REPORT.md](PHASE9_COMMAND_POOL_REPORT.md), [PHASE9_PARALLEL_RECORDING_REPORT.md](PHASE9_PARALLEL_RECORDING_REPORT.md), [PHASE9_COMPUTE_REPORT.md](PHASE9_COMPUTE_REPORT.md) |

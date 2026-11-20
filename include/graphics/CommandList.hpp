@@ -79,6 +79,11 @@ public:
     // On success, resets the native command allocator/pool, releases retained per-recording
     // references, discards unsubmitted recordings, and makes all live pooled lists reusable.
     [[nodiscard]] virtual Result<void> reset() = 0;
+    // Transfers recording thread affinity of this pool to the calling thread so pooled
+    // CommandLists from distinct CommandPools can record concurrently on worker threads.
+    // Fails with InvalidState while any command list from this pool is recording or in flight.
+    // Device operations, createCommandList(), reset(), and queue submission remain creating-thread-only.
+    [[nodiscard]] virtual Result<void> bindRecordingThread() = 0;
 protected:
     CommandPool() = default;
 };

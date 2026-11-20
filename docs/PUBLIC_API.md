@@ -57,9 +57,14 @@ SPIR-V 1.3 `GLCompute`, Metal MSL `gfx_compute`) 파이프라인을 생성하며
 같은 epoch에서 이미 기록한 풀 소속 리스트의 재기록은 `CommandPool::reset()` 이후에만 허용된다.
 `CommandPool::reset()`은 기록 중인 리스트나 미완료 제출이 있을 때 `InvalidState`로 거부하고,
 성공 시 네이티브 allocator/pool을 리셋하며 미제출 기록의 참조를 즉시 해제한다.
+`CommandPool::bindRecordingThread()`는 풀의 기록 친화성을 호출 워커 스레드로 이전하며(기록 중이거나
+in-flight 제출이 있으면 `InvalidState`), 서로 다른 `CommandPool` 소속 리스트는 워커 스레드에서
+동시에 `begin()`·기록·`end()`할 수 있다. `CommandQueue::submit(std::span<CommandList* const>)`는
+생성 스레드에서 정렬된 다수 명령 목록을 단일 큐 제출로 실행하며 읽기 전용 공유 자원은 허용하고
+동일 배치 내 쓰기/상태 전이 충돌은 원자적으로 `InvalidState`를 반환한다.
 이미 제출된 배치가 실행 중일 때 `CommandPool`이 파괴되어도 제출 배치가 완료 시점까지 네이티브
 수명을 유지하며, 미제출 풀 소속 리스트는 `InvalidState`로 거부된다.
-[명시적 Command Pool 보고서](PHASE9_COMMAND_POOL_REPORT.md)를 따른다.
+[명시적 Command Pool 보고서](PHASE9_COMMAND_POOL_REPORT.md), [병렬 명령 기록 보고서](PHASE9_PARALLEL_RECORDING_REPORT.md)를 따른다.
 
 Vulkan `debugMarker(text)`는 debug-utils 확장과 함수가 있을 때 실제 label을 넣는다.
 정상 recording에서 함수가 없으면 Unsupported이며 creating thread·recording·퇴역 검사를 먼저 한다.

@@ -258,3 +258,35 @@
   - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
   - `P8-MEM-01`: 공개 Upload Ring·Staging/Readback/Transient Resource Pool.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P9-CMD-05/06`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P9-CMD-02` 병렬 명령 기록·Thread-local Command Allocator 및 벤치마크 구현·실기 검증
+
+- **기준 커밋**: `ffc0d00e` (`Add MSAA texture attachments and explicit resolveTexture API`)
+- **작업 목적**:
+  - 선행 충족 작업 `P9-CMD-02` 구현: `CommandPool::bindRecordingThread()` 스레드 로컬 기록 친화성과 `CommandQueue::submit(std::span<CommandList* const>)` 단일 일괄 제출 및 교차 리스트 읽기/변경 충돌 원자적 거부를 D3D12·Vulkan·Metal에 구현하고 Windows 실기·Validation·WARP 손실복구·설치 소비자 및 1/2/4스레드 CPU 기록 벤치마크로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P9-CMD-07`로 정직하게 분리 유지.
+- **수정 파일 (15개)**:
+  - `include/graphics/CommandList.hpp`, `include/graphics/CommandQueue.hpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/ParallelRecordingTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE9_PARALLEL_RECORDING_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 벤치마크 결과** (격리 빌드 `out/p9-parallel`, 설치 `out/p9-parallel-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `cc60c58a4dcb4aaf4879372553bea53d634ba7d0a590cf711a76fdde1ae64440`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0.
+  - `gfx_parallel_recording_tests --d3d12` (물리 GPU 2종): 통과 (`assertions=114, batches=16, images=48, rejections=14, errors=0`).
+  - `gfx_parallel_recording_tests --d3d12 --validation` (Debug + GBV, 2종): 통과 (`assertions=116, batches=16, images=48, rejections=14, errors=0`).
+  - `gfx_parallel_recording_tests --d3d12 --warp` (WARP + `removeForTesting`/`recover`): 통과 (`assertions=116, batches=16, images=48, rejections=15, errors=0`).
+  - `gfx_parallel_recording_tests --vulkan` (Windows Vulkan 2종): 통과 (`assertions=114, batches=16, images=48, rejections=14, errors=0`).
+  - `gfx_parallel_recording_tests --vulkan --validation` (고정 VVL 1.3.290 core+sync, 2종): 통과 (`assertions=116, batches=16, images=48, rejections=14, errors=0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12 하드웨어/GBV/WARP 및 Vulkan 하드웨어/고정 VVL **5/5 모드 통과** (`errors=0`).
+  - CTest 52종 회귀(CPU 11종 + `command_pool_*` + Phase 8/9 + Vulkan 코어): **52/52 통과** (`51.22s`).
+  - **1 vs 2 vs 4 스레드 실측 벤치마크** (GTX 1660 SUPER, 16 lists × 1,024 draws = 16,384 draws/frame, 10 frames, 16/16 타깃 전체 픽셀 검증):
+    - D3D12 CPU 기록 p50: 1T `1.903 ms` → 2T `0.983 ms` (**1.936x**) → 4T `0.493 ms` (**3.858x**); submit+wait p50 `0.192~0.241 ms`.
+    - Vulkan CPU 기록 p50: 1T `1.529 ms` → 2T `0.803 ms` (**1.903x**) → 4T `0.430 ms` (**3.552x**); submit+wait p50 `0.480~0.533 ms`.
+  - `tools/roadmap.py --check`: PASS (199 task IDs: 117 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P9-CMD-03`: Graphics/Compute/Copy 다중 큐·Timeline Fence·Async 전송.
+  - `P8-MEM-01`: 공개 Upload Ring·Staging/Readback/Transient Resource Pool.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P9-CMD-05/06/07`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.

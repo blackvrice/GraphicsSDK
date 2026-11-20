@@ -3563,15 +3563,40 @@
       "id": "P9-CMD-02",
       "phase": 9,
       "group": "P9-CMD",
-      "title": "병렬 명령 기록·Thread-local Command Allocator 및 벤치마크",
-      "status": "todo",
+      "title": "병렬 명령 기록·Thread-local Command Allocator 및 벤치마크 (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P9-CMD-01"
       ],
-      "work": "단일 생성 스레드 제약을 해치지 않는 스레드별 CommandPool/CommandList 병렬 기록 소유권 모델과 제출 순서 계약을 구현하고 멀티스레드 CPU 오버헤드 절감을 실측한다.",
+      "work": "CommandPool::bindRecordingThread() 스레드 로컬 기록 친화성과 CommandQueue::submit(std::span<CommandList* const>) 단일 일괄 제출 및 교차 리스트 읽기/변경 충돌 원자적 거부를 D3D12/Vulkan/Metal에 구현했다. Windows D3D12(하드웨어 2종·Debug+GBV·WARP 손실/복구)·Vulkan(하드웨어 2종·고정 VVL 1.3.290 core+sync)·설치 find_package 소비자 5모드 및 CTest 52종에서 4스레드 병렬 렌더링·전송 48이미지/전체 바이트 일치, 충돌 거부, 자원 0 회수, validation 오류 0을 확인했고, GTX 1660 SUPER 16,384-draw 실측 벤치마크에서 4스레드 CPU 기록 가속 D3D12 3.858x(1.903→0.493ms)·Vulkan 3.552x(1.529→0.430ms)를 달성했다.",
       "done_when": "병렬 기록 전체 이미지 참조, 데이터 레이스·validation 오류 0, 1 vs N 스레드 실측 비교표.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/CommandList.hpp",
+        "include/graphics/CommandQueue.hpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "tests/ParallelRecordingTests.cpp",
+        "docs/PHASE9_PARALLEL_RECORDING_REPORT.md"
+      ]
+    },
+    {
+      "id": "P9-CMD-07",
+      "phase": 9,
+      "group": "P9-CMD",
+      "title": "병렬 명령 기록·일괄 제출 macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P9-CMD-02"
+      ],
+      "work": "Metal.cpp와 Vulkan.cpp의 CommandPool::bindRecordingThread() 및 CommandQueue::submit(std::span<CommandList* const>) 병렬 기록·일괄 제출 구현을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·전체 픽셀 및 충돌 거부 검증으로 확인한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 다중 스레드 병렬 기록, 일괄 제출, 충돌 거부 및 자원 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "docs/PHASE9_PARALLEL_RECORDING_REPORT.md"
+      ]
     },
     {
       "id": "P9-CMD-03",

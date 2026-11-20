@@ -15,7 +15,9 @@
 #include <cstring>
 #include <deque>
 #include <limits>
+#include <mutex>
 #include <thread>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace gfx {
@@ -129,20 +131,25 @@ struct State {
     }
     DeviceCaps caps;
     DeviceDesc description;
-    HRESULT lostReason{S_OK};
-    bool retired{},recoverySucceeded{};
+    std::atomic<HRESULT> lostReason{S_OK};
+    std::atomic<bool> retired{false};
+    bool recoverySucceeded{};
     std::vector<std::weak_ptr<Retirable>> children;
     unsigned registrations{};
     std::thread::id thread{std::this_thread::get_id()};
     std::uint64_t id{}, last{};
     std::deque<Batch> pending;
-    auto loss() const {return std::unexpected(Error{ErrorCode::DeviceLost,"Device generation is lost; recreate resources on the recovered device",lostReason});}
+    auto loss() const {return std::unexpected(Error{ErrorCode::DeviceLost,"Device generation is lost; recreate resources on the recovered device",lostReason.load(std::memory_order_acquire)});}
+    Result<void> checkAliveForWorker() const {
+        if (retired.load(std::memory_order_acquire) || FAILED(lostReason.load(std::memory_order_acquire))) return loss();
+        return {};
+    }
     auto failure(HRESULT code,std::string operation) {
-        if(FAILED(lostReason))return loss();
+        if(FAILED(lostReason.load(std::memory_order_acquire)))return loss();
         const auto removed=device?device->GetDeviceRemovedReason():S_OK;
-        if(FAILED(removed))lostReason=removed;
-        else if(code==DXGI_ERROR_DEVICE_REMOVED || code==DXGI_ERROR_DEVICE_RESET || code==DXGI_ERROR_DEVICE_HUNG || code==DXGI_ERROR_DRIVER_INTERNAL_ERROR)lostReason=code;
-        if(FAILED(lostReason))return loss();
+        if(FAILED(removed))lostReason.store(removed, std::memory_order_release);
+        else if(code==DXGI_ERROR_DEVICE_REMOVED || code==DXGI_ERROR_DEVICE_RESET || code==DXGI_ERROR_DEVICE_HUNG || code==DXGI_ERROR_DRIVER_INTERNAL_ERROR)lostReason.store(code, std::memory_order_release);
+        if(FAILED(lostReason.load(std::memory_order_acquire)))return loss();
         return failed(code,std::move(operation));
     }
     void track(const std::shared_ptr<Retirable>& object) {
@@ -154,22 +161,22 @@ struct State {
         // otherwise destroy another wrapper. Weak registration does not create a State cycle.
         std::vector<std::shared_ptr<Retirable>> live;
         for(auto& child:children)if(auto object=child.lock())live.push_back(std::move(object));
-        retired=true;
+        retired.store(true, std::memory_order_release);
         detachMessages();
         for(auto& child:live)child->releaseNative();
         pending.clear();children.clear();info.Reset();queue.Reset();fence.Reset();waiter.reset();device.Reset();factory.Reset();
     }
     Result<void> check() {
         if (thread != std::this_thread::get_id()) return invalid("Device operations must run on the creating thread");
-        if(FAILED(lostReason))return loss();
+        if(FAILED(lostReason.load(std::memory_order_acquire)))return loss();
         HRESULT status = device->GetDeviceRemovedReason();
-        if (FAILED(status)) {lostReason=status;return loss();}
+        if (FAILED(status)) {lostReason.store(status, std::memory_order_release);return loss();}
         return {};
     }
     Result<std::uint64_t> completed() {
         auto status = check(); if (!status) return std::unexpected(status.error());
         auto value = fence->GetCompletedValue();
-        if (value == UINT64_MAX) {auto reason=device->GetDeviceRemovedReason();lostReason=FAILED(reason)?reason:DXGI_ERROR_DEVICE_REMOVED;return loss();}
+        if (value == UINT64_MAX) {auto reason=device->GetDeviceRemovedReason();lostReason.store(FAILED(reason)?reason:DXGI_ERROR_DEVICE_REMOVED, std::memory_order_release);return loss();}
         while (!pending.empty() && pending.front().fence <= value) pending.pop_front();
         std::erase_if(children,[](const auto& child){return child.expired();});
         return value;
@@ -336,7 +343,7 @@ struct DXPipeline final : Pipeline, Retirable {
     std::vector<VertexRequirement> vertexInputs;
     void releaseNative() override {pso.Reset();root.Reset();}
 };
-struct Use { std::shared_ptr<Tracker> tracker; ComPtr<ID3D12Resource> resource; std::uint64_t observedVersion{}; ResourceState state{}; Memory memory{Memory::Device}; };
+struct Use { std::shared_ptr<Tracker> tracker; ComPtr<ID3D12Resource> resource; std::uint64_t observedVersion{}; ResourceState state{}; Memory memory{Memory::Device}; bool mutated{}; };
 struct NativeCommands final : Retirable {
     ComPtr<ID3D12CommandAllocator> allocator;
     ComPtr<ID3D12GraphicsCommandList> list;
@@ -353,13 +360,15 @@ struct NativeCommands final : Retirable {
 };
 struct DXCommands;
 struct DXCommandPoolState final : Retirable {
+    std::mutex mutex;
     ComPtr<ID3D12CommandAllocator> allocator;
+    std::atomic<std::thread::id> recordingThread{};
     std::uint64_t epoch{1};
     std::uint64_t lastSubmitted{};
     std::uint32_t openCount{};
     bool ownerAlive{true};
     std::vector<DXCommands*> liveLists;
-    void releaseNative() override { allocator.Reset(); }
+    void releaseNative() override { std::scoped_lock lock(mutex); allocator.Reset(); }
 };
 struct DXCommands final : CommandList {
     std::shared_ptr<State> owner;
@@ -393,11 +402,12 @@ struct DXCommands final : CommandList {
     std::array<bool, 2> timestampWritten{};
     ~DXCommands() override {
         if (!pool) return;
+        std::scoped_lock lock(pool->mutex);
         std::erase(pool->liveLists, this);
         if (recording) {
             if (pool->openCount > 0) --pool->openCount;
             // Close an orphaned open list before dropping so allocator->Reset() remains valid.
-            if (list && owner && !owner->retired && SUCCEEDED(owner->lostReason)) {
+            if (list && owner && !owner->retired.load(std::memory_order_acquire) && SUCCEEDED(owner->lostReason.load(std::memory_order_acquire))) {
                 (void)list->Close();
             }
             recording = false;
@@ -415,9 +425,15 @@ struct DXCommands final : CommandList {
     Result<void> ready(bool outsidePass = false) {
         // Device removal is checked at begin/submit/wait, rather than polling the
         // driver for every recorded draw. Recording itself does not execute GPU work.
-        if (owner->thread != std::this_thread::get_id()) return invalid("Command recording must run on the creating thread");
-        if(FAILED(owner->lostReason))return owner->loss();
-        if (pool && !pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+        if (pool) {
+            if (pool->recordingThread.load(std::memory_order_acquire) != std::this_thread::get_id())
+                return invalid("Command recording must run on the pool's bound recording thread");
+            if (auto alive = owner->checkAliveForWorker(); !alive) return alive;
+            if (!pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+        } else {
+            if (owner->thread != std::this_thread::get_id()) return invalid("Command recording must run on the creating thread");
+            if (auto alive = owner->checkAliveForWorker(); !alive) return alive;
+        }
         if (!recording || (outsidePass && renderPass)) return invalid("Command operation is outside its recording/pass scope");
         return {};
     }
@@ -425,10 +441,13 @@ struct DXCommands final : CommandList {
         IUnknown* ptr = static_cast<IUnknown*>(object.Get());
         if (retained.insert(ptr).second) { ComPtr<IUnknown> ref; object.As(&ref); references.push_back(std::move(ref)); }
     }
-    Use& use(const std::shared_ptr<Tracker>& tracker, const ComPtr<ID3D12Resource>& resource, Memory memory = Memory::Device) {
+    Use& use(const std::shared_ptr<Tracker>& tracker, const ComPtr<ID3D12Resource>& resource, Memory memory = Memory::Device, bool markMutated = false) {
         auto found = std::find_if(uses.begin(), uses.end(), [&](const Use& value) { return value.tracker == tracker; });
-        if (found != uses.end()) return *found;
-        uses.push_back({tracker, resource, tracker->version, tracker->state, memory}); retain(resource); return uses.back();
+        if (found != uses.end()) {
+            if (markMutated) found->mutated = true;
+            return *found;
+        }
+        uses.push_back({tracker, resource, tracker->version, tracker->state, memory, markMutated}); retain(resource); return uses.back();
     }
     template<class T> Result<std::shared_ptr<T>> owned(const std::shared_ptr<typename std::conditional_t<std::is_same_v<T, DXBuffer>, Buffer, Texture>>& ptr) {
         auto object = std::dynamic_pointer_cast<T>(ptr);
@@ -448,6 +467,7 @@ struct DXCommands final : CommandList {
         return entry==uses.end()?buffer.tracker->state:entry->state;
     }
     Result<void> change(Use& usage, ResourceState next) {
+        if (usage.state != next) usage.mutated = true;
         if (usage.memory == Memory::Upload) {
             usage.state = next; return {};
         }
@@ -463,13 +483,18 @@ struct DXCommands final : CommandList {
         usage.state = next; return {};
     }
     Result<void> begin() override {
-        auto done = owner->completed(); if (!done) return std::unexpected(done.error());
         if (pool) {
+            std::scoped_lock lock(pool->mutex);
+            if (auto alive = owner->checkAliveForWorker(); !alive) return alive;
             if (!pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+            if (pool->recordingThread.load(std::memory_order_acquire) != std::this_thread::get_id())
+                return invalid("Command recording must run on the pool's bound recording thread");
             if (recording) return invalid("Command list is already recording");
             if (pool->openCount > 0) return invalid("Another command list from this CommandPool is currently recording");
             if (recordedEpoch == pool->epoch) return invalid("Pooled command list requires CommandPool::reset() before re-recording");
-            if (submitted && *done < submitted) return invalid("Command allocator is still in flight");
+            const auto completedVal = owner->fence->GetCompletedValue();
+            if (completedVal == UINT64_MAX) return owner->failure(DXGI_ERROR_DEVICE_REMOVED, "Device lost while checking fence");
+            if (submitted && completedVal < submitted) return invalid("Command allocator is still in flight");
             HRESULT result = list->Reset(pool->allocator.Get(), nullptr);
             if (FAILED(result)) return owner->failure(result, "Command list reset failed");
             clearRecordingState();
@@ -478,6 +503,7 @@ struct DXCommands final : CommandList {
             ++pool->openCount;
             return {};
         }
+        auto done = owner->completed(); if (!done) return std::unexpected(done.error());
         if (recording || (submitted && *done < submitted)) return invalid("Command allocator is still recording or in flight");
         HRESULT result = allocator->Reset(); if (FAILED(result)) return owner->failure(result, "Allocator reset failed");
         result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return owner->failure(result, "Command list reset failed");
@@ -489,7 +515,10 @@ struct DXCommands final : CommandList {
         auto status = ready(true); if (!status) return status;
         HRESULT result = list->Close(); if (FAILED(result)) return owner->failure(result, "Command list close failed");
         recording = false; ended = true;
-        if (pool && pool->openCount > 0) --pool->openCount;
+        if (pool) {
+            std::scoped_lock lock(pool->mutex);
+            if (pool->openCount > 0) --pool->openCount;
+        }
         return {};
     }
     Result<void> transition(const BufferPtr& ptr, ResourceState next) override {
@@ -540,7 +569,7 @@ struct DXCommands final : CommandList {
         if (current(**source) != ResourceState::CopySource) return invalid("Source is not CopySource");
         if (current(**destination) != ResourceState::CopyDestination) return invalid("Destination is not CopyDestination");
         use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
-        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory);
+        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory, true);
         list->CopyBufferRegion((*destination)->resource.Get(), dstOffset, (*source)->resource.Get(), srcOffset, bytes); return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& src, const TexturePtr& dst) override {
@@ -552,7 +581,7 @@ struct DXCommands final : CommandList {
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture upload requires CopySource/CopyDestination");
         use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
-        use((*destination)->tracker, (*destination)->resource);
+        use((*destination)->tracker, (*destination)->resource, Memory::Device, true);
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; a.PlacedFootprint = (*destination)->placed;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
@@ -567,7 +596,7 @@ struct DXCommands final : CommandList {
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture download requires CopySource/CopyDestination");
         use((*source)->tracker, (*source)->resource);
-        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory);
+        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory, true);
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; b.PlacedFootprint = (*source)->placed;
@@ -597,8 +626,8 @@ struct DXCommands final : CommandList {
             current(*image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource)) {
             return invalid("Texture region copy requires CopySource/CopyDestination states");
         }
-        use(buffer->tracker, buffer->resource, buffer->desc.memory);
-        use(image->tracker, image->resource);
+        use(buffer->tracker, buffer->resource, buffer->desc.memory, !upload);
+        use(image->tracker, image->resource, Memory::Device, upload);
         D3D12_TEXTURE_COPY_LOCATION bufferLocation{};
         bufferLocation.pResource = buffer->resource.Get();
         bufferLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
@@ -650,7 +679,7 @@ struct DXCommands final : CommandList {
         if (current(**source) != ResourceState::ResolveSource || current(**destination) != ResourceState::ResolveDestination)
             return invalid("resolveTexture requires ResolveSource and ResolveDestination states");
         use((*source)->tracker, (*source)->resource);
-        use((*destination)->tracker, (*destination)->resource);
+        use((*destination)->tracker, (*destination)->resource, Memory::Device, true);
         list->ResolveSubresource((*destination)->resource.Get(), 0, (*source)->resource.Get(), 0, native((*source)->desc.format));
         return {};
     }
@@ -701,12 +730,12 @@ struct DXCommands final : CommandList {
         passWidth=extent->desc.width;passHeight=extent->desc.height;passSampleCount=extent->desc.sampleCount;
         std::array<D3D12_CPU_DESCRIPTOR_HANDLE,8> handles{};
         for(UINT i=0;i<colors.size();++i) {
-            use(colors[i]->tracker,colors[i]->resource);retain(colorHeaps[i]);handles[i]=colorHeaps[i]->GetCPUDescriptorHandleForHeapStart();
+            use(colors[i]->tracker,colors[i]->resource,Memory::Device,true);retain(colorHeaps[i]);handles[i]=colorHeaps[i]->GetCPUDescriptorHandleForHeapStart();
             if(pass.colors[i].load==LoadOp::Clear){const auto c=pass.colors[i].clear;float clear[]{c.r,c.g,c.b,c.a};list->ClearRenderTargetView(handles[i],clear,0,nullptr);}
         }
         D3D12_CPU_DESCRIPTOR_HANDLE depthHandle{};
         if(depth) {
-            use(depth->tracker,depth->resource);retain(depthHeap);depthHandle=depthHeap->GetCPUDescriptorHandleForHeapStart();
+            use(depth->tracker,depth->resource,Memory::Device,!pass.depth.readOnly);retain(depthHeap);depthHandle=depthHeap->GetCPUDescriptorHandleForHeapStart();
             if(pass.depth.readOnly)depthHandle.ptr+=owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
             if(pass.depth.load==LoadOp::Clear)list->ClearDepthStencilView(depthHandle,D3D12_CLEAR_FLAG_DEPTH,pass.depth.clear,0,0,nullptr);
         }
@@ -1010,8 +1039,8 @@ struct DXCommands final : CommandList {
         }
         for (const auto& resource : snapshot) {
             if (!resource.texture && !resource.buffer) return invalid("Missing compute binding element", ErrorCode::InvalidArgument);
-            if (resource.texture) use(resource.texture->tracker, resource.texture->resource);
-            else use(resource.buffer->tracker, resource.buffer->resource, resource.buffer->desc.memory);
+            if (resource.texture) use(resource.texture->tracker, resource.texture->resource, Memory::Device, resource.isStorage);
+            else use(resource.buffer->tracker, resource.buffer->resource, resource.buffer->desc.memory, resource.isStorage);
         }
         const UINT increment = owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         auto cpu = descriptors->GetCPUDescriptorHandleForHeapStart();
@@ -1097,7 +1126,7 @@ struct DXCommands final : CommandList {
         auto object = owned<DXBuffer>(ptr); if (!object) return std::unexpected(object.error());
         if (!(*object)->desc.storage) return invalid("uavBarrier requires a storage buffer", ErrorCode::InvalidArgument);
         if (current(**object) != ResourceState::UnorderedAccess) return invalid("uavBarrier requires UnorderedAccess state");
-        use((*object)->tracker, (*object)->resource, (*object)->desc.memory);
+        use((*object)->tracker, (*object)->resource, (*object)->desc.memory, true);
         D3D12_RESOURCE_BARRIER barrier{};
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
         barrier.UAV.pResource = (*object)->resource.Get();
@@ -1109,7 +1138,7 @@ struct DXCommands final : CommandList {
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
         if (!(*object)->desc.storage) return invalid("uavBarrier requires a storage texture", ErrorCode::InvalidArgument);
         if (current(**object) != ResourceState::UnorderedAccess) return invalid("uavBarrier requires UnorderedAccess state");
-        use((*object)->tracker, (*object)->resource);
+        use((*object)->tracker, (*object)->resource, Memory::Device, true);
         D3D12_RESOURCE_BARRIER barrier{};
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
         barrier.UAV.pResource = (*object)->resource.Get();
@@ -1187,10 +1216,14 @@ struct DXCommandPool final : CommandPool {
     std::shared_ptr<State> owner;
     std::shared_ptr<DXCommandPoolState> pool;
     ~DXCommandPool() override {
-        if (pool) pool->ownerAlive = false;
+        if (pool) {
+            std::scoped_lock lock(pool->mutex);
+            pool->ownerAlive = false;
+        }
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         auto status = owner->check(); if (!status) return std::unexpected(status.error());
+        std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return invalid("Cannot allocate from a CommandPool while a command list from it is recording");
         }
@@ -1198,6 +1231,7 @@ struct DXCommandPool final : CommandPool {
     }
     Result<void> reset() override {
         auto done = owner->completed(); if (!done) return std::unexpected(done.error());
+        std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return invalid("Command pool cannot reset while a command list is recording");
         }
@@ -1212,6 +1246,23 @@ struct DXCommandPool final : CommandPool {
         }
         pool->lastSubmitted = 0;
         ++pool->epoch;
+        return {};
+    }
+    Result<void> bindRecordingThread() override {
+        std::scoped_lock lock(pool->mutex);
+        if (auto alive = owner->checkAliveForWorker(); !alive) return alive;
+        if (!pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+        if (pool->openCount > 0) {
+            return invalid("Command pool cannot rebind recording thread while a command list is recording");
+        }
+        if (pool->lastSubmitted) {
+            const auto completedVal = owner->fence->GetCompletedValue();
+            if (completedVal == UINT64_MAX) return owner->failure(DXGI_ERROR_DEVICE_REMOVED, "Device lost while checking fence");
+            if (completedVal < pool->lastSubmitted) {
+                return invalid("Command pool cannot rebind recording thread while submissions are in flight");
+            }
+        }
+        pool->recordingThread.store(std::this_thread::get_id(), std::memory_order_release);
         return {};
     }
 };
@@ -1383,7 +1434,7 @@ public:
         if(state->recoverySucceeded)return invalid("This generation has already been recovered");
         auto status=state->check();
         if(status || status.error().code!=ErrorCode::DeviceLost)return invalid("Recovery requires an observed device loss");
-        if(!state->retired)state->retire();
+        if(!state->retired.load(std::memory_order_acquire))state->retire();
         auto fresh=createD3D12Device(state->description);
         if(fresh)state->recoverySucceeded=true;
         return fresh;
@@ -1760,6 +1811,7 @@ public:
     Result<std::unique_ptr<CommandPool>> createCommandPool() override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         auto poolState = std::make_shared<DXCommandPoolState>();
+        poolState->recordingThread.store(state->thread, std::memory_order_release);
         HRESULT result = state->device->CreateCommandAllocator(
             D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&poolState->allocator));
         if (FAILED(result)) return state->failure(result, "Create command pool allocator failed");
@@ -1770,28 +1822,81 @@ public:
         return std::unique_ptr<CommandPool>(std::move(pool));
     }
     Result<Fence> submit(CommandList& commands) override {
+        CommandList* single = &commands;
+        return submit(std::span<CommandList* const>{&single, 1});
+    }
+    Result<Fence> submit(std::span<CommandList* const> lists) override {
         auto status = state->completed(); if (!status) return std::unexpected(status.error());
-        auto* cmd = dynamic_cast<DXCommands*>(&commands);
-        if (!cmd || cmd->owner != state) return invalid("Command list belongs to another device", ErrorCode::WrongDevice);
-        if (cmd->pool && !cmd->pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
-        if (cmd->pool && cmd->recordedEpoch != cmd->pool->epoch) return invalid("Pooled command list was reset and must be re-recorded");
-        if (!cmd->ended || cmd->recording || cmd->submitted) return invalid("Command list is not executable or was already submitted");
+        if (lists.empty()) return invalid("Batch submit requires at least one command list", ErrorCode::InvalidArgument);
         if (state->last >= UINT64_MAX-1) return invalid("Fence timeline exhausted");
-        for (const auto& usage : cmd->uses) {
-            if(!usage.tracker->available())return invalid("Recorded backbuffer is not current or its swapchain has been destroyed");
-            if(usage.observedVersion != usage.tracker->version || usage.tracker->version == UINT64_MAX)
-                return invalid("Resource changed after recording; re-record the command list");
+        std::vector<DXCommands*> validated;
+        validated.reserve(lists.size());
+        std::unordered_set<DXCommands*> seenLists;
+        std::unordered_set<Tracker*> seenRead;
+        std::unordered_set<Tracker*> seenMutated;
+        for (CommandList* item : lists) {
+            if (!item) return invalid("Null command list in batch submit", ErrorCode::InvalidArgument);
+            auto* cmd = dynamic_cast<DXCommands*>(item);
+            if (!cmd || cmd->owner != state) return invalid("Command list belongs to another device", ErrorCode::WrongDevice);
+            if (!seenLists.insert(cmd).second) return invalid("Duplicate command list in batch submit", ErrorCode::InvalidArgument);
+            if (cmd->pool) {
+                std::scoped_lock lock(cmd->pool->mutex);
+                if (!cmd->pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+                if (cmd->pool->openCount > 0) return invalid("Command pool has a command list currently recording");
+                if (cmd->recordedEpoch != cmd->pool->epoch) return invalid("Pooled command list was reset and must be re-recorded");
+            }
+            if (!cmd->ended || cmd->recording || cmd->submitted) return invalid("Command list is not executable or was already submitted");
+            for (const auto& usage : cmd->uses) {
+                if(!usage.tracker->available())return invalid("Recorded backbuffer is not current or its swapchain has been destroyed");
+                if(usage.observedVersion != usage.tracker->version || usage.tracker->version == UINT64_MAX)
+                    return invalid("Resource changed after recording; re-record the command list");
+                Tracker* key = usage.tracker.get();
+                if (usage.mutated) {
+                    if (seenMutated.contains(key) || seenRead.contains(key))
+                        return invalid("Batch submit has conflicting resource mutations across command lists");
+                    seenMutated.insert(key);
+                } else {
+                    if (seenMutated.contains(key))
+                        return invalid("Batch submit has conflicting resource mutation and read across command lists");
+                    seenRead.insert(key);
+                }
+            }
+            validated.push_back(cmd);
         }
-        Batch batch; batch.fence = state->last+1; batch.objects = cmd->references;
-        auto add = [&](const auto& ptr) { ComPtr<IUnknown> ref; ptr.As(&ref); batch.objects.push_back(std::move(ref)); };
-        add(cmd->pool ? cmd->pool->allocator : cmd->allocator);
-        add(cmd->list); add(cmd->descriptors); add(cmd->query); add(cmd->queryReadback);
+        Batch batch; batch.fence = state->last + 1;
+        std::unordered_set<IUnknown*> retainedBatch;
+        auto addUnique = [&](const ComPtr<IUnknown>& ref) {
+            if (ref && retainedBatch.insert(ref.Get()).second) batch.objects.push_back(ref);
+        };
+        auto addCom = [&](const auto& ptr) {
+            ComPtr<IUnknown> ref;
+            if (ptr && SUCCEEDED(ptr.As(&ref))) addUnique(ref);
+        };
+        std::vector<ID3D12CommandList*> nativeLists;
+        nativeLists.reserve(validated.size());
+        for (DXCommands* cmd : validated) {
+            for (const auto& ref : cmd->references) addUnique(ref);
+            addCom(cmd->pool ? cmd->pool->allocator : cmd->allocator);
+            addCom(cmd->list); addCom(cmd->descriptors); addCom(cmd->query); addCom(cmd->queryReadback);
+            nativeLists.push_back(cmd->list.Get());
+        }
         // Allocate retention before ExecuteCommandLists; failure cannot orphan submitted GPU work.
         state->pending.push_back(std::move(batch));
-        ID3D12CommandList* lists[]{cmd->list.Get()}; state->queue->ExecuteCommandLists(1, lists);
-        ++state->last; cmd->submitted = state->last;
-        if (cmd->pool) cmd->pool->lastSubmitted = std::max(cmd->pool->lastSubmitted, state->last);
-        for (auto& usage : cmd->uses) { usage.tracker->state = usage.state; usage.tracker->lastUse = state->last; ++usage.tracker->version; }
+        state->queue->ExecuteCommandLists(static_cast<UINT>(nativeLists.size()), nativeLists.data());
+        ++state->last;
+        std::unordered_set<Tracker*> versionBumped;
+        for (DXCommands* cmd : validated) {
+            cmd->submitted = state->last;
+            if (cmd->pool) {
+                std::scoped_lock lock(cmd->pool->mutex);
+                cmd->pool->lastSubmitted = std::max(cmd->pool->lastSubmitted, state->last);
+            }
+            for (auto& usage : cmd->uses) {
+                if (usage.mutated) usage.tracker->state = usage.state;
+                usage.tracker->lastUse = state->last;
+                if (versionBumped.insert(usage.tracker.get()).second) ++usage.tracker->version;
+            }
+        }
         HRESULT result = state->queue->Signal(state->fence.Get(), state->last);
         if (FAILED(result)) return state->failure(result, "Queue signal failed after execution");
         return Fence{state->last, state->id};

@@ -13,9 +13,11 @@
 #include <cstring>
 #include <limits>
 #include <list>
+#include <mutex>
 #include <new>
 #include <string>
 #include <thread>
+#include <unordered_set>
 #ifdef _WIN32
 #include <Windows.h>
 #include <vulkan/vulkan_win32.h>
@@ -360,7 +362,7 @@ bool currentBackbuffer(const Allocation& a) {
     return s.alive && !s.invalid && s.acquired && s.current == a.imageIndex &&
         !s.surface->lost && surfaceWindowReady(*s.surface);
 }
-struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized, contentsInitialized; };
+struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized, contentsInitialized, mutated{}; };
 struct NativePass {
     std::shared_ptr<NativeDevice> native;
     VkRenderPass pass{};
@@ -432,8 +434,10 @@ struct NativeQueryPool {
 };
 struct VulkanCommands;
 struct NativeCommandPool {
+    std::mutex mutex;
     std::shared_ptr<NativeDevice> native;
     VkCommandPool handle{};
+    std::atomic<std::thread::id> recordingThread{};
     std::uint64_t epoch{1};
     std::uint64_t lastSubmitted{};
     std::uint32_t openCount{};
@@ -441,6 +445,7 @@ struct NativeCommandPool {
     std::vector<VkCommandBuffer> retiredBuffers;
     std::vector<VulkanCommands*> liveLists;
     void release() {
+        std::scoped_lock lock(mutex);
         retiredBuffers.clear();
         if (handle) native->DestroyCommandPool(native->handle, handle, nullptr);
         handle = {};
@@ -485,7 +490,7 @@ struct Recording {
     }
     ~Recording() { release(); }
 };
-struct Pending { VkFence fence{}; std::uint64_t serial{}; std::shared_ptr<Recording> recording; };
+struct Pending { VkFence fence{}; std::uint64_t serial{}; std::vector<std::shared_ptr<Recording>> recordings; };
 struct State {
     std::shared_ptr<NativeDevice> native;
     VkPhysicalDevice physical{};
@@ -497,8 +502,10 @@ struct State {
     VkPhysicalDeviceLimits limits{};
     bool fullDrawIndexUint32{};
     std::thread::id thread{std::this_thread::get_id()};
-    std::uint64_t id{detail::allocateDeviceGeneration()}, last{}, completed{};
-    bool retired{}, lost{};
+    std::uint64_t id{detail::allocateDeviceGeneration()}, last{};
+    std::atomic<std::uint64_t> completed{0};
+    std::atomic<bool> retired{false}, lost{false};
+    std::mutex recordingsMutex;
     std::list<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
     std::vector<std::weak_ptr<NativeTextureView>> imageViews;
@@ -508,13 +515,17 @@ struct State {
     std::vector<std::weak_ptr<NativePipeline>> pipelines;
     std::vector<std::weak_ptr<NativeSwapchain>> swapchains;
     std::vector<std::weak_ptr<int>> objects;
-    Result<void> check() const {
-        if (std::this_thread::get_id() != thread) return fail(ErrorCode::InvalidState, "Vulkan operations require the creating thread");
-        if (retired || lost) return fail(ErrorCode::DeviceLost, "Vulkan device generation retired or lost", VK_ERROR_DEVICE_LOST);
+    Result<void> checkAliveForWorker() const {
+        if (retired.load(std::memory_order_acquire) || lost.load(std::memory_order_acquire))
+            return fail(ErrorCode::DeviceLost, "Vulkan device generation retired or lost", VK_ERROR_DEVICE_LOST);
         return {};
     }
+    Result<void> check() const {
+        if (std::this_thread::get_id() != thread) return fail(ErrorCode::InvalidState, "Vulkan operations require the creating thread");
+        return checkAliveForWorker();
+    }
     Result<void> accept(VkResult r, const char* operation) {
-        if (r == VK_ERROR_DEVICE_LOST) lost = true;
+        if (r == VK_ERROR_DEVICE_LOST) lost.store(true, std::memory_order_release);
         if (r != VK_SUCCESS) return nativeError(r, operation);
         return {};
     }
@@ -525,18 +536,22 @@ struct State {
             const auto r = native->GetFenceStatus(native->handle, first.fence);
             if (r == VK_NOT_READY) break;
             if (auto ok = accept(r, "vkGetFenceStatus"); !ok) return ok;
-            completed = first.serial;
+            completed.store(first.serial, std::memory_order_release);
             native->DestroyFence(native->handle, first.fence, nullptr); pending.pop_front();
         }
         return {};
     }
     void retire() {
-        if (retired || !native) return;
+        if (retired.load(std::memory_order_acquire) || !native) return;
         // The device is the lifetime boundary; public children remain inert descriptions.
         native->DeviceWaitIdle(native->handle);
         for (auto& p : pending) native->DestroyFence(native->handle, p.fence, nullptr);
         pending.clear();
-        for (auto& weak : recordings) if (auto value = weak.lock()) value->release();
+        {
+            std::scoped_lock lock(recordingsMutex);
+            for (auto& weak : recordings) if (auto value = weak.lock()) value->release();
+            recordings.clear();
+        }
         for (auto& weak : commandPools) if (auto value = weak.lock()) value->release();
         for (auto& weak : queryPools) if (auto value = weak.lock()) value->release();
         for (auto& weak : pipelines) if (auto value = weak.lock()) value->release();
@@ -544,8 +559,8 @@ struct State {
         for (auto& weak : allocations) if (auto value = weak.lock()) value->release();
         for (auto& weak : swapchains) if (auto value = weak.lock()) value->release();
         swapchains.clear();
-        recordings.clear(); commandPools.clear(); queryPools.clear(); pipelines.clear(); imageViews.clear(); allocations.clear(); objects.clear();
-        native->release(); retired = true;
+        commandPools.clear(); queryPools.clear(); pipelines.clear(); imageViews.clear(); allocations.clear(); objects.clear();
+        native->release(); retired.store(true, std::memory_order_release);
     }
     ~State() { retire(); }
 };
@@ -691,6 +706,7 @@ struct VulkanCommands final : CommandList {
     std::shared_ptr<int> token;
     ~VulkanCommands() override {
         if (!commandPool) return;
+        std::scoped_lock lock(commandPool->mutex);
         std::erase(commandPool->liveLists, this);
         if (record && record->open) {
             if (commandPool->openCount > 0) --commandPool->openCount;
@@ -702,8 +718,14 @@ struct VulkanCommands final : CommandList {
         pooledCommand = {};
     }
     Result<void> ready() const {
-        if (auto ok = owner->check(); !ok) return ok;
-        if (commandPool && !commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+        if (commandPool) {
+            if (commandPool->recordingThread.load(std::memory_order_acquire) != std::this_thread::get_id())
+                return fail(ErrorCode::InvalidState, "Vulkan command recording must run on the pool's bound recording thread");
+            if (auto ok = owner->checkAliveForWorker(); !ok) return ok;
+            if (!commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+        } else {
+            if (auto ok = owner->check(); !ok) return ok;
+        }
         if (!record || !record->open) return fail(ErrorCode::InvalidState, "Command list is not recording");
         return {};
     }
@@ -742,18 +764,24 @@ struct VulkanCommands final : CommandList {
         return it == record->uses.end() ? nullptr : &*it;
     }
     ResourceState shadow(const std::shared_ptr<Allocation>& a) { auto use = find(a); return use ? use->shadow : a->state; }
-    Use& retain(const std::shared_ptr<Allocation>& a) {
-        if (auto use = find(a)) return *use;
-        return record->uses.emplace_back(Use{a, a->version, a->state, a->imageInitialized, a->contentsInitialized});
+    Use& retain(const std::shared_ptr<Allocation>& a, bool markMutated = false) {
+        if (auto use = find(a)) {
+            if (markMutated) use->mutated = true;
+            return *use;
+        }
+        return record->uses.emplace_back(Use{a, a->version, a->state, a->imageInitialized, a->contentsInitialized, markMutated});
     }
     Result<void> begin() override {
-        if (auto ok = owner->poll(); !ok) return ok;
         if (commandPool) {
+            std::scoped_lock lock(commandPool->mutex);
+            if (auto ok = owner->checkAliveForWorker(); !ok) return ok;
             if (!commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+            if (commandPool->recordingThread.load(std::memory_order_acquire) != std::this_thread::get_id())
+                return fail(ErrorCode::InvalidState, "Vulkan command recording must run on the pool's bound recording thread");
             if (record && record->open) return fail(ErrorCode::InvalidState, "Command list is already recording");
             if (commandPool->openCount > 0) return fail(ErrorCode::InvalidState, "Another command list from this CommandPool is currently recording");
             if (recordedEpoch == commandPool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list requires CommandPool::reset() before re-recording");
-            if (record && record->submitted > owner->completed) return fail(ErrorCode::InvalidState, "Command list is still in flight");
+            if (record && record->submitted > owner->completed.load(std::memory_order_acquire)) return fail(ErrorCode::InvalidState, "Command list is still in flight");
             auto next = std::make_shared<Recording>();
             next->native = owner->native;
             next->sharedPool = commandPool;
@@ -768,12 +796,16 @@ struct VulkanCommands final : CommandList {
             next->open = true;
             recordedEpoch = commandPool->epoch;
             ++commandPool->openCount;
-            std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
-            owner->recordings.push_back(next);
+            {
+                std::scoped_lock recLock(owner->recordingsMutex);
+                std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
+                owner->recordings.push_back(next);
+            }
             record = std::move(next);
             return {};
         }
-        if (record && (record->open || record->submitted > owner->completed)) return fail(ErrorCode::InvalidState, "Command list open or in flight");
+        if (auto ok = owner->poll(); !ok) return ok;
+        if (record && (record->open || record->submitted > owner->completed.load(std::memory_order_acquire))) return fail(ErrorCode::InvalidState, "Command list open or in flight");
         auto next = std::make_shared<Recording>(); next->native = owner->native;
         VkCommandPoolCreateInfo pool{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}; pool.queueFamilyIndex = owner->family;
         if (auto ok = owner->accept(vulkan::acquireOutput(next->pool, owner->native->CreateCommandPool, owner->native->handle, &pool, nullptr), "vkCreateCommandPool"); !ok) return ok;
@@ -788,14 +820,21 @@ struct VulkanCommands final : CommandList {
             owner->native->CmdResetQueryPool(next->command, next->queries, 0, 2);
         }
         next->open = true;
-        std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
-        owner->recordings.push_back(next); record = std::move(next); return {};
+        {
+            std::scoped_lock recLock(owner->recordingsMutex);
+            std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
+            owner->recordings.push_back(next);
+        }
+        record = std::move(next); return {};
     }
     Result<void> end() override {
         if (auto ok = outsidePass(); !ok) return ok;
         const auto r = owner->native->EndCommandBuffer(record->command);
         record->open = false; record->ended = r == VK_SUCCESS;
-        if (commandPool && commandPool->openCount > 0) --commandPool->openCount;
+        if (commandPool) {
+            std::scoped_lock lock(commandPool->mutex);
+            if (commandPool->openCount > 0) --commandPool->openCount;
+        }
         return owner->accept(r, "vkEndCommandBuffer");
     }
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
@@ -817,6 +856,7 @@ struct VulkanCommands final : CommandList {
         barrier.buffer = (*a)->buffer; barrier.size = VK_WHOLE_SIZE;
         owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT,
             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+        if (use.shadow != target) use.mutated = true;
         use.shadow = target; return {};
     }
     Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) override {
@@ -835,7 +875,7 @@ struct VulkanCommands final : CommandList {
         if (shadow(*src) != ResourceState::CopySource || shadow(*dst) != ResourceState::CopyDestination)
             return fail(ErrorCode::InvalidState, "Buffer copy requires explicit source/destination states");
         // Finish all validation and allocations before retaining either argument.
-        record->uses.reserve(record->uses.size() + 2); retain(*src); retain(*dst);
+        record->uses.reserve(record->uses.size() + 2); retain(*src); retain(*dst, true);
         VkBufferMemoryBarrier before[2]{};
         for (auto& b : before) { b.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER; b.srcQueueFamilyIndex = b.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; b.size = VK_WHOLE_SIZE; }
         before[0].buffer = (*src)->buffer; before[0].srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT; before[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -881,6 +921,7 @@ struct VulkanCommands final : CommandList {
         barrier.image = (*a)->image; barrier.subresourceRange = {imageAspect(**a), 0, 1, 0, 1};
         owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        if (!use.imageInitialized || use.shadow != target) use.mutated = true;
         use.shadow = target; use.imageInitialized = true; return {};
     }
     Result<void> copyTexture(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& buffer, bool upload) {
@@ -893,7 +934,7 @@ struct VulkanCommands final : CommandList {
             shadow(buffer) != (upload ? ResourceState::CopySource : ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidState, "Texture copy requires explicit source/destination states");
         // Validate both arguments before taking references or version snapshots.
-        record->uses.reserve(record->uses.size() + 2); retain(image); retain(buffer);
+        record->uses.reserve(record->uses.size() + 2); retain(image, upload); retain(buffer, !upload);
         VkBufferMemoryBarrier b{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
         b.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_READ_BIT | VK_ACCESS_HOST_WRITE_BIT;
         b.dstAccessMask = upload ? VK_ACCESS_TRANSFER_READ_BIT : VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -962,8 +1003,8 @@ struct VulkanCommands final : CommandList {
             return fail(ErrorCode::InvalidState, "Texture region copy requires explicit source/destination states");
         }
         record->uses.reserve(record->uses.size() + 2);
-        retain(image);
-        retain(buffer);
+        retain(image, upload);
+        retain(buffer, !upload);
         VkBufferMemoryBarrier b{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
         b.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_READ_BIT | VK_ACCESS_HOST_WRITE_BIT;
         b.dstAccessMask = upload ? VK_ACCESS_TRANSFER_READ_BIT : VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -1030,7 +1071,7 @@ struct VulkanCommands final : CommandList {
             return fail(ErrorCode::InvalidState, "Resolve source texture must have initialized contents");
         record->uses.reserve(record->uses.size() + 2);
         retain(*src);
-        retain(*dst);
+        retain(*dst, true);
         VkImageMemoryBarrier barriers[2]{};
         for (auto& b : barriers) {
             b.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -1150,7 +1191,11 @@ struct VulkanCommands final : CommandList {
         if (auto ok = owner->accept(vulkan::acquireOutput(pass->framebuffer, owner->native->CreateFramebuffer, owner->native->handle, &framebuffer, nullptr), "vkCreateFramebuffer"); !ok) return ok;
         VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}; begin.renderPass = pass->pass; begin.framebuffer = pass->framebuffer;
         begin.renderArea.extent = {desc.width, desc.height}; begin.clearValueCount = static_cast<std::uint32_t>(clears.size()); begin.pClearValues = clears.data();
-        for (const auto& a : colors) retain(a).contentsInitialized = true;
+        for (std::size_t idx = 0; idx < colors.size(); ++idx) {
+            const bool isDepthAttachment = hasDepth && (idx + 1 == colors.size());
+            const bool markMutated = !isDepthAttachment || !description.depth.readOnly;
+            retain(colors[idx], markMutated).contentsInitialized = true;
+        }
         for (auto& v : retainedViews) record->textureViews.push_back(std::move(v));
         record->passes.push_back(std::move(pass));
         record->passDepth = hasDepth; record->depthReadOnly = description.depth.readOnly;
@@ -1544,8 +1589,10 @@ struct VulkanCommands final : CommandList {
             owner->native->UpdateDescriptorSets(owner->native->handle, static_cast<unsigned>(writes.size()), writes.data(), 0, nullptr);
             owner->native->CmdBindDescriptorSets(record->command, VK_PIPELINE_BIND_POINT_COMPUTE, p->layout, 0, 1, &snapshot->set, 0, nullptr);
         }
-        for (const auto& a : snapshot->resources) retain(a);
-        for (const auto& a : storageImagesToInit) retain(a).contentsInitialized = true;
+        for (std::size_t i = 0; i < snapshot->resources.size(); ++i) {
+            retain(snapshot->resources[i], snapshot->expectedStates[i] == ResourceState::UnorderedAccess);
+        }
+        for (const auto& a : storageImagesToInit) retain(a, true).contentsInitialized = true;
         record->descriptors += p->descriptorSize;
         record->selectedComputeBindings = snapshot.get();
         record->snapshots.push_back(std::move(snapshot));
@@ -1578,7 +1625,7 @@ struct VulkanCommands final : CommandList {
         if (!(*a)->desc.storage) return fail(ErrorCode::InvalidArgument, "uavBarrier requires a storage buffer");
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "uavBarrier requires UnorderedAccess state");
         record->uses.reserve(record->uses.size() + 1);
-        retain(*a);
+        retain(*a, true);
         VkBufferMemoryBarrier barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
         barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
@@ -1595,7 +1642,7 @@ struct VulkanCommands final : CommandList {
         if (!(*a)->textureDesc.storage) return fail(ErrorCode::InvalidArgument, "uavBarrier requires a storage texture");
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "uavBarrier requires UnorderedAccess state");
         record->uses.reserve(record->uses.size() + 1);
-        retain(*a);
+        retain(*a, true);
         VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
         barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
@@ -1659,10 +1706,14 @@ struct VulkanCommandPool final : CommandPool {
     std::shared_ptr<NativeCommandPool> pool;
     std::shared_ptr<int> token;
     ~VulkanCommandPool() override {
-        if (pool) pool->ownerAlive = false;
+        if (pool) {
+            std::scoped_lock lock(pool->mutex);
+            pool->ownerAlive = false;
+        }
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return fail(ErrorCode::InvalidState, "Cannot allocate from a CommandPool while a command list from it is recording");
         }
@@ -1701,10 +1752,11 @@ struct VulkanCommandPool final : CommandPool {
     }
     Result<void> reset() override {
         if (auto ok = owner->poll(); !ok) return ok;
+        std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return fail(ErrorCode::InvalidState, "Command pool cannot reset while a command list is recording");
         }
-        if (pool->lastSubmitted > owner->completed) {
+        if (pool->lastSubmitted > owner->completed.load(std::memory_order_acquire)) {
             return fail(ErrorCode::InvalidState, "Command pool has in-flight submissions");
         }
         if (!pool->retiredBuffers.empty()) {
@@ -1724,23 +1776,72 @@ struct VulkanCommandPool final : CommandPool {
         ++pool->epoch;
         return {};
     }
+    Result<void> bindRecordingThread() override {
+        std::scoped_lock lock(pool->mutex);
+        if (auto ok = owner->checkAliveForWorker(); !ok) return ok;
+        if (!pool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+        if (pool->openCount > 0) {
+            return fail(ErrorCode::InvalidState, "Command pool cannot rebind recording thread while a command list is recording");
+        }
+        if (pool->lastSubmitted > owner->completed.load(std::memory_order_acquire)) {
+            return fail(ErrorCode::InvalidState, "Command pool cannot rebind recording thread while submissions are in flight");
+        }
+        pool->recordingThread.store(std::this_thread::get_id(), std::memory_order_release);
+        return {};
+    }
 };
 struct VulkanQueue final : CommandQueue {
     std::shared_ptr<State> owner;
     Result<Fence> submit(CommandList& value) override {
+        CommandList* single = &value;
+        return submit(std::span<CommandList* const>{&single, 1});
+    }
+    Result<Fence> submit(std::span<CommandList* const> lists) override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        auto* commands = dynamic_cast<VulkanCommands*>(&value);
-        if (!commands || commands->owner != owner) return fail(ErrorCode::WrongDevice, "Command list belongs to another device");
-        if (commands->commandPool && !commands->commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
-        if (commands->commandPool && commands->recordedEpoch != commands->commandPool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list was reset and must be re-recorded");
-        auto record = commands->record;
-        if (!record || !record->ended || record->submitted) return fail(ErrorCode::InvalidState, "Command list must be ended and unsubmitted");
+        if (lists.empty()) return fail(ErrorCode::InvalidArgument, "Batch submit requires at least one command list");
         if (owner->last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Fence sequence exhausted");
-        for (const auto& use : record->uses)
-            if (use.version != use.allocation->version || use.allocation->version == UINT64_MAX || !currentBackbuffer(*use.allocation))
-                return fail(ErrorCode::InvalidState, "Stale command resource version");
+        std::vector<VulkanCommands*> validated;
+        std::vector<std::shared_ptr<Recording>> records;
+        std::vector<VkCommandBuffer> nativeBuffers;
+        validated.reserve(lists.size());
+        records.reserve(lists.size());
+        nativeBuffers.reserve(lists.size());
+        std::unordered_set<VulkanCommands*> seenLists;
+        std::unordered_set<Allocation*> seenRead;
+        std::unordered_set<Allocation*> seenMutated;
+        for (CommandList* item : lists) {
+            if (!item) return fail(ErrorCode::InvalidArgument, "Null command list in batch submit");
+            auto* commands = dynamic_cast<VulkanCommands*>(item);
+            if (!commands || commands->owner != owner) return fail(ErrorCode::WrongDevice, "Command list belongs to another device");
+            if (!seenLists.insert(commands).second) return fail(ErrorCode::InvalidArgument, "Duplicate command list in batch submit");
+            if (commands->commandPool) {
+                std::scoped_lock lock(commands->commandPool->mutex);
+                if (!commands->commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+                if (commands->commandPool->openCount > 0) return fail(ErrorCode::InvalidState, "Command pool has a command list currently recording");
+                if (commands->recordedEpoch != commands->commandPool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list was reset and must be re-recorded");
+            }
+            auto record = commands->record;
+            if (!record || !record->ended || record->open || record->submitted) return fail(ErrorCode::InvalidState, "Command list must be ended and unsubmitted");
+            for (const auto& use : record->uses) {
+                if (use.version != use.allocation->version || use.allocation->version == UINT64_MAX || !currentBackbuffer(*use.allocation))
+                    return fail(ErrorCode::InvalidState, "Stale command resource version");
+                Allocation* key = use.allocation.get();
+                if (use.mutated) {
+                    if (seenMutated.contains(key) || seenRead.contains(key))
+                        return fail(ErrorCode::InvalidState, "Batch submit has conflicting resource mutations across command lists");
+                    seenMutated.insert(key);
+                } else {
+                    if (seenMutated.contains(key))
+                        return fail(ErrorCode::InvalidState, "Batch submit has conflicting resource mutation and read across command lists");
+                    seenRead.insert(key);
+                }
+            }
+            validated.push_back(commands);
+            nativeBuffers.push_back(record->command);
+            records.push_back(std::move(record));
+        }
         // Allocate the retention node before native submission; no throwing work follows success.
-        auto& pending = owner->pending.emplace_back(Pending{{}, owner->last + 1, record});
+        auto& pending = owner->pending.emplace_back(Pending{{}, owner->last + 1, std::move(records)});
         VkFenceCreateInfo fence{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
         auto r = vulkan::acquireOutput(pending.fence, owner->native->CreateFence, owner->native->handle, &fence, nullptr);
         if (r != VK_SUCCESS) {
@@ -1748,22 +1849,35 @@ struct VulkanQueue final : CommandQueue {
             auto status = owner->accept(r, "vkCreateFence");
             return std::unexpected(status.error());
         }
-        VkSubmitInfo info{VK_STRUCTURE_TYPE_SUBMIT_INFO}; info.commandBufferCount = 1; info.pCommandBuffers = &record->command;
+        VkSubmitInfo info{VK_STRUCTURE_TYPE_SUBMIT_INFO};
+        info.commandBufferCount = static_cast<std::uint32_t>(nativeBuffers.size());
+        info.pCommandBuffers = nativeBuffers.data();
         const auto submittedAt = std::chrono::steady_clock::now();
         r = owner->native->QueueSubmit(owner->native->queue, 1, &info, pending.fence);
         if (r != VK_SUCCESS) {
             owner->native->DestroyFence(owner->native->handle, pending.fence, nullptr); owner->pending.pop_back();
             if (auto ok = owner->accept(r, "vkQueueSubmit"); !ok) return std::unexpected(ok.error());
         }
-        record->submitted = ++owner->last;
-        record->submittedAt = submittedAt;
-        if (commands->commandPool) {
-            commands->commandPool->lastSubmitted = std::max(commands->commandPool->lastSubmitted, owner->last);
-        }
-        for (auto& use : record->uses) {
-            use.allocation->state = use.shadow; use.allocation->imageInitialized = use.imageInitialized;
-            use.allocation->contentsInitialized = use.contentsInitialized;
-            use.allocation->lastUse = owner->last; ++use.allocation->version;
+        ++owner->last;
+        std::unordered_set<Allocation*> versionBumped;
+        for (std::size_t i = 0; i < validated.size(); ++i) {
+            auto* commands = validated[i];
+            auto& record = pending.recordings[i];
+            record->submitted = owner->last;
+            record->submittedAt = submittedAt;
+            if (commands->commandPool) {
+                std::scoped_lock lock(commands->commandPool->mutex);
+                commands->commandPool->lastSubmitted = std::max(commands->commandPool->lastSubmitted, owner->last);
+            }
+            for (auto& use : record->uses) {
+                if (use.mutated) {
+                    use.allocation->state = use.shadow;
+                    use.allocation->imageInitialized = use.imageInitialized;
+                    use.allocation->contentsInitialized = use.contentsInitialized;
+                }
+                use.allocation->lastUse = owner->last;
+                if (versionBumped.insert(use.allocation.get()).second) ++use.allocation->version;
+            }
         }
         return Fence{owner->last, owner->id};
     }
@@ -1848,12 +1962,19 @@ struct VulkanDevice final : Device {
         ResourceStatistics result;
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
-        std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
+        {
+            std::scoped_lock recLock(owner->recordingsMutex);
+            std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
+        }
         std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
         result.trackedObjects = owner->objects.size();
         for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
         result.pendingSubmissions = owner->pending.size();
-        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size() + p.recording->pipelines.size() + (p.recording->queryHandle() ? 1 : 0);
+        for (auto& p : owner->pending) {
+            for (const auto& rec : p.recordings) {
+                result.pendingObjectReferences += 1 + rec->uses.size() + rec->passes.size() + rec->pipelines.size() + (rec->queryHandle() ? 1 : 0);
+            }
+        }
         return result;
     }
     Result<MemoryBudget> queryMemoryBudget(MemorySegment) override {
@@ -2314,6 +2435,7 @@ struct VulkanDevice final : Device {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         auto poolState = std::make_shared<NativeCommandPool>();
         poolState->native = owner->native;
+        poolState->recordingThread.store(owner->thread, std::memory_order_release);
         VkCommandPoolCreateInfo info{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
         info.queueFamilyIndex = owner->family;
         if (auto ok = owner->accept(vulkan::acquireOutput(poolState->handle, owner->native->CreateCommandPool, owner->native->handle, &info, nullptr), "vkCreateCommandPool"); !ok) {
