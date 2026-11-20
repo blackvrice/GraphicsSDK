@@ -38,6 +38,13 @@ struct GraphicsPipelineDesc {
     DepthState depthState;
     bool operator==(const GraphicsPipelineDesc&) const = default;
 };
+struct ComputePipelineDesc {
+    ShaderBinary compute;
+    BindingLayout bindingLayout;
+    // Threadgroup dimensions used by Metal dispatch; D3D12/Vulkan read numthreads/LocalSize from shader.
+    std::uint32_t threadgroupSizeX{1}, threadgroupSizeY{1}, threadgroupSizeZ{1};
+    bool operator==(const ComputePipelineDesc&) const = default;
+};
 class Pipeline { public: virtual ~Pipeline() = default; };
 using PipelinePtr = std::shared_ptr<Pipeline>;
 struct CachedGraphicsPipeline { PipelinePtr pipeline; bool hit{}; };

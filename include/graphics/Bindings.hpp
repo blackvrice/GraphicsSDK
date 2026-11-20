@@ -3,8 +3,8 @@
 #include <vector>
 
 namespace gfx {
-enum class BindingType { Texture2D, ConstantBuffer };
-enum class ShaderVisibility { Vertex, Fragment, All };
+enum class BindingType { Texture2D, ConstantBuffer, StorageBuffer, StorageTexture2D };
+enum class ShaderVisibility { Vertex, Fragment, All, Compute };
 enum class SamplerFilter { Point, Linear };
 enum class SamplerAddress { Clamp, Repeat };
 struct BindingLayoutEntry {
@@ -36,5 +36,18 @@ struct ConstantBufferBinding {
     std::uint32_t binding{}, element{}; BufferPtr buffer;
     std::uint64_t offset{}, size{}; // Both multiples of 256; size is 256..65536.
 };
-struct ResourceBindings { std::vector<TextureBinding> textures; std::vector<ConstantBufferBinding> constants; };
+struct StorageBufferBinding {
+    std::uint32_t binding{}, element{}; BufferPtr buffer;
+    std::uint64_t offset{}, size{}; // Offset multiple of 256; size=0 means remaining bytes (multiple of 4).
+};
+// Specify either texture or view (with Storage usage), never both.
+struct StorageTextureBinding {
+    std::uint32_t binding{}, element{}; TexturePtr texture; TextureViewPtr view;
+};
+struct ResourceBindings {
+    std::vector<TextureBinding> textures;
+    std::vector<ConstantBufferBinding> constants;
+    std::vector<StorageBufferBinding> storageBuffers;
+    std::vector<StorageTextureBinding> storageTextures;
+};
 }

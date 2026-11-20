@@ -84,8 +84,11 @@ void cpu(){
     check(resolvedRtv.format == F::RGBA8UNorm && resolvedRtv.usage == gfx::TextureViewUsage::RenderTarget, "Valid RTV TextureView");
     const auto resolvedDsv = take(gfx::validateTextureView(depthDesc, {std::nullopt, gfx::TextureViewUsage::DepthStencil}));
     check(resolvedDsv.format == F::D32Float && resolvedDsv.usage == gfx::TextureViewUsage::DepthStencil, "Valid DSV TextureView");
+    const gfx::TextureDesc colorStorageDesc{16, 16, F::RGBA8UNorm, false, false, true};
+    const auto resolvedStorage = take(gfx::validateTextureView(colorStorageDesc, {std::nullopt, gfx::TextureViewUsage::Storage}));
+    check(resolvedStorage.format == F::RGBA8UNorm && resolvedStorage.usage == gfx::TextureViewUsage::Storage, "Valid Storage TextureView");
     reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, gfx::TextureViewUsage::Storage}),
-           gfx::ErrorCode::Unsupported, "Storage/UAV view unsupported");
+           gfx::ErrorCode::InvalidArgument, "Storage/UAV view requires storage texture");
     reject(gfx::validateTextureView(colorRtDesc, {std::nullopt, static_cast<gfx::TextureViewUsage>(99)}),
            gfx::ErrorCode::InvalidArgument, "Unknown TextureView usage");
     reject(gfx::validateTextureView(colorRtDesc, {F::BGRA8UNorm, gfx::TextureViewUsage::ShaderRead}),

@@ -40,8 +40,16 @@ Texture::footprint는 buffer-texture copy의 총 바이트, aligned rowPitch,
 Buffer::write는 Upload, Buffer::read는 Readback 메모리에만 허용한다.
 
 CommandList는 transition, copy, color/depth render pass, pipeline, resource/vertex/index binding,
-viewport, scissor, draw/indexed draw/instancing, debug marker, 2개 timestamp 슬롯을 지원한다.
+viewport, scissor, draw/indexed draw/instancing, compute pipeline/resource binding/dispatch/uavBarrier,
+debug marker, 2개 timestamp 슬롯을 지원한다.
 GPU timestamp read는 resolve 후 submit fence 완료 시에만 가능하다.
+`Device::createComputePipeline(ComputePipelineDesc)`는 `ShaderStage::Compute`(HLSL `cs_5_1`/`cs_6_0`,
+SPIR-V 1.3 `GLCompute`, Metal MSL `gfx_compute`) 파이프라인을 생성하며 `StorageBuffer`(256바이트 정렬 오프셋,
+4바이트 배수 크기, `BufferDesc::storage=true`), `StorageTexture2D`(`TextureDesc::storage=true` 또는
+`TextureViewUsage::Storage`), `ConstantBuffer`, `Texture2D`, static sampler를 지원한다.
+`setComputePipeline`, `bindComputeResources`, `dispatch`, `uavBarrier`는 렌더 패스 밖에서 기록하며
+`ResourceState::UnorderedAccess`와 `ShaderRead`/`CopySource` 간 명시적 `transition`으로 Graphics-Compute
+동기화를 보장한다. [Compute 파이프라인 보고서](PHASE9_COMPUTE_REPORT.md)를 따른다.
 `Device::createCommandPool()`은 네이티브 command allocator/pool을 명시적으로 소유·재사용하는
 `CommandPool`을 생성한다. 같은 풀에서는 한 번에 하나의 `CommandList`만 기록할 수 있으며,
 같은 epoch에서 이미 기록한 풀 소속 리스트의 재기록은 `CommandPool::reset()` 이후에만 허용된다.

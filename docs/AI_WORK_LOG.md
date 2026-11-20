@@ -196,3 +196,35 @@
   - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
   - `P9-CMD-02`: 병렬 명령 기록·Thread-local Command Allocator 및 벤치마크.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05`, `P9-CMD-05/06`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P9-CMP-01` Compute Shader·Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch 구현·실기 검증
+
+- **기준 커밋**: `5383a566` (`Ignore .idea directory in .gitignore`, 직전 기능 `b309379e`)
+- **작업 목적**:
+  - 선행 충족 작업 `P9-CMP-01` 구현: `ShaderStage::Compute`(`cs_5_1`/`cs_6_0`/SPIR-V 1.3 `GLCompute`/MSL `gfx_compute`), `ComputePipelineDesc`, `Device::createComputePipeline`, `StorageBuffer`/`StorageTexture2D`(`TextureViewUsage::Storage` 활성화), `ResourceState::UnorderedAccess`, `setComputePipeline`/`bindComputeResources`/`dispatch`/`uavBarrier`, `FormatSupport::storage` 및 `caps.compute = true`를 D3D12·Vulkan·Metal에 구현하고 Windows 실기·Validation·WARP·손실복구·설치 소비자로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P9-CMP-03`으로 정직하게 분리 유지.
+- **수정 파일 (30개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/Shader.hpp`, `include/graphics/Bindings.hpp`, `include/graphics/Pipeline.hpp`, `include/graphics/Device.hpp`, `include/graphics/CommandList.hpp`
+  - `src/foundation/Bindings.cpp`, `src/foundation/RenderPass.cpp`, `src/shader/Shader.cpp`, `src/backends/vulkan/Spirv.hpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`, `src/backends/metal/MetalGraphics.hpp`
+  - `tests/fixtures/ComputeFixtures.hpp`, `tests/ComputeTests.cpp`, `tests/CoreTests.cpp`, `tests/VulkanTests.cpp`, `tests/MetalSubmissionTests.cpp`, `tests/RenderPassTests.cpp`, `tests/TextureViewTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE9_COMPUTE_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 내용과 결과** (격리 빌드 `out/p9-compute`, 설치 `out/p9-compute-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `13099ff5ee4e774dc2c3e3973fdf3839415d2a1b30e0bd02a73ee30d171c19b5`):
+  - SPIR-V 1.3 Compute 픽스처 2종 Khronos SPIRV-Tools Vulkan 1.1 검증 PASS (`buffer_scale_add` 195 words, `texture_generate` 237 words).
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0.
+  - CPU 계약 5종(`core_contracts`, `render_pass_contracts`, `binding_layout_contracts`, `spirv_interface_contracts`, `spirv_binding_contracts`) PASS.
+  - `gfx_compute_tests --d3d12` (물리 GPU 2종): 통과 (`assertions=234, dispatches=10, images=4, rejections=46, errors=0`).
+  - `gfx_compute_tests --d3d12 --validation` (Debug + GBV, 2종): 통과 (`assertions=238, dispatches=10, images=4, rejections=46, errors=0`).
+  - `gfx_compute_tests --d3d12 --warp` (WARP + `removeForTesting`/`recover`): 통과 (`assertions=156, dispatches=6, images=2, rejections=25, errors=0`).
+  - `gfx_compute_tests --vulkan` (Windows Vulkan 2종): 통과 (`assertions=226, dispatches=10, images=4, rejections=46, errors=0`).
+  - `gfx_compute_tests --vulkan --validation` (고정 VVL 1.3.290 core+sync, 2종): 통과 (`assertions=230, dispatches=10, images=4, rejections=46, errors=0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12 하드웨어/GBV/WARP 및 Vulkan 하드웨어/고정 VVL **5/5 모드 통과**.
+  - CTest 34종 회귀: **34/34 통과** (33.62s).
+  - `tools/roadmap.py --check`: PASS (197 task IDs: 115 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P9-CMD-02`: 병렬 명령 기록·Thread-local Command Allocator 및 벤치마크.
+  - `P8-TEX-03`: MSAA 텍스처 및 Resolve 경로.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05`, `P9-CMD-05/06`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.

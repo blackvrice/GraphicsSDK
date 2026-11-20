@@ -48,6 +48,13 @@ public:
     [[nodiscard]] virtual Result<void> draw(std::uint32_t vertices, std::uint32_t instances=1, std::uint32_t firstVertex=0, std::uint32_t firstInstance=0) = 0;
     // Caller guarantees that index values + baseVertex address valid vertex data.
     [[nodiscard]] virtual Result<void> drawIndexed(std::uint32_t indices, std::uint32_t instances=1, std::uint32_t firstIndex=0, std::int32_t baseVertex=0, std::uint32_t firstInstance=0) = 0;
+    // Compute commands run outside an active render pass.
+    [[nodiscard]] virtual Result<void> setComputePipeline(const PipelinePtr&) = 0;
+    [[nodiscard]] virtual Result<void> bindComputeResources(const ResourceBindings&) = 0;
+    [[nodiscard]] virtual Result<void> dispatch(std::uint32_t groupCountX, std::uint32_t groupCountY=1, std::uint32_t groupCountZ=1) = 0;
+    // Explicit UAV barrier ordering prior UAV writes before subsequent UAV reads/writes.
+    [[nodiscard]] virtual Result<void> uavBarrier(const BufferPtr&) = 0;
+    [[nodiscard]] virtual Result<void> uavBarrier(const TexturePtr&) = 0;
     [[nodiscard]] virtual Result<void> writeTimestamp(std::uint32_t index) = 0;
     [[nodiscard]] virtual Result<void> resolveTimestamps() = 0;
     [[nodiscard]] virtual Result<double> elapsedGpuMilliseconds() = 0;

@@ -51,7 +51,7 @@ void gpu(gfx::Device& device, bool validation) {
     const auto selected=std::find_if(candidates.begin(),candidates.end(),[&](const auto& a){return a.id==device.caps().adapterId;});
     check(selected!=candidates.end() && selected->name==device.caps().adapterName && selected->softwareAdapter==device.caps().softwareAdapter,
           "Default selection reports an enumerated native identity");
-    check(!device.caps().compute && device.caps().timestampQueries, "Capabilities reflect implementation");
+    check(device.caps().compute && device.caps().timestampQueries, "Capabilities reflect implementation");
     check(!device.createBuffer({0}), "Reject empty buffers");
     check(!device.createTexture({0, 64}), "Reject empty textures");
     check(!device.createGraphicsPipeline({}), "Reject empty shader pipeline");

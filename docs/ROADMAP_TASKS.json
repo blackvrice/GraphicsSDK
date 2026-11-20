@@ -3576,15 +3576,50 @@
       "id": "P9-CMP-01",
       "phase": 9,
       "group": "P9-CMP",
-      "title": "Compute Shader·Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch",
-      "status": "todo",
+      "title": "Compute Shader·Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P8-CAP-01"
       ],
-      "work": "Compute 파이프라인, Storage Buffer/Texture(UAV) 바인딩, UAV 배리어, dispatch(x, y, z)를 D3D12/Vulkan/Metal에 구현하고 caps.compute를 실제 지원 범위로 갱신한다.",
-      "done_when": "Compute 연산 전체 바이트/텍스처 참조, Graphics-Compute 동기화, validation 오류 0 통과.",
-      "evidence": []
+      "work": "ShaderStage::Compute(cs_5_1/cs_6_0/SPIR-V 1.3 GLCompute/MSL gfx_compute), ComputePipelineDesc, Device::createComputePipeline, StorageBuffer/StorageTexture2D(TextureViewUsage::Storage 포함), ResourceState::UnorderedAccess, setComputePipeline/bindComputeResources/dispatch/uavBarrier를 D3D12/Vulkan/Metal에 구현하고 caps.compute=true 및 FormatSupport::storage를 반영했다. Khronos SPIRV-Tools 검증 픽스처, CPU 5종, Windows D3D12(하드웨어 2종·Debug+GBV·WARP·손실/복구)·Vulkan(하드웨어 2종·고정 VVL 1.3.290 core+sync)·설치 find_package 소비자 5모드 및 CTest 34종에서 StorageBuffer uavBarrier 연쇄·비영 오프셋, StorageTexture2D→Graphics 샘플링 동기화, CommandPool+타임스탬프, 거부 계약, 자원 0 회수, validation 오류 0을 확인했다.",
+      "done_when": "Windows D3D12/Vulkan/Validation/WARP·손실복구·설치 소비자 Compute 연산 전체 바이트/텍스처 참조, Graphics-Compute 동기화, validation 오류 0 통과.",
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/Shader.hpp",
+        "include/graphics/Bindings.hpp",
+        "include/graphics/Pipeline.hpp",
+        "include/graphics/Device.hpp",
+        "include/graphics/CommandList.hpp",
+        "src/foundation/Bindings.cpp",
+        "src/foundation/RenderPass.cpp",
+        "src/shader/Shader.cpp",
+        "src/backends/vulkan/Spirv.hpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "tests/fixtures/ComputeFixtures.hpp",
+        "tests/ComputeTests.cpp",
+        "docs/PHASE9_COMPUTE_REPORT.md"
+      ]
+    },
+    {
+      "id": "P9-CMP-03",
+      "phase": 9,
+      "group": "P9-CMP",
+      "title": "Compute Pipeline·UAV·Dispatch macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P9-CMP-01"
+      ],
+      "work": "Metal.cpp와 Vulkan.cpp의 Compute Pipeline, StorageBuffer/StorageTexture2D(UAV), uavBarrier, dispatch 및 Graphics-Compute 동기화 구현을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·전체 바이트/픽셀 참조로 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 StorageBuffer·StorageTexture2D Compute 연산, Graphics-Compute 동기화, 거부 및 자원 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "src/backends/metal/MetalGraphics.hpp",
+        "docs/PHASE9_COMPUTE_REPORT.md"
+      ]
     },
     {
       "id": "P9-CMP-02",

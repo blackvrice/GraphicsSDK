@@ -269,11 +269,11 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CreateBuffer) X(DestroyBuffer) X(GetBufferMemoryRequirements) X(AllocateMemory) X(FreeMemory) X(BindBufferMemory) \
     X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) \
     X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
-    X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(DestroyPipeline) \
+    X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(CreateComputePipelines) X(DestroyPipeline) \
     X(CreateSampler) X(DestroySampler) X(CreateDescriptorSetLayout) X(DestroyDescriptorSetLayout) \
     X(CreateDescriptorPool) X(DestroyDescriptorPool) X(AllocateDescriptorSets) X(UpdateDescriptorSets) X(CmdBindDescriptorSets) \
     X(CreateQueryPool) X(DestroyQueryPool) X(CmdResetQueryPool) X(CmdWriteTimestamp) X(GetQueryPoolResults) \
-    X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) \
+    X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) X(CmdDispatch) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
     X(CreateCommandPool) X(DestroyCommandPool) X(ResetCommandPool) X(AllocateCommandBuffers) X(FreeCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
     X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences) X(CreateSemaphore) X(DestroySemaphore)
@@ -385,7 +385,7 @@ struct NativePipeline {
     std::vector<VkSampler> samplers;
     VkDescriptorSetLayout setLayout{};
     unsigned descriptorSize{};
-    bool sampled{}, linear{};
+    bool sampled{}, linear{}, isCompute{};
     void release() {
         if (pipeline) native->DestroyPipeline(native->handle, pipeline, nullptr);
         if (layout) native->DestroyPipelineLayout(native->handle, layout, nullptr);
@@ -414,6 +414,7 @@ struct NativeBindings {
     std::shared_ptr<NativeDevice> native;
     std::shared_ptr<NativePipeline> pipeline;
     std::vector<std::shared_ptr<Allocation>> resources;
+    std::vector<ResourceState> expectedStates;
     std::vector<std::shared_ptr<NativeTextureView>> textureViews;
     VkDescriptorPool pool{};
     VkDescriptorSet set{};
@@ -458,6 +459,7 @@ struct Recording {
     std::vector<std::shared_ptr<NativeTextureView>> textureViews;
     std::vector<std::shared_ptr<NativePipeline>> pipelines;
     std::shared_ptr<NativePipeline> selectedPipeline;
+    std::shared_ptr<NativePipeline> selectedComputePipeline;
     std::vector<Format> passColors;
     bool passDepth{}, depthReadOnly{};
     std::uint32_t width{}, height{};
@@ -465,6 +467,7 @@ struct Recording {
     IndexView indices;
     std::vector<std::unique_ptr<NativeBindings>> snapshots;
     NativeBindings* selectedBindings{};
+    NativeBindings* selectedComputeBindings{};
     unsigned descriptors{};
     VkQueryPool queries{};
     std::array<bool, 2> timestampWritten{};
@@ -477,7 +480,7 @@ struct Recording {
         if (queries) native->DestroyQueryPool(native->handle, queries, nullptr);
         queries = {}; timestampWritten = {}; timestampsResolved = timestampStartFirst = false; timestampResult.reset();
         pool = {}; command = {}; sharedQueries.reset(); sharedPool.reset();
-        selectedBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); textureViews.clear(); uses.clear(); open = ended = inPass = false;
+        selectedBindings = {}; selectedComputeBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); selectedComputePipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); textureViews.clear(); uses.clear(); open = ended = inPass = false;
     }
     ~Recording() { release(); }
 };
@@ -616,6 +619,7 @@ VkImageLayout imageLayout(ResourceState state) {
     if (state == ResourceState::ShaderRead) return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     if (state == ResourceState::DepthWrite) return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     if (state == ResourceState::DepthRead) return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    if (state == ResourceState::UnorderedAccess) return VK_IMAGE_LAYOUT_GENERAL;
     return VK_IMAGE_LAYOUT_GENERAL;
 }
 VkAccessFlags access(ResourceState state) {
@@ -630,6 +634,7 @@ VkAccessFlags access(ResourceState state) {
     if (state == ResourceState::VertexBuffer) return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
     if (state == ResourceState::IndexBuffer) return VK_ACCESS_INDEX_READ_BIT;
     if (state == ResourceState::VertexAndIndexBuffer) return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
+    if (state == ResourceState::UnorderedAccess) return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
     return VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 }
 VkFormat textureFormat(Format f) {
@@ -787,8 +792,10 @@ struct VulkanCommands final : CommandList {
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         const auto a = buffer(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer)
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess)
             return fail(ErrorCode::Unsupported, "Vulkan transfer state unsupported");
+        if (target == ResourceState::UnorderedAccess && !(*a)->desc.storage)
+            return fail(ErrorCode::InvalidArgument, "UnorderedAccess state requires a storage buffer");
         if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Host buffer state is fixed");
@@ -836,9 +843,10 @@ struct VulkanCommands final : CommandList {
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = texture(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::Present)
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::Present && target != ResourceState::UnorderedAccess)
             return fail(ErrorCode::Unsupported, "Vulkan texture transfer state unsupported");
         if (target == ResourceState::Present && !(*a)->swapchain) return fail(ErrorCode::InvalidArgument, "Present requires a swapchain backbuffer");
+        if (target == ResourceState::UnorderedAccess && !(*a)->textureDesc.storage) return fail(ErrorCode::InvalidArgument, "UnorderedAccess state requires a storage texture");
         if (target == ResourceState::ShaderRead && (*a)->swapchain) return fail(ErrorCode::Unsupported, "Backbuffer sampling unsupported");
         if ((target == ResourceState::DepthWrite || target == ResourceState::DepthRead) && !(*a)->textureDesc.depthStencil)
             return fail(ErrorCode::InvalidArgument, "Depth state requires depth texture");
@@ -1095,6 +1103,7 @@ struct VulkanCommands final : CommandList {
         auto value = std::dynamic_pointer_cast<VulkanPipeline>(pipeline);
         if (!value) return fail(pipeline ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Vulkan graphics pipeline");
         if (value->owner != owner) return fail(ErrorCode::WrongDevice, "Pipeline belongs to another generation");
+        if (value->native->isCompute) return fail(ErrorCode::InvalidArgument, "Graphics setPipeline rejects a compute pipeline");
         if (value->native->colors != record->passColors || value->native->depth.has_value() != record->passDepth) return fail(ErrorCode::InvalidArgument, "Pipeline outputs do not match active pass");
         if (std::find(record->pipelines.begin(), record->pipelines.end(), value->native) == record->pipelines.end()) record->pipelines.push_back(value->native);
         record->selectedPipeline = value->native;
@@ -1116,6 +1125,7 @@ struct VulkanCommands final : CommandList {
         const auto p = record->selectedPipeline;
         if (!p) return fail(ErrorCode::InvalidState, "Resource binding requires a pipeline");
         if (p->descriptorSize > 256 - record->descriptors || record->snapshots.size() >= 256) return fail(ErrorCode::InvalidState, "Command descriptor capacity exhausted; split command list");
+        if (!bindings.storageBuffers.empty() || !bindings.storageTextures.empty()) return fail(ErrorCode::InvalidArgument, "Storage bindings require bindComputeResources");
         if (bindings.textures.size() + bindings.constants.size() != p->descriptorSize) return fail(ErrorCode::InvalidArgument, "Every resource array element must be bound exactly once");
         auto snapshot = std::make_unique<NativeBindings>(); snapshot->native = owner->native; snapshot->pipeline = p; snapshot->resources.resize(p->descriptorSize);
         std::vector<VkDescriptorImageInfo> images(p->descriptorSize);
@@ -1279,6 +1289,253 @@ struct VulkanCommands final : CommandList {
         if (auto ok = inputReady(0, instances, 0, firstInstance, true, baseVertex); !ok) return ok;
         if (auto ok = bindingsReady(); !ok) return ok;
         owner->native->CmdDrawIndexed(record->command, count, instances, firstIndex, baseVertex, firstInstance); return {};
+    }
+    Result<void> setComputePipeline(const PipelinePtr& pipeline) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto value = std::dynamic_pointer_cast<VulkanPipeline>(pipeline);
+        if (!value) return fail(pipeline ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Vulkan compute pipeline");
+        if (value->owner != owner) return fail(ErrorCode::WrongDevice, "Compute pipeline belongs to another generation");
+        if (!value->native->isCompute) return fail(ErrorCode::InvalidArgument, "setComputePipeline requires a compute pipeline");
+        if (std::find(record->pipelines.begin(), record->pipelines.end(), value->native) == record->pipelines.end()) {
+            record->pipelines.push_back(value->native);
+        }
+        record->selectedComputePipeline = value->native;
+        record->selectedComputeBindings = {};
+        owner->native->CmdBindPipeline(record->command, VK_PIPELINE_BIND_POINT_COMPUTE, value->native->pipeline);
+        return {};
+    }
+    Result<void> bindComputeResources(const ResourceBindings& bindings) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        const auto p = record->selectedComputePipeline;
+        if (!p) return fail(ErrorCode::InvalidState, "Compute resource binding requires a compute pipeline");
+        if (p->descriptorSize > 256 - record->descriptors || record->snapshots.size() >= 256) {
+            return fail(ErrorCode::InvalidState, "Command descriptor capacity exhausted; split command list");
+        }
+        const std::size_t totalBindings = bindings.textures.size() + bindings.constants.size() +
+            bindings.storageBuffers.size() + bindings.storageTextures.size();
+        if (totalBindings != p->descriptorSize) {
+            return fail(ErrorCode::InvalidArgument, "Every compute resource array element must be bound exactly once");
+        }
+        auto snapshot = std::make_unique<NativeBindings>();
+        snapshot->native = owner->native;
+        snapshot->pipeline = p;
+        snapshot->resources.resize(p->descriptorSize);
+        snapshot->expectedStates.resize(p->descriptorSize, ResourceState::Common);
+        std::vector<VkDescriptorImageInfo> images(p->descriptorSize);
+        std::vector<VkDescriptorBufferInfo> buffers(p->descriptorSize);
+        std::vector<VkWriteDescriptorSet> writes;
+        writes.reserve(p->descriptorSize);
+        std::vector<std::shared_ptr<Allocation>> storageImagesToInit;
+
+        auto slot = [&](unsigned binding, unsigned element, BindingType type) -> Result<unsigned> {
+            if (binding >= p->bindings.entries.size()) return fail(ErrorCode::InvalidArgument, "Unknown compute resource entry");
+            const auto& e = p->bindings.entries[binding];
+            if (e.type != type || element >= e.count) return fail(ErrorCode::InvalidArgument, "Compute resource type/element mismatch");
+            unsigned at = element;
+            for (unsigned i = 0; i < binding; ++i) at += p->bindings.entries[i].count;
+            if (snapshot->resources[at]) return fail(ErrorCode::InvalidArgument, "Duplicate compute resource element");
+            return at;
+        };
+
+        for (const auto& b : bindings.textures) {
+            auto at = slot(b.binding, b.element, BindingType::Texture2D); if (!at) return std::unexpected(at.error());
+            if (b.texture && b.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in TextureBinding, not both");
+            std::shared_ptr<Allocation> a;
+            VkImageView nativeView{};
+            if (b.view) {
+                auto v = textureView(b.view); if (!v) return std::unexpected(v.error());
+                if ((*v)->desc.usage != TextureViewUsage::ShaderRead) return fail(ErrorCode::InvalidArgument, "Texture binding view requires ShaderRead usage");
+                a = (*v)->allocation; nativeView = (*v)->view;
+                snapshot->textureViews.push_back(*v);
+            } else {
+                auto tex = texture(b.texture); if (!tex) return std::unexpected(tex.error());
+                a = *tex; nativeView = a->view;
+            }
+            if (a->swapchain || a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Sampled compute texture must be a non-swapchain color texture");
+            if (shadow(a) != ResourceState::ShaderRead) return fail(ErrorCode::InvalidState, "Compute texture binding requires ShaderRead");
+            const auto use = find(a);
+            if (!(use ? use->contentsInitialized : a->contentsInitialized)) return fail(ErrorCode::InvalidState, "Sampled compute texture must have initialized contents");
+            snapshot->resources[*at] = a;
+            snapshot->expectedStates[*at] = ResourceState::ShaderRead;
+            images[*at] = {VK_NULL_HANDLE, nativeView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+            w.dstBinding = b.binding; w.dstArrayElement = b.element; w.descriptorCount = 1;
+            w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; w.pImageInfo = &images[*at];
+            writes.push_back(w);
+        }
+        for (const auto& b : bindings.constants) {
+            auto at = slot(b.binding, b.element, BindingType::ConstantBuffer); if (!at) return std::unexpected(at.error());
+            auto a = buffer(b.buffer); if (!a) return std::unexpected(a.error());
+            if ((*a)->desc.memory == Memory::Readback || b.offset % 256 || !b.size || b.size % 256 || b.size > 65536 ||
+                b.offset > (*a)->desc.size || b.size > (*a)->desc.size - b.offset || b.size < p->minimumBytes[b.binding])
+                return fail(ErrorCode::InvalidArgument, "Invalid compute constant buffer view");
+            if (b.offset % owner->limits.minUniformBufferOffsetAlignment || b.size > owner->limits.maxUniformBufferRange)
+                return fail(ErrorCode::Unsupported, "Constant view exceeds adapter alignment/range");
+            if (shadow(*a) != ResourceState::ConstantBuffer) return fail(ErrorCode::InvalidState, "Compute constant binding requires ConstantBuffer state");
+            snapshot->resources[*at] = *a;
+            snapshot->expectedStates[*at] = ResourceState::ConstantBuffer;
+            buffers[*at] = {(*a)->buffer, b.offset, b.size};
+            VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+            w.dstBinding = b.binding; w.dstArrayElement = b.element; w.descriptorCount = 1;
+            w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; w.pBufferInfo = &buffers[*at];
+            writes.push_back(w);
+        }
+        for (const auto& b : bindings.storageBuffers) {
+            auto at = slot(b.binding, b.element, BindingType::StorageBuffer); if (!at) return std::unexpected(at.error());
+            auto a = buffer(b.buffer); if (!a) return std::unexpected(a.error());
+            if (!(*a)->desc.storage || (*a)->desc.memory != Memory::Device) {
+                return fail(ErrorCode::InvalidArgument, "StorageBuffer binding requires a device storage buffer");
+            }
+            if (b.offset % 256 || b.offset > (*a)->desc.size) {
+                return fail(ErrorCode::InvalidArgument, "StorageBuffer offset must be a 256-byte multiple within bounds");
+            }
+            const std::uint64_t size = b.size ? b.size : (*a)->desc.size - b.offset;
+            if (!size || size % 4 || size > (*a)->desc.size - b.offset) {
+                return fail(ErrorCode::InvalidArgument, "StorageBuffer size must be a positive 4-byte multiple within bounds");
+            }
+            if ((owner->limits.minStorageBufferOffsetAlignment && b.offset % owner->limits.minStorageBufferOffsetAlignment) ||
+                size > owner->limits.maxStorageBufferRange) {
+                return fail(ErrorCode::Unsupported, "StorageBuffer view exceeds adapter alignment/range");
+            }
+            if (shadow(*a) != ResourceState::UnorderedAccess) {
+                return fail(ErrorCode::InvalidState, "StorageBuffer binding requires UnorderedAccess state");
+            }
+            snapshot->resources[*at] = *a;
+            snapshot->expectedStates[*at] = ResourceState::UnorderedAccess;
+            buffers[*at] = {(*a)->buffer, b.offset, size};
+            VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+            w.dstBinding = b.binding; w.dstArrayElement = b.element; w.descriptorCount = 1;
+            w.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER; w.pBufferInfo = &buffers[*at];
+            writes.push_back(w);
+        }
+        for (const auto& b : bindings.storageTextures) {
+            auto at = slot(b.binding, b.element, BindingType::StorageTexture2D); if (!at) return std::unexpected(at.error());
+            if (b.texture && b.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in StorageTextureBinding, not both");
+            std::shared_ptr<Allocation> a;
+            VkImageView nativeView{};
+            if (b.view) {
+                auto v = textureView(b.view); if (!v) return std::unexpected(v.error());
+                if ((*v)->desc.usage != TextureViewUsage::Storage) return fail(ErrorCode::InvalidArgument, "StorageTextureBinding view requires Storage usage");
+                a = (*v)->allocation; nativeView = (*v)->view;
+                snapshot->textureViews.push_back(*v);
+            } else {
+                auto tex = texture(b.texture); if (!tex) return std::unexpected(tex.error());
+                a = *tex; nativeView = a->view;
+            }
+            if (!a->textureDesc.storage || a->textureDesc.depthStencil) {
+                return fail(ErrorCode::InvalidArgument, "StorageTextureBinding requires a color storage texture");
+            }
+            if (shadow(a) != ResourceState::UnorderedAccess) {
+                return fail(ErrorCode::InvalidState, "StorageTextureBinding requires UnorderedAccess state");
+            }
+            snapshot->resources[*at] = a;
+            snapshot->expectedStates[*at] = ResourceState::UnorderedAccess;
+            storageImagesToInit.push_back(a);
+            images[*at] = {VK_NULL_HANDLE, nativeView, VK_IMAGE_LAYOUT_GENERAL};
+            VkWriteDescriptorSet w{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+            w.dstBinding = b.binding; w.dstArrayElement = b.element; w.descriptorCount = 1;
+            w.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE; w.pImageInfo = &images[*at];
+            writes.push_back(w);
+        }
+        for (const auto& a : snapshot->resources) if (!a) return fail(ErrorCode::InvalidArgument, "Missing compute resource element");
+
+        record->uses.reserve(record->uses.size() + p->descriptorSize);
+        record->snapshots.reserve(record->snapshots.size() + 1);
+        if (p->setLayout) {
+            std::array<unsigned, 5> counts{};
+            for (const auto& e : p->bindings.entries) {
+                const unsigned idx = e.type == BindingType::Texture2D ? 0 :
+                                     e.type == BindingType::ConstantBuffer ? 1 :
+                                     e.type == BindingType::StorageBuffer ? 2 : 3;
+                counts[idx] += e.count;
+            }
+            counts[4] = static_cast<unsigned>(p->samplers.size());
+            std::vector<VkDescriptorPoolSize> sizes;
+            const VkDescriptorType types[]{
+                VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                VK_DESCRIPTOR_TYPE_SAMPLER
+            };
+            for (unsigned i = 0; i < 5; ++i) if (counts[i]) sizes.push_back({types[i], counts[i]});
+            VkDescriptorPoolCreateInfo pool{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+            pool.maxSets = 1;
+            pool.poolSizeCount = static_cast<unsigned>(sizes.size());
+            pool.pPoolSizes = sizes.data();
+            if (auto ok = owner->accept(vulkan::acquireOutput(snapshot->pool, owner->native->CreateDescriptorPool, owner->native->handle, &pool, nullptr), "vkCreateDescriptorPool"); !ok) return ok;
+            VkDescriptorSetAllocateInfo allocate{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+            allocate.descriptorPool = snapshot->pool;
+            allocate.descriptorSetCount = 1;
+            allocate.pSetLayouts = &p->setLayout;
+            if (auto ok = owner->accept(vulkan::acquireOutput(snapshot->set, owner->native->AllocateDescriptorSets, owner->native->handle, &allocate), "vkAllocateDescriptorSets"); !ok) return ok;
+            for (auto& w : writes) w.dstSet = snapshot->set;
+            owner->native->UpdateDescriptorSets(owner->native->handle, static_cast<unsigned>(writes.size()), writes.data(), 0, nullptr);
+            owner->native->CmdBindDescriptorSets(record->command, VK_PIPELINE_BIND_POINT_COMPUTE, p->layout, 0, 1, &snapshot->set, 0, nullptr);
+        }
+        for (const auto& a : snapshot->resources) retain(a);
+        for (const auto& a : storageImagesToInit) retain(a).contentsInitialized = true;
+        record->descriptors += p->descriptorSize;
+        record->selectedComputeBindings = snapshot.get();
+        record->snapshots.push_back(std::move(snapshot));
+        return {};
+    }
+    Result<void> dispatch(std::uint32_t groupCountX, std::uint32_t groupCountY, std::uint32_t groupCountZ) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        const auto p = record->selectedComputePipeline;
+        if (!p) return fail(ErrorCode::InvalidState, "dispatch requires an active compute pipeline");
+        if (!groupCountX || !groupCountY || !groupCountZ ||
+            groupCountX > owner->limits.maxComputeWorkGroupCount[0] ||
+            groupCountY > owner->limits.maxComputeWorkGroupCount[1] ||
+            groupCountZ > owner->limits.maxComputeWorkGroupCount[2]) {
+            return fail(ErrorCode::InvalidArgument, "dispatch group counts must be positive and within adapter limits");
+        }
+        if (p->setLayout) {
+            if (!record->selectedComputeBindings) return fail(ErrorCode::InvalidState, "dispatch requires complete bindComputeResources snapshot");
+            for (std::size_t i = 0; i < record->selectedComputeBindings->resources.size(); ++i) {
+                if (shadow(record->selectedComputeBindings->resources[i]) != record->selectedComputeBindings->expectedStates[i]) {
+                    return fail(ErrorCode::InvalidState, "Bound compute resource left its required state");
+                }
+            }
+        }
+        owner->native->CmdDispatch(record->command, groupCountX, groupCountY, groupCountZ);
+        return {};
+    }
+    Result<void> uavBarrier(const BufferPtr& value) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto a = buffer(value); if (!a) return std::unexpected(a.error());
+        if (!(*a)->desc.storage) return fail(ErrorCode::InvalidArgument, "uavBarrier requires a storage buffer");
+        if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "uavBarrier requires UnorderedAccess state");
+        record->uses.reserve(record->uses.size() + 1);
+        retain(*a);
+        VkBufferMemoryBarrier barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
+        barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.buffer = (*a)->buffer;
+        barrier.size = VK_WHOLE_SIZE;
+        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+        return {};
+    }
+    Result<void> uavBarrier(const TexturePtr& value) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto a = texture(value); if (!a) return std::unexpected(a.error());
+        if (!(*a)->textureDesc.storage) return fail(ErrorCode::InvalidArgument, "uavBarrier requires a storage texture");
+        if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "uavBarrier requires UnorderedAccess state");
+        record->uses.reserve(record->uses.size() + 1);
+        retain(*a);
+        VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+        barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = (*a)->image;
+        barrier.subresourceRange = {imageAspect(**a), 0, 1, 0, 1};
+        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        return {};
     }
     Result<void> writeTimestamp(std::uint32_t index) override {
         if (auto ok = ready(); !ok) return ok;
@@ -1492,6 +1749,7 @@ struct VulkanDevice final : Device {
         result.linearFilter = result.sampled && (features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) != 0;
         result.texture2D = result.copySource && result.copyDestination && (isDepth ? result.depthStencil : result.sampled);
         result.partialRegionCopy = result.texture2D && !isDepth;
+        result.storage = !isDepth && (features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
         return result;
     }
     Result<void> checkStatus() override { return owner->poll(); }
@@ -1533,12 +1791,15 @@ struct VulkanDevice final : Device {
     }
     Result<BufferPtr> createBuffer(BufferDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        if (!desc.size || desc.size > SIZE_MAX || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback))
+        if (!desc.size || desc.size > SIZE_MAX || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
+            (desc.storage && desc.memory != Memory::Device))
             return fail(ErrorCode::InvalidArgument, "Invalid Vulkan buffer description");
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->desc = desc;
         a->state = desc.memory == Memory::Upload ? ResourceState::CopySource : desc.memory == Memory::Readback ? ResourceState::CopyDestination : ResourceState::Common;
         VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; info.size = desc.size;
-        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+            (desc.storage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0u);
+        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         if (auto ok = owner->accept(vulkan::acquireOutput(a->buffer, owner->native->CreateBuffer, owner->native->handle, &info, nullptr), "vkCreateBuffer"); !ok) return std::unexpected(ok.error());
         VkMemoryRequirements req{}; owner->native->GetBufferMemoryRequirements(owner->native->handle, a->buffer, &req);
         const VkMemoryPropertyFlags required = desc.memory == Memory::Device ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
@@ -1565,8 +1826,15 @@ struct VulkanDevice final : Device {
         if ((desc.renderTarget || desc.depthStencil) && (desc.width > owner->maxFramebufferWidth || desc.height > owner->maxFramebufferHeight))
             return fail(ErrorCode::Unsupported, "Color attachment exceeds adapter framebuffer extent limits");
         const auto format = textureFormat(desc.format);
+        if (desc.storage) {
+            VkFormatProperties fmtProps{};
+            owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, format, &fmtProps);
+            if (!(fmtProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
+                return fail(ErrorCode::Unsupported, "Adapter format lacks Vulkan storage image support");
+            }
+        }
         const VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-            (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0));
+            (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0u) | (desc.storage ? VK_IMAGE_USAGE_STORAGE_BIT : 0u));
         VkImageFormatProperties properties{};
         const auto r = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, format,
             VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties);
@@ -1659,6 +1927,17 @@ struct VulkanDevice final : Device {
         if (desc.sampledTexture && (!desc.bindingLayout.entries.empty() || !desc.bindingLayout.samplers.empty())) return fail(ErrorCode::InvalidArgument, "Legacy sampledTexture and explicit layout cannot be combined");
         const auto resourceLayout = desc.sampledTexture ? BindingLayout{{{}}, {{}}} : desc.bindingLayout;
         if (auto ok = validateBindingLayout(resourceLayout); !ok) return std::unexpected(ok.error());
+        for (const auto& entry : resourceLayout.entries) {
+            if (entry.type == BindingType::StorageBuffer || entry.type == BindingType::StorageTexture2D ||
+                entry.visibility == ShaderVisibility::Compute) {
+                return fail(ErrorCode::InvalidArgument, "Graphics pipeline layout does not support storage or compute-only bindings");
+            }
+        }
+        for (const auto& sampler : resourceLayout.samplers) {
+            if (sampler.visibility == ShaderVisibility::Compute) {
+                return fail(ErrorCode::InvalidArgument, "Graphics pipeline layout does not support compute-only samplers");
+            }
+        }
         if (auto ok = validateVertexLayout(desc.vertexLayout); !ok) return std::unexpected(ok.error());
         if (desc.vertexLayout.attributes.size() > owner->limits.maxVertexInputAttributes) return fail(ErrorCode::Unsupported, "Vertex attributes exceed adapter limit");
         std::map<unsigned, unsigned> vertexVaryings, fragmentVaryings;
@@ -1798,6 +2077,116 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); }); std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
         owner->pipelines.push_back(p); owner->objects.push_back(value->token); return PipelinePtr(value);
     }
+    Result<PipelinePtr> createComputePipeline(const ComputePipelineDesc& desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (desc.compute.format != ShaderFormat::SPIRV) return fail(ErrorCode::Unsupported, "Vulkan requires explicit SPIRV shader format");
+        if (desc.compute.stage != ShaderStage::Compute || desc.compute.bytes.empty() ||
+            !desc.threadgroupSizeX || !desc.threadgroupSizeY || !desc.threadgroupSizeZ) {
+            return fail(ErrorCode::InvalidArgument, "Invalid compute pipeline shader or threadgroup dimensions");
+        }
+        if (auto ok = validateBindingLayout(desc.bindingLayout); !ok) return std::unexpected(ok.error());
+        for (const auto& entry : desc.bindingLayout.entries) {
+            if (entry.visibility != ShaderVisibility::Compute && entry.visibility != ShaderVisibility::All) {
+                return fail(ErrorCode::InvalidArgument, "Compute binding entry must have Compute or All visibility");
+            }
+        }
+        for (const auto& sampler : desc.bindingLayout.samplers) {
+            if (sampler.visibility != ShaderVisibility::Compute && sampler.visibility != ShaderVisibility::All) {
+                return fail(ErrorCode::InvalidArgument, "Compute static sampler must have Compute or All visibility");
+            }
+        }
+        std::vector<unsigned> computeMinimum(desc.bindingLayout.entries.size());
+        auto code = vulkan::inspectSpirv(desc.compute, ShaderStage::Compute, 0, {}, nullptr, desc.bindingLayout, &computeMinimum);
+        if (!code) return std::unexpected(code.error());
+
+        auto p = std::make_shared<NativePipeline>();
+        p->native = owner->native;
+        p->isCompute = true;
+        p->bindings = desc.bindingLayout;
+        p->minimumBytes = std::move(computeMinimum);
+        std::array<unsigned, 5> totals{};
+        for (const auto& e : desc.bindingLayout.entries) {
+            p->descriptorSize += e.count;
+            const unsigned idx = e.type == BindingType::Texture2D ? 0 :
+                                 e.type == BindingType::ConstantBuffer ? 1 :
+                                 e.type == BindingType::StorageBuffer ? 2 : 3;
+            totals[idx] += e.count;
+        }
+        totals[4] = static_cast<unsigned>(desc.bindingLayout.samplers.size());
+        const auto& limits = owner->limits;
+        if (totals[0] > limits.maxPerStageDescriptorSampledImages ||
+            totals[1] > limits.maxPerStageDescriptorUniformBuffers ||
+            totals[2] > limits.maxPerStageDescriptorStorageBuffers ||
+            totals[3] > limits.maxPerStageDescriptorStorageImages ||
+            totals[4] > limits.maxPerStageDescriptorSamplers ||
+            totals[0] + totals[1] + totals[2] + totals[3] > limits.maxPerStageResources) {
+            return fail(ErrorCode::Unsupported, "Compute descriptor layout exceeds adapter limits");
+        }
+        p->samplers.reserve(desc.bindingLayout.samplers.size());
+        for (const auto& s : desc.bindingLayout.samplers) {
+            VkSamplerCreateInfo info{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+            info.magFilter = info.minFilter = s.filter == SamplerFilter::Point ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
+            info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            info.addressModeU = info.addressModeV = info.addressModeW = s.address == SamplerAddress::Clamp ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            VkSampler sampler{};
+            if (auto ok = owner->accept(vulkan::acquireOutput(sampler, owner->native->CreateSampler, owner->native->handle, &info, nullptr), "vkCreateSampler"); !ok) return std::unexpected(ok.error());
+            p->samplers.push_back(sampler);
+            p->linear |= s.filter == SamplerFilter::Linear;
+        }
+        std::vector<VkDescriptorSetLayoutBinding> resources;
+        for (unsigned i = 0; i < desc.bindingLayout.entries.size(); ++i) {
+            const auto& e = desc.bindingLayout.entries[i];
+            const VkDescriptorType dtype =
+                e.type == BindingType::Texture2D ? VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE :
+                e.type == BindingType::ConstantBuffer ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER :
+                e.type == BindingType::StorageBuffer ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER :
+                VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            resources.push_back({i, dtype, e.count, VK_SHADER_STAGE_COMPUTE_BIT, nullptr});
+        }
+        for (unsigned i = 0; i < p->samplers.size(); ++i) {
+            resources.push_back({32 + i, VK_DESCRIPTOR_TYPE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT, &p->samplers[i]});
+        }
+        if (!resources.empty()) {
+            VkDescriptorSetLayoutCreateInfo info{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+            info.bindingCount = static_cast<unsigned>(resources.size());
+            info.pBindings = resources.data();
+            if (auto ok = owner->accept(vulkan::acquireOutput(p->setLayout, owner->native->CreateDescriptorSetLayout, owner->native->handle, &info, nullptr), "vkCreateDescriptorSetLayout"); !ok) return std::unexpected(ok.error());
+        }
+        VkPipelineLayoutCreateInfo layoutInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+        if (p->setLayout) {
+            layoutInfo.setLayoutCount = 1;
+            layoutInfo.pSetLayouts = &p->setLayout;
+        }
+        if (auto ok = owner->accept(vulkan::acquireOutput(p->layout, owner->native->CreatePipelineLayout, owner->native->handle, &layoutInfo, nullptr), "vkCreatePipelineLayout"); !ok) return std::unexpected(ok.error());
+
+        struct ModuleGuard {
+            std::shared_ptr<NativeDevice> native;
+            VkShaderModule module{};
+            ~ModuleGuard() { if (module) native->DestroyShaderModule(native->handle, module, nullptr); }
+        } guard{owner->native};
+        VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
+        moduleInfo.codeSize = code->size() * 4;
+        moduleInfo.pCode = code->data();
+        if (auto ok = owner->accept(vulkan::acquireOutput(guard.module, owner->native->CreateShaderModule, owner->native->handle, &moduleInfo, nullptr), "vkCreateShaderModule"); !ok) return std::unexpected(ok.error());
+
+        VkComputePipelineCreateInfo pipeInfo{VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
+        pipeInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        pipeInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+        pipeInfo.stage.module = guard.module;
+        pipeInfo.stage.pName = "main";
+        pipeInfo.layout = p->layout;
+        if (auto ok = owner->accept(owner->native->CreateComputePipelines(owner->native->handle, {}, 1, &pipeInfo, nullptr, &p->pipeline), "vkCreateComputePipelines"); !ok) return std::unexpected(ok.error());
+
+        auto value = std::make_shared<VulkanPipeline>();
+        value->owner = owner;
+        value->native = p;
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
+        owner->pipelines.push_back(p);
+        owner->objects.push_back(value->token);
+        return PipelinePtr(value);
+    }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         auto value = std::make_unique<VulkanCommands>(); value->owner = owner; value->token = std::make_shared<int>();
@@ -1911,6 +2300,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.swapChain = native->presentation;
 #endif
     device->capabilities.resourceBinding = device->capabilities.bindingLayouts = true;
+    device->capabilities.compute = true;
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &depthProperties) == VK_SUCCESS && (depthProperties.sampleCounts & VK_SAMPLE_COUNT_1_BIT);

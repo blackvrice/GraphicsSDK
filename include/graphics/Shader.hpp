@@ -5,8 +5,8 @@
 #include <vector>
 
 namespace gfx {
-enum class ShaderStage { Vertex, Fragment };
-// MSL is reviewed UTF-8 source; Metal uses gfx_vertex / gfx_fragment entry names.
+enum class ShaderStage { Vertex, Fragment, Compute };
+// MSL is reviewed UTF-8 source; Metal uses gfx_vertex / gfx_fragment / gfx_compute entry names.
 // It is not HLSL translation or a portable metallib binary format.
 enum class ShaderFormat { DXBC, SPIRV, MSL, DXIL };
 // SPIRV input must already pass an external validator for the Vulkan environment.
@@ -17,7 +17,7 @@ struct ShaderBinary {
     ShaderFormat format{ShaderFormat::DXBC};
     bool operator==(const ShaderBinary&) const = default;
 };
-enum class ShaderResourceType { Unsupported, Texture2D, ConstantBuffer, Sampler };
+enum class ShaderResourceType { Unsupported, Texture2D, ConstantBuffer, Sampler, StorageBuffer, StorageTexture2D };
 struct ShaderBinding { std::string name; std::uint32_t slot{}, count{}, space{}; ShaderResourceType type{}; std::uint32_t minimumBytes{}; };
 struct ShaderLocation {
     std::uint32_t location{}, components{};

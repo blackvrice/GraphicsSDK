@@ -69,6 +69,7 @@ struct Use {
 };
 struct NativePipeline {
     id<MTLRenderPipelineState> pipeline;
+    id<MTLComputePipelineState> computePipeline;
     id<MTLDepthStencilState> depth;
     std::vector<id<MTLSamplerState>> samplers;
     VertexLayout vertices;
@@ -76,15 +77,22 @@ struct NativePipeline {
     RenderTargetLayout targets;
     DepthState depthState;
     std::vector<std::uint64_t> minimumBytes;
+    std::uint32_t threadgroupSizeX{1}, threadgroupSizeY{1}, threadgroupSizeZ{1};
     bool sampled{};
-    void release() { pipeline = nil; depth = nil; samplers.clear(); }
+    bool isCompute{};
+    void release() { pipeline = nil; computePipeline = nil; depth = nil; samplers.clear(); }
 };
 struct BufferView {
     std::shared_ptr<Allocation> allocation;
     std::uint64_t offset{},bytes{};
     std::uint32_t stride{};
 };
-struct ResourceView { std::shared_ptr<Allocation> allocation; std::uint64_t offset{},size{}; std::shared_ptr<NativeTextureView> textureView; };
+struct ResourceView { std::shared_ptr<Allocation> allocation; std::uint64_t offset{},size{}; std::shared_ptr<NativeTextureView> textureView; ResourceState expectedState{ResourceState::Common}; };
+struct ComputeDispatchOp {
+    std::shared_ptr<NativePipeline> pipeline;
+    std::shared_ptr<const std::vector<ResourceView>> bindings;
+    std::uint32_t groupX{}, groupY{}, groupZ{};
+};
 struct Draw {
     std::shared_ptr<NativePipeline> pipeline;
     std::shared_ptr<const std::vector<ResourceView>> bindings;
@@ -104,7 +112,7 @@ struct Attachment {
     bool readOnly{};
     std::shared_ptr<NativeTextureView> textureView;
 };
-enum class OperationKind { Buffer, UploadTexture, ReadTexture, Pass };
+enum class OperationKind { Buffer, UploadTexture, ReadTexture, Pass, Compute };
 struct Operation {
     std::shared_ptr<Allocation> source, destination;
     std::uint64_t bytes{};
@@ -118,6 +126,7 @@ struct Operation {
     std::vector<std::string> markers;
     std::vector<Draw> draws;
     std::vector<std::pair<bool,std::size_t>> order;
+    ComputeDispatchOp compute;
 };
 struct NativeRecording { id<MTLCommandBuffer> buffer; };
 struct State {
@@ -295,7 +304,9 @@ struct MetalCommands final : CommandList {
     std::vector<Use> uses;
     std::vector<Operation> operations;
     std::shared_ptr<NativePipeline> selected;
+    std::shared_ptr<NativePipeline> selectedCompute;
     std::shared_ptr<const std::vector<ResourceView>> bindings;
+    std::shared_ptr<const std::vector<ResourceView>> computeBindings;
     std::array<BufferView,15> vertices;
     BufferView indices;
     MTLViewport viewport{};
@@ -318,7 +329,9 @@ struct MetalCommands final : CommandList {
         operations.clear();
         uses.clear();
         selected.reset();
+        selectedCompute.reset();
         bindings.reset();
+        computeBindings.reset();
         vertices = {};
         indices = {};
     }
@@ -373,6 +386,32 @@ struct MetalCommands final : CommandList {
             id<MTLCommandBuffer> next = [owner->queue commandBuffer];
             if (!next) return fail(ErrorCode::OutOfMemory, "Metal command buffer creation failed");
             for (const auto& op : operations) {
+                if (op.kind == OperationKind::Compute) {
+                    const auto& c = op.compute;
+                    const auto& p = *c.pipeline;
+                    id<MTLComputeCommandEncoder> encoder = [next computeCommandEncoder];
+                    if (!encoder) return fail(ErrorCode::BackendFailure, "Metal compute encoder creation failed");
+                    [encoder setComputePipelineState:p.computePipeline];
+                    std::size_t offset = 0;
+                    for (const auto& entry : p.bindings.entries) {
+                        for (unsigned element = 0; element < entry.count; ++element) {
+                            const auto& view = (*c.bindings)[offset++];
+                            if (entry.type == BindingType::Texture2D || entry.type == BindingType::StorageTexture2D) {
+                                id<MTLTexture> tex = view.textureView ? view.textureView->texture : view.allocation->texture;
+                                [encoder setTexture:tex atIndex:entry.slot + element];
+                            } else {
+                                [encoder setBuffer:view.allocation->buffer offset:view.offset atIndex:entry.slot + element];
+                            }
+                        }
+                    }
+                    for (std::size_t i = 0; i < p.bindings.samplers.size(); ++i) {
+                        [encoder setSamplerState:p.samplers[i] atIndex:p.bindings.samplers[i].slot];
+                    }
+                    [encoder dispatchThreadgroups:MTLSizeMake(c.groupX, c.groupY, c.groupZ)
+                            threadsPerThreadgroup:MTLSizeMake(p.threadgroupSizeX, p.threadgroupSizeY, p.threadgroupSizeZ)];
+                    [encoder endEncoding];
+                    continue;
+                }
                 if (op.kind == OperationKind::Pass) {
                     MTLRenderPassDescriptor* descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
                     if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal pass descriptor allocation failed");
@@ -558,8 +597,10 @@ struct MetalCommands final : CommandList {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
-            !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer)
-            return fail(ErrorCode::Unsupported, "Metal buffer state is outside the transfer slice");
+            !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess)
+            return fail(ErrorCode::Unsupported, "Metal buffer state is outside the transfer/compute slice");
+        if (target == ResourceState::UnorderedAccess && !(*a)->desc.storage)
+            return fail(ErrorCode::InvalidArgument, "Metal UnorderedAccess requires a storage buffer");
         if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Metal host buffer state is fixed");
@@ -574,8 +615,10 @@ struct MetalCommands final : CommandList {
             if (target != ResourceState::RenderTarget && target != ResourceState::CopySource && target != ResourceState::Present)
                 return fail(ErrorCode::Unsupported, "Metal drawable supports RenderTarget, CopySource and Present");
         } else if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
-            target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::ShaderRead)
-            return fail(ErrorCode::Unsupported, "Metal texture state is outside the transfer/pass slice");
+            target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::ShaderRead && target != ResourceState::UnorderedAccess)
+            return fail(ErrorCode::Unsupported, "Metal texture state is outside the transfer/pass/compute slice");
+        if (target == ResourceState::UnorderedAccess && !(*a)->textureDesc.storage)
+            return fail(ErrorCode::InvalidArgument, "Metal UnorderedAccess requires a storage texture");
         if (target == ResourceState::RenderTarget && !(*a)->textureDesc.renderTarget)
             return fail(ErrorCode::InvalidArgument, "Metal color attachment usage required");
         if ((target == ResourceState::DepthWrite || target == ResourceState::DepthRead) && !(*a)->textureDesc.depthStencil)
@@ -732,6 +775,7 @@ struct MetalCommands final : CommandList {
         if(!inPass)return fail(ErrorCode::InvalidState,"Metal pipeline requires active pass");
         auto p=std::dynamic_pointer_cast<MetalPipeline>(value);if(!p)return fail(value?ErrorCode::WrongDevice:ErrorCode::InvalidArgument,"Expected Metal pipeline");
         if(p->owner!=owner)return fail(ErrorCode::WrongDevice,"Metal pipeline belongs to another generation");
+        if(p->native->isCompute)return fail(ErrorCode::InvalidArgument,"Metal graphics setPipeline rejects a compute pipeline");
         std::vector<Format> colors;std::optional<Format> depth;
         for(const auto& a:operations[passOperation].attachments){if(a.allocation->textureDesc.depthStencil)depth=a.allocation->textureDesc.format;else colors.push_back(a.allocation->textureDesc.format);}
         if(p->native->targets.colors!=colors||p->native->targets.depth!=depth)return fail(ErrorCode::InvalidArgument,"Metal pipeline/pass attachment formats differ");
@@ -750,6 +794,7 @@ struct MetalCommands final : CommandList {
     Result<void> bindResources(const ResourceBindings& data) override {
         if(auto ok=ready();!ok)return ok;
         if(!inPass||!selected)return fail(ErrorCode::InvalidState,"Metal bindings require pass/pipeline");
+        if(!data.storageBuffers.empty()||!data.storageTextures.empty())return fail(ErrorCode::InvalidArgument,"Metal storage bindings require bindComputeResources");
         std::size_t count=0;for(const auto& e:selected->bindings.entries)count+=e.count;
         auto next=std::make_shared<std::vector<ResourceView>>(count);
         auto slot=[&](unsigned index,unsigned element,BindingType type)->Result<std::size_t>{
@@ -832,6 +877,130 @@ struct MetalCommands final : CommandList {
     }
     Result<void> draw(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,0,firstInstance,false); }
     Result<void> drawIndexed(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,base,firstInstance,true); }
+    Result<void> setComputePipeline(const PipelinePtr& value) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto p = std::dynamic_pointer_cast<MetalPipeline>(value);
+        if (!p) return fail(value ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected Metal compute pipeline");
+        if (p->owner != owner) return fail(ErrorCode::WrongDevice, "Metal compute pipeline belongs to another generation");
+        if (!p->native->isCompute) return fail(ErrorCode::InvalidArgument, "Metal setComputePipeline requires a compute pipeline");
+        selectedCompute = p->native;
+        computeBindings.reset();
+        return {};
+    }
+    Result<void> bindComputeResources(const ResourceBindings& data) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (!selectedCompute) return fail(ErrorCode::InvalidState, "Metal compute bindings require a compute pipeline");
+        std::size_t count = 0;
+        for (const auto& e : selectedCompute->bindings.entries) count += e.count;
+        const std::size_t provided = data.textures.size() + data.constants.size() + data.storageBuffers.size() + data.storageTextures.size();
+        if (provided != count) return fail(ErrorCode::InvalidArgument, "Every Metal compute resource element must be bound exactly once");
+        auto next = std::make_shared<std::vector<ResourceView>>(count);
+        std::vector<std::shared_ptr<Allocation>> storageImagesToInit;
+        auto slot = [&](unsigned index, unsigned element, BindingType type) -> Result<std::size_t> {
+            if (index >= selectedCompute->bindings.entries.size()) return fail(ErrorCode::InvalidArgument, "Unknown Metal compute binding entry");
+            const auto& e = selectedCompute->bindings.entries[index];
+            if (e.type != type || element >= e.count) return fail(ErrorCode::InvalidArgument, "Metal compute binding type/array mismatch");
+            std::size_t at = element;
+            for (unsigned i = 0; i < index; ++i) at += selectedCompute->bindings.entries[i].count;
+            if ((*next)[at].allocation) return fail(ErrorCode::InvalidArgument, "Duplicate Metal compute binding element");
+            return at;
+        };
+        for (const auto& view : data.textures) {
+            auto at = slot(view.binding, view.element, BindingType::Texture2D); if (!at) return std::unexpected(at.error());
+            if (view.texture && view.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in TextureBinding, not both");
+            std::shared_ptr<Allocation> a;
+            std::shared_ptr<NativeTextureView> v;
+            if (view.view) {
+                auto found = textureView(view.view); if (!found) return std::unexpected(found.error());
+                if ((*found)->desc.usage != TextureViewUsage::ShaderRead) return fail(ErrorCode::InvalidArgument, "Metal texture view requires ShaderRead usage");
+                v = *found; a = v->allocation;
+            } else {
+                auto found = allocation(view.texture); if (!found) return std::unexpected(found.error());
+                a = *found;
+            }
+            if (a->backbuffer || a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Metal compute sampled texture invalid");
+            if (shadow(a) != ResourceState::ShaderRead || !initialized(a)) return fail(ErrorCode::InvalidState, "Metal compute sampling requires initialized ShaderRead texture");
+            (*next)[*at] = {a, 0, 0, v, ResourceState::ShaderRead};
+        }
+        for (const auto& view : data.constants) {
+            auto at = slot(view.binding, view.element, BindingType::ConstantBuffer); if (!at) return std::unexpected(at.error());
+            auto a = allocation(view.buffer); if (!a) return std::unexpected(a.error());
+            if ((*a)->desc.memory == Memory::Readback || view.offset % 256 || !view.size || view.size % 256 || view.size > 65536 ||
+                view.offset > (*a)->desc.size || view.size > (*a)->desc.size - view.offset || view.size < selectedCompute->minimumBytes[view.binding])
+                return fail(ErrorCode::InvalidArgument, "Metal compute constant buffer view invalid");
+            if (shadow(*a) != ResourceState::ConstantBuffer) return fail(ErrorCode::InvalidState, "Metal compute constants require ConstantBuffer state");
+            (*next)[*at] = {*a, view.offset, view.size, {}, ResourceState::ConstantBuffer};
+        }
+        for (const auto& view : data.storageBuffers) {
+            auto at = slot(view.binding, view.element, BindingType::StorageBuffer); if (!at) return std::unexpected(at.error());
+            auto a = allocation(view.buffer); if (!a) return std::unexpected(a.error());
+            if (!(*a)->desc.storage || (*a)->desc.memory != Memory::Device) return fail(ErrorCode::InvalidArgument, "Metal StorageBuffer requires device storage buffer");
+            if (view.offset % 256 || view.offset > (*a)->desc.size) return fail(ErrorCode::InvalidArgument, "Metal StorageBuffer offset invalid");
+            const std::uint64_t size = view.size ? view.size : (*a)->desc.size - view.offset;
+            if (!size || size % 4 || size > (*a)->desc.size - view.offset) return fail(ErrorCode::InvalidArgument, "Metal StorageBuffer size invalid");
+            if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal StorageBuffer requires UnorderedAccess state");
+            (*next)[*at] = {*a, view.offset, size, {}, ResourceState::UnorderedAccess};
+        }
+        for (const auto& view : data.storageTextures) {
+            auto at = slot(view.binding, view.element, BindingType::StorageTexture2D); if (!at) return std::unexpected(at.error());
+            if (view.texture && view.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in StorageTextureBinding, not both");
+            std::shared_ptr<Allocation> a;
+            std::shared_ptr<NativeTextureView> v;
+            if (view.view) {
+                auto found = textureView(view.view); if (!found) return std::unexpected(found.error());
+                if ((*found)->desc.usage != TextureViewUsage::Storage) return fail(ErrorCode::InvalidArgument, "Metal storage texture view requires Storage usage");
+                v = *found; a = v->allocation;
+            } else {
+                auto found = allocation(view.texture); if (!found) return std::unexpected(found.error());
+                a = *found;
+            }
+            if (!a->textureDesc.storage || a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Metal StorageTextureBinding requires storage color texture");
+            if (shadow(a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal StorageTextureBinding requires UnorderedAccess state");
+            storageImagesToInit.push_back(a);
+            (*next)[*at] = {a, 0, 0, v, ResourceState::UnorderedAccess};
+        }
+        for (const auto& view : *next) if (!view.allocation) return fail(ErrorCode::InvalidArgument, "Incomplete Metal compute resource snapshot");
+        uses.reserve(uses.size() + next->size());
+        for (const auto& view : *next) retain(view.allocation);
+        for (const auto& a : storageImagesToInit) retain(a).initialized = true;
+        computeBindings = std::move(next);
+        return {};
+    }
+    Result<void> dispatch(std::uint32_t groupCountX, std::uint32_t groupCountY, std::uint32_t groupCountZ) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (!selectedCompute) return fail(ErrorCode::InvalidState, "Metal dispatch requires an active compute pipeline");
+        if (!groupCountX || !groupCountY || !groupCountZ) return fail(ErrorCode::InvalidArgument, "Metal dispatch group counts must be positive");
+        if (!selectedCompute->bindings.entries.empty() && !computeBindings) return fail(ErrorCode::InvalidState, "Metal dispatch requires complete compute bindings");
+        if (computeBindings) {
+            for (const auto& view : *computeBindings) {
+                if (shadow(view.allocation) != view.expectedState) return fail(ErrorCode::InvalidState, "Metal bound compute resource left required state");
+            }
+        }
+        operations.reserve(operations.size() + 1);
+        Operation op;
+        op.kind = OperationKind::Compute;
+        op.compute = ComputeDispatchOp{selectedCompute, computeBindings, groupCountX, groupCountY, groupCountZ};
+        operations.push_back(std::move(op));
+        return {};
+    }
+    Result<void> uavBarrier(const BufferPtr& value) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto a = allocation(value); if (!a) return std::unexpected(a.error());
+        if (!(*a)->desc.storage) return fail(ErrorCode::InvalidArgument, "Metal uavBarrier requires a storage buffer");
+        if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal uavBarrier requires UnorderedAccess state");
+        uses.reserve(uses.size() + 1);
+        retain(*a);
+        return {};
+    }
+    Result<void> uavBarrier(const TexturePtr& value) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto a = allocation(value); if (!a) return std::unexpected(a.error());
+        if (!(*a)->textureDesc.storage) return fail(ErrorCode::InvalidArgument, "Metal uavBarrier requires a storage texture");
+        if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal uavBarrier requires UnorderedAccess state");
+        uses.reserve(uses.size() + 1);
+        retain(*a);
+        return {};
+    }
     Result<void> writeTimestamp(std::uint32_t) override { return owner->unsupported(); }
     Result<void> resolveTimestamps() override { return owner->unsupported(); }
     Result<double> elapsedGpuMilliseconds() override { return owner->unsupported(); }
@@ -902,6 +1071,11 @@ struct MetalQueue final : CommandQueue {
         std::vector<std::shared_ptr<NativePipeline>> pipelines;
         std::vector<std::shared_ptr<NativeTextureView>> textureViews;
         for(const auto& op:commands->operations){
+            if(op.kind==OperationKind::Compute){
+                if(op.compute.pipeline&&std::find(pipelines.begin(),pipelines.end(),op.compute.pipeline)==pipelines.end())pipelines.push_back(op.compute.pipeline);
+                if(op.compute.bindings)for(const auto& rv:*op.compute.bindings)if(rv.textureView&&std::find(textureViews.begin(),textureViews.end(),rv.textureView)==textureViews.end())textureViews.push_back(rv.textureView);
+                continue;
+            }
             for(const auto& a:op.attachments)if(a.textureView&&std::find(textureViews.begin(),textureViews.end(),a.textureView)==textureViews.end())textureViews.push_back(a.textureView);
             for(const auto& draw:op.draws){
                 if(std::find(pipelines.begin(),pipelines.end(),draw.pipeline)==pipelines.end())pipelines.push_back(draw.pipeline);
@@ -978,6 +1152,7 @@ struct MetalDevice final : Device {
         result.copySource = true;
         result.copyDestination = true;
         result.partialRegionCopy = !isDepth;
+        result.storage = !isDepth;
         return result;
     }
     Result<void> checkStatus() override { return owner->poll(); }
@@ -997,7 +1172,8 @@ struct MetalDevice final : Device {
     Result<void> removeForTesting() override { return owner->unsupported(); }
     Result<BufferPtr> createBuffer(BufferDesc desc) override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        if (!desc.size || desc.size > NSUIntegerMax || (desc.memory != Memory::Upload && desc.memory != Memory::Readback && desc.memory != Memory::Device))
+        if (!desc.size || desc.size > NSUIntegerMax || (desc.memory != Memory::Upload && desc.memory != Memory::Readback && desc.memory != Memory::Device) ||
+            (desc.storage && desc.memory != Memory::Device))
             return fail(ErrorCode::InvalidArgument, "Invalid Metal buffer description");
         if (desc.size > owner->device.maxBufferLength) return fail(ErrorCode::Unsupported, "Metal buffer exceeds device limit");
         @autoreleasepool {
@@ -1033,6 +1209,7 @@ struct MetalDevice final : Device {
             descriptor.resourceOptions = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
             descriptor.usage = MTLTextureUsageShaderRead;
             if (desc.renderTarget || desc.depthStencil) descriptor.usage |= MTLTextureUsageRenderTarget;
+            if (desc.storage) descriptor.usage |= MTLTextureUsageShaderWrite;
             auto a = std::make_shared<Allocation>(); a->textureDesc = desc;
             a->texture = [owner->device newTextureWithDescriptor:descriptor];
             if (!a->texture) return fail(ErrorCode::OutOfMemory, "Metal texture allocation failed");
@@ -1090,6 +1267,61 @@ struct MetalDevice final : Device {
         auto wrapper=std::make_shared<MetalPipeline>();wrapper->owner=owner;wrapper->native=*p;wrapper->token=std::make_shared<int>();
         std::erase_if(owner->pipelines,[](auto& w){return w.expired();});std::erase_if(owner->objects,[](auto& w){return w.expired();});
         owner->pipelines.push_back(*p);owner->objects.push_back(wrapper->token);return PipelinePtr(wrapper);
+    }
+    Result<PipelinePtr> createComputePipeline(const ComputePipelineDesc& desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (!desc.threadgroupSizeX || !desc.threadgroupSizeY || !desc.threadgroupSizeZ) {
+            return fail(ErrorCode::InvalidArgument, "Metal compute threadgroup dimensions must be positive");
+        }
+        if (auto ok = validateBindingLayout(desc.bindingLayout); !ok) return std::unexpected(ok.error());
+        for (const auto& e : desc.bindingLayout.entries) {
+            if (e.space) return fail(ErrorCode::Unsupported, "Metal compute binding profile requires space zero");
+            if (e.visibility != ShaderVisibility::Compute && e.visibility != ShaderVisibility::All)
+                return fail(ErrorCode::InvalidArgument, "Metal compute binding must have Compute or All visibility");
+        }
+        for (const auto& s : desc.bindingLayout.samplers) {
+            if (s.space) return fail(ErrorCode::Unsupported, "Metal compute sampler profile requires space zero");
+            if (s.visibility != ShaderVisibility::Compute && s.visibility != ShaderVisibility::All)
+                return fail(ErrorCode::InvalidArgument, "Metal compute sampler must have Compute or All visibility");
+        }
+        @autoreleasepool {
+            auto kernel = function(*owner, desc.compute, ShaderStage::Compute);
+            if (!kernel) return std::unexpected(kernel.error());
+            auto p = std::make_shared<NativePipeline>();
+            p->isCompute = true;
+            p->bindings = desc.bindingLayout;
+            p->minimumBytes.resize(p->bindings.entries.size());
+            p->threadgroupSizeX = desc.threadgroupSizeX;
+            p->threadgroupSizeY = desc.threadgroupSizeY;
+            p->threadgroupSizeZ = desc.threadgroupSizeZ;
+            NSError* error = nil;
+            p->computePipeline = [owner->device newComputePipelineStateWithFunction:*kernel error:&error];
+            if (!p->computePipeline) {
+                const char* message = error.localizedDescription.UTF8String;
+                return fail(ErrorCode::BackendFailure, message ? message : "Metal compute pipeline creation failed", error.code);
+            }
+            const std::uint64_t threads = static_cast<std::uint64_t>(desc.threadgroupSizeX) * desc.threadgroupSizeY * desc.threadgroupSizeZ;
+            if (threads > p->computePipeline.maxTotalThreadsPerThreadgroup) {
+                return fail(ErrorCode::Unsupported, "Metal compute threadgroup exceeds pipeline limit");
+            }
+            for (const auto& s : p->bindings.samplers) {
+                MTLSamplerDescriptor* sd = [[MTLSamplerDescriptor alloc] init];
+                sd.minFilter = sd.magFilter = s.filter == SamplerFilter::Point ? MTLSamplerMinMagFilterNearest : MTLSamplerMinMagFilterLinear;
+                sd.sAddressMode = sd.tAddressMode = s.address == SamplerAddress::Clamp ? MTLSamplerAddressModeClampToEdge : MTLSamplerAddressModeRepeat;
+                id<MTLSamplerState> sampler = [owner->device newSamplerStateWithDescriptor:sd];
+                if (!sampler) return fail(ErrorCode::OutOfMemory, "Metal compute sampler creation failed");
+                p->samplers.push_back(sampler);
+            }
+            auto wrapper = std::make_shared<MetalPipeline>();
+            wrapper->owner = owner;
+            wrapper->native = p;
+            wrapper->token = std::make_shared<int>();
+            std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
+            std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+            owner->pipelines.push_back(p);
+            owner->objects.push_back(wrapper->token);
+            return PipelinePtr(wrapper);
+        }
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
@@ -1159,7 +1391,8 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         DeviceCaps caps;
         caps.backend = Backend::Metal; caps.adapterName = name; caps.adapterId = {Backend::Metal, selected.registryID};
         caps.depthAttachment = true; caps.multipleRenderTargets = true;
-    caps.swapChain = true;
+        caps.compute = true;
+        caps.swapChain = true;
         caps.vertexInput = true; caps.indexedDrawing = true; caps.resourceBinding = true; caps.bindingLayouts = true;
         caps.maxTextureDimension2D = 16384u;
         caps.maxColorAttachments = 8u;

@@ -23,8 +23,11 @@ Result<id<MTLFunction>> function(State& owner,const ShaderBinary& input,ShaderSt
     if(!source)return fail(ErrorCode::InvalidArgument,"Metal shader source is not UTF-8");
     NSError* error=nil;id<MTLLibrary> library=[owner.device newLibraryWithSource:source options:nil error:&error];
     if(!library){const char* message=error.localizedDescription.UTF8String;return fail(ErrorCode::BackendFailure,message?message:"MSL compilation failed",error.code);}
-    id<MTLFunction> entry=[library newFunctionWithName:stage==ShaderStage::Vertex?@"gfx_vertex":@"gfx_fragment"];
-    if(!entry||entry.functionType!=(stage==ShaderStage::Vertex?MTLFunctionTypeVertex:MTLFunctionTypeFragment))return fail(ErrorCode::InvalidArgument,"Missing/wrong Metal graphics entry point");
+    id<MTLFunction> entry=[library newFunctionWithName:stage==ShaderStage::Vertex?@"gfx_vertex":stage==ShaderStage::Fragment?@"gfx_fragment":@"gfx_compute"];
+    const MTLFunctionType expectedType = stage==ShaderStage::Vertex ? MTLFunctionTypeVertex
+                                       : stage==ShaderStage::Fragment ? MTLFunctionTypeFragment
+                                       : MTLFunctionTypeKernel;
+    if(!entry||entry.functionType!=expectedType)return fail(ErrorCode::InvalidArgument,"Missing/wrong Metal shader entry point");
     return entry;
 }
 Result<std::shared_ptr<NativePipeline>> graphics(State& owner,const GraphicsPipelineDesc& desc) {
@@ -39,8 +42,15 @@ Result<std::shared_ptr<NativePipeline>> graphics(State& owner,const GraphicsPipe
         p->bindings.samplers={{0,0,ShaderVisibility::Fragment,SamplerFilter::Linear,SamplerAddress::Clamp}};
     }
     if(auto ok=validateBindingLayout(p->bindings);!ok)return std::unexpected(ok.error());
-    for(const auto& e:p->bindings.entries)if(e.space)return fail(ErrorCode::Unsupported,"Metal binding profile requires space zero");
-    for(const auto& s:p->bindings.samplers)if(s.space)return fail(ErrorCode::Unsupported,"Metal sampler profile requires space zero");
+    for(const auto& e:p->bindings.entries) {
+        if(e.space)return fail(ErrorCode::Unsupported,"Metal binding profile requires space zero");
+        if(e.type==BindingType::StorageBuffer||e.type==BindingType::StorageTexture2D||e.visibility==ShaderVisibility::Compute)
+            return fail(ErrorCode::InvalidArgument,"Metal graphics pipeline layout does not support storage or compute-only bindings");
+    }
+    for(const auto& s:p->bindings.samplers) {
+        if(s.space)return fail(ErrorCode::Unsupported,"Metal sampler profile requires space zero");
+        if(s.visibility==ShaderVisibility::Compute)return fail(ErrorCode::InvalidArgument,"Metal graphics pipeline layout does not support compute-only samplers");
+    }
     for(const auto& stream:p->vertices.buffers)if(stream.slot>=15)return fail(ErrorCode::Unsupported,"Metal stream slots are 0..14 (native buffers 16..30)");
     p->minimumBytes.resize(p->bindings.entries.size());
     @autoreleasepool {

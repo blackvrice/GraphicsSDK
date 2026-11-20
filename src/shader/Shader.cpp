@@ -13,8 +13,8 @@
 
 namespace gfx {
 namespace {
-bool graphicsStage(ShaderStage stage) {
-    return stage == ShaderStage::Vertex || stage == ShaderStage::Fragment;
+bool validStage(ShaderStage stage) {
+    return stage == ShaderStage::Vertex || stage == ShaderStage::Fragment || stage == ShaderStage::Compute;
 }
 
 #ifdef GFX_HAS_DXC
@@ -61,13 +61,14 @@ Result<Microsoft::WRL::ComPtr<Interface>> createDxc(REFCLSID clsid) {
 }
 
 Result<ShaderBinary> compileHlsl(std::string_view source, std::string_view entry, ShaderStage stage) {
-    if (source.empty() || entry.empty() || entry.find('\0') != std::string_view::npos || !graphicsStage(stage))
+    if (source.empty() || entry.empty() || entry.find('\0') != std::string_view::npos || !validStage(stage))
         return std::unexpected(Error{ErrorCode::InvalidArgument, "Invalid HLSL input"});
 #ifdef GFX_HAS_D3D12
     Microsoft::WRL::ComPtr<ID3DBlob> binary, errors;
     const std::string name{entry};
+    const char* target = stage == ShaderStage::Vertex ? "vs_5_1" : stage == ShaderStage::Fragment ? "ps_5_1" : "cs_5_1";
     HRESULT result = D3DCompile(source.data(), source.size(), "GraphicsSDK.hlsl", nullptr, nullptr, name.c_str(),
-        stage == ShaderStage::Vertex ? "vs_5_1" : "ps_5_1", D3DCOMPILE_OPTIMIZATION_LEVEL3 | D3DCOMPILE_WARNINGS_ARE_ERRORS, 0, &binary, &errors);
+        target, D3DCOMPILE_OPTIMIZATION_LEVEL3 | D3DCOMPILE_WARNINGS_ARE_ERRORS, 0, &binary, &errors);
     if (FAILED(result)) return std::unexpected(Error{ErrorCode::BackendFailure,
         errors ? std::string(static_cast<const char*>(errors->GetBufferPointer()), errors->GetBufferSize()) : "HLSL compilation failed", result});
     ShaderBinary output{stage, std::vector<std::byte>(binary->GetBufferSize())};
@@ -80,7 +81,7 @@ Result<ShaderBinary> compileHlsl(std::string_view source, std::string_view entry
 
 Result<ShaderBinary> compileHlslDxil(std::string_view source, std::string_view entry, ShaderStage stage) {
     if (source.empty() || entry.empty() || source.find('\0') != std::string_view::npos ||
-        entry.find('\0') != std::string_view::npos || !graphicsStage(stage))
+        entry.find('\0') != std::string_view::npos || !validStage(stage))
         return std::unexpected(Error{ErrorCode::InvalidArgument, "Invalid DXIL HLSL input"});
 #ifdef GFX_HAS_DXC
     if (entry.size() > std::numeric_limits<int>::max())
@@ -93,8 +94,9 @@ Result<ShaderBinary> compileHlslDxil(std::string_view source, std::string_view e
     auto compiler = createDxc<IDxcCompiler3>(CLSID_DxcCompiler);
     if (!compiler) return std::unexpected(compiler.error());
     const DxcBuffer input{source.data(), source.size(), DXC_CP_UTF8};
+    const wchar_t* target = stage == ShaderStage::Vertex ? L"vs_6_0" : stage == ShaderStage::Fragment ? L"ps_6_0" : L"cs_6_0";
     const wchar_t* arguments[]{L"GraphicsSDK.hlsl", L"-E", name.c_str(), L"-T",
-        stage == ShaderStage::Vertex ? L"vs_6_0" : L"ps_6_0", L"-HV", L"2021", L"-O3", L"-WX", L"-Ges"};
+        target, L"-HV", L"2021", L"-O3", L"-WX", L"-Ges"};
     Microsoft::WRL::ComPtr<IDxcResult> compiled;
     HRESULT result = (*compiler)->Compile(&input, arguments, static_cast<UINT32>(std::size(arguments)), nullptr,
         IID_PPV_ARGS(&compiled));
@@ -144,7 +146,9 @@ Result<D3D12ShaderReflection> reflectD3D12Shader(const ShaderBinary& shader) {
     result = reflection.native->GetDesc(&reflection.description);
     if (FAILED(result)) return std::unexpected(Error{ErrorCode::BackendFailure, "Shader reflection description failed", result});
     const auto version = reflection.description.Version;
-    const auto expected = shader.stage == ShaderStage::Vertex ? D3D12_SHVER_VERTEX_SHADER : D3D12_SHVER_PIXEL_SHADER;
+    const auto expected = shader.stage == ShaderStage::Vertex ? D3D12_SHVER_VERTEX_SHADER
+                        : shader.stage == ShaderStage::Fragment ? D3D12_SHVER_PIXEL_SHADER
+                        : D3D12_SHVER_COMPUTE_SHADER;
     if (static_cast<D3D12_SHADER_VERSION_TYPE>(D3D12_SHVER_GET_TYPE(version)) != expected)
         return std::unexpected(Error{ErrorCode::InvalidArgument, "Shader bytecode stage does not match its declared stage"});
     if (shader.format == ShaderFormat::DXIL && (D3D12_SHVER_GET_MAJOR(version) != 6 || D3D12_SHVER_GET_MINOR(version) != 0))
@@ -161,6 +165,8 @@ Result<std::vector<ShaderBinding>> d3d12ShaderBindings(const D3D12ShaderReflecti
         ShaderBinding entry{binding.Name,binding.BindPoint,binding.BindCount,binding.Space};
         if(binding.Type==D3D_SIT_TEXTURE && binding.Dimension==D3D_SRV_DIMENSION_TEXTURE2D && binding.ReturnType==D3D_RETURN_TYPE_FLOAT)entry.type=ShaderResourceType::Texture2D;
         if(binding.Type==D3D_SIT_SAMPLER && !(binding.uFlags&D3D_SIF_COMPARISON_SAMPLER))entry.type=ShaderResourceType::Sampler;
+        if(binding.Type==D3D_SIT_UAV_RWBYTEADDRESS)entry.type=ShaderResourceType::StorageBuffer;
+        if(binding.Type==D3D_SIT_UAV_RWTYPED && binding.Dimension==D3D_SRV_DIMENSION_TEXTURE2D)entry.type=ShaderResourceType::StorageTexture2D;
         if(binding.Type==D3D_SIT_CBUFFER) {
             D3D12_SHADER_BUFFER_DESC buffer{};
             result=reflection.native->GetConstantBufferByName(binding.Name)->GetDesc(&buffer);
@@ -174,7 +180,7 @@ Result<std::vector<ShaderBinding>> d3d12ShaderBindings(const D3D12ShaderReflecti
 #endif
 
 Result<std::vector<ShaderBinding>> reflectShader(const ShaderBinary& shader) {
-    if (shader.bytes.empty() || !graphicsStage(shader.stage))
+    if (shader.bytes.empty() || !validStage(shader.stage))
         return std::unexpected(Error{ErrorCode::InvalidArgument, "Invalid shader binary/stage"});
     if (shader.format == ShaderFormat::SPIRV) {
         auto reflection = reflectSpirvInterface(shader);

@@ -11,7 +11,8 @@ bool loadOp(LoadOp op){return op==LoadOp::Clear || op==LoadOp::Load;}
 Result<void> validateTextureDescription(TextureDesc d) {
     if(!d.width || !d.height || d.width>16384 || d.height>16384 ||
        (!colorFormat(d.format) && d.format!=Format::D32Float) ||
-       d.depthStencil!=(d.format==Format::D32Float) || (d.depthStencil && d.renderTarget))return bad("Invalid texture extent/format/attachment usage");
+       d.depthStencil!=(d.format==Format::D32Float) ||
+       (d.depthStencil && (d.renderTarget || d.storage)))return bad("Invalid texture extent/format/attachment usage");
     return {};
 }
 Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureViewDesc viewDesc) {
@@ -19,12 +20,10 @@ Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureView
     const Format resolvedFormat = viewDesc.format.value_or(textureDesc.format);
     const bool knownFormat = colorFormat(resolvedFormat) || resolvedFormat == Format::D32Float;
     if (!knownFormat) return bad("Unknown texture view format");
-    if (viewDesc.usage == TextureViewUsage::Storage) {
-        return std::unexpected(Error{ErrorCode::Unsupported, "Storage/UAV texture views are not yet supported"});
-    }
     if (viewDesc.usage != TextureViewUsage::ShaderRead &&
         viewDesc.usage != TextureViewUsage::RenderTarget &&
-        viewDesc.usage != TextureViewUsage::DepthStencil) {
+        viewDesc.usage != TextureViewUsage::DepthStencil &&
+        viewDesc.usage != TextureViewUsage::Storage) {
         return bad("Unknown texture view usage");
     }
     if (!viewDesc.mipLevelCount || viewDesc.baseMipLevel >= 1u || viewDesc.mipLevelCount > 1u - viewDesc.baseMipLevel) {
@@ -47,6 +46,9 @@ Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureView
     }
     if (viewDesc.usage == TextureViewUsage::DepthStencil && !textureDesc.depthStencil) {
         return bad("DepthStencil view requires a depthStencil texture");
+    }
+    if (viewDesc.usage == TextureViewUsage::Storage && (!textureDesc.storage || textureDesc.depthStencil)) {
+        return bad("Storage view requires a color storage texture");
     }
     viewDesc.format = resolvedFormat;
     return viewDesc;

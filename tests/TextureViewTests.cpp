@@ -237,7 +237,7 @@ void runTextureViewSuite(
         // Creation rejections.
         reject(device.createTextureView(nullptr), gfx::ErrorCode::InvalidArgument, "null texture view", totals);
         reject(device.createTextureView(colorTarget, {std::nullopt, gfx::TextureViewUsage::Storage}),
-               gfx::ErrorCode::Unsupported, "Storage/UAV view unsupported", totals);
+               gfx::ErrorCode::InvalidArgument, "Storage/UAV view requires storage texture", totals);
         reject(device.createTextureView(colorTarget, {std::nullopt, static_cast<gfx::TextureViewUsage>(77)}),
                gfx::ErrorCode::InvalidArgument, "Unknown view usage", totals);
         reject(device.createTextureView(colorTarget, {gfx::Format::BGRA8UNorm, gfx::TextureViewUsage::ShaderRead}),

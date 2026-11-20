@@ -30,6 +30,7 @@ public:
     // Creating thread only. Creates a validated subresource view over a texture from this device.
     [[nodiscard]] virtual Result<TextureViewPtr> createTextureView(const TexturePtr&, TextureViewDesc = {}) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) = 0;
+    [[nodiscard]] virtual Result<PipelinePtr> createComputePipeline(const ComputePipelineDesc&) = 0;
     // Creating thread only. Exact descriptor match within this device generation.
     // The cache retains up to eight pipelines. Oversized keys are created uncached.
     [[nodiscard]] Result<CachedGraphicsPipeline> createCachedGraphicsPipeline(const GraphicsPipelineDesc&);
