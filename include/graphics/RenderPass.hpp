@@ -25,4 +25,5 @@ struct RenderPassDesc { std::vector<ColorAttachment> colors; DepthAttachment dep
     Format format, std::uint32_t width, std::uint32_t height, std::uint32_t rowPitch = 0);
 [[nodiscard]] Result<void> validateRenderTargets(const RenderTargetLayout&, DepthState = {});
 [[nodiscard]] Result<void> validateRenderPass(const RenderPassDesc&);
+[[nodiscard]] Result<void> validateViewport(const Viewport&, std::uint32_t targetWidth, std::uint32_t targetHeight);
 }

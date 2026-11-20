@@ -85,6 +85,7 @@ struct Draw {
     std::uint32_t count{},instances{},first{},firstInstance{};
     std::int32_t baseVertex{};
     bool indexed{};
+    MTLViewport viewport{};
     MTLScissorRect scissor{};
 };
 struct Attachment {
@@ -267,6 +268,7 @@ struct MetalCommands final : CommandList {
     std::shared_ptr<const std::vector<ResourceView>> bindings;
     std::array<BufferView,15> vertices;
     BufferView indices;
+    MTLViewport viewport{};
     MTLScissorRect scissor{};
     explicit MetalCommands(std::shared_ptr<State> state) : owner(std::move(state)) {}
     Result<void> begin() override {
@@ -340,7 +342,8 @@ struct MetalCommands final : CommandList {
                     for (const auto& item : op.order) {
                         if (!item.first) { [encoder insertDebugSignpost:labels[item.second]]; continue; }
                         const auto& draw = op.draws[item.second]; const auto& p = *draw.pipeline;
-                        [encoder setRenderPipelineState:p.pipeline]; [encoder setDepthStencilState:p.depth]; [encoder setScissorRect:draw.scissor];
+                        [encoder setRenderPipelineState:p.pipeline]; [encoder setDepthStencilState:p.depth];
+                        [encoder setViewport:draw.viewport]; [encoder setScissorRect:draw.scissor];
                         for (const auto& slot : p.vertices.buffers) {
                             const auto& view = draw.vertices[slot.slot];
                             [encoder setVertexBuffer:view.allocation->buffer offset:view.offset atIndex:16+slot.slot];
@@ -622,6 +625,7 @@ struct MetalCommands final : CommandList {
         for (const auto& a : op.attachments) retain(a.allocation).initialized = true;
         operations.push_back(std::move(op)); inPass = true; passOperation = operations.size()-1;
         selected.reset();bindings.reset();const auto& extent=operations.back().attachments.front().allocation->textureDesc;
+        viewport={0,0,double(extent.width),double(extent.height),0.0,1.0};
         scissor={0,0,extent.width,extent.height};
         return {};
     }
@@ -681,6 +685,14 @@ struct MetalCommands final : CommandList {
         if(!indexState(shadow(*a)))return fail(ErrorCode::InvalidState,"Metal index buffer state required");
         uses.reserve(uses.size()+1);retain(*a);indices={*a,offset,bytes,element};return {};
     }
+    Result<void> setViewport(const Viewport& value) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!inPass) return fail(ErrorCode::InvalidState, "Metal viewport requires pass");
+        const auto d = operations[passOperation].attachments.front().allocation->textureDesc;
+        if (auto ok = validateViewport(value, d.width, d.height); !ok) return ok;
+        viewport = MTLViewport{value.x, value.y, value.width, value.height, value.minDepth, value.maxDepth};
+        return {};
+    }
     Result<void> setScissor(std::uint32_t x,std::uint32_t y,std::uint32_t width,std::uint32_t height) override {
         if(auto ok=ready();!ok)return ok;if(!inPass)return fail(ErrorCode::InvalidState,"Metal scissor requires pass");
         const auto d=operations[passOperation].attachments.front().allocation->textureDesc;
@@ -703,7 +715,7 @@ struct MetalCommands final : CommandList {
         if(bindings)for(const auto& view:*bindings)if(shadow(view.allocation)!=(view.allocation->texture?ResourceState::ShaderRead:ResourceState::ConstantBuffer))return fail(ErrorCode::InvalidState,"Metal binding read state changed");
         for(const auto& a:operations[passOperation].attachments)if(a.readOnly&&selected->depthState.writeEnabled)return fail(ErrorCode::InvalidState,"Read-only Metal depth rejects writing pipeline");
         auto& op=operations[passOperation];op.draws.reserve(op.draws.size()+1);op.order.reserve(op.order.size()+1);
-        op.draws.push_back(Draw{selected,bindings,vertices,indices,count,instances,first,firstInstance,base,indexed,scissor});op.order.emplace_back(true,op.draws.size()-1);return {};
+        op.draws.push_back(Draw{selected,bindings,vertices,indices,count,instances,first,firstInstance,base,indexed,viewport,scissor});op.order.emplace_back(true,op.draws.size()-1);return {};
     }
     Result<void> draw(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,0,firstInstance,false); }
     Result<void> drawIndexed(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,base,firstInstance,true); }

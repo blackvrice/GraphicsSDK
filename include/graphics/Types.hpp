@@ -33,6 +33,12 @@ struct MemoryBudget {
 enum class ResourceState { Common, CopySource, CopyDestination, ShaderRead, RenderTarget, Present, VertexBuffer, IndexBuffer, VertexAndIndexBuffer, ConstantBuffer, DepthWrite, DepthRead };
 enum class IndexFormat { UInt16, UInt32 };
 struct Color { float r{}, g{}, b{}, a{1}; };
+// Active render-pass viewport in top-left pixel coordinates with depth bounds in [0, 1].
+struct Viewport {
+    float x{}, y{}, width{}, height{};
+    float minDepth{0.0f}, maxDepth{1.0f};
+    bool operator==(const Viewport&) const = default;
+};
 struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; };
 struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA8UNorm}; bool renderTarget{}, depthStencil{}; };
 struct TextureFootprint { std::uint64_t size{}; std::uint32_t rowPitch{}, rowBytes{}, height{}; };

@@ -1,6 +1,6 @@
 # 다른 AI를 위한 개발 인수인계
 
-2026-11-20 갱신. 직전 확인 기준 HEAD는 `da18ac24`이며 이번 세션에서 `P8-CAP-01`(GPU 한도 및 포맷 지원 조회 API) 구현·검증과 `P8-CAP-02`(Linux/Metal 실행 검증) 분리를 반영했다.
+2026-11-20 갱신. 직전 확인 기준 HEAD는 `04d9e4dd`이며 이번 세션에서 `P9-CMD-04`(동적 Viewport 설정 `setViewport`) 구현·검증과 `P9-CMD-05`(Linux/Metal 실행 검증) 분리를 반영했다.
 이 값은 인수인계 기준이며 새 세션에서는 반드시 실제 `git status`, `git log`, `docs/ROADMAP_TASKS.json`을 다시 확인한다.
 기존 작업 방식과 코드 품질 기준은 루트 [AGENTS.md](../AGENTS.md)를, 시간순 세션 이력은 [AI_WORK_LOG.md](AI_WORK_LOG.md)를 따른다.
 
@@ -8,17 +8,17 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 마지막 작업 | `P8-CAP-01` (`DeviceCaps` 7개 유효 한도·`FormatSupport`·`Device::queryFormatSupport(Format)` 구현 및 Windows D3D12/Vulkan/Validation/WARP·손실복구·설치 소비자 검증), `P8-CAP-02` 분리 |
-| 마지막 확인 Commit | 직전 HEAD `da18ac24` (이번 세션 커밋은 `git log -1`로 확인) |
+| 마지막 작업 | `P9-CMD-04` (`Viewport`, `validateViewport`, `CommandList::setViewport` D3D12/Vulkan/Metal 구현 및 Windows D3D12/Vulkan/Validation/WARP·설치 소비자 검증), `P9-CMD-05` 분리 |
+| 마지막 확인 Commit | 직전 HEAD `04d9e4dd` (이번 세션 커밋은 `git log -1`로 확인) |
 | 현재 브랜치 | `main` (`origin`: `https://github.com/blackvrice/GraphicsSDK.git`) |
-| 현재 버전 | `0.0.1` (`v0.0.3` Capability 확장 슬라이스 진행 중) |
-| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
-| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`) 공개 API·D3D12·Vulkan·Metal 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 192 ID(111 완료) 검증 통과 |
-| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 35 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-*`, `P8-MEM-*`, `P9`~`P12`) |
-| 수정 파일 | `include/graphics/Types.hpp`, `include/graphics/Device.hpp`, `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`, `tests/CapabilityTests.cpp`, `CMakeLists.txt`, `docs/PHASE8_CAPABILITY_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_WORK_LOG.md`, `docs/AI_HANDOFF.md` |
-| 테스트 결과 | Windows D3D12/Vulkan/WARP/GBV/고정 VVL/손실복구/설치 소비자 5모드 및 CTest 20/20 통과, `roadmap.py --check` PASS (192 ID) (Linux/macOS 실기 미실행) |
+| 현재 버전 | `0.0.1` (`v0.0.7` 동적 Viewport 슬라이스 진행 중) |
+| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P9-CMD-05` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
+| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), 동적 Viewport(`P9-CMD-04`) 공개 API·D3D12·Vulkan·Metal 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 194 ID(112 완료) 검증 통과 |
+| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-*`, `P8-MEM-*`, `P9-CMD-01/05`, `P9-CMP-*`, `P10`~`P12`) |
+| 수정 파일 | `include/graphics/Types.hpp`, `include/graphics/RenderPass.hpp`, `include/graphics/CommandList.hpp`, `src/foundation/RenderPass.cpp`, `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`, `tests/RenderPassTests.cpp`, `tests/ViewportTests.cpp`, `CMakeLists.txt`, `docs/PHASE9_VIEWPORT_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_WORK_LOG.md`, `docs/AI_HANDOFF.md` |
+| 테스트 결과 | Windows D3D12/Vulkan/WARP/GBV/고정 VVL/설치 소비자 5모드 및 CTest 18/18 통과 (`assertions=57366/57368/28684`, `errors=0`), `roadmap.py --check` PASS (194 ID) (Linux/macOS 실기 미실행) |
 | 확인된 문제 | 기존 로컬 `out/core`의 `fence_wait_gpu`/`fence_wait_validation` SegFault 2건, 장시간 GBV 메모리(`P2-ACC-01`)·과거 Intel AV(`P2-ACC-02`) 미해결, Linux 물리 GPU·물리 Mac 부재 |
-| 다음 추천 작업 | `P9-CMD-01`(동적 `setViewport`·Command Pool), `P8-TEX-01`(Texture View·Subresource View), `P9-CMP-01`(Compute Shader·UAV·Dispatch), `P8-XFER-04/06`·`P8-CAP-02`(CI Linux/Metal 검증), 또는 Phase 7 CI 배포 후보 연동 |
+| 다음 추천 작업 | `P8-TEX-01`(Texture View·Subresource View), `P9-CMP-01`(Compute Shader·UAV·Dispatch), `P9-CMD-01`(명시적 Command Pool·재사용), `P8-XFER-04/06`·`P8-CAP-02`·`P9-CMD-05`(CI Linux/Metal 검증), 또는 Phase 7 CI 배포 후보 연동 |
 | 주의사항 | `tools/macos_metal_package.py`의 13개 공개 헤더 allowlist와 `tools/macos_core.py`의 5개 `CORE` `.cpp`·11개 CPU 테스트 목록을 유지해야 기존 replay와 `macos-core.yml`이 깨지지 않는다. 기존 사용자 변경(`tests/VulkanAllocationBenchmarkTests.cpp`, `.idea/editor.xml`)은 덮어쓰거나 커밋하지 않는다. |
 
 ## 새 AI에게 전달할 지시문

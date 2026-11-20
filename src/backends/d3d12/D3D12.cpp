@@ -641,6 +641,15 @@ struct DXCommands final : CommandList {
         }
         descriptorCount+=pipeline->descriptorSize;boundResources=std::move(snapshot);textureBound=true;return {};
     }
+    Result<void> setViewport(const Viewport& viewport) override {
+        auto status = ready(); if (!status) return status;
+        if (!renderPass) return invalid("Viewport requires an active render pass");
+        if (auto ok = validateViewport(viewport, passWidth, passHeight); !ok) return ok;
+        D3D12_VIEWPORT nativeViewport{
+            viewport.x, viewport.y, viewport.width, viewport.height, viewport.minDepth, viewport.maxDepth};
+        list->RSSetViewports(1, &nativeViewport);
+        return {};
+    }
     Result<void> setScissor(UINT x, UINT y, UINT width, UINT height) override {
         auto status = ready(); if (!status) return status;
         if (!renderPass || !width || !height || x > passWidth || y > passHeight || width > passWidth-x || height > passHeight-y)

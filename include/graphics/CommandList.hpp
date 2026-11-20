@@ -40,6 +40,9 @@ public:
     // size=0 means the remaining bytes. Layout stride must match at draw time.
     [[nodiscard]] virtual Result<void> bindVertexBuffer(std::uint32_t slot, const BufferPtr&, std::uint32_t stride, std::uint64_t offset=0, std::uint64_t size=0) = 0;
     [[nodiscard]] virtual Result<void> bindIndexBuffer(const BufferPtr&, IndexFormat, std::uint64_t offset=0, std::uint64_t size=0) = 0;
+    // Sets the active render-pass viewport. Reset to full attachment extent on beginRenderPass.
+    // Invalid viewports fail without modifying the previously active viewport.
+    [[nodiscard]] virtual Result<void> setViewport(const Viewport& viewport) = 0;
     [[nodiscard]] virtual Result<void> setScissor(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) = 0;
     [[nodiscard]] virtual Result<void> draw(std::uint32_t vertices, std::uint32_t instances=1, std::uint32_t firstVertex=0, std::uint32_t firstInstance=0) = 0;
     // Caller guarantees that index values + baseVertex address valid vertex data.

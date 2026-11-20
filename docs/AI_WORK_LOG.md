@@ -108,3 +108,32 @@
   - `P8-TEX-01`: Texture View 및 Subresource View.
   - `P9-CMP-01`: Compute Shader·UAV·Dispatch.
   - `P8-XFER-04/06`, `P8-CAP-02`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P9-CMD-04` 동적 Viewport 설정(`setViewport`) 구현 및 실기 검증
+
+- **기준 커밋**: `04d9e4dd` (`Add GPU limits to DeviceCaps and Device::queryFormatSupport API`)
+- **작업 목적**:
+  - `P9-CMD-01`에서 독립 완료 가능한 동적 Viewport 슬라이스를 `P9-CMD-04`로 분리 구현: `Viewport` 구조체, 이식성 경계 검증 `validateViewport`, `CommandList::setViewport(const Viewport&)`를 D3D12·Vulkan(1.1 음수 높이 Y-flip)·Metal(`Draw`별 `MTLViewport` 스냅샷)에 구현하고 Windows 실기·Validation·WARP·설치 소비자로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P9-CMD-05`로 정직하게 분리 유지 (`P9-CMD-01`은 명시적 Command Pool·재사용 범위로 유지).
+- **수정 파일 (18개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/RenderPass.hpp`, `include/graphics/CommandList.hpp`, `src/foundation/RenderPass.cpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/RenderPassTests.cpp`, `tests/ViewportTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE9_VIEWPORT_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 내용과 결과** (격리 빌드 `out/p9-viewport`, 설치 `out/p9-viewport-install`, SDK 지문 `214f02ce490172a3d1ad39c9a360ee1924e528788d30d829658dc75a232811bd`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0.
+  - `gfx_viewport_tests --d3d12` (물리 GPU 2종: GTX 1660 SUPER, Intel UHD 770): 통과 (`assertions=57366, images=8, rejections=18, errors=0`).
+  - `gfx_viewport_tests --d3d12 --validation` (Debug + GBV, 2종): 통과 (`assertions=57368, images=8, rejections=18, errors=0`).
+  - `gfx_viewport_tests --d3d12 --warp` (WARP 1종): 통과 (`assertions=28684, images=4, rejections=9, errors=0`).
+  - `gfx_viewport_tests` (Windows Vulkan 2종): 통과 (`assertions=57366, images=8, rejections=18, errors=0`).
+  - `gfx_viewport_tests --validation` (고정 VVL 1.3.290, 2종): 통과 (`assertions=57368, images=8, rejections=18, errors=0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12 하드웨어/GBV/WARP 및 Vulkan 하드웨어/고정 VVL 5모드 모두 통과.
+  - CTest 18종 회귀(`core_contracts`, `render_pass_contracts`, `render_pass_*`, `vulkan_draw`, `vulkan_depth`, `d3d12_*`, `capabilities_*`, `viewport_*`): 18/18 통과 (13.49s).
+  - `tools/roadmap.py --check`: PASS (194 task IDs: 112 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-01`: Texture View 및 Subresource View.
+  - `P9-CMP-01`: Compute Shader·UAV·Dispatch.
+  - `P9-CMD-01`: 명시적 Command Pool 및 CommandList 재사용.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P9-CMD-05`: Linux Vulkan 및 macOS Metal CI/실기 검증.

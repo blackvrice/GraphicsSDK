@@ -69,4 +69,24 @@ Result<void> validateRenderPass(const RenderPassDesc& pass) {
     }
     return {};
 }
+Result<void> validateViewport(const Viewport& viewport, std::uint32_t targetWidth, std::uint32_t targetHeight) {
+    if (!targetWidth || !targetHeight) {
+        return bad("Viewport requires positive target dimensions");
+    }
+    if (!std::isfinite(viewport.x) || !std::isfinite(viewport.y) ||
+        !std::isfinite(viewport.width) || !std::isfinite(viewport.height) ||
+        !std::isfinite(viewport.minDepth) || !std::isfinite(viewport.maxDepth)) {
+        return bad("Viewport parameters must be finite");
+    }
+    if (viewport.width <= 0.0f || viewport.height <= 0.0f ||
+        viewport.x < 0.0f || viewport.y < 0.0f ||
+        static_cast<double>(viewport.x) + static_cast<double>(viewport.width) > static_cast<double>(targetWidth) ||
+        static_cast<double>(viewport.y) + static_cast<double>(viewport.height) > static_cast<double>(targetHeight)) {
+        return bad("Viewport outside target attachment bounds");
+    }
+    if (viewport.minDepth < 0.0f || viewport.maxDepth > 1.0f || viewport.minDepth > viewport.maxDepth) {
+        return bad("Viewport depth bounds must satisfy 0 <= minDepth <= maxDepth <= 1");
+    }
+    return {};
+}
 }

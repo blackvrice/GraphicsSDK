@@ -53,6 +53,22 @@ void cpu(){
     reject(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 65, 2, 256), gfx::ErrorCode::InvalidArgument, "rowPitch smaller than rowBytes");
     reject(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 16, 2, 300), gfx::ErrorCode::InvalidArgument, "Unaligned custom rowPitch");
     reject(gfx::computeTextureRegionFootprint(static_cast<F>(99), 4, 4), gfx::ErrorCode::InvalidArgument, "Unknown format footprint");
+    take(gfx::validateViewport({0.0f, 0.0f, 64.0f, 64.0f, 0.0f, 1.0f}, 64, 64));
+    take(gfx::validateViewport({12.5f, 4.25f, 19.5f, 20.75f, 0.25f, 0.75f}, 64, 64));
+    take(gfx::validateViewport({0.0f, 0.0f, 1.0f, 1.0f, 0.5f, 0.5f}, 64, 64));
+    reject(gfx::validateViewport({0.0f, 0.0f, 64.0f, 64.0f, 0.0f, 1.0f}, 0, 64), gfx::ErrorCode::InvalidArgument, "Zero target width");
+    reject(gfx::validateViewport({0.0f, 0.0f, 0.0f, 16.0f, 0.0f, 1.0f}, 64, 64), gfx::ErrorCode::InvalidArgument, "Zero viewport width");
+    reject(gfx::validateViewport({0.0f, 0.0f, 16.0f, -1.0f, 0.0f, 1.0f}, 64, 64), gfx::ErrorCode::InvalidArgument, "Negative viewport height");
+    reject(gfx::validateViewport({-1.0f, 0.0f, 16.0f, 16.0f, 0.0f, 1.0f}, 64, 64), gfx::ErrorCode::InvalidArgument, "Negative viewport x");
+    reject(gfx::validateViewport({49.0f, 0.0f, 16.0f, 16.0f, 0.0f, 1.0f}, 64, 64), gfx::ErrorCode::InvalidArgument, "Viewport x+width exceeds target");
+    reject(gfx::validateViewport({0.0f, 49.0f, 16.0f, 16.0f, 0.0f, 1.0f}, 64, 64), gfx::ErrorCode::InvalidArgument, "Viewport y+height exceeds target");
+    reject(gfx::validateViewport({0.0f, 0.0f, 16.0f, 16.0f, -0.1f, 1.0f}, 64, 64), gfx::ErrorCode::InvalidArgument, "minDepth below zero");
+    reject(gfx::validateViewport({0.0f, 0.0f, 16.0f, 16.0f, 0.0f, 1.1f}, 64, 64), gfx::ErrorCode::InvalidArgument, "maxDepth above one");
+    reject(gfx::validateViewport({0.0f, 0.0f, 16.0f, 16.0f, 0.6f, 0.4f}, 64, 64), gfx::ErrorCode::InvalidArgument, "minDepth greater than maxDepth");
+    reject(gfx::validateViewport({std::numeric_limits<float>::quiet_NaN(), 0.0f, 16.0f, 16.0f, 0.0f, 1.0f}, 64, 64),
+           gfx::ErrorCode::InvalidArgument, "NaN viewport coordinate");
+    reject(gfx::validateViewport({0.0f, 0.0f, std::numeric_limits<float>::infinity(), 16.0f, 0.0f, 1.0f}, 64, 64),
+           gfx::ErrorCode::InvalidArgument, "Infinite viewport width");
 }
 constexpr auto vertex=R"(
 cbuffer Draw:register(b0){float4 color;float4 geometry;}

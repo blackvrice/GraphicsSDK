@@ -333,8 +333,13 @@ Load의 내용은 호출자가 이전 clear/draw/copy로 초기화해야 하며,
 
 `validateRenderPass`는 attachment usage/크기/중복/load/clear를 검사한다. beginRenderPass는
 추가로 device/state를 모두 확인한 다음에만 clear/bind를 기록하므로 실패한 요청이 일부 attachment를
-변경하지 않는다. viewport/scissor는 pass 전체 extent로 초기화한다. pass 중 transition/copy/nested pass,
-pass를 닫지 않은 command end는 거부한다. endRenderPass 뒤에도 pipeline/binding은 유지된다.
+변경하지 않는다. viewport/scissor는 pass 전체 extent와 깊이 `[0, 1]`로 초기화한다.
+렌더 패스 안에서 `setViewport(Viewport{x, y, width, height, minDepth, maxDepth})`로 좌상단 픽셀 좌표계 기준의
+유효 영역과 깊이 범위(`0 <= minDepth <= maxDepth <= 1`)를 동적으로 변경할 수 있다. `validateViewport`는 GPU 없이
+유한 값·경계·깊이 범위를 검사하며, 잘못된 `setViewport` 호출은 기존 활성 뷰포트를 변경하지 않고 실패한다.
+Vulkan은 음수 높이 뷰포트(`y + height`, `-height`)로 D3D12·Metal과 동일한 화면 좌표계를 유지한다.
+[동적 Viewport 보고서](PHASE9_VIEWPORT_REPORT.md)
+pass 중 transition/copy/nested pass, pass를 닫지 않은 command end는 거부한다. endRenderPass 뒤에도 pipeline/binding은 유지된다.
 draw는 pipeline의 color count/순서별 format, depth 유무/format, read-only access를 확인한다.
 
 기존 `beginRenderPass(texture, clear)`는 depth 없는 단일 color Clear pass의 shorthand다.

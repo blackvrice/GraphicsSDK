@@ -1083,6 +1083,17 @@ struct VulkanCommands final : CommandList {
         }
         return {};
     }
+    Result<void> setViewport(const Viewport& viewport) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (!record->inPass) return fail(ErrorCode::InvalidState, "Viewport requires an active render pass");
+        if (auto ok = validateViewport(viewport, record->width, record->height); !ok) return ok;
+        // Vulkan 1.1 negative-height viewport aligns NDC +Y to top-left screen coordinates.
+        const VkViewport nativeViewport{
+            viewport.x, viewport.y + viewport.height, viewport.width, -viewport.height,
+            viewport.minDepth, viewport.maxDepth};
+        owner->native->CmdSetViewport(record->command, 0, 1, &nativeViewport);
+        return {};
+    }
     Result<void> setScissor(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) override {
         if (auto ok = ready(); !ok) return ok;
         if (!record->inPass) return fail(ErrorCode::InvalidState, "Scissor requires an active render pass");
