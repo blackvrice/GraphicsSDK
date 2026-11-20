@@ -3423,15 +3423,40 @@
       "id": "P9-CMD-01",
       "phase": 9,
       "group": "P9-CMD",
-      "title": "명시적 Command Pool 및 CommandList 재사용 계약",
-      "status": "todo",
+      "title": "명시적 Command Pool 및 CommandList 재사용 계약 (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P9-CMD-04"
       ],
-      "work": "명시적 CommandPool 생성·리셋과 CommandList 풀 기반 재사용·fence 완료 수명 계약을 D3D12/Vulkan/Metal에 구현한다. 동적 setViewport는 P9-CMD-04로 분리 완료했다.",
-      "done_when": "풀 리셋·재사용 수명/in-flight 거부 회귀 및 validation 0 통과.",
-      "evidence": []
+      "work": "CommandPool(Device::createCommandPool, createCommandList, reset) 및 epoch 기반 CommandList 재사용·in-flight 거부·미제출 참조 회수·조기 파괴 수명 계약을 D3D12/Vulkan/Metal에 구현했다. Windows D3D12(하드웨어 2종·Debug+GBV·WARP·손실/복구), Vulkan(하드웨어 2종·고정 VVL 1.3.290), 설치 find_package 소비자 5모드와 CTest 34종 회귀에서 32-epoch 다중 리스트 재사용·타임스탬프·in-flight reset 거부·자원 0 회수·validation 오류 0을 확인했다.",
+      "done_when": "Windows D3D12/Vulkan/Validation/WARP·손실복구·설치 소비자에서 풀 리셋·재사용 수명/in-flight 거부 회귀 및 validation 0 통과.",
+      "evidence": [
+        "include/graphics/CommandList.hpp",
+        "include/graphics/Device.hpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "tests/CommandPoolTests.cpp",
+        "docs/PHASE9_COMMAND_POOL_REPORT.md"
+      ]
+    },
+    {
+      "id": "P9-CMD-06",
+      "phase": 9,
+      "group": "P9-CMD",
+      "title": "명시적 Command Pool macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P9-CMD-01"
+      ],
+      "work": "Metal.cpp와 Vulkan.cpp의 CommandPool 및 풀 기반 CommandList 재사용 구현을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·수명/in-flight 거부 검증으로 확인한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 다중 epoch 재사용, in-flight/상태 거부 및 자원 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "docs/PHASE9_COMMAND_POOL_REPORT.md"
+      ]
     },
     {
       "id": "P9-CMD-04",

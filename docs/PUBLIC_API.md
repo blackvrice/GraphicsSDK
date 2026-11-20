@@ -34,8 +34,16 @@ Texture::footprint는 buffer-texture copy의 총 바이트, aligned rowPitch,
 Buffer::write는 Upload, Buffer::read는 Readback 메모리에만 허용한다.
 
 CommandList는 transition, copy, color/depth render pass, pipeline, resource/vertex/index binding,
-scissor, draw/indexed draw/instancing, debug marker, 2개 timestamp 슬롯을 지원한다.
+viewport, scissor, draw/indexed draw/instancing, debug marker, 2개 timestamp 슬롯을 지원한다.
 GPU timestamp read는 resolve 후 submit fence 완료 시에만 가능하다.
+`Device::createCommandPool()`은 네이티브 command allocator/pool을 명시적으로 소유·재사용하는
+`CommandPool`을 생성한다. 같은 풀에서는 한 번에 하나의 `CommandList`만 기록할 수 있으며,
+같은 epoch에서 이미 기록한 풀 소속 리스트의 재기록은 `CommandPool::reset()` 이후에만 허용된다.
+`CommandPool::reset()`은 기록 중인 리스트나 미완료 제출이 있을 때 `InvalidState`로 거부하고,
+성공 시 네이티브 allocator/pool을 리셋하며 미제출 기록의 참조를 즉시 해제한다.
+이미 제출된 배치가 실행 중일 때 `CommandPool`이 파괴되어도 제출 배치가 완료 시점까지 네이티브
+수명을 유지하며, 미제출 풀 소속 리스트는 `InvalidState`로 거부된다.
+[명시적 Command Pool 보고서](PHASE9_COMMAND_POOL_REPORT.md)를 따른다.
 
 Vulkan `debugMarker(text)`는 debug-utils 확장과 함수가 있을 때 실제 label을 넣는다.
 정상 recording에서 함수가 없으면 Unsupported이며 creating thread·recording·퇴역 검사를 먼저 한다.

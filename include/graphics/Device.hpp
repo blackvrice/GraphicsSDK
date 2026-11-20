@@ -34,6 +34,8 @@ public:
     // Drops cache ownership. Existing handles and recorded work remain valid.
     [[nodiscard]] Result<void> clearGraphicsPipelineCache();
     [[nodiscard]] virtual Result<std::unique_ptr<CommandList>> createCommandList() = 0;
+    // Creating thread only. Creates an explicit command allocator/pool for reusable CommandLists.
+    [[nodiscard]] virtual Result<std::unique_ptr<CommandPool>> createCommandPool() = 0;
     // Creating thread only. Validate a live native surface and selected queue;
     // does not create a swapchain or guarantee format/present support.
     [[nodiscard]] virtual Result<void> checkSurfaceSupport(Surface) = 0;

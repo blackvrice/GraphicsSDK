@@ -52,4 +52,22 @@ public:
     [[nodiscard]] virtual Result<double> elapsedGpuMilliseconds() = 0;
     [[nodiscard]] virtual Result<void> debugMarker(std::string_view text) = 0;
 };
+class CommandPool {
+public:
+    virtual ~CommandPool() = default;
+    CommandPool(const CommandPool&) = delete;
+    CommandPool& operator=(const CommandPool&) = delete;
+    // Creating thread only. Allocates a reusable CommandList backed by this pool.
+    // Fails with InvalidState while any command list from this pool is currently recording.
+    // Within a pool epoch, at most one command list from the same pool may record at a time,
+    // and each pooled command list may be recorded once before reset().
+    [[nodiscard]] virtual Result<std::unique_ptr<CommandList>> createCommandList() = 0;
+    // Creating thread only. Fails with InvalidState while any command list from this pool
+    // is recording or while any submission recorded from this pool is still in flight.
+    // On success, resets the native command allocator/pool, releases retained per-recording
+    // references, discards unsubmitted recordings, and makes all live pooled lists reusable.
+    [[nodiscard]] virtual Result<void> reset() = 0;
+protected:
+    CommandPool() = default;
+};
 }

@@ -137,3 +137,32 @@
   - `P9-CMP-01`: Compute Shader·UAV·Dispatch.
   - `P9-CMD-01`: 명시적 Command Pool 및 CommandList 재사용.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P9-CMD-05`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P9-CMD-01` 명시적 Command Pool 및 CommandList 재사용 구현·실기 검증
+
+- **기준 커밋**: `7defb926` (`Add dynamic setViewport API and multi-backend implementations`)
+- **작업 목적**:
+  - 선행 충족 작업 `P9-CMD-01` 구현: `CommandPool` (`Device::createCommandPool`, `createCommandList`, `reset`) 및 epoch 기반 `CommandList` 재사용·in-flight/상태 거부·미제출 참조 회수·조기 파괴 수명 계약을 D3D12·Vulkan(`vkResetCommandPool`/`vkFreeCommandBuffers`)·Metal에 구현하고 Windows 실기·Validation·WARP·손실복구·설치 소비자로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P9-CMD-06`으로 정직하게 분리 유지.
+- **수정 파일 (15개)**:
+  - `include/graphics/CommandList.hpp`, `include/graphics/Device.hpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/CommandPoolTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE9_COMMAND_POOL_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 내용과 결과** (격리 빌드 `out/p9-command-pool`, 설치 `out/p9-command-pool-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `fe5576007709fa9ab5dc60c49c1e8698bcb0624ad554d22ea4feed79b67cb73d`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0.
+  - `gfx_command_pool_tests --d3d12` (물리 GPU 2종): 통과 (`assertions=2390, epochs=64, submissions=140, rejections=216, inflight_reset_rejections=2, errors=0`).
+  - `gfx_command_pool_tests --d3d12 --validation` (Debug + GBV, 2종): 통과 (`assertions=2624, epochs=64, submissions=144, rejections=214, errors=0`).
+  - `gfx_command_pool_tests --d3d12 --warp` (WARP + `removeForTesting`/`recover`): 통과 (`assertions=1228, epochs=32, submissions=71, rejections=112, inflight_reset_rejections=1, errors=0`).
+  - `gfx_command_pool_tests --vulkan` (Windows Vulkan 2종): 통과 (`assertions=2390, epochs=64, submissions=140, rejections=216, inflight_reset_rejections=2, errors=0`).
+  - `gfx_command_pool_tests --vulkan --validation` (고정 VVL 1.3.290, 2종): 통과 (`assertions=2394, epochs=64, submissions=140, rejections=216, inflight_reset_rejections=2, errors=0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12 하드웨어/GBV/WARP 및 Vulkan 하드웨어/고정 VVL **5/5 모드 통과**.
+  - CTest 34종 회귀(`core_contracts`, `render_pass_contracts`, `copy_atomicity_*`, `vulkan_transfer*`, `vulkan_draw*`, `vulkan_timestamps`, `buffer_region_*`, `texture_region_*`, `capabilities_*`, `viewport_*`, `command_pool_*`): **34/34 통과** (27.00s).
+  - `tools/roadmap.py --check`: PASS (195 task IDs: 113 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-01`: Texture View 및 Subresource View.
+  - `P9-CMP-01`: Compute Shader·UAV·Dispatch.
+  - `P9-CMD-02`: 병렬 명령 기록·Thread-local Command Allocator 및 벤치마크.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P9-CMD-05/06`: Linux Vulkan 및 macOS Metal CI/실기 검증.

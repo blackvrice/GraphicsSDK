@@ -255,13 +255,24 @@ MTLPixelFormat pixelFormat(Format f) {
     return MTLPixelFormatInvalid;
 }
 #include "MetalGraphics.hpp"
+struct MetalCommands;
+struct NativeCommandPool {
+    std::uint64_t epoch{1};
+    std::uint64_t lastSubmitted{};
+    std::uint32_t openCount{};
+    bool ownerAlive{true};
+    std::vector<MetalCommands*> liveLists;
+};
 struct MetalCommands final : CommandList {
     std::shared_ptr<State> owner;
+    std::shared_ptr<NativeCommandPool> pool;
+    std::shared_ptr<int> token;
     std::shared_ptr<NativeRecording> native;
     bool open{}, ended{};
     bool inPass{};
     std::size_t passOperation{};
     std::uint64_t submitted{};
+    std::uint64_t recordedEpoch{};
     std::vector<Use> uses;
     std::vector<Operation> operations;
     std::shared_ptr<NativePipeline> selected;
@@ -270,21 +281,53 @@ struct MetalCommands final : CommandList {
     BufferView indices;
     MTLViewport viewport{};
     MTLScissorRect scissor{};
-    explicit MetalCommands(std::shared_ptr<State> state) : owner(std::move(state)) {}
+    explicit MetalCommands(std::shared_ptr<State> state, std::shared_ptr<NativeCommandPool> commandPool = {})
+        : owner(std::move(state)), pool(std::move(commandPool)) {}
+    ~MetalCommands() override {
+        if (!pool) return;
+        std::erase(pool->liveLists, this);
+        if (open && pool->openCount > 0) --pool->openCount;
+        open = false;
+    }
+    void clearRecordingState() {
+        native.reset();
+        open = false;
+        ended = false;
+        inPass = false;
+        passOperation = 0;
+        submitted = 0;
+        operations.clear();
+        uses.clear();
+        selected.reset();
+        bindings.reset();
+        vertices = {};
+        indices = {};
+    }
     Result<void> begin() override {
         if (auto ok = owner->poll(); !ok) return ok;
-        if (open || submitted > owner->completed) return fail(ErrorCode::InvalidState, "Metal command list is open or in flight");
+        if (pool) {
+            if (!pool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+            if (open) return fail(ErrorCode::InvalidState, "Metal command list is already recording");
+            if (pool->openCount > 0) return fail(ErrorCode::InvalidState, "Another command list from this CommandPool is currently recording");
+            if (recordedEpoch == pool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list requires CommandPool::reset() before re-recording");
+            if (submitted > owner->completed) return fail(ErrorCode::InvalidState, "Metal command list is still in flight");
+        } else {
+            if (open || submitted > owner->completed) return fail(ErrorCode::InvalidState, "Metal command list is open or in flight");
+        }
         auto next = std::make_shared<NativeRecording>();
         std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
-        owner->recordings.push_back(next); native = std::move(next);
-        open = true; ended = false; submitted = 0; inPass = false;
-        operations.clear(); uses.clear();
-        selected.reset(); bindings.reset(); vertices = {}; indices = {};
+        owner->recordings.push_back(next);
+        clearRecordingState();
+        native = std::move(next);
+        open = true;
+        if (pool) {
+            recordedEpoch = pool->epoch;
+            ++pool->openCount;
+        }
         return {};
     }
     Result<void> end() override {
-        if (auto ok = owner->check(); !ok) return ok;
-        if (!open) return fail(ErrorCode::InvalidState, "Metal command list is not recording");
+        if (auto ok = ready(); !ok) return ok;
         if (inPass) return fail(ErrorCode::InvalidState, "Metal render pass must be ended first");
         // A recording that may become stale must not keep a drawable texture
         // alive in an unsubmitted native command buffer.
@@ -293,6 +336,7 @@ struct MetalCommands final : CommandList {
         }
         open = false;
         ended = true;
+        if (pool && pool->openCount > 0) --pool->openCount;
         return {};
     }
     bool usesDrawable() const {
@@ -441,8 +485,7 @@ struct MetalCommands final : CommandList {
         return {};
     }
     Result<void> debugMarker(std::string_view text) override {
-        if (auto ok = owner->check(); !ok) return ok;
-        if (!open) return fail(ErrorCode::InvalidState, "Metal marker requires recording");
+        if (auto ok = ready(); !ok) return ok;
         @autoreleasepool {
             NSString* label = [[NSString alloc] initWithBytes:text.data() length:text.size() encoding:NSUTF8StringEncoding];
             if (!label || text.empty() || text.find('\0') != std::string_view::npos)
@@ -457,6 +500,7 @@ struct MetalCommands final : CommandList {
     }
     Result<void> ready() const {
         if (auto ok = owner->check(); !ok) return ok;
+        if (pool && !pool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
         if (!open) return fail(ErrorCode::InvalidState, "Metal command list is not recording");
         return {};
     }
@@ -731,6 +775,42 @@ Result<std::shared_ptr<Allocation>> MetalCommands::allocation(const TexturePtr& 
         return fail(ErrorCode::InvalidState, "Metal drawable is no longer current");
     return texture->allocation;
 }
+struct MetalCommandPool final : CommandPool {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativeCommandPool> pool;
+    std::shared_ptr<int> token;
+    ~MetalCommandPool() override {
+        if (pool) pool->ownerAlive = false;
+    }
+    Result<std::unique_ptr<CommandList>> createCommandList() override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (pool->openCount > 0) {
+            return fail(ErrorCode::InvalidState, "Cannot allocate from a CommandPool while a command list from it is recording");
+        }
+        auto value = std::make_unique<MetalCommands>(owner, pool);
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->objects.push_back(value->token);
+        pool->liveLists.push_back(value.get());
+        return std::unique_ptr<CommandList>(std::move(value));
+    }
+    Result<void> reset() override {
+        if (auto ok = owner->poll(); !ok) return ok;
+        if (pool->openCount > 0) {
+            return fail(ErrorCode::InvalidState, "Command pool cannot reset while a command list is recording");
+        }
+        if (pool->lastSubmitted > owner->completed) {
+            return fail(ErrorCode::InvalidState, "Command pool has in-flight submissions");
+        }
+        for (MetalCommands* cmd : pool->liveLists) {
+            cmd->clearRecordingState();
+            cmd->recordedEpoch = 0;
+        }
+        pool->lastSubmitted = 0;
+        ++pool->epoch;
+        return {};
+    }
+};
 struct MetalQueue final : CommandQueue {
     std::shared_ptr<State> owner;
     explicit MetalQueue(std::shared_ptr<State> state) : owner(std::move(state)) {}
@@ -738,6 +818,8 @@ struct MetalQueue final : CommandQueue {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         auto* commands = dynamic_cast<MetalCommands*>(&value);
         if (!commands || commands->owner != owner) return fail(ErrorCode::WrongDevice, "Metal command list belongs to another generation");
+        if (commands->pool && !commands->pool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+        if (commands->pool && commands->recordedEpoch != commands->pool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list was reset and must be re-recorded");
         if (!commands->ended || commands->open || commands->submitted) return fail(ErrorCode::InvalidState, "Metal submission requires an ended, unsubmitted command list");
         if (owner->last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Metal fence sequence exhausted");
         for (const auto& use : commands->uses)
@@ -760,6 +842,9 @@ struct MetalQueue final : CommandQueue {
         owner->pending.push_back({owner->last + 1, command, std::move(allocations),std::move(pipelines)});
         @autoreleasepool { [command commit]; }
         commands->submitted = ++owner->last;
+        if (commands->pool) {
+            commands->pool->lastSubmitted = std::max(commands->pool->lastSubmitted, owner->last);
+        }
         for (auto& use : commands->uses) {
             use.allocation->state = use.shadow; use.allocation->initialized = use.initialized;
             use.allocation->lastUse = owner->last; ++use.allocation->version;
@@ -899,6 +984,16 @@ struct MetalDevice final : Device {
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         return std::make_unique<MetalCommands>(owner);
+    }
+    Result<std::unique_ptr<CommandPool>> createCommandPool() override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        auto value = std::make_unique<MetalCommandPool>();
+        value->owner = owner;
+        value->pool = std::make_shared<NativeCommandPool>();
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->objects.push_back(value->token);
+        return std::unique_ptr<CommandPool>(std::move(value));
     }
     Result<void> checkSurfaceSupport(Surface surface) override {
         auto layer = checkedLayer(*owner, surface);

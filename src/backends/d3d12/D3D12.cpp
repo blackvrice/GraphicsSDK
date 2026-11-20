@@ -317,8 +317,19 @@ struct NativeCommands final : Retirable {
         for(const auto& use:uses)if(use.resource)out.push_back(use.resource);
     }
 };
+struct DXCommands;
+struct DXCommandPoolState final : Retirable {
+    ComPtr<ID3D12CommandAllocator> allocator;
+    std::uint64_t epoch{1};
+    std::uint64_t lastSubmitted{};
+    std::uint32_t openCount{};
+    bool ownerAlive{true};
+    std::vector<DXCommands*> liveLists;
+    void releaseNative() override { allocator.Reset(); }
+};
 struct DXCommands final : CommandList {
     std::shared_ptr<State> owner;
+    std::shared_ptr<DXCommandPoolState> pool;
     std::shared_ptr<NativeCommands> objects{std::make_shared<NativeCommands>()};
     ComPtr<ID3D12CommandAllocator>& allocator{objects->allocator};
     ComPtr<ID3D12GraphicsCommandList>& list{objects->list};
@@ -338,16 +349,38 @@ struct DXCommands final : CommandList {
     std::shared_ptr<DXBuffer> indexBuffer;
     UINT indexSize{},indexElementSize{};
     std::uint64_t submitted{};
+    std::uint64_t recordedEpoch{};
     UINT descriptorCount{};
     struct BoundResource { std::shared_ptr<DXTexture> texture; std::shared_ptr<DXBuffer> buffer; std::uint64_t offset{},size{}; };
     std::vector<BoundResource> boundResources;
     bool recording{}, ended{}, renderPass{}, textureBound{}, timestampsResolved{};
     std::array<bool, 2> timestampWritten{};
+    ~DXCommands() override {
+        if (!pool) return;
+        std::erase(pool->liveLists, this);
+        if (recording) {
+            if (pool->openCount > 0) --pool->openCount;
+            // Close an orphaned open list before dropping so allocator->Reset() remains valid.
+            if (list && owner && !owner->retired && SUCCEEDED(owner->lostReason)) {
+                (void)list->Close();
+            }
+            recording = false;
+        }
+    }
+    void clearRecordingState() {
+        references.clear(); retained.clear(); uses.clear(); pipeline.reset(); colorTargets.clear(); depthTarget.reset();
+        passWidth = passHeight = 0; depthReadOnly = false;
+        boundResources.clear();
+        vertexBuffers = {}; indexBuffer.reset(); indexSize = indexElementSize = 0;
+        descriptorCount = 0; submitted = 0; renderPass = false; recording = false; ended = false;
+        textureBound = false; timestampsResolved = false; timestampWritten = {};
+    }
     Result<void> ready(bool outsidePass = false) {
         // Device removal is checked at begin/submit/wait, rather than polling the
         // driver for every recorded draw. Recording itself does not execute GPU work.
         if (owner->thread != std::this_thread::get_id()) return invalid("Command recording must run on the creating thread");
         if(FAILED(owner->lostReason))return owner->loss();
+        if (pool && !pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
         if (!recording || (outsidePass && renderPass)) return invalid("Command operation is outside its recording/pass scope");
         return {};
     }
@@ -387,20 +420,33 @@ struct DXCommands final : CommandList {
     }
     Result<void> begin() override {
         auto done = owner->completed(); if (!done) return std::unexpected(done.error());
+        if (pool) {
+            if (!pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+            if (recording) return invalid("Command list is already recording");
+            if (pool->openCount > 0) return invalid("Another command list from this CommandPool is currently recording");
+            if (recordedEpoch == pool->epoch) return invalid("Pooled command list requires CommandPool::reset() before re-recording");
+            if (submitted && *done < submitted) return invalid("Command allocator is still in flight");
+            HRESULT result = list->Reset(pool->allocator.Get(), nullptr);
+            if (FAILED(result)) return owner->failure(result, "Command list reset failed");
+            clearRecordingState();
+            recording = true;
+            recordedEpoch = pool->epoch;
+            ++pool->openCount;
+            return {};
+        }
         if (recording || (submitted && *done < submitted)) return invalid("Command allocator is still recording or in flight");
         HRESULT result = allocator->Reset(); if (FAILED(result)) return owner->failure(result, "Allocator reset failed");
         result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return owner->failure(result, "Command list reset failed");
-        references.clear(); retained.clear(); uses.clear(); pipeline.reset(); colorTargets.clear();depthTarget.reset();passWidth=passHeight=0;depthReadOnly=false;
-        boundResources.clear();
-        vertexBuffers={};indexBuffer.reset();indexSize=indexElementSize=0;
-        descriptorCount = 0; submitted = 0; renderPass = false; recording = true; ended = false;
-        textureBound = false; timestampsResolved = false; timestampWritten = {};
+        clearRecordingState();
+        recording = true;
         return {};
     }
     Result<void> end() override {
         auto status = ready(true); if (!status) return status;
         HRESULT result = list->Close(); if (FAILED(result)) return owner->failure(result, "Command list close failed");
-        recording = false; ended = true; return {};
+        recording = false; ended = true;
+        if (pool && pool->openCount > 0) --pool->openCount;
+        return {};
     }
     Result<void> transition(const BufferPtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
@@ -754,6 +800,78 @@ struct DXCommands final : CommandList {
         list->SetMarker(0, text.data(), static_cast<UINT>(text.size())); return {};
     }
 };
+Result<std::unique_ptr<CommandList>> makeDXCommands(
+    const std::shared_ptr<State>& state,
+    std::shared_ptr<DXCommandPoolState> pool = {}) {
+    auto commands = std::make_unique<DXCommands>();
+    commands->owner = state;
+    commands->pool = std::move(pool);
+    ID3D12CommandAllocator* activeAllocator = nullptr;
+    if (commands->pool) {
+        activeAllocator = commands->pool->allocator.Get();
+    } else {
+        HRESULT result = state->device->CreateCommandAllocator(
+            D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commands->allocator));
+        if (FAILED(result)) return state->failure(result, "Create allocator failed");
+        activeAllocator = commands->allocator.Get();
+    }
+    HRESULT result = state->device->CreateCommandList(
+        0, D3D12_COMMAND_LIST_TYPE_DIRECT, activeAllocator, nullptr, IID_PPV_ARGS(&commands->list));
+    if (FAILED(result)) return state->failure(result, "Create command list failed");
+    result = commands->list->Close();
+    if (FAILED(result)) return state->failure(result, "Initial command list close failed");
+    D3D12_DESCRIPTOR_HEAP_DESC heap{};
+    heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heap.NumDescriptors = 256;
+    heap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    result = state->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&commands->descriptors));
+    if (FAILED(result)) return state->failure(result, "Create command descriptor heap failed");
+    D3D12_QUERY_HEAP_DESC queries{};
+    queries.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+    queries.Count = 2;
+    result = state->device->CreateQueryHeap(&queries, IID_PPV_ARGS(&commands->query));
+    if (FAILED(result)) return state->failure(result, "Create timestamp query heap failed");
+    auto readback = makeBuffer(*state, 16, Memory::Readback);
+    if (!readback) return std::unexpected(readback.error());
+    commands->queryReadback = *readback;
+    state->track(commands->objects);
+    if (commands->pool) {
+        commands->pool->liveLists.push_back(commands.get());
+    }
+    return std::unique_ptr<CommandList>(std::move(commands));
+}
+struct DXCommandPool final : CommandPool {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<DXCommandPoolState> pool;
+    ~DXCommandPool() override {
+        if (pool) pool->ownerAlive = false;
+    }
+    Result<std::unique_ptr<CommandList>> createCommandList() override {
+        auto status = owner->check(); if (!status) return std::unexpected(status.error());
+        if (pool->openCount > 0) {
+            return invalid("Cannot allocate from a CommandPool while a command list from it is recording");
+        }
+        return makeDXCommands(owner, pool);
+    }
+    Result<void> reset() override {
+        auto done = owner->completed(); if (!done) return std::unexpected(done.error());
+        if (pool->openCount > 0) {
+            return invalid("Command pool cannot reset while a command list is recording");
+        }
+        if (pool->lastSubmitted && *done < pool->lastSubmitted) {
+            return invalid("Command pool has in-flight submissions");
+        }
+        HRESULT result = pool->allocator->Reset();
+        if (FAILED(result)) return owner->failure(result, "Command pool allocator reset failed");
+        for (DXCommands* cmd : pool->liveLists) {
+            cmd->clearRecordingState();
+            cmd->recordedEpoch = 0;
+        }
+        pool->lastSubmitted = 0;
+        ++pool->epoch;
+        return {};
+    }
+};
 struct NativeSwapChain final : Retirable {
     std::shared_ptr<SwapChainScope> scope{std::make_shared<SwapChainScope>()};
     ComPtr<IDXGISwapChain3> chain;
@@ -1052,27 +1170,26 @@ public:
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
-        auto commands = std::make_unique<DXCommands>(); commands->owner = state;
-        HRESULT result = state->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commands->allocator));
-        if (FAILED(result)) return state->failure(result, "Create allocator failed");
-        result = state->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commands->allocator.Get(), nullptr, IID_PPV_ARGS(&commands->list));
-        if (FAILED(result)) return state->failure(result, "Create command list failed");
-        result = commands->list->Close(); if (FAILED(result)) return state->failure(result, "Initial command list close failed");
-        D3D12_DESCRIPTOR_HEAP_DESC heap{}; heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; heap.NumDescriptors = 256; heap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        result = state->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&commands->descriptors));
-        if (FAILED(result)) return state->failure(result, "Create command descriptor heap failed");
-        D3D12_QUERY_HEAP_DESC queries{}; queries.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP; queries.Count = 2;
-        result = state->device->CreateQueryHeap(&queries, IID_PPV_ARGS(&commands->query));
-        if (FAILED(result)) return state->failure(result, "Create timestamp query heap failed");
-        auto readback = makeBuffer(*state, 16, Memory::Readback); if (!readback) return std::unexpected(readback.error());
-        commands->queryReadback = *readback;
-        state->track(commands->objects);
-        return std::unique_ptr<CommandList>(std::move(commands));
+        return makeDXCommands(state);
+    }
+    Result<std::unique_ptr<CommandPool>> createCommandPool() override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        auto poolState = std::make_shared<DXCommandPoolState>();
+        HRESULT result = state->device->CreateCommandAllocator(
+            D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&poolState->allocator));
+        if (FAILED(result)) return state->failure(result, "Create command pool allocator failed");
+        state->track(poolState);
+        auto pool = std::make_unique<DXCommandPool>();
+        pool->owner = state;
+        pool->pool = std::move(poolState);
+        return std::unique_ptr<CommandPool>(std::move(pool));
     }
     Result<Fence> submit(CommandList& commands) override {
         auto status = state->completed(); if (!status) return std::unexpected(status.error());
         auto* cmd = dynamic_cast<DXCommands*>(&commands);
         if (!cmd || cmd->owner != state) return invalid("Command list belongs to another device", ErrorCode::WrongDevice);
+        if (cmd->pool && !cmd->pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+        if (cmd->pool && cmd->recordedEpoch != cmd->pool->epoch) return invalid("Pooled command list was reset and must be re-recorded");
         if (!cmd->ended || cmd->recording || cmd->submitted) return invalid("Command list is not executable or was already submitted");
         if (state->last >= UINT64_MAX-1) return invalid("Fence timeline exhausted");
         for (const auto& usage : cmd->uses) {
@@ -1082,11 +1199,13 @@ public:
         }
         Batch batch; batch.fence = state->last+1; batch.objects = cmd->references;
         auto add = [&](const auto& ptr) { ComPtr<IUnknown> ref; ptr.As(&ref); batch.objects.push_back(std::move(ref)); };
-        add(cmd->allocator); add(cmd->list); add(cmd->descriptors); add(cmd->query); add(cmd->queryReadback);
+        add(cmd->pool ? cmd->pool->allocator : cmd->allocator);
+        add(cmd->list); add(cmd->descriptors); add(cmd->query); add(cmd->queryReadback);
         // Allocate retention before ExecuteCommandLists; failure cannot orphan submitted GPU work.
         state->pending.push_back(std::move(batch));
         ID3D12CommandList* lists[]{cmd->list.Get()}; state->queue->ExecuteCommandLists(1, lists);
         ++state->last; cmd->submitted = state->last;
+        if (cmd->pool) cmd->pool->lastSubmitted = std::max(cmd->pool->lastSubmitted, state->last);
         for (auto& usage : cmd->uses) { usage.tracker->state = usage.state; usage.tracker->lastUse = state->last; ++usage.tracker->version; }
         HRESULT result = state->queue->Signal(state->fence.Get(), state->last);
         if (FAILED(result)) return state->failure(result, "Queue signal failed after execution");

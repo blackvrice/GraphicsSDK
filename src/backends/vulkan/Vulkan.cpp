@@ -275,7 +275,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CreateQueryPool) X(DestroyQueryPool) X(CmdResetQueryPool) X(CmdWriteTimestamp) X(GetQueryPoolResults) \
     X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
-    X(CreateCommandPool) X(DestroyCommandPool) X(AllocateCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
+    X(CreateCommandPool) X(DestroyCommandPool) X(ResetCommandPool) X(AllocateCommandBuffers) X(FreeCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
     X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences) X(CreateSemaphore) X(DestroySemaphore)
 struct NativeDevice {
     std::shared_ptr<Instance> instance;
@@ -406,8 +406,36 @@ struct NativeBindings {
     VkDescriptorSet set{};
     ~NativeBindings() { if (pool) native->DestroyDescriptorPool(native->handle, pool, nullptr); }
 };
+struct NativeQueryPool {
+    std::shared_ptr<NativeDevice> native;
+    VkQueryPool handle{};
+    void release() {
+        if (handle) native->DestroyQueryPool(native->handle, handle, nullptr);
+        handle = {};
+    }
+    ~NativeQueryPool() { release(); }
+};
+struct VulkanCommands;
+struct NativeCommandPool {
+    std::shared_ptr<NativeDevice> native;
+    VkCommandPool handle{};
+    std::uint64_t epoch{1};
+    std::uint64_t lastSubmitted{};
+    std::uint32_t openCount{};
+    bool ownerAlive{true};
+    std::vector<VkCommandBuffer> retiredBuffers;
+    std::vector<VulkanCommands*> liveLists;
+    void release() {
+        retiredBuffers.clear();
+        if (handle) native->DestroyCommandPool(native->handle, handle, nullptr);
+        handle = {};
+    }
+    ~NativeCommandPool() { release(); }
+};
 struct Recording {
     std::shared_ptr<NativeDevice> native;
+    std::shared_ptr<NativeCommandPool> sharedPool;
+    std::shared_ptr<NativeQueryPool> sharedQueries;
     VkCommandPool pool{};
     VkCommandBuffer command{};
     bool open{}, ended{}, inPass{};
@@ -429,11 +457,13 @@ struct Recording {
     bool timestampsResolved{}, timestampStartFirst{};
     std::chrono::steady_clock::time_point submittedAt;
     std::optional<double> timestampResult;
+    VkQueryPool queryHandle() const { return sharedQueries ? sharedQueries->handle : queries; }
     void release() {
         if (pool) native->DestroyCommandPool(native->handle, pool, nullptr);
         if (queries) native->DestroyQueryPool(native->handle, queries, nullptr);
         queries = {}; timestampWritten = {}; timestampsResolved = timestampStartFirst = false; timestampResult.reset();
-        pool = {}; command = {}; selectedBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); uses.clear(); open = ended = inPass = false;
+        pool = {}; command = {}; sharedQueries.reset(); sharedPool.reset();
+        selectedBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); uses.clear(); open = ended = inPass = false;
     }
     ~Recording() { release(); }
 };
@@ -454,6 +484,8 @@ struct State {
     std::list<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
     std::vector<std::weak_ptr<Recording>> recordings;
+    std::vector<std::weak_ptr<NativeCommandPool>> commandPools;
+    std::vector<std::weak_ptr<NativeQueryPool>> queryPools;
     std::vector<std::weak_ptr<NativePipeline>> pipelines;
     std::vector<std::weak_ptr<NativeSwapchain>> swapchains;
     std::vector<std::weak_ptr<int>> objects;
@@ -486,11 +518,13 @@ struct State {
         for (auto& p : pending) native->DestroyFence(native->handle, p.fence, nullptr);
         pending.clear();
         for (auto& weak : recordings) if (auto value = weak.lock()) value->release();
+        for (auto& weak : commandPools) if (auto value = weak.lock()) value->release();
+        for (auto& weak : queryPools) if (auto value = weak.lock()) value->release();
         for (auto& weak : pipelines) if (auto value = weak.lock()) value->release();
         for (auto& weak : allocations) if (auto value = weak.lock()) value->release();
         for (auto& weak : swapchains) if (auto value = weak.lock()) value->release();
         swapchains.clear();
-        recordings.clear(); pipelines.clear(); allocations.clear(); objects.clear();
+        recordings.clear(); commandPools.clear(); queryPools.clear(); pipelines.clear(); allocations.clear(); objects.clear();
         native->release(); retired = true;
     }
     ~State() { retire(); }
@@ -611,10 +645,27 @@ std::uint32_t vertexBytes(VertexFormat format) {
 }
 struct VulkanCommands final : CommandList {
     std::shared_ptr<State> owner;
+    std::shared_ptr<NativeCommandPool> commandPool;
+    VkCommandBuffer pooledCommand{};
+    std::shared_ptr<NativeQueryPool> pooledQueries;
+    std::uint64_t recordedEpoch{};
     std::shared_ptr<Recording> record;
     std::shared_ptr<int> token;
+    ~VulkanCommands() override {
+        if (!commandPool) return;
+        std::erase(commandPool->liveLists, this);
+        if (record && record->open) {
+            if (commandPool->openCount > 0) --commandPool->openCount;
+            record->open = false;
+        }
+        if (pooledCommand && commandPool->handle) {
+            commandPool->retiredBuffers.push_back(pooledCommand);
+        }
+        pooledCommand = {};
+    }
     Result<void> ready() const {
         if (auto ok = owner->check(); !ok) return ok;
+        if (commandPool && !commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
         if (!record || !record->open) return fail(ErrorCode::InvalidState, "Command list is not recording");
         return {};
     }
@@ -651,6 +702,31 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> begin() override {
         if (auto ok = owner->poll(); !ok) return ok;
+        if (commandPool) {
+            if (!commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+            if (record && record->open) return fail(ErrorCode::InvalidState, "Command list is already recording");
+            if (commandPool->openCount > 0) return fail(ErrorCode::InvalidState, "Another command list from this CommandPool is currently recording");
+            if (recordedEpoch == commandPool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list requires CommandPool::reset() before re-recording");
+            if (record && record->submitted > owner->completed) return fail(ErrorCode::InvalidState, "Command list is still in flight");
+            auto next = std::make_shared<Recording>();
+            next->native = owner->native;
+            next->sharedPool = commandPool;
+            next->command = pooledCommand;
+            next->sharedQueries = pooledQueries;
+            VkCommandBufferBeginInfo start{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+            start.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            if (auto ok = owner->accept(owner->native->BeginCommandBuffer(next->command, &start), "vkBeginCommandBuffer"); !ok) return ok;
+            if (next->sharedQueries && next->sharedQueries->handle) {
+                owner->native->CmdResetQueryPool(next->command, next->sharedQueries->handle, 0, 2);
+            }
+            next->open = true;
+            recordedEpoch = commandPool->epoch;
+            ++commandPool->openCount;
+            std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
+            owner->recordings.push_back(next);
+            record = std::move(next);
+            return {};
+        }
         if (record && (record->open || record->submitted > owner->completed)) return fail(ErrorCode::InvalidState, "Command list open or in flight");
         auto next = std::make_shared<Recording>(); next->native = owner->native;
         VkCommandPoolCreateInfo pool{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}; pool.queueFamilyIndex = owner->family;
@@ -673,6 +749,7 @@ struct VulkanCommands final : CommandList {
         if (auto ok = outsidePass(); !ok) return ok;
         const auto r = owner->native->EndCommandBuffer(record->command);
         record->open = false; record->ended = r == VK_SUCCESS;
+        if (commandPool && commandPool->openCount > 0) --commandPool->openCount;
         return owner->accept(r, "vkEndCommandBuffer");
     }
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
@@ -1124,15 +1201,16 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> writeTimestamp(std::uint32_t index) override {
         if (auto ok = ready(); !ok) return ok;
-        if (!record->queries) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        const VkQueryPool queryPool = record->queryHandle();
+        if (!queryPool) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
         if (index > 1 || record->timestampWritten[index] || record->timestampsResolved) return fail(ErrorCode::InvalidArgument, "Timestamp slot invalid or already written");
         if (!record->timestampWritten[0] && !record->timestampWritten[1]) record->timestampStartFirst = index == 0;
-        owner->native->CmdWriteTimestamp(record->command, index ? VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, record->queries, index);
+        owner->native->CmdWriteTimestamp(record->command, index ? VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, index);
         record->timestampWritten[index] = true; return {};
     }
     Result<void> resolveTimestamps() override {
         if (auto ok = outsidePass(); !ok) return ok;
-        if (!record->queries) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (!record->queryHandle()) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
         if (!record->timestampWritten[0] || !record->timestampWritten[1] || record->timestampsResolved) return fail(ErrorCode::InvalidState, "Two timestamps must be written once before resolving");
         // Vulkan copies query results directly to host memory after the submission fence.
         record->timestampsResolved = true; return {};
@@ -1142,8 +1220,10 @@ struct VulkanCommands final : CommandList {
         if (!vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
         if (!record || !record->submitted || record->submitted > owner->completed || !record->timestampsResolved) return fail(ErrorCode::InvalidState, "GPU timestamps are not ready");
         if (record->timestampResult) return *record->timestampResult;
+        const VkQueryPool queryPool = record->queryHandle();
+        if (!queryPool) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
         struct Query { std::uint64_t ticks{}, available{}; }; std::array<Query, 2> results;
-        const auto r = owner->native->GetQueryPoolResults(owner->native->handle, record->queries, 0, 2, sizeof(results), results.data(), sizeof(Query), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT);
+        const auto r = owner->native->GetQueryPoolResults(owner->native->handle, queryPool, 0, 2, sizeof(results), results.data(), sizeof(Query), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT);
         if (r == VK_NOT_READY) return fail(ErrorCode::InvalidState, "GPU query results unavailable");
         if (auto ok = owner->accept(r, "vkGetQueryPoolResults"); !ok) return std::unexpected(ok.error());
         if (!results[0].available || !results[1].available) return fail(ErrorCode::InvalidState, "GPU query availability missing");
@@ -1165,12 +1245,85 @@ struct VulkanCommands final : CommandList {
         } catch (const std::bad_alloc&) { return fail(ErrorCode::OutOfMemory, "Marker text allocation failed"); }
     }
 };
+struct VulkanCommandPool final : CommandPool {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativeCommandPool> pool;
+    std::shared_ptr<int> token;
+    ~VulkanCommandPool() override {
+        if (pool) pool->ownerAlive = false;
+    }
+    Result<std::unique_ptr<CommandList>> createCommandList() override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (pool->openCount > 0) {
+            return fail(ErrorCode::InvalidState, "Cannot allocate from a CommandPool while a command list from it is recording");
+        }
+        VkCommandBuffer cmd{};
+        VkCommandBufferAllocateInfo allocate{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+        allocate.commandPool = pool->handle;
+        allocate.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocate.commandBufferCount = 1;
+        if (auto ok = owner->accept(vulkan::acquireOutput(cmd, owner->native->AllocateCommandBuffers, owner->native->handle, &allocate), "vkAllocateCommandBuffers"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        std::shared_ptr<NativeQueryPool> queries;
+        if (vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) {
+            queries = std::make_shared<NativeQueryPool>();
+            queries->native = owner->native;
+            VkQueryPoolCreateInfo info{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
+            info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+            info.queryCount = 2;
+            if (auto ok = owner->accept(vulkan::acquireOutput(queries->handle, owner->native->CreateQueryPool, owner->native->handle, &info, nullptr), "vkCreateQueryPool"); !ok) {
+                owner->native->FreeCommandBuffers(owner->native->handle, pool->handle, 1, &cmd);
+                return std::unexpected(ok.error());
+            }
+            std::erase_if(owner->queryPools, [](auto& w) { return w.expired(); });
+            owner->queryPools.push_back(queries);
+        }
+        auto value = std::make_unique<VulkanCommands>();
+        value->owner = owner;
+        value->commandPool = pool;
+        value->pooledCommand = cmd;
+        value->pooledQueries = std::move(queries);
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->objects.push_back(value->token);
+        pool->liveLists.push_back(value.get());
+        return std::unique_ptr<CommandList>(std::move(value));
+    }
+    Result<void> reset() override {
+        if (auto ok = owner->poll(); !ok) return ok;
+        if (pool->openCount > 0) {
+            return fail(ErrorCode::InvalidState, "Command pool cannot reset while a command list is recording");
+        }
+        if (pool->lastSubmitted > owner->completed) {
+            return fail(ErrorCode::InvalidState, "Command pool has in-flight submissions");
+        }
+        if (!pool->retiredBuffers.empty()) {
+            owner->native->FreeCommandBuffers(
+                owner->native->handle, pool->handle,
+                static_cast<std::uint32_t>(pool->retiredBuffers.size()), pool->retiredBuffers.data());
+            pool->retiredBuffers.clear();
+        }
+        if (auto ok = owner->accept(owner->native->ResetCommandPool(owner->native->handle, pool->handle, 0), "vkResetCommandPool"); !ok) {
+            return ok;
+        }
+        for (VulkanCommands* cmd : pool->liveLists) {
+            cmd->record.reset();
+            cmd->recordedEpoch = 0;
+        }
+        pool->lastSubmitted = 0;
+        ++pool->epoch;
+        return {};
+    }
+};
 struct VulkanQueue final : CommandQueue {
     std::shared_ptr<State> owner;
     Result<Fence> submit(CommandList& value) override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         auto* commands = dynamic_cast<VulkanCommands*>(&value);
         if (!commands || commands->owner != owner) return fail(ErrorCode::WrongDevice, "Command list belongs to another device");
+        if (commands->commandPool && !commands->commandPool->ownerAlive) return fail(ErrorCode::InvalidState, "Owning CommandPool has been destroyed");
+        if (commands->commandPool && commands->recordedEpoch != commands->commandPool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list was reset and must be re-recorded");
         auto record = commands->record;
         if (!record || !record->ended || record->submitted) return fail(ErrorCode::InvalidState, "Command list must be ended and unsubmitted");
         if (owner->last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Fence sequence exhausted");
@@ -1195,6 +1348,9 @@ struct VulkanQueue final : CommandQueue {
         }
         record->submitted = ++owner->last;
         record->submittedAt = submittedAt;
+        if (commands->commandPool) {
+            commands->commandPool->lastSubmitted = std::max(commands->commandPool->lastSubmitted, owner->last);
+        }
         for (auto& use : record->uses) {
             use.allocation->state = use.shadow; use.allocation->imageInitialized = use.imageInitialized;
             use.allocation->contentsInitialized = use.contentsInitialized;
@@ -1268,7 +1424,7 @@ struct VulkanDevice final : Device {
         result.trackedObjects = owner->objects.size();
         for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
         result.pendingSubmissions = owner->pending.size();
-        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size() + p.recording->pipelines.size() + (p.recording->queries ? 1 : 0);
+        for (auto& p : owner->pending) result.pendingObjectReferences += 1 + p.recording->uses.size() + p.recording->passes.size() + p.recording->pipelines.size() + (p.recording->queryHandle() ? 1 : 0);
         return result;
     }
     Result<MemoryBudget> queryMemoryBudget(MemorySegment) override {
@@ -1526,6 +1682,25 @@ struct VulkanDevice final : Device {
         auto value = std::make_unique<VulkanCommands>(); value->owner = owner; value->token = std::make_shared<int>();
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->objects.push_back(value->token); return std::unique_ptr<CommandList>(std::move(value));
+    }
+    Result<std::unique_ptr<CommandPool>> createCommandPool() override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto poolState = std::make_shared<NativeCommandPool>();
+        poolState->native = owner->native;
+        VkCommandPoolCreateInfo info{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
+        info.queueFamilyIndex = owner->family;
+        if (auto ok = owner->accept(vulkan::acquireOutput(poolState->handle, owner->native->CreateCommandPool, owner->native->handle, &info, nullptr), "vkCreateCommandPool"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        auto value = std::make_unique<VulkanCommandPool>();
+        value->owner = owner;
+        value->pool = poolState;
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->commandPools, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->commandPools.push_back(poolState);
+        owner->objects.push_back(value->token);
+        return std::unique_ptr<CommandPool>(std::move(value));
     }
     Result<void> checkSurfaceSupport(Surface surface) override {
         if (auto ok = owner->check(); !ok) return ok;
