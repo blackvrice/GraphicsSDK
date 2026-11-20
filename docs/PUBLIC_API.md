@@ -80,7 +80,14 @@ DXC를 활성화한 빌드는 `compileHlslDxil`로 SM6.0 DXIL을 생성하며 `r
 `createCachedGraphicsPipeline`은 같은 장치의 전체 descriptor가 일치하는 파이프라인을
 재사용하고 적중 여부를 반환한다. `clearGraphicsPipelineCache`는 캐시 소유권을 해제한다.
 [키·수명·무효화 계약](PHASE5_PIPELINE_CACHE_REPORT.md)
-caps는 실제 구현 범위를 나타낸다. backendCompiled는 컴파일 여부이며 런타임 가용성을
+caps는 실제 구현 범위와 어댑터·SDK 유효 한도(`maxTextureDimension2D`, `maxColorAttachments`,
+`constantBufferAlignment`, `textureCopyRowAlignment`, `textureCopyOffsetAlignment`, `maxVertexStreams`,
+`maxConstantBufferSize`)를 나타낸다. `Device::queryFormatSupport(format)`은 생성 스레드에서 GPU 대기나
+자원 할당 없이 선택 어댑터와 SDK의 유효 `FormatSupport`(`texture2D`, `renderTarget`, `depthStencil`,
+`sampled`, `linearFilter`, `blendable`, `copySource`, `copyDestination`, `partialRegionCopy`)를 조회한다.
+알 수 없는 `Format` 값은 `InvalidArgument`, 다른 스레드는 `InvalidState`, 손실·퇴역 장치는 `DeviceLost`다.
+[GPU 한도·포맷 조회 보고서](PHASE8_CAPABILITY_REPORT.md)
+backendCompiled는 컴파일 여부이며 런타임 가용성을
 보장하지 않는다. Result 실패를 확인하는 전체 예제는 `examples/Triangle.cpp`에 있다.
 
 macOS의 opt-in `GFX_ENABLE_METAL=ON`은 현재 장치 열거/생성, queue, command begin/end,

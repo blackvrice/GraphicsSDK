@@ -56,6 +56,20 @@ struct ResourceStatistics {
     std::uint64_t trackedObjects{}, uniqueResources{}, resourceAllocationBytes{};
     std::uint64_t pendingSubmissions{}, pendingObjectReferences{};
 };
+// Effective SDK and adapter format capability snapshot for one Format.
+struct FormatSupport {
+    Format format{Format::RGBA8UNorm};
+    bool texture2D{};
+    bool renderTarget{};
+    bool depthStencil{};
+    bool sampled{};
+    bool linearFilter{};
+    bool blendable{};
+    bool copySource{};
+    bool copyDestination{};
+    bool partialRegionCopy{};
+    bool operator==(const FormatSupport&) const = default;
+};
 struct DeviceCaps {
     Backend backend{};
     std::string adapterName;
@@ -65,5 +79,13 @@ struct DeviceCaps {
     bool depthAttachment{}, multipleRenderTargets{};
     bool deviceRecovery{}, deviceLossInjection{};
     AdapterId adapterId;
+    // Effective adapter and SDK limits for the selected device.
+    std::uint32_t maxTextureDimension2D{};
+    std::uint32_t maxColorAttachments{};
+    std::uint32_t constantBufferAlignment{};
+    std::uint32_t textureCopyRowAlignment{};
+    std::uint32_t textureCopyOffsetAlignment{};
+    std::uint32_t maxVertexStreams{};
+    std::uint32_t maxConstantBufferSize{};
 };
 }

@@ -41,7 +41,7 @@ python tools/roadmap.py --write
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 18 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
 | 7 — 독립 SDK 배포 | 9 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
-| 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+) | 4 | 0 | 0 | 9 | 0 | 기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다. |
+| 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+) | 5 | 0 | 0 | 9 | 0 | 기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다. |
 | 9 — Command·멀티스레드·Shader·Compute·Render Graph | 0 | 0 | 0 | 7 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
 | 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region | 0 | 0 | 0 | 4 | 0 | 저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다. |
 | 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 0 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
@@ -376,7 +376,8 @@ Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P8-CAP-01`<br>미완료 · 후속 최적화 | **GPU 한도 및 포맷 지원 조회 API (DeviceCaps 확장·queryFormatSupport)**<br>최대 텍스처 크기, 최대 color attachment 수, 상수 버퍼/텍스처 행·오프셋 정렬 한도와 포맷별 샘플링/렌더타깃/깊이/블렌딩/압축 지원 여부를 실제 백엔드 조회로 제공한다.<br>완료: 하드웨어별 실제 조회 값과 미지원 포맷 명시적 반환, D3D12/Vulkan/Metal 테스트 통과. | 선행: `P8-XFER-01` |
+| [x] `P8-CAP-01`<br>완료 · 후속 최적화 | **GPU 한도 및 포맷 지원 조회 API (API·D3D12·Windows Vulkan 구현/검증)**<br>DeviceCaps 7개 유효 한도 필드(maxTextureDimension2D, maxColorAttachments, constantBufferAlignment, textureCopyRowAlignment, textureCopyOffsetAlignment, maxVertexStreams, maxConstantBufferSize)와 FormatSupport/Device::queryFormatSupport(Format)를 D3D12(CheckFeatureSupport), Vulkan(vkGetPhysicalDeviceFormatProperties/limits), Metal에 구현했다. Windows D3D12(하드웨어 2종·Debug+GBV·WARP·손실/복구), Vulkan(하드웨어 2종·고정 VVL 1.3.290) 및 설치 find_package 소비자 5모드와 CTest 20종 회귀를 통과했다.<br>완료: Windows D3D12/Vulkan/Validation/WARP·손실복구·설치 소비자에서 실제 조회 한도/포맷 교차 생성·오류/스레드 계약 통과. | 선행: `P8-XFER-01`<br>근거: [Types.hpp](../include/graphics/Types.hpp), [Device.hpp](../include/graphics/Device.hpp), [D3D12.cpp](../src/backends/d3d12/D3D12.cpp), [Vulkan.cpp](../src/backends/vulkan/Vulkan.cpp), [CapabilityTests.cpp](../tests/CapabilityTests.cpp), [PHASE8_CAPABILITY_REPORT](PHASE8_CAPABILITY_REPORT.md) |
+| [ ] `P8-CAP-02`<br>미완료 · 후속 최적화 | **GPU 한도·포맷 지원 조회 macOS Metal 및 Linux Vulkan 실기/CI 검증**<br>Metal.cpp와 Vulkan.cpp의 DeviceCaps 한도 및 queryFormatSupport 구현을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·오류/스레드 계약으로 검증한다.<br>완료: Linux Vulkan 및 macOS Metal CI/실기에서 한도 조회, 포맷 교차 생성 및 스레드/오류 계약 통과. | 선행: `P8-CAP-01`<br>환경: Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)<br>근거: [Metal.cpp](../src/backends/metal/Metal.cpp), [PHASE8_CAPABILITY_REPORT](PHASE8_CAPABILITY_REPORT.md) |
 
 ### P8-TEX — Texture View·고급 텍스처·압축 포맷
 

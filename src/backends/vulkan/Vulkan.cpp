@@ -1223,6 +1223,29 @@ struct VulkanDevice final : Device {
     VulkanQueue commands;
     ~VulkanDevice() override { owner->retire(); }
     const DeviceCaps& caps() const override { return capabilities; }
+    Result<FormatSupport> queryFormatSupport(Format format) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        const VkFormat vkFormat = textureFormat(format);
+        if (vkFormat == VK_FORMAT_UNDEFINED) {
+            return fail(ErrorCode::InvalidArgument, "Unknown texture format");
+        }
+        VkFormatProperties props{};
+        owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, vkFormat, &props);
+        const auto features = props.optimalTilingFeatures;
+        const bool isDepth = format == Format::D32Float;
+        FormatSupport result{};
+        result.format = format;
+        result.copySource = (features & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT) != 0;
+        result.copyDestination = (features & VK_FORMAT_FEATURE_TRANSFER_DST_BIT) != 0;
+        result.renderTarget = !isDepth && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) != 0;
+        result.blendable = result.renderTarget && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT) != 0;
+        result.depthStencil = isDepth && (features & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0 && capabilities.depthAttachment;
+        result.sampled = !isDepth && (features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
+        result.linearFilter = result.sampled && (features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) != 0;
+        result.texture2D = result.copySource && result.copyDestination && (isDepth ? result.depthStencil : result.sampled);
+        result.partialRegionCopy = result.texture2D && !isDepth;
+        return result;
+    }
     Result<void> checkStatus() override { return owner->poll(); }
     Result<ResourceStatistics> resourceStatistics() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
@@ -1584,6 +1607,14 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &depthProperties) == VK_SUCCESS && (depthProperties.sampleCounts & VK_SAMPLE_COUNT_1_BIT);
+    device->capabilities.maxTextureDimension2D = std::min<std::uint32_t>(16384u, owner->limits.maxImageDimension2D);
+    device->capabilities.maxColorAttachments = std::min<std::uint32_t>(8u, owner->maxColorAttachments);
+    device->capabilities.constantBufferAlignment = static_cast<std::uint32_t>(
+        std::max<std::uint64_t>(256u, owner->limits.minUniformBufferOffsetAlignment));
+    device->capabilities.textureCopyRowAlignment = 256u;
+    device->capabilities.textureCopyOffsetAlignment = 512u;
+    device->capabilities.maxVertexStreams = std::min<std::uint32_t>(32u, owner->limits.maxVertexInputBindings);
+    device->capabilities.maxConstantBufferSize = std::min<std::uint32_t>(65536u, owner->limits.maxUniformBufferRange);
     return std::unique_ptr<Device>(std::move(device));
 }
 } // namespace gfx

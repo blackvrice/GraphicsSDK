@@ -10,6 +10,9 @@ public:
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
     [[nodiscard]] virtual const DeviceCaps& caps() const = 0;
+    // Creating thread only, no GPU wait. Queries effective adapter and SDK format support.
+    // Unknown format values return InvalidArgument.
+    [[nodiscard]] virtual Result<FormatSupport> queryFormatSupport(Format format) = 0;
     [[nodiscard]] virtual Result<void> checkStatus() = 0;
     // Creating thread only. Diagnostic traversal; does not wait for in-flight work.
     [[nodiscard]] virtual Result<ResourceStatistics> resourceStatistics() = 0;

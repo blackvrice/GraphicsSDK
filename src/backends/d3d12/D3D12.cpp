@@ -812,6 +812,33 @@ class DXDevice final : public Device, public CommandQueue {
 public:
     explicit DXDevice(std::shared_ptr<State> value) : state(std::move(value)) {}
     const DeviceCaps& caps() const override { return state->caps; }
+    Result<FormatSupport> queryFormatSupport(Format format) override {
+        auto status = state->check();
+        if (!status) return std::unexpected(status.error());
+        const DXGI_FORMAT dxgiFormat = native(format);
+        if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
+            return invalid("Unknown texture format", ErrorCode::InvalidArgument);
+        }
+        D3D12_FEATURE_DATA_FORMAT_SUPPORT nativeSupport{};
+        nativeSupport.Format = dxgiFormat;
+        const HRESULT hr = state->device->CheckFeatureSupport(
+            D3D12_FEATURE_FORMAT_SUPPORT, &nativeSupport, sizeof(nativeSupport));
+        if (FAILED(hr)) return state->failure(hr, "Query D3D12 format support failed");
+        const auto s1 = nativeSupport.Support1;
+        const bool isDepth = format == Format::D32Float;
+        FormatSupport result{};
+        result.format = format;
+        result.texture2D = (s1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D) != 0;
+        result.renderTarget = !isDepth && (s1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET) != 0;
+        result.depthStencil = isDepth && (s1 & D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL) != 0;
+        result.sampled = !isDepth && (s1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE) != 0;
+        result.linearFilter = result.sampled;
+        result.blendable = result.renderTarget && (s1 & D3D12_FORMAT_SUPPORT1_BLENDABLE) != 0;
+        result.copySource = result.texture2D;
+        result.copyDestination = result.texture2D;
+        result.partialRegionCopy = result.texture2D && !isDepth;
+        return result;
+    }
     Result<void> checkStatus() override {return state->check();}
     Result<MemoryBudget> queryMemoryBudget(MemorySegment segment) override {
         auto status=state->check();if(!status)return std::unexpected(status.error());
@@ -1180,6 +1207,13 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
         return invalid("Native device adapter does not match selection",ErrorCode::BackendFailure);
     state->caps = {Backend::D3D12, std::move(info->name), info->softwareAdapter, true, false, true, true, true, true, true, true, true};
     state->caps.adapterId=actual;
+    state->caps.maxTextureDimension2D = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+    state->caps.maxColorAttachments = D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT;
+    state->caps.constantBufferAlignment = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
+    state->caps.textureCopyRowAlignment = D3D12_TEXTURE_DATA_PITCH_ALIGNMENT;
+    state->caps.textureCopyOffsetAlignment = D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT;
+    state->caps.maxVertexStreams = D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT;
+    state->caps.maxConstantBufferSize = 65536u;
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
     if (desc.validation) {
         result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable");

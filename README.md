@@ -10,13 +10,13 @@ For AI-assisted development, start with [repository instructions](AGENTS.md),
 | --- | --- |
 | 현재 버전 | `0.0.1` (개발 스냅샷 · `v0.0.2` 확장 슬라이스 진행 중) |
 | 현재 Phase | **Phase 3 (Vulkan)** 활성 · Phase 8~12 범용 SDK 확장 병행 ([전체 대시보드](docs/DEVELOPMENT_DASHBOARD.md)) |
-| 완료 기능 | D3D12/Vulkan/Metal 코어 RHI, 버퍼·2D 텍스처 전송, **오프셋 버퍼 복사(`copyBufferRegion`)·부분 2D 텍스처 복사(`copyBufferToTextureRegion`/`copyTextureToBufferRegion`)**, Depth/MRT, 정점/바인딩 레이아웃, GPU Timestamp(D3D12/Vulkan), 파이프라인 캐시, 6프로필 배포 후보·공통 무결성 감사 (`110/191` ID 완료) |
-| 최근 완료 작업 | `P8-XFER-05` (부분 2D 텍스처 복사 API·CPU·D3D12·Windows Vulkan 실기/Validation/설치 소비자 검증), `P8-XFER-01/02/03`, `P7-PKG-09`~`15` |
+| 완료 기능 | D3D12/Vulkan/Metal 코어 RHI, 버퍼·2D 텍스처 전송, **오프셋 버퍼 복사·부분 2D 텍스처 복사·GPU 한도/포맷 조회(`queryFormatSupport`)**, Depth/MRT, 정점/바인딩 레이아웃, GPU Timestamp(D3D12/Vulkan), 파이프라인 캐시, 6프로필 배포 후보·공통 무결성 감사 (`111/192` ID 완료) |
+| 최근 완료 작업 | `P8-CAP-01` (GPU 한도·`queryFormatSupport` API·D3D12·Windows Vulkan 실기/Validation/설치 소비자 검증), `P8-XFER-01/02/03/05`, `P7-PKG-09`~`15` |
 | 미완료 작업 | 필수 잔여 `38` · 조건부 잔여 `8` · 후속 확장 잔여 `35` ([세부 로드맵](docs/ROADMAP.md)) |
 | Windows | D3D12·Vulkan 물리 GPU/Validation/WARP 및 설치 소비자 검증 완료 (장시간 GBV 메모리·DPI·물리 TDR·Intel Vulkan WSI 미완료) |
-| Linux | Vulkan headless·XCB 빌드·lavapipe/Xvfb SW 검증 및 배포 후보 완료 (물리 GPU `P3-LNX-15`·수동 표시 `P3-WSI-08`·`P8-XFER-04/06` 미완료) |
-| macOS | 호스팅 arm64/Intel Metal 빌드·가상 장치 검증 및 배포 후보 완료 (물리 Mac 실기·성능 및 `P8-XFER-04/06` 미완료) |
-| 다음 추천 작업 | `P8-CAP-01`(GPU 한도·포맷 조회), `P9-CMD-01`(동적 `setViewport`·Command Pool), `P8-XFER-04/06`(Linux/Metal 검증) · 기존 필수 게이트 `P3-LNX-15` |
+| Linux | Vulkan headless·XCB 빌드·lavapipe/Xvfb SW 검증 및 배포 후보 완료 (물리 GPU `P3-LNX-15`·수동 표시 `P3-WSI-08`·`P8-XFER-04/06`·`P8-CAP-02` 미완료) |
+| macOS | 호스팅 arm64/Intel Metal 빌드·가상 장치 검증 및 배포 후보 완료 (물리 Mac 실기·성능 및 `P8-XFER-04/06`·`P8-CAP-02` 미완료) |
+| 다음 추천 작업 | `P9-CMD-01`(동적 `setViewport`·Command Pool), `P8-TEX-01`(Texture View·Subresource View), `P9-CMP-01`(Compute Shader·UAV·Dispatch), `P8-XFER-04/06`·`P8-CAP-02`(Linux/Metal 검증) · 기존 필수 게이트 `P3-LNX-15` |
 | 주요 문제 | 장시간 GBV 메모리 기준(`P2-ACC-01`)·과거 Intel AV 원인(`P2-ACC-02`)·기존 로컬 `fence_wait` 예외 2건·Linux 물리 GPU/물리 Mac 환경 부재 |
 
 **Initial development snapshot 0.0.1:** real Windows D3D12 implementation and an opt-in

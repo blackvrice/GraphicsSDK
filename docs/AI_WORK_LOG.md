@@ -79,3 +79,32 @@
   - `P8-CAP-01`: GPU 한도 및 포맷 지원 조회 API (`DeviceCaps` 확장·`queryFormatSupport`).
   - `P9-CMD-01`: 동적 `setViewport` 및 `CommandPool` 재사용.
   - `P8-XFER-04`, `P8-XFER-06`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P8-CAP-01` GPU 한도 및 포맷 지원 조회 API 구현·실기 검증
+
+- **기준 커밋**: `da18ac24` (`Add partial 2D texture region copy API and backend implementations`)
+- **작업 목적**:
+  - 선행 충족 작업 `P8-CAP-01` 구현: `DeviceCaps` 7개 유효 한도 필드 및 `FormatSupport` / `Device::queryFormatSupport(Format)`를 D3D12·Vulkan·Metal에 구현하고 Windows 실기·Validation·WARP·손실 복구·설치 소비자로 검증.
+  - macOS Metal 및 Linux Vulkan 실행 검증은 `P8-CAP-02`로 정직하게 분리 유지.
+- **수정 파일**:
+  - `include/graphics/Types.hpp`, `include/graphics/Device.hpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/CapabilityTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE8_CAPABILITY_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 내용과 결과** (격리 빌드 `out/p8-capabilities`, 설치 `out/p8-capabilities-install`, SDK 지문 `0ccb4e60ce8c3ee5f2404509c8b310920fc019e01324b9170cd3eccd848094e2`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0.
+  - `gfx_capability_tests --d3d12` (물리 GPU 2종): 통과 (`assertions=56, format_queries=8, rejections=4`).
+  - `gfx_capability_tests --d3d12 --validation` (Debug + GBV, 2종): 통과 (`assertions=58`, validation 오류 `0`).
+  - `gfx_capability_tests --d3d12 --warp` (WARP + `removeForTesting`/`recover`): 통과 (`assertions=32, format_queries=6, rejections=4`).
+  - `gfx_capability_tests` (Windows Vulkan 2종): 통과 (`assertions=54, format_queries=8, rejections=4`).
+  - `gfx_capability_tests --validation` (고정 VVL 1.3.290, 2종): 통과 (`assertions=56`, validation 오류 `0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12 하드웨어/GBV/WARP 및 Vulkan 하드웨어/고정 VVL 5모드 모두 통과.
+  - CTest 20종 회귀(`core_contracts`, `adapter_*`, `d3d12_*`, `vulkan_transfer`, `buffer_region_*`, `texture_region_*`, `capabilities_*`): 20/20 통과.
+  - `tools/roadmap.py --check`: PASS (192 task IDs: 111 완료, 81 미완료).
+- **다음 추천 작업**:
+  - `P9-CMD-01`: 동적 `setViewport` 및 `CommandPool` 재사용.
+  - `P8-TEX-01`: Texture View 및 Subresource View.
+  - `P9-CMP-01`: Compute Shader·UAV·Dispatch.
+  - `P8-XFER-04/06`, `P8-CAP-02`: Linux Vulkan 및 macOS Metal CI/실기 검증.

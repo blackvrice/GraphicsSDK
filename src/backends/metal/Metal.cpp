@@ -788,6 +788,26 @@ struct MetalDevice final : Device {
     MetalDevice(std::shared_ptr<State> state, DeviceCaps caps) : owner(std::move(state)), capabilities(std::move(caps)), commands(owner) {}
     ~MetalDevice() override { owner->retire(); }
     const DeviceCaps& caps() const override { return capabilities; }
+    Result<FormatSupport> queryFormatSupport(Format format) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (format != Format::RGBA8UNorm && format != Format::BGRA8UNorm &&
+            format != Format::RGBA16Float && format != Format::D32Float) {
+            return fail(ErrorCode::InvalidArgument, "Unknown texture format");
+        }
+        const bool isDepth = format == Format::D32Float;
+        FormatSupport result{};
+        result.format = format;
+        result.texture2D = true;
+        result.renderTarget = !isDepth;
+        result.depthStencil = isDepth;
+        result.sampled = !isDepth;
+        result.linearFilter = !isDepth;
+        result.blendable = !isDepth;
+        result.copySource = true;
+        result.copyDestination = true;
+        result.partialRegionCopy = !isDepth;
+        return result;
+    }
     Result<void> checkStatus() override { return owner->poll(); }
     Result<ResourceStatistics> resourceStatistics() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
@@ -924,6 +944,13 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         caps.depthAttachment = true; caps.multipleRenderTargets = true;
     caps.swapChain = true;
         caps.vertexInput = true; caps.indexedDrawing = true; caps.resourceBinding = true; caps.bindingLayouts = true;
+        caps.maxTextureDimension2D = 16384u;
+        caps.maxColorAttachments = 8u;
+        caps.constantBufferAlignment = 256u;
+        caps.textureCopyRowAlignment = 256u;
+        caps.textureCopyOffsetAlignment = 512u;
+        caps.maxVertexStreams = 15u;
+        caps.maxConstantBufferSize = 65536u;
         return std::make_unique<MetalDevice>(std::move(state), std::move(caps));
     }
 }
