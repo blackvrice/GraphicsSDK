@@ -37,13 +37,18 @@ public:
     // Drops cache ownership. Existing handles and recorded work remain valid.
     [[nodiscard]] Result<void> clearGraphicsPipelineCache();
     [[nodiscard]] virtual Result<std::unique_ptr<CommandList>> createCommandList() = 0;
+    [[nodiscard]] virtual Result<std::unique_ptr<CommandList>> createCommandList(QueueType type) = 0;
     // Creating thread only. Creates an explicit command allocator/pool for reusable CommandLists.
     [[nodiscard]] virtual Result<std::unique_ptr<CommandPool>> createCommandPool() = 0;
+    [[nodiscard]] virtual Result<std::unique_ptr<CommandPool>> createCommandPool(QueueType type) = 0;
+    // Creating thread only. Creates a 64-bit GPU/CPU timeline fence for cross-queue synchronization.
+    [[nodiscard]] virtual Result<TimelineFencePtr> createTimelineFence(std::uint64_t initialValue = 0) = 0;
     // Creating thread only. Validate a live native surface and selected queue;
     // does not create a swapchain or guarantee format/present support.
     [[nodiscard]] virtual Result<void> checkSurfaceSupport(Surface) = 0;
     [[nodiscard]] virtual Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) = 0;
     [[nodiscard]] virtual CommandQueue& queue() = 0;
+    [[nodiscard]] virtual Result<CommandQueue*> queue(QueueType type) = 0;
     // Cumulative ERROR/CORRUPTION count since callback registration, independent of
     // native text storage limits/clearing. D3D12 validation requires InfoQueue1;
     // Vulkan requires Khronos validation/debug utils, synchronization features and layer settings.

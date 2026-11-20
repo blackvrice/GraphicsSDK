@@ -66,6 +66,16 @@ in-flight 제출이 있으면 `InvalidState`), 서로 다른 `CommandPool` 소�
 수명을 유지하며, 미제출 풀 소속 리스트는 `InvalidState`로 거부된다.
 [명시적 Command Pool 보고서](PHASE9_COMMAND_POOL_REPORT.md), [병렬 명령 기록 보고서](PHASE9_PARALLEL_RECORDING_REPORT.md)를 따른다.
 
+`Device::queue(QueueType)`는 `QueueType::Graphics`, `QueueType::Compute`, `QueueType::Copy` 큐를
+반환하며 `queue()`는 `Graphics` 큐의 축약형이다. `DeviceCaps::{dedicatedComputeQueue, dedicatedCopyQueue, timelineFences}`는
+전용 하드웨어 큐 패밀리와 64비트 타임라인 펜스 지원 여부를 보고한다. `createCommandList(QueueType)`와
+`createCommandPool(QueueType)`는 해당 큐 전용 명령 목록/풀을 생성하며(`queueType()`으로 조회),
+Copy 큐에서 그래픽스·컴퓨트·타임스탬프 연산이나 비-Copy 상태 전이, Compute 큐에서 그래픽스·정점/인덱스·리졸브
+연산이나 상태 전이는 기록 시점에 거부된다. `Device::createTimelineFence(initialValue)`로 생성한
+`TimelineFence`는 `completedValue()`, 단조 증가 CPU `signal(value)`, 유한 대기 `wait(value, timeout)`을
+제공하며, `CommandQueue::submit(const SubmitDesc&)`는 `waits`와 `signals`를 통해 CPU 대기 없이
+`Copy -> Compute -> Graphics -> Copy` 교차 큐 GPU 동기화를 수행한다. [다중 큐·Timeline Fence 보고서](PHASE9_MULTI_QUEUE_REPORT.md)를 따른다.
+
 Vulkan `debugMarker(text)`는 debug-utils 확장과 함수가 있을 때 실제 label을 넣는다.
 정상 recording에서 함수가 없으면 Unsupported이며 creating thread·recording·퇴역 검사를 먼저 한다.
 지원 시 빈 문자열은 허용하고, NUL-free UTF-8과 UINT32_MAX 이하 길이를 요구한다. Substring·임시

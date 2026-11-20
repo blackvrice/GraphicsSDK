@@ -6,6 +6,7 @@ namespace gfx {
 class CommandList {
 public:
     virtual ~CommandList() = default;
+    [[nodiscard]] virtual QueueType queueType() const = 0;
     [[nodiscard]] virtual Result<void> begin() = 0;
     [[nodiscard]] virtual Result<void> end() = 0;
     // Validation rejection of transitions/copies preserves recorded state and
@@ -69,6 +70,7 @@ public:
     virtual ~CommandPool() = default;
     CommandPool(const CommandPool&) = delete;
     CommandPool& operator=(const CommandPool&) = delete;
+    [[nodiscard]] virtual QueueType queueType() const = 0;
     // Creating thread only. Allocates a reusable CommandList backed by this pool.
     // Fails with InvalidState while any command list from this pool is currently recording.
     // Within a pool epoch, at most one command list from the same pool may record at a time,

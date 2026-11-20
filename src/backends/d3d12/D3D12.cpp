@@ -89,11 +89,21 @@ bool validState(ResourceState state) { return state >= ResourceState::Common && 
 D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
     return visibility==ShaderVisibility::Vertex?D3D12_SHADER_VISIBILITY_VERTEX:visibility==ShaderVisibility::Fragment?D3D12_SHADER_VISIBILITY_PIXEL:D3D12_SHADER_VISIBILITY_ALL;
 }
+bool validQueueType(QueueType t) { return t == QueueType::Graphics || t == QueueType::Compute || t == QueueType::Copy; }
+std::size_t queueIndex(QueueType t) { return static_cast<std::size_t>(t); }
+D3D12_COMMAND_LIST_TYPE d3dQueueType(QueueType t) {
+    return t == QueueType::Compute ? D3D12_COMMAND_LIST_TYPE_COMPUTE
+         : t == QueueType::Copy ? D3D12_COMMAND_LIST_TYPE_COPY
+         : D3D12_COMMAND_LIST_TYPE_DIRECT;
+}
 // Non-owning presentation identity: retaining a texture/command cannot keep a
 // destroyed swapchain usable or retain the public wrapper through this identity.
 struct SwapChainScope { IDXGISwapChain3* chain{}; };
 struct Tracker {
-    ResourceState state{ResourceState::Common}; std::uint64_t version{}, lastUse{};
+    ResourceState state{ResourceState::Common};
+    D3D12_RESOURCE_STATES nativeState{D3D12_RESOURCE_STATE_COMMON};
+    std::uint64_t version{};
+    std::array<std::uint64_t, 3> lastUse{};
     bool backbuffer{}; UINT bufferIndex{}; std::weak_ptr<SwapChainScope> swapchain;
     bool available() const {
         if(!backbuffer)return true;
@@ -107,12 +117,18 @@ struct Retirable {
     virtual void releaseNative()=0;
     virtual void appendResources(std::vector<ComPtr<ID3D12Resource>>&) const {}
 };
-struct State {
+struct QueueState {
     detail::FenceWaiter waiter;
-    ComPtr<IDXGIFactory6> factory;
-    ComPtr<ID3D12Device> device;
     ComPtr<ID3D12CommandQueue> queue;
     ComPtr<ID3D12Fence> fence;
+    std::uint64_t id{}, last{};
+    std::deque<Batch> pending;
+};
+struct State {
+    ComPtr<IDXGIFactory6> factory;
+    ComPtr<ID3D12Device> device;
+    std::array<QueueState, 3> queues;
+    ComPtr<ID3D12CommandQueue>& queue{queues[0].queue};
     ComPtr<ID3D12InfoQueue> info;
     ComPtr<ID3D12InfoQueue1> messageSource;
     DWORD messageCookie{};
@@ -137,8 +153,7 @@ struct State {
     std::vector<std::weak_ptr<Retirable>> children;
     unsigned registrations{};
     std::thread::id thread{std::this_thread::get_id()};
-    std::uint64_t id{}, last{};
-    std::deque<Batch> pending;
+    std::uint64_t id{};
     auto loss() const {return std::unexpected(Error{ErrorCode::DeviceLost,"Device generation is lost; recreate resources on the recovered device",lostReason.load(std::memory_order_acquire)});}
     Result<void> checkAliveForWorker() const {
         if (retired.load(std::memory_order_acquire) || FAILED(lostReason.load(std::memory_order_acquire))) return loss();
@@ -164,7 +179,8 @@ struct State {
         retired.store(true, std::memory_order_release);
         detachMessages();
         for(auto& child:live)child->releaseNative();
-        pending.clear();children.clear();info.Reset();queue.Reset();fence.Reset();waiter.reset();device.Reset();factory.Reset();
+        for(auto& q:queues){q.pending.clear();q.queue.Reset();q.fence.Reset();q.waiter.reset();}
+        children.clear();info.Reset();device.Reset();factory.Reset();
     }
     Result<void> check() {
         if (thread != std::this_thread::get_id()) return invalid("Device operations must run on the creating thread");
@@ -173,38 +189,64 @@ struct State {
         if (FAILED(status)) {lostReason.store(status, std::memory_order_release);return loss();}
         return {};
     }
-    Result<std::uint64_t> completed() {
+    Result<std::uint64_t> completed(QueueType qType = QueueType::Graphics) {
         auto status = check(); if (!status) return std::unexpected(status.error());
-        auto value = fence->GetCompletedValue();
+        auto& q = queues[queueIndex(qType)];
+        auto value = q.fence->GetCompletedValue();
         if (value == UINT64_MAX) {auto reason=device->GetDeviceRemovedReason();lostReason.store(FAILED(reason)?reason:DXGI_ERROR_DEVICE_REMOVED, std::memory_order_release);return loss();}
-        while (!pending.empty() && pending.front().fence <= value) pending.pop_front();
+        while (!q.pending.empty() && q.pending.front().fence <= value) q.pending.pop_front();
         std::erase_if(children,[](const auto& child){return child.expired();});
         return value;
     }
-    Result<void> wait(std::uint64_t value, std::chrono::milliseconds timeout) {
+    Result<std::array<std::uint64_t, 3>> completedAll() {
+        auto status = check(); if (!status) return std::unexpected(status.error());
+        std::array<std::uint64_t, 3> out{};
+        for (std::size_t i = 0; i < 3; ++i) {
+            auto& q = queues[i];
+            if (!q.fence) continue;
+            auto value = q.fence->GetCompletedValue();
+            if (value == UINT64_MAX) {auto reason=device->GetDeviceRemovedReason();lostReason.store(FAILED(reason)?reason:DXGI_ERROR_DEVICE_REMOVED, std::memory_order_release);return loss();}
+            while (!q.pending.empty() && q.pending.front().fence <= value) q.pending.pop_front();
+            out[i] = value;
+        }
+        std::erase_if(children,[](const auto& child){return child.expired();});
+        return out;
+    }
+    Result<void> wait(QueueType qType, std::uint64_t value, std::chrono::milliseconds timeout) {
         auto status = check(); if (!status) return status;
-        if (value > last) return invalid("Cannot wait for a fence that has not been submitted", ErrorCode::InvalidArgument);
-        return waiter.wait(*fence.Get(),value,timeout,[this]{return completed();},
-                           [this](HRESULT code,std::string operation){return failure(code,std::move(operation));});
+        auto& q = queues[queueIndex(qType)];
+        if (value > q.last) return invalid("Cannot wait for a fence that has not been submitted", ErrorCode::InvalidArgument);
+        return q.waiter.wait(*q.fence.Get(), value, timeout, [this, qType]{return completed(qType);},
+                             [this](HRESULT code,std::string operation){return failure(code,std::move(operation));});
+    }
+    Result<void> idleQueue(QueueType qType) {
+        auto status = check(); if (!status) return status;
+        auto& q = queues[queueIndex(qType)];
+        if (!q.queue || !q.fence) return {};
+        if (q.last >= UINT64_MAX-1) return invalid("Fence timeline exhausted");
+        // Present may enqueue DXGI work after the last render submission.
+        HRESULT result = q.queue->Signal(q.fence.Get(), q.last+1);
+        if (FAILED(result)) return failure(result, "Idle queue signal failed");
+        ++q.last;
+        return wait(qType, q.last, std::chrono::seconds(30));
     }
     Result<void> idle() {
-        auto status = check(); if (!status) return status;
-        if (last >= UINT64_MAX-1) return invalid("Fence timeline exhausted");
-        // Present may enqueue DXGI work after the last render submission.
-        HRESULT result = queue->Signal(fence.Get(), last+1);
-        if (FAILED(result)) return failure(result, "Idle queue signal failed");
-        ++last;
-        return wait(last, std::chrono::seconds(30));
+        for (QueueType t : {QueueType::Graphics, QueueType::Compute, QueueType::Copy}) {
+            if (auto ok = idleQueue(t); !ok) return ok;
+        }
+        return {};
     }
     ~State() {
         // Resource batches contain native COM objects only; no shared_ptr cycle back to State.
-        if (queue && fence && last && fence->GetCompletedValue() < last && SUCCEEDED(device->GetDeviceRemovedReason())) {
-            HANDLE event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-            if (event) {
-                if (SUCCEEDED(fence->SetEventOnCompletion(last, event))) WaitForSingleObject(event, INFINITE);
-                CloseHandle(event);
-            } else {
-                while (fence->GetCompletedValue() < last && SUCCEEDED(device->GetDeviceRemovedReason())) SwitchToThread();
+        for (auto& q : queues) {
+            if (q.queue && q.fence && q.last && q.fence->GetCompletedValue() < q.last && device && SUCCEEDED(device->GetDeviceRemovedReason())) {
+                HANDLE event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+                if (event) {
+                    if (SUCCEEDED(q.fence->SetEventOnCompletion(q.last, event))) WaitForSingleObject(event, INFINITE);
+                    CloseHandle(event);
+                } else {
+                    while (q.fence->GetCompletedValue() < q.last && SUCCEEDED(device->GetDeviceRemovedReason())) SwitchToThread();
+                }
             }
         }
         detachMessages();
@@ -236,9 +278,9 @@ struct DXBuffer final : Buffer, Retirable {
     void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {if(resource)out.push_back(resource);}
     BufferDesc description() const override { return desc; }
     Result<void> write(std::uint64_t offset, std::span<const std::byte> bytes) override {
-        auto status = owner->completed(); if (!status) return std::unexpected(status.error());
+        auto status = owner->completedAll(); if (!status) return std::unexpected(status.error());
         if (desc.memory != Memory::Upload || offset > desc.size || bytes.size() > desc.size - offset) return invalid("Invalid upload buffer write", ErrorCode::InvalidArgument);
-        if (*status < tracker->lastUse) return invalid("Cannot overwrite a buffer in flight");
+        for (std::size_t q = 0; q < 3; ++q) if ((*status)[q] < tracker->lastUse[q]) return invalid("Cannot overwrite a buffer in flight");
         if (tracker->version == UINT64_MAX) return invalid("Resource version exhausted");
         D3D12_RANGE range{0, 0}; void* data{};
         HRESULT result = resource->Map(0, &range, &data);
@@ -249,9 +291,9 @@ struct DXBuffer final : Buffer, Retirable {
         return {};
     }
     Result<std::vector<std::byte>> read(std::uint64_t offset, std::uint64_t size) override {
-        auto status = owner->completed(); if (!status) return std::unexpected(status.error());
+        auto status = owner->completedAll(); if (!status) return std::unexpected(status.error());
         if (desc.memory != Memory::Readback || offset > desc.size || size > desc.size - offset || size > SIZE_MAX) return invalid("Invalid readback buffer range", ErrorCode::InvalidArgument);
-        if (*status < tracker->lastUse) return invalid("Readback fence has not completed");
+        for (std::size_t q = 0; q < 3; ++q) if ((*status)[q] < tracker->lastUse[q]) return invalid("Readback fence has not completed");
         std::vector<std::byte> output(static_cast<size_t>(size));
         D3D12_RANGE range{static_cast<SIZE_T>(offset), static_cast<SIZE_T>(offset + size)}; void* data{};
         HRESULT result = resource->Map(0, &range, &data);
@@ -343,7 +385,7 @@ struct DXPipeline final : Pipeline, Retirable {
     std::vector<VertexRequirement> vertexInputs;
     void releaseNative() override {pso.Reset();root.Reset();}
 };
-struct Use { std::shared_ptr<Tracker> tracker; ComPtr<ID3D12Resource> resource; std::uint64_t observedVersion{}; ResourceState state{}; Memory memory{Memory::Device}; bool mutated{}; };
+struct Use { std::shared_ptr<Tracker> tracker; ComPtr<ID3D12Resource> resource; std::uint64_t observedVersion{}; ResourceState state{}; D3D12_RESOURCE_STATES nativeState{D3D12_RESOURCE_STATE_COMMON}; Memory memory{Memory::Device}; bool mutated{}; };
 struct NativeCommands final : Retirable {
     ComPtr<ID3D12CommandAllocator> allocator;
     ComPtr<ID3D12GraphicsCommandList> list;
@@ -358,10 +400,48 @@ struct NativeCommands final : Retirable {
         for(const auto& use:uses)if(use.resource)out.push_back(use.resource);
     }
 };
+struct DXTimelineFence final : TimelineFence, Retirable {
+    std::shared_ptr<State> owner;
+    ComPtr<ID3D12Fence> fence;
+    detail::FenceWaiter waiter;
+    std::uint64_t lastSignaled{};
+    void releaseNative() override { fence.Reset(); waiter.reset(); }
+    Result<std::uint64_t> completedValue() override {
+        auto status = owner->check(); if (!status) return std::unexpected(status.error());
+        const auto value = fence->GetCompletedValue();
+        if (value == UINT64_MAX) {
+            auto reason = owner->device->GetDeviceRemovedReason();
+            owner->lostReason.store(FAILED(reason) ? reason : DXGI_ERROR_DEVICE_REMOVED, std::memory_order_release);
+            return owner->loss();
+        }
+        return value;
+    }
+    Result<void> signal(std::uint64_t value) override {
+        auto current = completedValue(); if (!current) return std::unexpected(current.error());
+        if (value <= *current || value <= lastSignaled || value == UINT64_MAX) {
+            return invalid("TimelineFence signal value must strictly advance", ErrorCode::InvalidArgument);
+        }
+        const HRESULT hr = fence->Signal(value);
+        if (FAILED(hr)) return owner->failure(hr, "TimelineFence CPU signal failed");
+        lastSignaled = value;
+        return {};
+    }
+    Result<void> wait(std::uint64_t value, std::chrono::milliseconds timeout) override {
+        auto status = owner->check(); if (!status) return status;
+        auto waited = waiter.wait(*fence.Get(), value, timeout,
+                           [this] { return completedValue(); },
+                           [this](HRESULT code, std::string op) { return owner->failure(code, std::move(op)); });
+        if (!waited) return waited;
+        auto retired = owner->completedAll();
+        if (!retired) return std::unexpected(retired.error());
+        return {};
+    }
+};
 struct DXCommands;
 struct DXCommandPoolState final : Retirable {
     std::mutex mutex;
     ComPtr<ID3D12CommandAllocator> allocator;
+    QueueType qType{QueueType::Graphics};
     std::atomic<std::thread::id> recordingThread{};
     std::uint64_t epoch{1};
     std::uint64_t lastSubmitted{};
@@ -373,6 +453,7 @@ struct DXCommandPoolState final : Retirable {
 struct DXCommands final : CommandList {
     std::shared_ptr<State> owner;
     std::shared_ptr<DXCommandPoolState> pool;
+    QueueType qType{QueueType::Graphics};
     std::shared_ptr<NativeCommands> objects{std::make_shared<NativeCommands>()};
     ComPtr<ID3D12CommandAllocator>& allocator{objects->allocator};
     ComPtr<ID3D12GraphicsCommandList>& list{objects->list};
@@ -400,6 +481,7 @@ struct DXCommands final : CommandList {
     std::vector<BoundResource> boundComputeResources;
     bool recording{}, ended{}, renderPass{}, textureBound{}, computeBound{}, timestampsResolved{};
     std::array<bool, 2> timestampWritten{};
+    QueueType queueType() const override { return qType; }
     ~DXCommands() override {
         if (!pool) return;
         std::scoped_lock lock(pool->mutex);
@@ -447,7 +529,7 @@ struct DXCommands final : CommandList {
             if (markMutated) found->mutated = true;
             return *found;
         }
-        uses.push_back({tracker, resource, tracker->version, tracker->state, memory, markMutated}); retain(resource); return uses.back();
+        uses.push_back({tracker, resource, tracker->version, tracker->state, tracker->nativeState, memory, markMutated}); retain(resource); return uses.back();
     }
     template<class T> Result<std::shared_ptr<T>> owned(const std::shared_ptr<typename std::conditional_t<std::is_same_v<T, DXBuffer>, Buffer, Texture>>& ptr) {
         auto object = std::dynamic_pointer_cast<T>(ptr);
@@ -468,21 +550,37 @@ struct DXCommands final : CommandList {
     }
     Result<void> change(Use& usage, ResourceState next) {
         if (usage.state != next) usage.mutated = true;
-        if (usage.memory == Memory::Upload) {
+        if (usage.memory == Memory::Upload || usage.memory == Memory::Readback) {
             usage.state = next; return {};
         }
-        if (usage.memory == Memory::Readback) {
+        const auto targetNative = native(next);
+        if (qType == QueueType::Copy) {
+            // D3D12 Copy queues require resources to enter in COMMON for implicit promotion
+            // by CopyBufferRegion/CopyTextureRegion and decay back to COMMON on submit.
+            // Only emit an explicit transition between distinct non-COMMON copy states
+            // within the same Copy command list (e.g. COPY_DEST -> COPY_SOURCE).
+            if (usage.nativeState != D3D12_RESOURCE_STATE_COMMON &&
+                targetNative != D3D12_RESOURCE_STATE_COMMON &&
+                usage.nativeState != targetNative) {
+                D3D12_RESOURCE_BARRIER barrier{}; barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                barrier.Transition.pResource = usage.resource.Get(); barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                barrier.Transition.StateBefore = usage.nativeState; barrier.Transition.StateAfter = targetNative;
+                list->ResourceBarrier(1, &barrier);
+                usage.nativeState = targetNative;
+            }
             usage.state = next; return {};
         }
-        if (usage.state != next && native(usage.state) != native(next)) {
+        if (usage.nativeState != targetNative) {
             D3D12_RESOURCE_BARRIER barrier{}; barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
             barrier.Transition.pResource = usage.resource.Get(); barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-            barrier.Transition.StateBefore = native(usage.state); barrier.Transition.StateAfter = native(next);
+            barrier.Transition.StateBefore = usage.nativeState; barrier.Transition.StateAfter = targetNative;
             list->ResourceBarrier(1, &barrier);
+            usage.nativeState = targetNative;
         }
         usage.state = next; return {};
     }
     Result<void> begin() override {
+        auto& qState = owner->queues[queueIndex(qType)];
         if (pool) {
             std::scoped_lock lock(pool->mutex);
             if (auto alive = owner->checkAliveForWorker(); !alive) return alive;
@@ -492,7 +590,7 @@ struct DXCommands final : CommandList {
             if (recording) return invalid("Command list is already recording");
             if (pool->openCount > 0) return invalid("Another command list from this CommandPool is currently recording");
             if (recordedEpoch == pool->epoch) return invalid("Pooled command list requires CommandPool::reset() before re-recording");
-            const auto completedVal = owner->fence->GetCompletedValue();
+            const auto completedVal = qState.fence->GetCompletedValue();
             if (completedVal == UINT64_MAX) return owner->failure(DXGI_ERROR_DEVICE_REMOVED, "Device lost while checking fence");
             if (submitted && completedVal < submitted) return invalid("Command allocator is still in flight");
             HRESULT result = list->Reset(pool->allocator.Get(), nullptr);
@@ -503,7 +601,7 @@ struct DXCommands final : CommandList {
             ++pool->openCount;
             return {};
         }
-        auto done = owner->completed(); if (!done) return std::unexpected(done.error());
+        auto done = owner->completed(qType); if (!done) return std::unexpected(done.error());
         if (recording || (submitted && *done < submitted)) return invalid("Command allocator is still recording or in flight");
         HRESULT result = allocator->Reset(); if (FAILED(result)) return owner->failure(result, "Allocator reset failed");
         result = list->Reset(allocator.Get(), nullptr); if (FAILED(result)) return owner->failure(result, "Command list reset failed");
@@ -524,6 +622,10 @@ struct DXCommands final : CommandList {
     Result<void> transition(const BufferPtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
         if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination && !vertexState(next) && !indexState(next) && next!=ResourceState::ConstantBuffer && next!=ResourceState::UnorderedAccess) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
+        if (qType == QueueType::Copy && next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination)
+            return invalid("Copy command list only supports Common, CopySource, and CopyDestination buffer states", ErrorCode::InvalidArgument);
+        if (qType == QueueType::Compute && (vertexState(next) || indexState(next)))
+            return invalid("Compute command list does not support vertex/index buffer states", ErrorCode::InvalidArgument);
         auto object = owned<DXBuffer>(ptr); if (!object) return std::unexpected(object.error());
         // Validate before use() captures ownership and the observed version.
         if (next == ResourceState::UnorderedAccess && !(*object)->desc.storage)
@@ -532,10 +634,20 @@ struct DXCommands final : CommandList {
             return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
         if ((*object)->desc.memory == Memory::Readback && next != ResourceState::CopyDestination)
             return invalid("Readback memory stays in COPY_DEST", ErrorCode::InvalidArgument);
+        const auto before = current(**object);
+        if (qType == QueueType::Copy && (*object)->desc.memory == Memory::Device &&
+            before != ResourceState::Common && before != ResourceState::CopySource && before != ResourceState::CopyDestination)
+            return invalid("Copy command list cannot transition buffer from a non-copy state");
+        if (qType == QueueType::Compute && (vertexState(before) || indexState(before)))
+            return invalid("Compute command list cannot transition buffer from a vertex/index state");
         return change(use((*object)->tracker, (*object)->resource, (*object)->desc.memory), next);
     }
     Result<void> transition(const TexturePtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
+        if (qType == QueueType::Copy && next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination)
+            return invalid("Copy command list only supports Common, CopySource, and CopyDestination texture states", ErrorCode::InvalidArgument);
+        if (qType == QueueType::Compute && (next == ResourceState::RenderTarget || next == ResourceState::DepthWrite || next == ResourceState::DepthRead || next == ResourceState::Present || next == ResourceState::ResolveSource || next == ResourceState::ResolveDestination))
+            return invalid("Compute command list does not support graphics/present/resolve texture states", ErrorCode::InvalidArgument);
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
         const bool depth=(*object)->desc.depthStencil;
         const bool multisampled=(*object)->desc.sampleCount>1u;
@@ -552,6 +664,14 @@ struct DXCommands final : CommandList {
             (next == ResourceState::Present && !(*object)->backbuffer) || (next == ResourceState::ShaderRead && ((*object)->backbuffer || depth)) ||
             ((next==ResourceState::DepthWrite || next==ResourceState::DepthRead) && !depth))
             return invalid("Invalid texture state", ErrorCode::InvalidArgument);
+        const auto before = current(**object);
+        if (qType == QueueType::Copy &&
+            before != ResourceState::Common && before != ResourceState::CopySource && before != ResourceState::CopyDestination)
+            return invalid("Copy command list cannot transition texture from a non-copy state");
+        if (qType == QueueType::Compute &&
+            (before == ResourceState::RenderTarget || before == ResourceState::DepthWrite || before == ResourceState::DepthRead ||
+             before == ResourceState::Present || before == ResourceState::ResolveSource || before == ResourceState::ResolveDestination))
+            return invalid("Compute command list cannot transition texture from a graphics/present/resolve state");
         return change(use((*object)->tracker, (*object)->resource), next);
     }
     Result<void> copyBuffer(const BufferPtr& src, const BufferPtr& dst, std::uint64_t bytes) override {
@@ -568,8 +688,14 @@ struct DXCommands final : CommandList {
             return invalid("Invalid buffer copy", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource) return invalid("Source is not CopySource");
         if (current(**destination) != ResourceState::CopyDestination) return invalid("Destination is not CopyDestination");
-        use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
-        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory, true);
+        auto& srcUse = use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
+        auto& dstUse = use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory, true);
+        if (qType == QueueType::Copy) {
+            if ((*source)->desc.memory == Memory::Device && srcUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                srcUse.nativeState = D3D12_RESOURCE_STATE_COPY_SOURCE;
+            if ((*destination)->desc.memory == Memory::Device && dstUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                dstUse.nativeState = D3D12_RESOURCE_STATE_COPY_DEST;
+        }
         list->CopyBufferRegion((*destination)->resource.Get(), dstOffset, (*source)->resource.Get(), srcOffset, bytes); return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& src, const TexturePtr& dst) override {
@@ -580,8 +706,14 @@ struct DXCommands final : CommandList {
         if ((*source)->desc.memory == Memory::Readback || (*source)->desc.size < (*destination)->layout.size) return invalid("Upload buffer is too small or not copyable", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture upload requires CopySource/CopyDestination");
-        use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
-        use((*destination)->tracker, (*destination)->resource, Memory::Device, true);
+        auto& srcUse = use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
+        auto& dstUse = use((*destination)->tracker, (*destination)->resource, Memory::Device, true);
+        if (qType == QueueType::Copy) {
+            if ((*source)->desc.memory == Memory::Device && srcUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                srcUse.nativeState = D3D12_RESOURCE_STATE_COPY_SOURCE;
+            if (dstUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                dstUse.nativeState = D3D12_RESOURCE_STATE_COPY_DEST;
+        }
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; a.PlacedFootprint = (*destination)->placed;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
@@ -595,8 +727,14 @@ struct DXCommands final : CommandList {
         if ((*destination)->desc.memory == Memory::Upload || (*destination)->desc.size < (*source)->layout.size) return invalid("Readback buffer is too small or not copyable", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture download requires CopySource/CopyDestination");
-        use((*source)->tracker, (*source)->resource);
-        use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory, true);
+        auto& srcUse = use((*source)->tracker, (*source)->resource);
+        auto& dstUse = use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory, true);
+        if (qType == QueueType::Copy) {
+            if (srcUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                srcUse.nativeState = D3D12_RESOURCE_STATE_COPY_SOURCE;
+            if ((*destination)->desc.memory == Memory::Device && dstUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                dstUse.nativeState = D3D12_RESOURCE_STATE_COPY_DEST;
+        }
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; b.PlacedFootprint = (*source)->placed;
@@ -626,8 +764,14 @@ struct DXCommands final : CommandList {
             current(*image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource)) {
             return invalid("Texture region copy requires CopySource/CopyDestination states");
         }
-        use(buffer->tracker, buffer->resource, buffer->desc.memory, !upload);
-        use(image->tracker, image->resource, Memory::Device, upload);
+        auto& bufUse = use(buffer->tracker, buffer->resource, buffer->desc.memory, !upload);
+        auto& imgUse = use(image->tracker, image->resource, Memory::Device, upload);
+        if (qType == QueueType::Copy) {
+            if (buffer->desc.memory == Memory::Device && bufUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                bufUse.nativeState = upload ? D3D12_RESOURCE_STATE_COPY_SOURCE : D3D12_RESOURCE_STATE_COPY_DEST;
+            if (imgUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
+                imgUse.nativeState = upload ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_COPY_SOURCE;
+        }
         D3D12_TEXTURE_COPY_LOCATION bufferLocation{};
         bufferLocation.pResource = buffer->resource.Get();
         bufferLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
@@ -663,6 +807,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> resolveTexture(const TexturePtr& src, const TexturePtr& dst) override {
         auto status = ready(true); if (!status) return status;
+        if (qType != QueueType::Graphics) return invalid("resolveTexture requires a Graphics command list", ErrorCode::InvalidArgument);
         auto source = owned<DXTexture>(src); auto destination = owned<DXTexture>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
         if (*source == *destination) return invalid("Resolve source and destination must be distinct textures", ErrorCode::InvalidArgument);
@@ -685,11 +830,13 @@ struct DXCommands final : CommandList {
     }
     Result<void> beginRenderPass(const TexturePtr& ptr, Color clear) override {
         auto status = ready(true); if (!status) return status;
+        if (qType != QueueType::Graphics) return invalid("beginRenderPass requires a Graphics command list", ErrorCode::InvalidArgument);
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
         return beginRenderPass(RenderPassDesc{{{ptr,LoadOp::Clear,clear}}, {}});
     }
     Result<void> beginRenderPass(const RenderPassDesc& pass) override {
         auto status=ready(true);if(!status)return status;
+        if (qType != QueueType::Graphics) return invalid("beginRenderPass requires a Graphics command list", ErrorCode::InvalidArgument);
         status=validateRenderPass(pass);if(!status)return status;
         std::vector<std::shared_ptr<DXTexture>> colors;
         std::vector<ComPtr<ID3D12DescriptorHeap>> colorHeaps;
@@ -751,6 +898,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> setPipeline(const PipelinePtr& ptr) override {
         auto status = ready(); if (!status) return status;
+        if (qType != QueueType::Graphics) return invalid("setPipeline requires a Graphics command list", ErrorCode::InvalidArgument);
         auto object = std::dynamic_pointer_cast<DXPipeline>(ptr);
         if (!object || object->owner != owner) return invalid("Null or foreign pipeline", ErrorCode::WrongDevice);
         if (object->isCompute) return invalid("Graphics setPipeline rejects a compute pipeline", ErrorCode::InvalidArgument);
@@ -869,6 +1017,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> bindVertexBuffer(UINT slot,const BufferPtr& ptr,UINT stride,std::uint64_t offset,std::uint64_t size) override {
         auto status=ready();if(!status)return status;
+        if (qType != QueueType::Graphics) return invalid("bindVertexBuffer requires a Graphics command list", ErrorCode::InvalidArgument);
         auto object=owned<DXBuffer>(ptr);if(!object)return std::unexpected(object.error());
         const auto& buffer=**object;
         if(slot>=vertexBuffers.size() || !stride || stride>2048 || offset>buffer.desc.size || size>buffer.desc.size-offset || buffer.desc.memory==Memory::Readback)
@@ -882,6 +1031,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> bindIndexBuffer(const BufferPtr& ptr,IndexFormat format,std::uint64_t offset,std::uint64_t size) override {
         auto status=ready();if(!status)return status;
+        if (qType != QueueType::Graphics) return invalid("bindIndexBuffer requires a Graphics command list", ErrorCode::InvalidArgument);
         auto object=owned<DXBuffer>(ptr);if(!object)return std::unexpected(object.error());
         if(format!=IndexFormat::UInt16 && format!=IndexFormat::UInt32)return invalid("Invalid index format",ErrorCode::InvalidArgument);
         const auto element=format==IndexFormat::UInt16?2u:4u;const auto& buffer=**object;
@@ -896,6 +1046,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> drawReady() {
         auto status = ready(); if (!status) return status;
+        if (qType != QueueType::Graphics) return invalid("Draw requires a Graphics command list", ErrorCode::InvalidArgument);
         if (!renderPass || !pipeline || (pipeline->descriptorSize && !textureBound)) return invalid("Draw requires compatible target, pipeline and bindings");
         if(pipeline->renderTargets.colors.size()!=colorTargets.size() || pipeline->renderTargets.depth.has_value()!=static_cast<bool>(depthTarget))return invalid("Pipeline attachment count/depth does not match pass");
         if(pipeline->renderTargets.sampleCount!=passSampleCount)return invalid("Pipeline sample count does not match pass");
@@ -940,6 +1091,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> setComputePipeline(const PipelinePtr& ptr) override {
         auto status = ready(true); if (!status) return status;
+        if (qType == QueueType::Copy) return invalid("Compute operations are not supported on a Copy command list", ErrorCode::InvalidArgument);
         auto object = std::dynamic_pointer_cast<DXPipeline>(ptr);
         if (!object || object->owner != owner) return invalid("Null or foreign compute pipeline", ErrorCode::WrongDevice);
         if (!object->isCompute) return invalid("setComputePipeline requires a compute pipeline", ErrorCode::InvalidArgument);
@@ -954,6 +1106,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> bindComputeResources(const ResourceBindings& bindings) override {
         auto status = ready(true); if (!status) return status;
+        if (qType == QueueType::Copy) return invalid("Compute operations are not supported on a Copy command list", ErrorCode::InvalidArgument);
         if (!computePipeline) return invalid("Compute resource binding requires a compute pipeline");
         if (computePipeline->descriptorSize > 256 - descriptorCount) {
             return invalid("Command descriptor capacity exhausted; split the command list");
@@ -1099,6 +1252,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> dispatch(UINT groupCountX, UINT groupCountY, UINT groupCountZ) override {
         auto status = ready(true); if (!status) return status;
+        if (qType == QueueType::Copy) return invalid("Compute operations are not supported on a Copy command list", ErrorCode::InvalidArgument);
         if (!computePipeline) return invalid("dispatch requires an active compute pipeline");
         if (!groupCountX || !groupCountY || !groupCountZ ||
             groupCountX > D3D12_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION ||
@@ -1123,6 +1277,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> uavBarrier(const BufferPtr& ptr) override {
         auto status = ready(true); if (!status) return status;
+        if (qType == QueueType::Copy) return invalid("uavBarrier is not supported on a Copy command list", ErrorCode::InvalidArgument);
         auto object = owned<DXBuffer>(ptr); if (!object) return std::unexpected(object.error());
         if (!(*object)->desc.storage) return invalid("uavBarrier requires a storage buffer", ErrorCode::InvalidArgument);
         if (current(**object) != ResourceState::UnorderedAccess) return invalid("uavBarrier requires UnorderedAccess state");
@@ -1135,6 +1290,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> uavBarrier(const TexturePtr& ptr) override {
         auto status = ready(true); if (!status) return status;
+        if (qType == QueueType::Copy) return invalid("uavBarrier is not supported on a Copy command list", ErrorCode::InvalidArgument);
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
         if (!(*object)->desc.storage) return invalid("uavBarrier requires a storage texture", ErrorCode::InvalidArgument);
         if (current(**object) != ResourceState::UnorderedAccess) return invalid("uavBarrier requires UnorderedAccess state");
@@ -1147,18 +1303,21 @@ struct DXCommands final : CommandList {
     }
     Result<void> writeTimestamp(UINT index) override {
         auto status = ready(); if (!status) return status;
+        if (!query) return invalid("Timestamps are unsupported on Copy command lists", ErrorCode::Unsupported);
         if (index > 1 || timestampWritten[index] || timestampsResolved) return invalid("Timestamp slot invalid or already written", ErrorCode::InvalidArgument);
         list->EndQuery(query.Get(), D3D12_QUERY_TYPE_TIMESTAMP, index); timestampWritten[index] = true; return {};
     }
     Result<void> resolveTimestamps() override {
         auto status = ready(true); if (!status) return status;
+        if (!query) return invalid("Timestamps are unsupported on Copy command lists", ErrorCode::Unsupported);
         if (!timestampWritten[0] || !timestampWritten[1] || timestampsResolved) return invalid("Two timestamps must be written once before resolving");
         list->ResolveQueryData(query.Get(), D3D12_QUERY_TYPE_TIMESTAMP, 0, 2, queryReadback.Get(), 0); timestampsResolved = true; return {};
     }
     Result<double> elapsedGpuMilliseconds() override {
-        auto done = owner->completed(); if (!done) return std::unexpected(done.error());
+        auto done = owner->completed(qType); if (!done) return std::unexpected(done.error());
+        if (!query) return invalid("Timestamps are unsupported on Copy command lists", ErrorCode::Unsupported);
         if (!submitted || *done < submitted || !timestampsResolved) return invalid("GPU timestamps are not ready");
-        UINT64 frequency{}; HRESULT result = owner->queue->GetTimestampFrequency(&frequency);
+        UINT64 frequency{}; HRESULT result = owner->queues[queueIndex(qType)].queue->GetTimestampFrequency(&frequency);
         if (FAILED(result) || !frequency) return owner->failure(FAILED(result) ? result : E_FAIL, "Timestamp frequency unavailable");
         void* data{}; D3D12_RANGE range{0, 16}; result = queryReadback->Map(0, &range, &data);
         if (FAILED(result)) return owner->failure(result, "Timestamp Map failed");
@@ -1174,38 +1333,43 @@ struct DXCommands final : CommandList {
 };
 Result<std::unique_ptr<CommandList>> makeDXCommands(
     const std::shared_ptr<State>& state,
-    std::shared_ptr<DXCommandPoolState> pool = {}) {
+    std::shared_ptr<DXCommandPoolState> pool = {},
+    QueueType qType = QueueType::Graphics) {
     auto commands = std::make_unique<DXCommands>();
     commands->owner = state;
     commands->pool = std::move(pool);
+    commands->qType = commands->pool ? commands->pool->qType : qType;
+    const D3D12_COMMAND_LIST_TYPE nativeType = d3dQueueType(commands->qType);
     ID3D12CommandAllocator* activeAllocator = nullptr;
     if (commands->pool) {
         activeAllocator = commands->pool->allocator.Get();
     } else {
         HRESULT result = state->device->CreateCommandAllocator(
-            D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commands->allocator));
+            nativeType, IID_PPV_ARGS(&commands->allocator));
         if (FAILED(result)) return state->failure(result, "Create allocator failed");
         activeAllocator = commands->allocator.Get();
     }
     HRESULT result = state->device->CreateCommandList(
-        0, D3D12_COMMAND_LIST_TYPE_DIRECT, activeAllocator, nullptr, IID_PPV_ARGS(&commands->list));
+        0, nativeType, activeAllocator, nullptr, IID_PPV_ARGS(&commands->list));
     if (FAILED(result)) return state->failure(result, "Create command list failed");
     result = commands->list->Close();
     if (FAILED(result)) return state->failure(result, "Initial command list close failed");
-    D3D12_DESCRIPTOR_HEAP_DESC heap{};
-    heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    heap.NumDescriptors = 256;
-    heap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    result = state->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&commands->descriptors));
-    if (FAILED(result)) return state->failure(result, "Create command descriptor heap failed");
-    D3D12_QUERY_HEAP_DESC queries{};
-    queries.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-    queries.Count = 2;
-    result = state->device->CreateQueryHeap(&queries, IID_PPV_ARGS(&commands->query));
-    if (FAILED(result)) return state->failure(result, "Create timestamp query heap failed");
-    auto readback = makeBuffer(*state, 16, Memory::Readback);
-    if (!readback) return std::unexpected(readback.error());
-    commands->queryReadback = *readback;
+    if (commands->qType != QueueType::Copy) {
+        D3D12_DESCRIPTOR_HEAP_DESC heap{};
+        heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        heap.NumDescriptors = 256;
+        heap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        result = state->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&commands->descriptors));
+        if (FAILED(result)) return state->failure(result, "Create command descriptor heap failed");
+        D3D12_QUERY_HEAP_DESC queries{};
+        queries.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+        queries.Count = 2;
+        result = state->device->CreateQueryHeap(&queries, IID_PPV_ARGS(&commands->query));
+        if (FAILED(result)) return state->failure(result, "Create timestamp query heap failed");
+        auto readback = makeBuffer(*state, 16, Memory::Readback);
+        if (!readback) return std::unexpected(readback.error());
+        commands->queryReadback = *readback;
+    }
     state->track(commands->objects);
     if (commands->pool) {
         commands->pool->liveLists.push_back(commands.get());
@@ -1221,16 +1385,17 @@ struct DXCommandPool final : CommandPool {
             pool->ownerAlive = false;
         }
     }
+    QueueType queueType() const override { return pool->qType; }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         auto status = owner->check(); if (!status) return std::unexpected(status.error());
         std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return invalid("Cannot allocate from a CommandPool while a command list from it is recording");
         }
-        return makeDXCommands(owner, pool);
+        return makeDXCommands(owner, pool, pool->qType);
     }
     Result<void> reset() override {
-        auto done = owner->completed(); if (!done) return std::unexpected(done.error());
+        auto done = owner->completed(pool->qType); if (!done) return std::unexpected(done.error());
         std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return invalid("Command pool cannot reset while a command list is recording");
@@ -1256,7 +1421,7 @@ struct DXCommandPool final : CommandPool {
             return invalid("Command pool cannot rebind recording thread while a command list is recording");
         }
         if (pool->lastSubmitted) {
-            const auto completedVal = owner->fence->GetCompletedValue();
+            const auto completedVal = owner->queues[queueIndex(pool->qType)].fence->GetCompletedValue();
             if (completedVal == UINT64_MAX) return owner->failure(DXGI_ERROR_DEVICE_REMOVED, "Device lost while checking fence");
             if (completedVal < pool->lastSubmitted) {
                 return invalid("Command pool cannot rebind recording thread while submissions are in flight");
@@ -1328,10 +1493,164 @@ struct DXSwapChain final : SwapChain {
         if (owner) { auto waited = owner->idle(); (void)waited; }
     }
 };
-class DXDevice final : public Device, public CommandQueue {
+struct DXQueue final : CommandQueue {
     std::shared_ptr<State> state;
+    QueueType qType{QueueType::Graphics};
+    QueueType type() const override { return qType; }
+    Result<Fence> submit(CommandList& commands) override {
+        CommandList* single = &commands;
+        return submit(std::span<CommandList* const>{&single, 1});
+    }
+    Result<Fence> submit(std::span<CommandList* const> lists) override {
+        SubmitDesc desc{};
+        desc.commandLists = lists;
+        return submit(desc);
+    }
+    Result<Fence> submit(const SubmitDesc& desc) override {
+        auto status = state->completed(qType); if (!status) return std::unexpected(status.error());
+        if (desc.commandLists.empty()) return invalid("Batch submit requires at least one command list", ErrorCode::InvalidArgument);
+        auto& q = state->queues[queueIndex(qType)];
+        if (q.last >= UINT64_MAX - 1) return invalid("Fence timeline exhausted");
+        std::vector<DXCommands*> validated;
+        validated.reserve(desc.commandLists.size());
+        std::unordered_set<DXCommands*> seenLists;
+        std::unordered_set<Tracker*> seenRead;
+        std::unordered_set<Tracker*> seenMutated;
+        for (CommandList* item : desc.commandLists) {
+            if (!item) return invalid("Null command list in batch submit", ErrorCode::InvalidArgument);
+            auto* cmd = dynamic_cast<DXCommands*>(item);
+            if (!cmd || cmd->owner != state) return invalid("Command list belongs to another device", ErrorCode::WrongDevice);
+            if (cmd->qType != qType) return invalid("Command list queue type does not match target queue", ErrorCode::InvalidArgument);
+            if (!seenLists.insert(cmd).second) return invalid("Duplicate command list in batch submit", ErrorCode::InvalidArgument);
+            if (cmd->pool) {
+                std::scoped_lock lock(cmd->pool->mutex);
+                if (!cmd->pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
+                if (cmd->pool->openCount > 0) return invalid("Command pool has a command list currently recording");
+                if (cmd->recordedEpoch != cmd->pool->epoch) return invalid("Pooled command list was reset and must be re-recorded");
+            }
+            if (!cmd->ended || cmd->recording || cmd->submitted) return invalid("Command list is not executable or was already submitted");
+            for (const auto& usage : cmd->uses) {
+                if (!usage.tracker->available()) return invalid("Recorded backbuffer is not current or its swapchain has been destroyed");
+                if (usage.observedVersion != usage.tracker->version || usage.tracker->version == UINT64_MAX)
+                    return invalid("Resource changed after recording; re-record the command list");
+                Tracker* key = usage.tracker.get();
+                if (usage.mutated) {
+                    if (seenMutated.contains(key) || seenRead.contains(key))
+                        return invalid("Batch submit has conflicting resource mutations across command lists");
+                    seenMutated.insert(key);
+                } else {
+                    if (seenMutated.contains(key))
+                        return invalid("Batch submit has conflicting resource mutation and read across command lists");
+                    seenRead.insert(key);
+                }
+            }
+            validated.push_back(cmd);
+        }
+        std::vector<std::pair<std::shared_ptr<DXTimelineFence>, std::uint64_t>> waitFences;
+        waitFences.reserve(desc.waits.size());
+        for (const auto& w : desc.waits) {
+            if (!w.fence) return invalid("Null timeline fence in submit waits", ErrorCode::InvalidArgument);
+            auto dxFence = std::dynamic_pointer_cast<DXTimelineFence>(w.fence);
+            if (!dxFence || dxFence->owner != state) return invalid("Timeline fence belongs to another device", ErrorCode::WrongDevice);
+            waitFences.emplace_back(std::move(dxFence), w.value);
+        }
+        std::vector<std::pair<std::shared_ptr<DXTimelineFence>, std::uint64_t>> signalFences;
+        signalFences.reserve(desc.signals.size());
+        std::unordered_map<DXTimelineFence*, std::uint64_t> pendingSignalMax;
+        for (const auto& s : desc.signals) {
+            if (!s.fence) return invalid("Null timeline fence in submit signals", ErrorCode::InvalidArgument);
+            auto dxFence = std::dynamic_pointer_cast<DXTimelineFence>(s.fence);
+            if (!dxFence || dxFence->owner != state) return invalid("Timeline fence belongs to another device", ErrorCode::WrongDevice);
+            const auto completedVal = dxFence->completedValue();
+            if (!completedVal) return std::unexpected(completedVal.error());
+            const auto it = pendingSignalMax.find(dxFence.get());
+            const std::uint64_t prev = it != pendingSignalMax.end()
+                ? it->second
+                : std::max(dxFence->lastSignaled, *completedVal);
+            if (s.value <= prev || s.value == UINT64_MAX) {
+                return invalid("TimelineFence signal value must strictly advance", ErrorCode::InvalidArgument);
+            }
+            pendingSignalMax[dxFence.get()] = s.value;
+            signalFences.emplace_back(std::move(dxFence), s.value);
+        }
+        Batch batch; batch.fence = q.last + 1;
+        std::unordered_set<IUnknown*> retainedBatch;
+        auto addUnique = [&](const ComPtr<IUnknown>& ref) {
+            if (ref && retainedBatch.insert(ref.Get()).second) batch.objects.push_back(ref);
+        };
+        auto addCom = [&](const auto& ptr) {
+            ComPtr<IUnknown> ref;
+            if (ptr && SUCCEEDED(ptr.As(&ref))) addUnique(ref);
+        };
+        std::vector<ID3D12CommandList*> nativeLists;
+        nativeLists.reserve(validated.size());
+        for (DXCommands* cmd : validated) {
+            for (const auto& ref : cmd->references) addUnique(ref);
+            addCom(cmd->pool ? cmd->pool->allocator : cmd->allocator);
+            addCom(cmd->list); addCom(cmd->descriptors); addCom(cmd->query); addCom(cmd->queryReadback);
+            nativeLists.push_back(cmd->list.Get());
+        }
+        for (const auto& [wf, _] : waitFences) addCom(wf->fence);
+        for (const auto& [sf, _] : signalFences) addCom(sf->fence);
+        // Allocate retention before issuing GPU queue work; failure cannot orphan submitted GPU work.
+        q.pending.push_back(std::move(batch));
+        for (const auto& [wf, val] : waitFences) {
+            HRESULT hr = q.queue->Wait(wf->fence.Get(), val);
+            if (FAILED(hr)) return state->failure(hr, "Queue timeline wait failed");
+        }
+        q.queue->ExecuteCommandLists(static_cast<UINT>(nativeLists.size()), nativeLists.data());
+        ++q.last;
+        const std::size_t qi = queueIndex(qType);
+        std::unordered_set<Tracker*> versionBumped;
+        for (DXCommands* cmd : validated) {
+            cmd->submitted = q.last;
+            if (cmd->pool) {
+                std::scoped_lock lock(cmd->pool->mutex);
+                cmd->pool->lastSubmitted = std::max(cmd->pool->lastSubmitted, q.last);
+            }
+            for (auto& usage : cmd->uses) {
+                if (usage.mutated) {
+                    usage.tracker->state = usage.state;
+                    usage.tracker->nativeState = usage.nativeState;
+                }
+                if (qType == QueueType::Copy && usage.memory == Memory::Device) {
+                    // D3D12 Copy queue decays default-heap resources back to COMMON after ExecuteCommandLists.
+                    usage.tracker->nativeState = D3D12_RESOURCE_STATE_COMMON;
+                }
+                usage.tracker->lastUse[qi] = q.last;
+                if (versionBumped.insert(usage.tracker.get()).second) ++usage.tracker->version;
+            }
+        }
+        // Signal the internal queue fence before user timeline fences so observing a
+        // timeline signal guarantees the queue's internal fence has also retired.
+        HRESULT result = q.queue->Signal(q.fence.Get(), q.last);
+        if (FAILED(result)) return state->failure(result, "Queue signal failed after execution");
+        for (const auto& [sf, val] : signalFences) {
+            result = q.queue->Signal(sf->fence.Get(), val);
+            if (FAILED(result)) return state->failure(result, "Queue timeline signal failed");
+            sf->lastSignaled = val;
+        }
+        return Fence{q.last, q.id};
+    }
+    Result<void> wait(Fence fence, std::chrono::milliseconds timeout) override {
+        auto& q = state->queues[queueIndex(qType)];
+        if (fence.device != q.id) return invalid("Fence belongs to another device or queue", ErrorCode::WrongDevice);
+        return state->wait(qType, fence.value, timeout);
+    }
+    Result<void> waitIdle() override { return state->idleQueue(qType); }
+    Result<std::uint64_t> completedValue() override { return state->completed(qType); }
+};
+class DXDevice final : public Device {
+    std::shared_ptr<State> state;
+    std::array<DXQueue, 3> queueViews;
 public:
-    explicit DXDevice(std::shared_ptr<State> value) : state(std::move(value)) {}
+    explicit DXDevice(std::shared_ptr<State> value) : state(std::move(value)) {
+        const std::array<QueueType, 3> types{QueueType::Graphics, QueueType::Compute, QueueType::Copy};
+        for (std::size_t i = 0; i < 3; ++i) {
+            queueViews[i].state = state;
+            queueViews[i].qType = types[i];
+        }
+    }
     const DeviceCaps& caps() const override { return state->caps; }
     Result<FormatSupport> queryFormatSupport(Format format) override {
         auto status = state->check();
@@ -1397,25 +1716,27 @@ public:
         return MemoryBudget{adapterId(state->device->GetAdapterLuid()),segment,info.Budget,info.CurrentUsage,info.AvailableForReservation,info.CurrentReservation};
     }
     Result<ResourceStatistics> resourceStatistics() override {
-        auto done=state->completed();if(!done)return std::unexpected(done.error());
+        auto done = state->completedAll(); if (!done) return std::unexpected(done.error());
         ResourceStatistics result;
         std::vector<ComPtr<ID3D12Resource>> resources;
-        for(const auto& child:state->children)if(auto live=child.lock()) {
-            ++result.trackedObjects;live->appendResources(resources);
+        for (const auto& child : state->children) if (auto live = child.lock()) {
+            ++result.trackedObjects; live->appendResources(resources);
         }
-        result.pendingSubmissions=state->pending.size();
-        for(const auto& batch:state->pending)for(const auto& object:batch.objects) {
-            ++result.pendingObjectReferences;
-            ComPtr<ID3D12Resource> resource;
-            if(object && SUCCEEDED(object.As(&resource)))resources.push_back(std::move(resource));
+        for (const auto& q : state->queues) {
+            result.pendingSubmissions += q.pending.size();
+            for (const auto& batch : q.pending) for (const auto& object : batch.objects) {
+                ++result.pendingObjectReferences;
+                ComPtr<ID3D12Resource> resource;
+                if (object && SUCCEEDED(object.As(&resource))) resources.push_back(std::move(resource));
+            }
         }
         std::unordered_set<ID3D12Resource*> unique;
-        for(const auto& resource:resources)if(unique.insert(resource.Get()).second) {
-            const auto desc=resource->GetDesc();
-            const auto bytes=state->device->GetResourceAllocationInfo(0,1,&desc).SizeInBytes;
-            if(bytes==UINT64_MAX || bytes>UINT64_MAX-result.resourceAllocationBytes)
-                return invalid("Resource allocation statistics overflow",ErrorCode::BackendFailure);
-            ++result.uniqueResources;result.resourceAllocationBytes+=bytes;
+        for (const auto& resource : resources) if (unique.insert(resource.Get()).second) {
+            const auto desc = resource->GetDesc();
+            const auto bytes = state->device->GetResourceAllocationInfo(0, 1, &desc).SizeInBytes;
+            if (bytes == UINT64_MAX || bytes > UINT64_MAX - result.resourceAllocationBytes)
+                return invalid("Resource allocation statistics overflow", ErrorCode::BackendFailure);
+            ++result.uniqueResources; result.resourceAllocationBytes += bytes;
         }
         return result;
     }
@@ -1439,7 +1760,12 @@ public:
         if(fresh)state->recoverySucceeded=true;
         return fresh;
     }
-    CommandQueue& queue() override { return *this; }
+    CommandQueue& queue() override { return queueViews[0]; }
+    Result<CommandQueue*> queue(QueueType type) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (!validQueueType(type)) return invalid("Unknown queue type", ErrorCode::InvalidArgument);
+        return &queueViews[queueIndex(type)];
+    }
     Result<BufferPtr> createBuffer(BufferDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (!desc.size || desc.size > SIZE_MAX || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
@@ -1805,15 +2131,24 @@ public:
         return pipeline;
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
+        return createCommandList(QueueType::Graphics);
+    }
+    Result<std::unique_ptr<CommandList>> createCommandList(QueueType type) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
-        return makeDXCommands(state);
+        if (!validQueueType(type)) return invalid("Unknown queue type", ErrorCode::InvalidArgument);
+        return makeDXCommands(state, {}, type);
     }
     Result<std::unique_ptr<CommandPool>> createCommandPool() override {
+        return createCommandPool(QueueType::Graphics);
+    }
+    Result<std::unique_ptr<CommandPool>> createCommandPool(QueueType type) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (!validQueueType(type)) return invalid("Unknown queue type", ErrorCode::InvalidArgument);
         auto poolState = std::make_shared<DXCommandPoolState>();
+        poolState->qType = type;
         poolState->recordingThread.store(state->thread, std::memory_order_release);
         HRESULT result = state->device->CreateCommandAllocator(
-            D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&poolState->allocator));
+            d3dQueueType(type), IID_PPV_ARGS(&poolState->allocator));
         if (FAILED(result)) return state->failure(result, "Create command pool allocator failed");
         state->track(poolState);
         auto pool = std::make_unique<DXCommandPool>();
@@ -1821,92 +2156,17 @@ public:
         pool->pool = std::move(poolState);
         return std::unique_ptr<CommandPool>(std::move(pool));
     }
-    Result<Fence> submit(CommandList& commands) override {
-        CommandList* single = &commands;
-        return submit(std::span<CommandList* const>{&single, 1});
+    Result<TimelineFencePtr> createTimelineFence(std::uint64_t initialValue) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (initialValue >= UINT64_MAX - 1) return invalid("Invalid initial timeline fence value", ErrorCode::InvalidArgument);
+        auto timeline = std::make_shared<DXTimelineFence>();
+        timeline->owner = state;
+        timeline->lastSignaled = initialValue;
+        HRESULT result = state->device->CreateFence(initialValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&timeline->fence));
+        if (FAILED(result)) return state->failure(result, "Create timeline fence failed");
+        state->track(timeline);
+        return TimelineFencePtr(std::move(timeline));
     }
-    Result<Fence> submit(std::span<CommandList* const> lists) override {
-        auto status = state->completed(); if (!status) return std::unexpected(status.error());
-        if (lists.empty()) return invalid("Batch submit requires at least one command list", ErrorCode::InvalidArgument);
-        if (state->last >= UINT64_MAX-1) return invalid("Fence timeline exhausted");
-        std::vector<DXCommands*> validated;
-        validated.reserve(lists.size());
-        std::unordered_set<DXCommands*> seenLists;
-        std::unordered_set<Tracker*> seenRead;
-        std::unordered_set<Tracker*> seenMutated;
-        for (CommandList* item : lists) {
-            if (!item) return invalid("Null command list in batch submit", ErrorCode::InvalidArgument);
-            auto* cmd = dynamic_cast<DXCommands*>(item);
-            if (!cmd || cmd->owner != state) return invalid("Command list belongs to another device", ErrorCode::WrongDevice);
-            if (!seenLists.insert(cmd).second) return invalid("Duplicate command list in batch submit", ErrorCode::InvalidArgument);
-            if (cmd->pool) {
-                std::scoped_lock lock(cmd->pool->mutex);
-                if (!cmd->pool->ownerAlive) return invalid("Owning CommandPool has been destroyed");
-                if (cmd->pool->openCount > 0) return invalid("Command pool has a command list currently recording");
-                if (cmd->recordedEpoch != cmd->pool->epoch) return invalid("Pooled command list was reset and must be re-recorded");
-            }
-            if (!cmd->ended || cmd->recording || cmd->submitted) return invalid("Command list is not executable or was already submitted");
-            for (const auto& usage : cmd->uses) {
-                if(!usage.tracker->available())return invalid("Recorded backbuffer is not current or its swapchain has been destroyed");
-                if(usage.observedVersion != usage.tracker->version || usage.tracker->version == UINT64_MAX)
-                    return invalid("Resource changed after recording; re-record the command list");
-                Tracker* key = usage.tracker.get();
-                if (usage.mutated) {
-                    if (seenMutated.contains(key) || seenRead.contains(key))
-                        return invalid("Batch submit has conflicting resource mutations across command lists");
-                    seenMutated.insert(key);
-                } else {
-                    if (seenMutated.contains(key))
-                        return invalid("Batch submit has conflicting resource mutation and read across command lists");
-                    seenRead.insert(key);
-                }
-            }
-            validated.push_back(cmd);
-        }
-        Batch batch; batch.fence = state->last + 1;
-        std::unordered_set<IUnknown*> retainedBatch;
-        auto addUnique = [&](const ComPtr<IUnknown>& ref) {
-            if (ref && retainedBatch.insert(ref.Get()).second) batch.objects.push_back(ref);
-        };
-        auto addCom = [&](const auto& ptr) {
-            ComPtr<IUnknown> ref;
-            if (ptr && SUCCEEDED(ptr.As(&ref))) addUnique(ref);
-        };
-        std::vector<ID3D12CommandList*> nativeLists;
-        nativeLists.reserve(validated.size());
-        for (DXCommands* cmd : validated) {
-            for (const auto& ref : cmd->references) addUnique(ref);
-            addCom(cmd->pool ? cmd->pool->allocator : cmd->allocator);
-            addCom(cmd->list); addCom(cmd->descriptors); addCom(cmd->query); addCom(cmd->queryReadback);
-            nativeLists.push_back(cmd->list.Get());
-        }
-        // Allocate retention before ExecuteCommandLists; failure cannot orphan submitted GPU work.
-        state->pending.push_back(std::move(batch));
-        state->queue->ExecuteCommandLists(static_cast<UINT>(nativeLists.size()), nativeLists.data());
-        ++state->last;
-        std::unordered_set<Tracker*> versionBumped;
-        for (DXCommands* cmd : validated) {
-            cmd->submitted = state->last;
-            if (cmd->pool) {
-                std::scoped_lock lock(cmd->pool->mutex);
-                cmd->pool->lastSubmitted = std::max(cmd->pool->lastSubmitted, state->last);
-            }
-            for (auto& usage : cmd->uses) {
-                if (usage.mutated) usage.tracker->state = usage.state;
-                usage.tracker->lastUse = state->last;
-                if (versionBumped.insert(usage.tracker.get()).second) ++usage.tracker->version;
-            }
-        }
-        HRESULT result = state->queue->Signal(state->fence.Get(), state->last);
-        if (FAILED(result)) return state->failure(result, "Queue signal failed after execution");
-        return Fence{state->last, state->id};
-    }
-    Result<void> wait(Fence fence, std::chrono::milliseconds timeout) override {
-        if (fence.device != state->id) return invalid("Fence belongs to another device", ErrorCode::WrongDevice);
-        return state->wait(fence.value, timeout);
-    }
-    Result<void> waitIdle() override { return state->idle(); }
-    Result<std::uint64_t> completedValue() override { return state->completed(); }
     Result<std::uint64_t> validationErrorCount() override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (!state->info) return invalid("Validation was not requested", ErrorCode::Unsupported);
@@ -1934,7 +2194,7 @@ public:
         nativeDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; nativeDesc.BufferCount = desc.buffers;
         nativeDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         ComPtr<IDXGISwapChain1> chain;
-        HRESULT result = state->factory->CreateSwapChainForHwnd(state->queue.Get(), static_cast<HWND>(surface.window), &nativeDesc, nullptr, nullptr, &chain);
+        HRESULT result = state->factory->CreateSwapChainForHwnd(state->queues[0].queue.Get(), static_cast<HWND>(surface.window), &nativeDesc, nullptr, nullptr, &chain);
         if (FAILED(result)) return state->failure(result, "Create swapchain failed");
         result = chain.As(&swap->chain); if (FAILED(result)) return state->failure(result, "Swapchain3 interface unavailable");
         swap->objects->scope->chain=swap->chain.Get();
@@ -2032,6 +2292,9 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     state->caps.textureCopyOffsetAlignment = D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT;
     state->caps.maxVertexStreams = D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT;
     state->caps.maxConstantBufferSize = 65536u;
+    state->caps.dedicatedComputeQueue = true;
+    state->caps.dedicatedCopyQueue = true;
+    state->caps.timelineFences = true;
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
     if (desc.validation) {
         result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable");
@@ -2040,11 +2303,17 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
         if(FAILED(result))return state->failure(result,"Validation message callback registration failed");
         state->messageCallbackRegistered=true;
     }
-    D3D12_COMMAND_QUEUE_DESC queue{}; queue.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    result = state->device->CreateCommandQueue(&queue, IID_PPV_ARGS(&state->queue));
-    if (FAILED(result)) return state->failure(result, "Create command queue failed");
-    result = state->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&state->fence));
-    if (FAILED(result)) return state->failure(result, "Create fence failed");
+    const std::array<QueueType, 3> queueTypes{QueueType::Graphics, QueueType::Compute, QueueType::Copy};
+    for (std::size_t i = 0; i < 3; ++i) {
+        D3D12_COMMAND_QUEUE_DESC qDesc{};
+        qDesc.Type = d3dQueueType(queueTypes[i]);
+        result = state->device->CreateCommandQueue(&qDesc, IID_PPV_ARGS(&state->queues[i].queue));
+        if (FAILED(result)) return state->failure(result, "Create command queue failed");
+        result = state->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&state->queues[i].fence));
+        if (FAILED(result)) return state->failure(result, "Create fence failed");
+        state->queues[i].id = (i == 0) ? state->id : detail::allocateDeviceGeneration();
+        if (!state->queues[i].id) return invalid("Queue generation sequence exhausted", ErrorCode::InvalidState);
+    }
     return std::unique_ptr<Device>(std::make_unique<DXDevice>(std::move(state)));
 }
 }

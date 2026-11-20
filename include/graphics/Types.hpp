@@ -10,6 +10,7 @@ enum class ErrorCode { InvalidArgument, InvalidState, WrongDevice, Unsupported, 
 struct Error { ErrorCode code; std::string message; std::int64_t nativeCode{}; };
 template<class T> using Result = std::expected<T, Error>;
 enum class Backend { D3D12, Vulkan, Metal };
+enum class QueueType { Graphics, Compute, Copy };
 // Backend-scoped opaque identity. D3D12 uses the OS LUID, not an enumeration index.
 // Refresh after topology changes/reboot; it is not a persistent hardware serial number.
 struct AdapterId { Backend backend{Backend::D3D12}; std::uint64_t value{}; bool operator==(const AdapterId&) const = default; };
@@ -107,5 +108,8 @@ struct DeviceCaps {
     std::uint32_t textureCopyOffsetAlignment{};
     std::uint32_t maxVertexStreams{};
     std::uint32_t maxConstantBufferSize{};
+    bool dedicatedComputeQueue{};
+    bool dedicatedCopyQueue{};
+    bool timelineFences{};
 };
 }

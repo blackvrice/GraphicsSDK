@@ -290,3 +290,36 @@
   - `P9-CMD-03`: Graphics/Compute/Copy 다중 큐·Timeline Fence·Async 전송.
   - `P8-MEM-01`: 공개 Upload Ring·Staging/Readback/Transient Resource Pool.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P9-CMD-05/06/07`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P9-CMD-03` Graphics/Compute/Copy 다중 큐·Timeline Fence·Async 전송 구현·실기 검증
+
+- **기준 커밋**: `46919a13` (`Add parallel command recording and batch queue submission`)
+- **작업 목적**:
+  - 선행 충족 작업 `P9-CMD-03` 구현: `QueueType(Graphics/Compute/Copy)`, `DeviceCaps::{dedicatedComputeQueue,dedicatedCopyQueue,timelineFences}`, `Device::{queue(QueueType),createCommandList(QueueType),createCommandPool(QueueType),createTimelineFence}`, `TimelineFence(completedValue/signal/wait)`, `CommandQueue::submit(const SubmitDesc&)`를 D3D12·Vulkan·Metal에 구현하고 Windows 실기(GTX 1660 SUPER + Intel UHD 770)·Validation·WARP 손실복구·설치 소비자 및 Async Transfer + Compute Overlap 벤치마크로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P9-CMD-08`로 정직하게 분리 유지.
+- **수정 파일 (17개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/CommandList.hpp`, `include/graphics/CommandQueue.hpp`, `include/graphics/Device.hpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/MultiQueueTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE9_MULTI_QUEUE_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 벤치마크 결과** (격리 빌드 `out/p9-multi-queue`, 설치 `out/p9-multi-queue-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `6A4DD16C87BE7C08D70B846392525BE838893FDBA09AE60BD67F1B534B67B6FC`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0, 13개 공개 헤더 계약 유지.
+  - `gfx_multi_queue_tests --d3d12 --benchmark` (GTX 1660 SUPER, `1/1/1`): 통과 (`assertions=5268, pipelines=3, submits=31, rejections=47`).
+  - `gfx_multi_queue_tests --d3d12 --validation` (Debug + GBV, GTX 1660 SUPER): 통과 (`assertions=456, errors=0`; Copy 큐 `COMMON` 암묵적 승격/감쇠 반영으로 `#1334` 0건).
+  - `gfx_multi_queue_tests --d3d12 --warp` (WARP + `removeForTesting`/`recover`): 통과 (`assertions=566, pipelines=5, submits=38, rejections=52`).
+  - `gfx_multi_queue_tests --vulkan --benchmark` (GTX 1660 SUPER, 3개 패밀리 `CONCURRENT`, `1/1/1`): 통과 (`assertions=5259, pipelines=3, submits=31, rejections=47`).
+  - `gfx_multi_queue_tests --vulkan --validation` (고정 VVL 1.3.290 core+sync, GTX 1660 SUPER): 통과 (`assertions=448, errors=0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12(GTX 1660 SUPER·Intel UHD 770·WARP) 및 Vulkan(GTX 1660 SUPER 3패밀리 `1/1/1`·Intel UHD 770 공유 폴백 `0/0/1`) 비검증·검증 별도 프로세스 전체 통과 (`errors=0`).
+  - CTest 68종 회귀(CPU 11종 + Phase 8/9 전체 + `multi_queue_*` 5종 + Vulkan 코어/타임스탬프/검증): **68/68 통과** (`52.49s`).
+  - **Async Transfer + Compute Overlap 실측 벤치마크** (GTX 1660 SUPER, 12 frames × 4 MiB = 48 MiB + 프레임당 4 Compute UAV 패스, 7회 중앙값):
+    - D3D12: 순차 `10.925 ms` → Async Overlap `8.237 ms` (**1.326x**).
+    - Vulkan: 순차 `9.400 ms` → Async Overlap `7.624 ms` (**1.233x**).
+  - `tools/roadmap.py --check`: PASS (200 task IDs: 118 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P8-MEM-01`: 공개 Upload Ring·Staging/Readback/Transient Resource Pool.
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P9-RG-01`: 선택적 Render Graph.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P9-CMD-05/06/07/08`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.

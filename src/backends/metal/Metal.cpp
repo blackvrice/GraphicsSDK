@@ -12,6 +12,7 @@
 #include <limits>
 #include <mutex>
 #include <thread>
+#include <unordered_map>
 #include <unordered_set>
 #include <array>
 
@@ -20,6 +21,14 @@ namespace {
 auto fail(ErrorCode code, std::string text, std::int64_t native = 0) {
     return std::unexpected(Error{code, std::move(text), native});
 }
+bool validQueueType(QueueType t) { return t == QueueType::Graphics || t == QueueType::Compute || t == QueueType::Copy; }
+std::size_t queueIndex(QueueType t) { return static_cast<std::size_t>(t); }
+struct NativeTimelineEvent {
+    id<MTLSharedEvent> event;
+    std::uint64_t lastSignaled{};
+    void release() { event = nil; }
+    ~NativeTimelineEvent() { release(); }
+};
 struct Pending {
     std::uint64_t serial;
     id<MTLCommandBuffer> buffer;
@@ -28,6 +37,8 @@ struct Pending {
     id<CAMetalDrawable> drawable{};
     std::vector<std::shared_ptr<struct NativeTextureView>> textureViews;
     std::vector<id<MTLCommandBuffer>> extraBuffers;
+    std::vector<std::shared_ptr<NativeTimelineEvent>> timelineEvents;
+    std::vector<std::pair<std::shared_ptr<NativeTimelineEvent>, std::uint64_t>> signaledTimelines;
 };
 struct NativeTextureView {
     std::shared_ptr<struct Allocation> allocation;
@@ -45,7 +56,8 @@ struct Allocation {
     bool initialized{};
     bool backbuffer{};
     ResourceState state{ResourceState::Common};
-    std::uint64_t version{}, lastUse{}, bytes{};
+    std::uint64_t version{}, bytes{};
+    std::array<std::uint64_t, 3> lastUse{};
 };
 char layerLeaseKey;
 struct DrawableScope {
@@ -134,18 +146,26 @@ struct Operation {
     ComputeDispatchOp compute;
 };
 struct NativeRecording { id<MTLCommandBuffer> buffer; };
+struct QueueSlot {
+    id<MTLCommandQueue> queue;
+    std::uint64_t id{};
+    std::uint64_t last{};
+    std::atomic<std::uint64_t> completed{0};
+    std::deque<Pending> pending;
+};
 struct State {
     id<MTLDevice> device;
-    id<MTLCommandQueue> queue;
+    std::array<QueueSlot, 3> queues;
+    id<MTLCommandQueue>& queue{queues[0].queue};
+    std::uint64_t& last{queues[0].last};
+    std::deque<Pending>& pending{queues[0].pending};
     const std::thread::id thread = std::this_thread::get_id();
-    std::uint64_t generation{}, last{};
-    std::atomic<std::uint64_t> completed{0};
+    std::uint64_t generation{};
     std::atomic<bool> retired{false};
     std::atomic<bool> hasFailure{false};
     std::optional<Error> failure;
     std::mutex recordingsMutex;
     std::mutex tailMutex;
-    std::deque<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
     std::vector<std::weak_ptr<NativeTextureView>> imageViews;
     std::vector<std::weak_ptr<int>> objects;
@@ -153,14 +173,17 @@ struct State {
     std::vector<std::weak_ptr<NativeRecording>> recordings;
     std::vector<std::weak_ptr<NativePipeline>> pipelines;
     std::vector<std::weak_ptr<DrawableScope>> surfaces;
+    std::vector<std::weak_ptr<NativeTimelineEvent>> timelineEvents;
     void retire() {
         if (retired.load(std::memory_order_acquire)) return;
         @autoreleasepool {
-            for (auto& p : pending) {
-                for (id<MTLCommandBuffer> extra : p.extraBuffers) [extra waitUntilCompleted];
-                [p.buffer waitUntilCompleted];
+            for (auto& q : queues) {
+                for (auto& p : q.pending) {
+                    for (id<MTLCommandBuffer> extra : p.extraBuffers) [extra waitUntilCompleted];
+                    [p.buffer waitUntilCompleted];
+                }
+                q.pending.clear();
             }
-            pending.clear();
             {
                 std::scoped_lock lock(recordingsMutex);
                 for (auto& w : recordings) if (auto r = w.lock()) r->buffer = nil;
@@ -170,7 +193,11 @@ struct State {
             for (auto& w : imageViews) if (auto v = w.lock()) v->release();
             for (auto& w : allocations) if (auto a = w.lock()) { a->buffer = nil; a->texture = nil; }
             for (auto& w : pipelines) if (auto p = w.lock()) p->release();
-            tailPipeline = nil; queue = nil; device = nil;
+            for (auto& w : timelineEvents) if (auto e = w.lock()) e->release();
+            timelineEvents.clear();
+            tailPipeline = nil;
+            for (auto& q : queues) q.queue = nil;
+            device = nil;
         }
         retired.store(true, std::memory_order_release);
     }
@@ -186,11 +213,12 @@ struct State {
         if (failure) return std::unexpected(*failure);
         return {};
     }
-    Result<void> poll() {
+    Result<void> pollQueue(QueueType qType) {
         if (auto ok = check(); !ok) return ok;
+        auto& q = queues[queueIndex(qType)];
         @autoreleasepool {
-            while (!pending.empty()) {
-                auto& p = pending.front();
+            while (!q.pending.empty()) {
+                auto& p = q.pending.front();
                 auto checkBuffer = [&](id<MTLCommandBuffer> buf) -> Result<bool> {
                     const auto status = buf.status;
                     if (status == MTLCommandBufferStatusError) {
@@ -218,9 +246,15 @@ struct State {
                     allDone = *done;
                 }
                 if (!allDone) break;
-                completed.store(p.serial, std::memory_order_release);
-                pending.pop_front();
+                q.completed.store(p.serial, std::memory_order_release);
+                q.pending.pop_front();
             }
+        }
+        return {};
+    }
+    Result<void> poll() {
+        for (QueueType t : {QueueType::Graphics, QueueType::Compute, QueueType::Copy}) {
+            if (auto ok = pollQueue(t); !ok) return ok;
         }
         return {};
     }
@@ -257,6 +291,53 @@ struct State {
         return fail(ErrorCode::Unsupported, "Not implemented by the Metal submission backend");
     }
 };
+struct MetalTimelineFence final : TimelineFence {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativeTimelineEvent> native;
+    std::shared_ptr<int> token;
+    Result<std::uint64_t> completedValue() override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return native->event.signaledValue;
+    }
+    Result<void> signal(std::uint64_t value) override {
+        auto current = completedValue(); if (!current) return std::unexpected(current.error());
+        if (value <= *current || value <= native->lastSignaled || value == UINT64_MAX) {
+            return fail(ErrorCode::InvalidArgument, "Metal TimelineFence signal value must strictly advance");
+        }
+        native->event.signaledValue = value;
+        native->lastSignaled = value;
+        return {};
+    }
+    Result<void> wait(std::uint64_t value, std::chrono::milliseconds timeout) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        if (timeout.count() < 0 || timeout.count() > 4294967294ll) {
+            return fail(ErrorCode::InvalidArgument, "Metal TimelineFence timeout outside finite range");
+        }
+        const auto deadline = std::chrono::steady_clock::now() + timeout;
+        for (;;) {
+            if (auto ok = owner->poll(); !ok) return ok;
+            if (native->event.signaledValue >= value) break;
+            const auto now = std::chrono::steady_clock::now();
+            if (now >= deadline) return fail(ErrorCode::Timeout, "Metal TimelineFence wait timed out");
+            std::this_thread::sleep_for(std::min(deadline - now, std::chrono::steady_clock::duration(std::chrono::milliseconds(1))));
+        }
+        @autoreleasepool {
+            for (auto& q : owner->queues) {
+                for (auto& p : q.pending) {
+                    bool signaled = false;
+                    for (const auto& [sigEv, sigVal] : p.signaledTimelines) {
+                        if (sigEv == native && sigVal <= value) { signaled = true; break; }
+                    }
+                    if (signaled) {
+                        for (id<MTLCommandBuffer> extra : p.extraBuffers) [extra waitUntilCompleted];
+                        [p.buffer waitUntilCompleted];
+                    }
+                }
+            }
+        }
+        return owner->poll();
+    }
+};
 struct MetalBuffer final : Buffer {
     std::shared_ptr<State> owner;
     std::shared_ptr<Allocation> allocation;
@@ -267,8 +348,11 @@ struct MetalBuffer final : Buffer {
         auto& a = *allocation;
         if (a.desc.memory != Memory::Upload || offset > a.desc.size || data.size() > a.desc.size-offset)
             return fail(ErrorCode::InvalidArgument, "Metal upload write memory or range invalid");
-        if (a.lastUse > owner->completed || a.version == UINT64_MAX)
-            return fail(ErrorCode::InvalidState, "Metal upload busy or version exhausted");
+        for (std::size_t qi = 0; qi < 3; ++qi) {
+            if (a.lastUse[qi] > owner->queues[qi].completed.load(std::memory_order_acquire))
+                return fail(ErrorCode::InvalidState, "Metal upload busy");
+        }
+        if (a.version == UINT64_MAX) return fail(ErrorCode::InvalidState, "Metal upload version exhausted");
         @autoreleasepool {
             if (!data.empty()) {
                 std::memcpy(static_cast<std::byte*>(a.buffer.contents)+offset, data.data(), data.size());
@@ -283,7 +367,10 @@ struct MetalBuffer final : Buffer {
         const auto& a = *allocation;
         if (a.desc.memory != Memory::Readback || offset > a.desc.size || bytes > a.desc.size-offset || bytes > SIZE_MAX)
             return fail(ErrorCode::InvalidArgument, "Metal readback read memory or range invalid");
-        if (a.lastUse > owner->completed) return fail(ErrorCode::InvalidState, "Metal readback busy");
+        for (std::size_t qi = 0; qi < 3; ++qi) {
+            if (a.lastUse[qi] > owner->queues[qi].completed.load(std::memory_order_acquire))
+                return fail(ErrorCode::InvalidState, "Metal readback busy");
+        }
         std::vector<std::byte> result(static_cast<std::size_t>(bytes));
         @autoreleasepool {
             if (bytes) std::memcpy(result.data(), static_cast<const std::byte*>(a.buffer.contents)+offset, result.size());
@@ -323,6 +410,7 @@ MTLPixelFormat pixelFormat(Format f) {
 struct MetalCommands;
 struct NativeCommandPool {
     std::mutex mutex;
+    QueueType qType{QueueType::Graphics};
     std::atomic<std::thread::id> recordingThread{};
     std::uint64_t epoch{1};
     std::uint64_t lastSubmitted{};
@@ -333,6 +421,7 @@ struct NativeCommandPool {
 struct MetalCommands final : CommandList {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeCommandPool> pool;
+    QueueType qType{QueueType::Graphics};
     std::shared_ptr<int> token;
     std::shared_ptr<NativeRecording> native;
     bool open{}, ended{};
@@ -350,8 +439,9 @@ struct MetalCommands final : CommandList {
     BufferView indices;
     MTLViewport viewport{};
     MTLScissorRect scissor{};
-    explicit MetalCommands(std::shared_ptr<State> state, std::shared_ptr<NativeCommandPool> commandPool = {})
-        : owner(std::move(state)), pool(std::move(commandPool)) {}
+    explicit MetalCommands(std::shared_ptr<State> state, std::shared_ptr<NativeCommandPool> commandPool = {}, QueueType type = QueueType::Graphics)
+        : owner(std::move(state)), pool(std::move(commandPool)), qType(pool ? pool->qType : type) {}
+    QueueType queueType() const override { return qType; }
     ~MetalCommands() override {
         if (!pool) return;
         std::scoped_lock lock(pool->mutex);
@@ -376,6 +466,7 @@ struct MetalCommands final : CommandList {
         indices = {};
     }
     Result<void> begin() override {
+        auto& qSlot = owner->queues[queueIndex(qType)];
         if (pool) {
             std::scoped_lock lock(pool->mutex);
             if (auto ok = owner->checkAliveForWorker(); !ok) return ok;
@@ -385,7 +476,7 @@ struct MetalCommands final : CommandList {
             if (open) return fail(ErrorCode::InvalidState, "Metal command list is already recording");
             if (pool->openCount > 0) return fail(ErrorCode::InvalidState, "Another command list from this CommandPool is currently recording");
             if (recordedEpoch == pool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list requires CommandPool::reset() before re-recording");
-            if (submitted > owner->completed.load(std::memory_order_acquire)) return fail(ErrorCode::InvalidState, "Metal command list is still in flight");
+            if (submitted > qSlot.completed.load(std::memory_order_acquire)) return fail(ErrorCode::InvalidState, "Metal command list is still in flight");
             auto next = std::make_shared<NativeRecording>();
             {
                 std::scoped_lock recLock(owner->recordingsMutex);
@@ -399,8 +490,8 @@ struct MetalCommands final : CommandList {
             ++pool->openCount;
             return {};
         }
-        if (auto ok = owner->poll(); !ok) return ok;
-        if (open || submitted > owner->completed.load(std::memory_order_acquire)) return fail(ErrorCode::InvalidState, "Metal command list is open or in flight");
+        if (auto ok = owner->pollQueue(qType); !ok) return ok;
+        if (open || submitted > qSlot.completed.load(std::memory_order_acquire)) return fail(ErrorCode::InvalidState, "Metal command list is open or in flight");
         auto next = std::make_shared<NativeRecording>();
         {
             std::scoped_lock recLock(owner->recordingsMutex);
@@ -440,7 +531,7 @@ struct MetalCommands final : CommandList {
                     ((op.bytes & 3) || (op.sourceOffset & 3) || (op.destinationOffset & 3));
             }))
                 if (auto ok = owner->prepareTail(); !ok) return ok;
-            id<MTLCommandBuffer> next = [owner->queue commandBuffer];
+            id<MTLCommandBuffer> next = [owner->queues[queueIndex(qType)].queue commandBuffer];
             if (!next) return fail(ErrorCode::OutOfMemory, "Metal command buffer creation failed");
             for (const auto& op : operations) {
                 if (op.kind == OperationKind::Compute) {
@@ -673,6 +764,10 @@ struct MetalCommands final : CommandList {
     }
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy && target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidArgument, "Metal Copy command list only supports Common, CopySource, and CopyDestination buffer states");
+        if (qType == QueueType::Compute && (vertexState(target) || indexState(target)))
+            return fail(ErrorCode::InvalidArgument, "Metal Compute command list does not support vertex/index buffer states");
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
             !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess)
@@ -682,6 +777,12 @@ struct MetalCommands final : CommandList {
         if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Metal host buffer state is fixed");
+        const auto before = shadow(*a);
+        if (qType == QueueType::Copy && (*a)->desc.memory == Memory::Device &&
+            before != ResourceState::Common && before != ResourceState::CopySource && before != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidState, "Metal Copy command list cannot transition buffer from a non-copy state");
+        if (qType == QueueType::Compute && (vertexState(before) || indexState(before)))
+            return fail(ErrorCode::InvalidState, "Metal Compute command list cannot transition buffer from a vertex/index state");
         uses.reserve(uses.size()+1);
         auto& u = retain(*a);
         if (u.shadow != target) u.mutated = true;
@@ -691,6 +792,10 @@ struct MetalCommands final : CommandList {
     }
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy && target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidArgument, "Metal Copy command list only supports Common, CopySource, and CopyDestination texture states");
+        if (qType == QueueType::Compute && (target == ResourceState::RenderTarget || target == ResourceState::DepthWrite || target == ResourceState::DepthRead || target == ResourceState::Present || target == ResourceState::ResolveSource || target == ResourceState::ResolveDestination))
+            return fail(ErrorCode::InvalidArgument, "Metal Compute command list does not support graphics/present/resolve texture states");
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         const bool multisampled = (*a)->textureDesc.sampleCount > 1u;
         if ((*a)->backbuffer) {
@@ -715,6 +820,14 @@ struct MetalCommands final : CommandList {
         if ((target == ResourceState::DepthWrite || target == ResourceState::DepthRead) && !(*a)->textureDesc.depthStencil)
             return fail(ErrorCode::InvalidArgument, "Metal depth attachment usage required");
         if (target == ResourceState::ShaderRead && (*a)->textureDesc.depthStencil) return fail(ErrorCode::Unsupported,"Metal depth sampling unsupported");
+        const auto before = shadow(*a);
+        if (qType == QueueType::Copy &&
+            before != ResourceState::Common && before != ResourceState::CopySource && before != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidState, "Metal Copy command list cannot transition texture from a non-copy state");
+        if (qType == QueueType::Compute &&
+            (before == ResourceState::RenderTarget || before == ResourceState::DepthWrite || before == ResourceState::DepthRead ||
+             before == ResourceState::Present || before == ResourceState::ResolveSource || before == ResourceState::ResolveDestination))
+            return fail(ErrorCode::InvalidState, "Metal Compute command list cannot transition texture from a graphics/present/resolve state");
         uses.reserve(uses.size()+1);
         auto& u = retain(*a);
         if (u.shadow != target) u.mutated = true;
@@ -819,6 +932,7 @@ struct MetalCommands final : CommandList {
     }
     Result<void> resolveTexture(const TexturePtr& source, const TexturePtr& destination) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "Metal resolveTexture requires a Graphics command list");
         auto src = allocation(source); if (!src) return std::unexpected(src.error());
         auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
         if (*src == *dst) return fail(ErrorCode::InvalidArgument, "Metal resolve source and destination must be distinct textures");
@@ -846,9 +960,14 @@ struct MetalCommands final : CommandList {
         operations.push_back(std::move(op));
         return {};
     }
-    Result<void> beginRenderPass(const TexturePtr& value, Color clear) override { return beginRenderPass(RenderPassDesc{{{value,LoadOp::Clear,clear}},{}}); }
+    Result<void> beginRenderPass(const TexturePtr& value, Color clear) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "Metal beginRenderPass requires a Graphics command list");
+        return beginRenderPass(RenderPassDesc{{{value,LoadOp::Clear,clear}},{}});
+    }
     Result<void> beginRenderPass(const RenderPassDesc& desc) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "Metal beginRenderPass requires a Graphics command list");
         if (auto ok = validateRenderPass(desc); !ok) return ok;
         Operation op; op.kind = OperationKind::Pass;
         for (const auto& color : desc.colors) {
@@ -899,6 +1018,7 @@ struct MetalCommands final : CommandList {
     }
     Result<void> setPipeline(const PipelinePtr& value) override {
         if(auto ok=ready();!ok)return ok;
+        if(qType!=QueueType::Graphics)return fail(ErrorCode::InvalidArgument,"Metal setPipeline requires a Graphics command list");
         if(!inPass)return fail(ErrorCode::InvalidState,"Metal pipeline requires active pass");
         auto p=std::dynamic_pointer_cast<MetalPipeline>(value);if(!p)return fail(value?ErrorCode::WrongDevice:ErrorCode::InvalidArgument,"Expected Metal pipeline");
         if(p->owner!=owner)return fail(ErrorCode::WrongDevice,"Metal pipeline belongs to another generation");
@@ -956,7 +1076,9 @@ struct MetalCommands final : CommandList {
         uses.reserve(uses.size()+next->size());for(const auto& view:*next)retain(view.allocation);bindings=std::move(next);return {};
     }
     Result<void> bindVertexBuffer(std::uint32_t slot,const BufferPtr& value,std::uint32_t stride,std::uint64_t offset,std::uint64_t size) override {
-        if(auto ok=ready();!ok)return ok;auto a=allocation(value);if(!a)return std::unexpected(a.error());
+        if(auto ok=ready();!ok)return ok;
+        if(qType!=QueueType::Graphics)return fail(ErrorCode::InvalidArgument,"Metal bindVertexBuffer requires a Graphics command list");
+        auto a=allocation(value);if(!a)return std::unexpected(a.error());
         if(slot>=15)return fail(ErrorCode::Unsupported,"Metal vertex stream slots are 0..14");
         if(!stride||stride>2048||(*a)->desc.memory==Memory::Readback||offset>(*a)->desc.size||size>(*a)->desc.size-offset)return fail(ErrorCode::InvalidArgument,"Invalid Metal vertex view");
         const auto bytes=size?size:(*a)->desc.size-offset;if(!bytes||bytes>UINT32_MAX)return fail(ErrorCode::InvalidArgument,"Invalid Metal vertex view size");
@@ -964,7 +1086,9 @@ struct MetalCommands final : CommandList {
         uses.reserve(uses.size()+1);retain(*a);vertices[slot]={*a,offset,bytes,stride};return {};
     }
     Result<void> bindIndexBuffer(const BufferPtr& value,IndexFormat format,std::uint64_t offset,std::uint64_t size) override {
-        if(auto ok=ready();!ok)return ok;auto a=allocation(value);if(!a)return std::unexpected(a.error());
+        if(auto ok=ready();!ok)return ok;
+        if(qType!=QueueType::Graphics)return fail(ErrorCode::InvalidArgument,"Metal bindIndexBuffer requires a Graphics command list");
+        auto a=allocation(value);if(!a)return std::unexpected(a.error());
         if(format!=IndexFormat::UInt16&&format!=IndexFormat::UInt32)return fail(ErrorCode::InvalidArgument,"Invalid Metal index format");
         const auto element=format==IndexFormat::UInt16?2u:4u;
         if((*a)->desc.memory==Memory::Readback||offset%element||offset>(*a)->desc.size||size>(*a)->desc.size-offset)return fail(ErrorCode::InvalidArgument,"Invalid Metal index view");
@@ -987,7 +1111,9 @@ struct MetalCommands final : CommandList {
         scissor={x,y,width,height};return {};
     }
     Result<void> recordDraw(std::uint32_t count,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance,bool indexed) {
-        if(auto ok=ready();!ok)return ok;if(!inPass||!selected)return fail(ErrorCode::InvalidState,"Metal draw requires pass and pipeline");
+        if(auto ok=ready();!ok)return ok;
+        if(qType!=QueueType::Graphics)return fail(ErrorCode::InvalidArgument,"Metal draw requires a Graphics command list");
+        if(!inPass||!selected)return fail(ErrorCode::InvalidState,"Metal draw requires pass and pipeline");
         if(!count||!instances||instances>UINT32_MAX-firstInstance||(!indexed&&count>UINT32_MAX-first))return fail(ErrorCode::InvalidArgument,"Invalid Metal draw range");
         if(indexed&&(!indices.allocation||!indexState(shadow(indices.allocation))))return fail(ErrorCode::InvalidState,"Metal index binding missing/stale");
         if(indexed&&std::uint64_t(first)+count>indices.bytes/indices.stride)return fail(ErrorCode::InvalidArgument,"Metal index range exceeds view");
@@ -1008,6 +1134,7 @@ struct MetalCommands final : CommandList {
     Result<void> drawIndexed(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,base,firstInstance,true); }
     Result<void> setComputePipeline(const PipelinePtr& value) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Metal compute operations are not supported on a Copy command list");
         auto p = std::dynamic_pointer_cast<MetalPipeline>(value);
         if (!p) return fail(value ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected Metal compute pipeline");
         if (p->owner != owner) return fail(ErrorCode::WrongDevice, "Metal compute pipeline belongs to another generation");
@@ -1018,6 +1145,7 @@ struct MetalCommands final : CommandList {
     }
     Result<void> bindComputeResources(const ResourceBindings& data) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Metal compute operations are not supported on a Copy command list");
         if (!selectedCompute) return fail(ErrorCode::InvalidState, "Metal compute bindings require a compute pipeline");
         std::size_t count = 0;
         for (const auto& e : selectedCompute->bindings.entries) count += e.count;
@@ -1097,6 +1225,7 @@ struct MetalCommands final : CommandList {
     }
     Result<void> dispatch(std::uint32_t groupCountX, std::uint32_t groupCountY, std::uint32_t groupCountZ) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Metal compute operations are not supported on a Copy command list");
         if (!selectedCompute) return fail(ErrorCode::InvalidState, "Metal dispatch requires an active compute pipeline");
         if (!groupCountX || !groupCountY || !groupCountZ) return fail(ErrorCode::InvalidArgument, "Metal dispatch group counts must be positive");
         if (!selectedCompute->bindings.entries.empty() && !computeBindings) return fail(ErrorCode::InvalidState, "Metal dispatch requires complete compute bindings");
@@ -1114,6 +1243,7 @@ struct MetalCommands final : CommandList {
     }
     Result<void> uavBarrier(const BufferPtr& value) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Metal uavBarrier is not supported on a Copy command list");
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         if (!(*a)->desc.storage) return fail(ErrorCode::InvalidArgument, "Metal uavBarrier requires a storage buffer");
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal uavBarrier requires UnorderedAccess state");
@@ -1123,6 +1253,7 @@ struct MetalCommands final : CommandList {
     }
     Result<void> uavBarrier(const TexturePtr& value) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Metal uavBarrier is not supported on a Copy command list");
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         if (!(*a)->textureDesc.storage) return fail(ErrorCode::InvalidArgument, "Metal uavBarrier requires a storage texture");
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal uavBarrier requires UnorderedAccess state");
@@ -1152,13 +1283,14 @@ struct MetalCommandPool final : CommandPool {
             pool->ownerAlive = false;
         }
     }
+    QueueType queueType() const override { return pool->qType; }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
-        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (auto ok = owner->pollQueue(pool->qType); !ok) return std::unexpected(ok.error());
         std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return fail(ErrorCode::InvalidState, "Cannot allocate from a CommandPool while a command list from it is recording");
         }
-        auto value = std::make_unique<MetalCommands>(owner, pool);
+        auto value = std::make_unique<MetalCommands>(owner, pool, pool->qType);
         value->token = std::make_shared<int>();
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->objects.push_back(value->token);
@@ -1166,12 +1298,12 @@ struct MetalCommandPool final : CommandPool {
         return std::unique_ptr<CommandList>(std::move(value));
     }
     Result<void> reset() override {
-        if (auto ok = owner->poll(); !ok) return ok;
+        if (auto ok = owner->pollQueue(pool->qType); !ok) return ok;
         std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return fail(ErrorCode::InvalidState, "Command pool cannot reset while a command list is recording");
         }
-        if (pool->lastSubmitted > owner->completed.load(std::memory_order_acquire)) {
+        if (pool->lastSubmitted > owner->queues[queueIndex(pool->qType)].completed.load(std::memory_order_acquire)) {
             return fail(ErrorCode::InvalidState, "Command pool has in-flight submissions");
         }
         for (MetalCommands* cmd : pool->liveLists) {
@@ -1189,7 +1321,7 @@ struct MetalCommandPool final : CommandPool {
         if (pool->openCount > 0) {
             return fail(ErrorCode::InvalidState, "Command pool cannot rebind recording thread while a command list is recording");
         }
-        if (pool->lastSubmitted > owner->completed.load(std::memory_order_acquire)) {
+        if (pool->lastSubmitted > owner->queues[queueIndex(pool->qType)].completed.load(std::memory_order_acquire)) {
             return fail(ErrorCode::InvalidState, "Command pool cannot rebind recording thread while submissions are in flight");
         }
         pool->recordingThread.store(std::this_thread::get_id(), std::memory_order_release);
@@ -1198,24 +1330,35 @@ struct MetalCommandPool final : CommandPool {
 };
 struct MetalQueue final : CommandQueue {
     std::shared_ptr<State> owner;
-    explicit MetalQueue(std::shared_ptr<State> state) : owner(std::move(state)) {}
+    QueueType qType{QueueType::Graphics};
+    explicit MetalQueue(std::shared_ptr<State> state, QueueType type = QueueType::Graphics)
+        : owner(std::move(state)), qType(type) {}
+    QueueType type() const override { return qType; }
     Result<Fence> submit(CommandList& value) override {
         CommandList* single = &value;
         return submit(std::span<CommandList* const>{&single, 1});
     }
     Result<Fence> submit(std::span<CommandList* const> lists) override {
-        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        if (lists.empty()) return fail(ErrorCode::InvalidArgument, "Metal batch submit requires at least one command list");
-        if (owner->last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Metal fence sequence exhausted");
+        SubmitDesc desc{};
+        desc.commandLists = lists;
+        return submit(desc);
+    }
+    Result<Fence> submit(const SubmitDesc& desc) override {
+        if (auto ok = owner->pollQueue(qType); !ok) return std::unexpected(ok.error());
+        if (desc.commandLists.empty()) return fail(ErrorCode::InvalidArgument, "Metal batch submit requires at least one command list");
+        const std::size_t qi = queueIndex(qType);
+        auto& qSlot = owner->queues[qi];
+        if (qSlot.last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Metal fence sequence exhausted");
         std::vector<MetalCommands*> validated;
-        validated.reserve(lists.size());
+        validated.reserve(desc.commandLists.size());
         std::unordered_set<MetalCommands*> seenLists;
         std::unordered_set<Allocation*> seenRead;
         std::unordered_set<Allocation*> seenMutated;
-        for (CommandList* item : lists) {
+        for (CommandList* item : desc.commandLists) {
             if (!item) return fail(ErrorCode::InvalidArgument, "Null command list in Metal batch submit");
             auto* commands = dynamic_cast<MetalCommands*>(item);
             if (!commands || commands->owner != owner) return fail(ErrorCode::WrongDevice, "Metal command list belongs to another generation");
+            if (commands->qType != qType) return fail(ErrorCode::InvalidArgument, "Metal command list queue type does not match target queue");
             if (!seenLists.insert(commands).second) return fail(ErrorCode::InvalidArgument, "Duplicate command list in Metal batch submit");
             if (commands->pool) {
                 std::scoped_lock lock(commands->pool->mutex);
@@ -1241,72 +1384,111 @@ struct MetalQueue final : CommandQueue {
             }
             validated.push_back(commands);
         }
+        std::vector<std::pair<std::shared_ptr<NativeTimelineEvent>, std::uint64_t>> waitEvents;
+        std::vector<std::shared_ptr<NativeTimelineEvent>> retainedEvents;
+        for (const auto& w : desc.waits) {
+            if (!w.fence) return fail(ErrorCode::InvalidArgument, "Null timeline fence in Metal submit waits");
+            auto mtlFence = std::dynamic_pointer_cast<MetalTimelineFence>(w.fence);
+            if (!mtlFence || mtlFence->owner != owner) return fail(ErrorCode::WrongDevice, "Metal timeline fence belongs to another generation");
+            waitEvents.emplace_back(mtlFence->native, w.value);
+            retainedEvents.push_back(mtlFence->native);
+        }
+        std::vector<std::pair<std::shared_ptr<NativeTimelineEvent>, std::uint64_t>> signalEvents;
+        std::unordered_map<NativeTimelineEvent*, std::uint64_t> pendingSignalMax;
+        for (const auto& s : desc.signals) {
+            if (!s.fence) return fail(ErrorCode::InvalidArgument, "Null timeline fence in Metal submit signals");
+            auto mtlFence = std::dynamic_pointer_cast<MetalTimelineFence>(s.fence);
+            if (!mtlFence || mtlFence->owner != owner) return fail(ErrorCode::WrongDevice, "Metal timeline fence belongs to another generation");
+            const auto it = pendingSignalMax.find(mtlFence->native.get());
+            const std::uint64_t prev = it != pendingSignalMax.end()
+                ? it->second
+                : std::max(mtlFence->native->lastSignaled, mtlFence->native->event.signaledValue);
+            if (s.value <= prev || s.value == UINT64_MAX) {
+                return fail(ErrorCode::InvalidArgument, "Metal TimelineFence signal value must strictly advance");
+            }
+            pendingSignalMax[mtlFence->native.get()] = s.value;
+            signalEvents.emplace_back(mtlFence->native, s.value);
+            retainedEvents.push_back(mtlFence->native);
+        }
         // Allocate the retention node before commit; retain even if the caller destroys its list.
         std::vector<std::shared_ptr<Allocation>> allocations;
         std::vector<std::shared_ptr<NativePipeline>> pipelines;
         std::vector<std::shared_ptr<NativeTextureView>> textureViews;
         std::vector<id<MTLCommandBuffer>> commandBuffers;
-        commandBuffers.reserve(validated.size());
-        for (MetalCommands* commands : validated) {
-            for (auto& use : commands->uses) allocations.push_back(use.allocation);
-            for(const auto& op:commands->operations){
-                if(op.kind==OperationKind::Compute){
-                    if(op.compute.pipeline&&std::find(pipelines.begin(),pipelines.end(),op.compute.pipeline)==pipelines.end())pipelines.push_back(op.compute.pipeline);
-                    if(op.compute.bindings)for(const auto& rv:*op.compute.bindings)if(rv.textureView&&std::find(textureViews.begin(),textureViews.end(),rv.textureView)==textureViews.end())textureViews.push_back(rv.textureView);
-                    continue;
-                }
-                for(const auto& a:op.attachments)if(a.textureView&&std::find(textureViews.begin(),textureViews.end(),a.textureView)==textureViews.end())textureViews.push_back(a.textureView);
-                for(const auto& draw:op.draws){
-                    if(std::find(pipelines.begin(),pipelines.end(),draw.pipeline)==pipelines.end())pipelines.push_back(draw.pipeline);
-                    if(draw.bindings)for(const auto& rv:*draw.bindings)if(rv.textureView&&std::find(textureViews.begin(),textureViews.end(),rv.textureView)==textureViews.end())textureViews.push_back(rv.textureView);
-                }
-            }
-            const bool drawable = commands->usesDrawable();
-            if (drawable) {
-                if (auto ok = commands->encode(); !ok) return std::unexpected(ok.error());
-            }
-            commandBuffers.push_back(commands->native->buffer);
-            if (drawable) commands->native->buffer = nil;
-        }
-        id<MTLCommandBuffer> finalBuffer = commandBuffers.back();
-        std::vector<id<MTLCommandBuffer>> extras;
-        if (commandBuffers.size() > 1) {
-            extras.assign(commandBuffers.begin(), commandBuffers.end() - 1);
-        }
-        owner->pending.push_back({owner->last + 1, finalBuffer, std::move(allocations), std::move(pipelines), nil, std::move(textureViews), std::move(extras)});
+        commandBuffers.reserve(validated.size() + (waitEvents.empty() ? 0 : 1));
         @autoreleasepool {
+            if (!waitEvents.empty()) {
+                id<MTLCommandBuffer> waitBuf = [qSlot.queue commandBuffer];
+                if (!waitBuf) return fail(ErrorCode::OutOfMemory, "Metal timeline wait command buffer creation failed");
+                for (const auto& [ev, val] : waitEvents) {
+                    [waitBuf encodeWaitForEvent:ev->event value:val];
+                }
+                commandBuffers.push_back(waitBuf);
+            }
+            for (MetalCommands* commands : validated) {
+                for (auto& use : commands->uses) allocations.push_back(use.allocation);
+                for(const auto& op:commands->operations){
+                    if(op.kind==OperationKind::Compute){
+                        if(op.compute.pipeline&&std::find(pipelines.begin(),pipelines.end(),op.compute.pipeline)==pipelines.end())pipelines.push_back(op.compute.pipeline);
+                        if(op.compute.bindings)for(const auto& rv:*op.compute.bindings)if(rv.textureView&&std::find(textureViews.begin(),textureViews.end(),rv.textureView)==textureViews.end())textureViews.push_back(rv.textureView);
+                        continue;
+                    }
+                    for(const auto& a:op.attachments)if(a.textureView&&std::find(textureViews.begin(),textureViews.end(),a.textureView)==textureViews.end())textureViews.push_back(a.textureView);
+                    for(const auto& draw:op.draws){
+                        if(std::find(pipelines.begin(),pipelines.end(),draw.pipeline)==pipelines.end())pipelines.push_back(draw.pipeline);
+                        if(draw.bindings)for(const auto& rv:*draw.bindings)if(rv.textureView&&std::find(textureViews.begin(),textureViews.end(),rv.textureView)==textureViews.end())textureViews.push_back(rv.textureView);
+                    }
+                }
+                const bool drawable = commands->usesDrawable();
+                if (drawable) {
+                    if (auto ok = commands->encode(); !ok) return std::unexpected(ok.error());
+                }
+                commandBuffers.push_back(commands->native->buffer);
+                if (drawable) commands->native->buffer = nil;
+            }
+            id<MTLCommandBuffer> finalBuffer = commandBuffers.back();
+            for (const auto& [ev, val] : signalEvents) {
+                [finalBuffer encodeSignalEvent:ev->event value:val];
+            }
+            std::vector<id<MTLCommandBuffer>> extras;
+            if (commandBuffers.size() > 1) {
+                extras.assign(commandBuffers.begin(), commandBuffers.end() - 1);
+            }
+            qSlot.pending.push_back({qSlot.last + 1, finalBuffer, std::move(allocations), std::move(pipelines), nil, std::move(textureViews), std::move(extras), std::move(retainedEvents), signalEvents});
             for (id<MTLCommandBuffer> cmdBuf : commandBuffers) {
                 [cmdBuf commit];
             }
         }
-        ++owner->last;
+        ++qSlot.last;
+        for (const auto& [ev, val] : signalEvents) ev->lastSignaled = val;
         std::unordered_set<Allocation*> versionBumped;
         for (MetalCommands* commands : validated) {
-            commands->submitted = owner->last;
+            commands->submitted = qSlot.last;
             if (commands->pool) {
                 std::scoped_lock lock(commands->pool->mutex);
-                commands->pool->lastSubmitted = std::max(commands->pool->lastSubmitted, owner->last);
+                commands->pool->lastSubmitted = std::max(commands->pool->lastSubmitted, qSlot.last);
             }
             for (auto& use : commands->uses) {
                 if (use.mutated) {
                     use.allocation->state = use.shadow;
                     use.allocation->initialized = use.initialized;
                 }
-                use.allocation->lastUse = owner->last;
+                use.allocation->lastUse[qi] = qSlot.last;
                 if (versionBumped.insert(use.allocation.get()).second) ++use.allocation->version;
             }
         }
-        return Fence{owner->last, owner->generation};
+        return Fence{qSlot.last, qSlot.id};
     }
     Result<void> wait(Fence fence, std::chrono::milliseconds timeout) override {
         if (auto ok = owner->check(); !ok) return ok;
         if (timeout.count() < 0 || timeout.count() > 4294967294ll) return fail(ErrorCode::InvalidArgument, "Metal fence timeout outside finite range");
-        if (fence.device != owner->generation) return fail(ErrorCode::WrongDevice, "Metal fence belongs to another generation");
-        if (!fence.value || fence.value > owner->last) return fail(ErrorCode::InvalidArgument, "Metal fence value was not submitted");
+        auto& qSlot = owner->queues[queueIndex(qType)];
+        if (fence.device != qSlot.id) return fail(ErrorCode::WrongDevice, "Metal fence belongs to another generation or queue");
+        if (!fence.value || fence.value > qSlot.last) return fail(ErrorCode::InvalidArgument, "Metal fence value was not submitted");
         const auto deadline = std::chrono::steady_clock::now() + timeout;
         for (;;) {
-            if (auto ok = owner->poll(); !ok) return ok;
-            if (owner->completed >= fence.value) return {};
+            if (auto ok = owner->pollQueue(qType); !ok) return ok;
+            if (qSlot.completed.load(std::memory_order_acquire) >= fence.value) return {};
             const auto now = std::chrono::steady_clock::now();
             if (now >= deadline) return fail(ErrorCode::Timeout, "Metal fence wait timed out");
             std::this_thread::sleep_for(std::min(deadline - now, std::chrono::steady_clock::duration(std::chrono::milliseconds(1))));
@@ -1314,22 +1496,28 @@ struct MetalQueue final : CommandQueue {
     }
     Result<void> waitIdle() override {
         if (auto ok = owner->check(); !ok) return ok;
+        auto& qSlot = owner->queues[queueIndex(qType)];
         @autoreleasepool {
-            if (!owner->pending.empty()) [owner->pending.back().buffer waitUntilCompleted];
+            if (!qSlot.pending.empty()) [qSlot.pending.back().buffer waitUntilCompleted];
         }
-        return owner->poll();
+        return owner->pollQueue(qType);
     }
     Result<std::uint64_t> completedValue() override {
-        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        return owner->completed;
+        if (auto ok = owner->pollQueue(qType); !ok) return std::unexpected(ok.error());
+        return owner->queues[queueIndex(qType)].completed.load(std::memory_order_acquire);
     }
 };
 #include "MetalPresentation.hpp"
 struct MetalDevice final : Device {
     std::shared_ptr<State> owner;
     DeviceCaps capabilities;
-    MetalQueue commands;
-    MetalDevice(std::shared_ptr<State> state, DeviceCaps caps) : owner(std::move(state)), capabilities(std::move(caps)), commands(owner) {}
+    std::array<MetalQueue, 3> queues;
+    MetalDevice(std::shared_ptr<State> state, DeviceCaps caps)
+        : owner(std::move(state)),
+          capabilities(std::move(caps)),
+          queues{MetalQueue(owner, QueueType::Graphics),
+                 MetalQueue(owner, QueueType::Compute),
+                 MetalQueue(owner, QueueType::Copy)} {}
     ~MetalDevice() override { owner->retire(); }
     const DeviceCaps& caps() const override { return capabilities; }
     Result<FormatSupport> queryFormatSupport(Format format) override {
@@ -1363,12 +1551,14 @@ struct MetalDevice final : Device {
     Result<ResourceStatistics> resourceStatistics() override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         ResourceStatistics result;
-        result.pendingSubmissions = owner->pending.size();
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
         result.trackedObjects = owner->objects.size();
         for (const auto& weak : owner->allocations) if (auto a = weak.lock(); a && (a->buffer || a->texture)) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
-        for (const auto& p : owner->pending) result.pendingObjectReferences += p.allocations.size();
+        for (const auto& q : owner->queues) {
+            result.pendingSubmissions += q.pending.size();
+            for (const auto& p : q.pending) result.pendingObjectReferences += p.allocations.size() + p.timelineEvents.size();
+        }
         return result;
     }
     Result<MemoryBudget> queryMemoryBudget(MemorySegment) override { return owner->unsupported(); }
@@ -1540,19 +1730,49 @@ struct MetalDevice final : Device {
         }
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
+        return createCommandList(QueueType::Graphics);
+    }
+    Result<std::unique_ptr<CommandList>> createCommandList(QueueType type) override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        return std::make_unique<MetalCommands>(owner);
+        if (!validQueueType(type)) return fail(ErrorCode::InvalidArgument, "Unknown queue type");
+        return std::make_unique<MetalCommands>(owner, std::shared_ptr<NativeCommandPool>{}, type);
     }
     Result<std::unique_ptr<CommandPool>> createCommandPool() override {
+        return createCommandPool(QueueType::Graphics);
+    }
+    Result<std::unique_ptr<CommandPool>> createCommandPool(QueueType type) override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (!validQueueType(type)) return fail(ErrorCode::InvalidArgument, "Unknown queue type");
         auto value = std::make_unique<MetalCommandPool>();
         value->owner = owner;
         value->pool = std::make_shared<NativeCommandPool>();
+        value->pool->qType = type;
         value->pool->recordingThread.store(owner->thread, std::memory_order_release);
         value->token = std::make_shared<int>();
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->objects.push_back(value->token);
         return std::unique_ptr<CommandPool>(std::move(value));
+    }
+    Result<TimelineFencePtr> createTimelineFence(std::uint64_t initialValue) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (initialValue >= UINT64_MAX - 1) return fail(ErrorCode::InvalidArgument, "Invalid initial timeline fence value");
+        @autoreleasepool {
+            id<MTLSharedEvent> event = [owner->device newSharedEvent];
+            if (!event) return fail(ErrorCode::OutOfMemory, "Metal shared event creation failed");
+            event.signaledValue = initialValue;
+            auto native = std::make_shared<NativeTimelineEvent>();
+            native->event = event;
+            native->lastSignaled = initialValue;
+            auto value = std::make_shared<MetalTimelineFence>();
+            value->owner = owner;
+            value->native = native;
+            value->token = std::make_shared<int>();
+            std::erase_if(owner->timelineEvents, [](auto& w) { return w.expired(); });
+            std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+            owner->timelineEvents.push_back(native);
+            owner->objects.push_back(value->token);
+            return TimelineFencePtr(std::move(value));
+        }
     }
     Result<void> checkSurfaceSupport(Surface surface) override {
         auto layer = checkedLayer(*owner, surface);
@@ -1562,7 +1782,12 @@ struct MetalDevice final : Device {
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         return makeMetalSwapChain(owner, surface, desc);
     }
-    CommandQueue& queue() override { return commands; }
+    CommandQueue& queue() override { return queues[0]; }
+    Result<CommandQueue*> queue(QueueType type) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!validQueueType(type)) return fail(ErrorCode::InvalidArgument, "Unknown queue type");
+        return &queues[queueIndex(type)];
+    }
     Result<std::uint64_t> validationErrorCount() override { return owner->unsupported(); }
 };
 }
@@ -1599,18 +1824,25 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         if (!selected) return fail(ErrorCode::Unsupported, "Requested Metal device is unavailable; no fallback");
         const char* name = selected.name.UTF8String;
         if (!selected.registryID || !name || !*name) return fail(ErrorCode::BackendFailure, "Selected Metal device has no identity or name");
-        id<MTLCommandQueue> queue = [selected newCommandQueue];
-        if (!queue) return fail(ErrorCode::OutOfMemory, "Metal command queue creation failed");
         auto state = std::make_shared<State>();
         const auto generation = detail::allocateDeviceGeneration();
         if (!generation) return fail(ErrorCode::InvalidState, "Device generation sequence exhausted");
-        state->device = selected; state->queue = queue; state->generation = generation;
+        state->device = selected; state->generation = generation;
+        for (std::size_t i = 0; i < 3; ++i) {
+            state->queues[i].queue = [selected newCommandQueue];
+            if (!state->queues[i].queue) return fail(ErrorCode::OutOfMemory, "Metal command queue creation failed");
+            state->queues[i].id = (i == 0) ? generation : detail::allocateDeviceGeneration();
+            if (!state->queues[i].id) return fail(ErrorCode::InvalidState, "Metal queue generation sequence exhausted");
+        }
         DeviceCaps caps;
         caps.backend = Backend::Metal; caps.adapterName = name; caps.adapterId = {Backend::Metal, selected.registryID};
         caps.depthAttachment = true; caps.multipleRenderTargets = true;
         caps.compute = true;
         caps.swapChain = true;
         caps.vertexInput = true; caps.indexedDrawing = true; caps.resourceBinding = true; caps.bindingLayouts = true;
+        caps.dedicatedComputeQueue = true;
+        caps.dedicatedCopyQueue = true;
+        caps.timelineFences = true;
         caps.maxTextureDimension2D = 16384u;
         caps.maxColorAttachments = 8u;
         caps.constantBufferAlignment = 256u;

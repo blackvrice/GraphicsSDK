@@ -3602,15 +3602,42 @@
       "id": "P9-CMD-03",
       "phase": 9,
       "group": "P9-CMD",
-      "title": "Graphics/Compute/Copy 다중 큐·Timeline Fence·Async 전송",
-      "status": "todo",
+      "title": "Graphics/Compute/Copy 다중 큐·Timeline Fence·Async 전송 (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P9-CMD-02"
       ],
-      "work": "Graphics/Compute/Copy 큐 분리, 큐 간 Timeline Fence 동기화, 비동기 Upload/Readback 및 Frames-in-Flight 스케줄링을 구현한다.",
+      "work": "QueueType(Graphics/Compute/Copy), DeviceCaps::{dedicatedComputeQueue,dedicatedCopyQueue,timelineFences}, Device::{queue(QueueType),createCommandList(QueueType),createCommandPool(QueueType),createTimelineFence}, TimelineFence(completedValue/signal/wait) 및 CommandQueue::submit(const SubmitDesc&)를 D3D12(3개 전용 큐·ID3D12Fence·Copy 암묵적 승격/감쇠), Vulkan(다중 패밀리 CONCURRENT/단일 패밀리 공유 폴백·VK_KHR_timeline_semaphore·Copy stage/access 가드), Metal(3개 MTLCommandQueue·MTLSharedEvent)에 구현했다. Windows D3D12(GTX 1660 SUPER·Intel UHD 770·Debug+GBV·WARP 손실/복구)·Vulkan(GTX 1660 SUPER 3패밀리 CONCURRENT·Intel UHD 770 공유 폴백·고정 VVL 1.3.290 core+sync)·설치 find_package 소비자 전체 어댑터 및 CTest 68종에서 4단계 GPU-only Copy->Compute->Graphics->Copy 파이프라인, 2-프레임 Async Overlap(8프레임), 거부 47~52건, 자원 0 회수, validation 오류 0을 확인했고, GTX 1660 SUPER 48 MiB async overlap 실측에서 D3D12 1.326x(10.925→8.237ms)·Vulkan 1.233x(9.400→7.624ms) 가속을 달성했다.",
       "done_when": "Cross-queue 동기화 전체 바이트/이미지 검증, sync validation 오류 0, 비동기 전송 실측.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/CommandList.hpp",
+        "include/graphics/CommandQueue.hpp",
+        "include/graphics/Device.hpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "tests/MultiQueueTests.cpp",
+        "docs/PHASE9_MULTI_QUEUE_REPORT.md"
+      ]
+    },
+    {
+      "id": "P9-CMD-08",
+      "phase": 9,
+      "group": "P9-CMD",
+      "title": "다중 큐·Timeline Fence·Async 전송 macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P9-CMD-03"
+      ],
+      "work": "Metal.cpp(3개 MTLCommandQueue·MTLSharedEvent)와 Vulkan.cpp(다중 패밀리/공유 폴백·VK_KHR_timeline_semaphore)의 다중 큐·Timeline Fence·Async 전송 구현을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·4단계 교차 큐 바이트/픽셀 및 거부 검증으로 확인한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 다중 큐 교차 동기화, TimelineFence, 비동기 오버랩 및 자원 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "docs/PHASE9_MULTI_QUEUE_REPORT.md"
+      ]
     },
     {
       "id": "P9-SHD-01",

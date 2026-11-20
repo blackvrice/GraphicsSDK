@@ -1,6 +1,6 @@
 # 다른 AI를 위한 개발 인수인계
 
-2026-11-20 갱신. 직전 확인 기준 HEAD는 `ffc0d00e`이며 이번 세션에서 `P9-CMD-02`(병렬 명령 기록·Thread-local Command Allocator 및 벤치마크) 구현·검증과 `P9-CMD-07`(Linux/Metal 실행 검증) 분리를 반영했다.
+2026-11-20 갱신. 직전 확인 기준 HEAD는 `46919a13`이며 이번 세션에서 `P9-CMD-03`(Graphics/Compute/Copy 다중 큐·Timeline Fence·Async 전송) 구현·검증과 `P9-CMD-08`(Linux/Metal 실행 검증) 분리를 반영했다.
 이 값은 인수인계 기준이며 새 세션에서는 반드시 실제 `git status`, `git log`, `docs/ROADMAP_TASKS.json`을 다시 확인한다.
 기존 작업 방식과 코드 품질 기준은 루트 [AGENTS.md](../AGENTS.md)를, 시간순 세션 이력은 [AI_WORK_LOG.md](AI_WORK_LOG.md)를 따른다.
 
@@ -8,17 +8,17 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 마지막 작업 | `P9-CMD-02` (`CommandPool::bindRecordingThread()`, `CommandQueue::submit(std::span<CommandList* const>)`, 교차 리스트 읽기/변경 충돌 원자적 거부 D3D12/Vulkan/Metal 구현, Windows D3D12/Vulkan/Validation/WARP 손실복구·설치 소비자 검증 및 1/2/4스레드 실측 벤치마크), `P9-CMD-07` 분리 |
-| 마지막 확인 Commit | 직전 HEAD `ffc0d00e` (이번 세션 커밋은 `git log -1`로 확인) |
+| 마지막 작업 | `P9-CMD-03` (`QueueType`, `DeviceCaps::{dedicatedComputeQueue,dedicatedCopyQueue,timelineFences}`, `Device::{queue(QueueType),createCommandList(QueueType),createCommandPool(QueueType),createTimelineFence}`, `TimelineFence`, `CommandQueue::submit(const SubmitDesc&)` D3D12/Vulkan/Metal 구현, Windows D3D12/Vulkan/Validation/WARP 손실복구·설치 소비자 전체 어댑터 검증 및 Async Overlap 실측), `P9-CMD-08` 분리 |
+| 마지막 확인 Commit | 직전 HEAD `46919a13` (이번 세션 커밋은 `git log -1`로 확인) |
 | 현재 브랜치 | `main` (`origin`: `https://github.com/blackvrice/GraphicsSDK.git`) |
-| 현재 버전 | `0.0.1` (`v0.0.7` 병렬 명령 기록 슬라이스 완료) |
-| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P9-CMD-05/06/07`, `P9-CMP-03` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
-| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), `TextureView`(`P8-TEX-01`), MSAA/Resolve(`P8-TEX-03`), 동적 Viewport(`P9-CMD-04`), 명시적 `CommandPool`(`P9-CMD-01`), 병렬 명령 기록·일괄 제출(`P9-CMD-02`), Compute/UAV/Dispatch(`P9-CMP-01`) 공개 API·D3D12·Vulkan·Metal 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 199 ID(117 완료) 검증 통과 |
-| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-02/04/05/06`, `P8-MEM-*`, `P9-CMD-03/05/06/07`, `P9-CMP-02/03`, `P9-RG-01`, `P10`~`P12`) |
-| 수정 파일 | `include/graphics/{CommandList,CommandQueue}.hpp`, `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`, `tests/ParallelRecordingTests.cpp`, `CMakeLists.txt`, `docs/{PHASE9_PARALLEL_RECORDING_REPORT,PUBLIC_API,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
-| 테스트 결과 | `gfx_parallel_recording_tests` 5/5 모드(D3D12/GBV/WARP 손실복구/Vulkan/고정 VVL, `assertions=114~116`, `batches=16`, `images=48`, `errors=0`), 설치 소비자 5/5 모드, CTest 52/52 통과 (`51.22s`), GTX 1660 SUPER 16,384-draw 4T CPU 기록 가속 D3D12 `3.858x`·Vulkan `3.552x`, `roadmap.py --check` PASS (199 ID) (Linux/macOS 실기 미실행) |
+| 현재 버전 | `0.0.1` (`v0.0.7` 다중 큐·Timeline Fence 슬라이스 완료) |
+| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P9-CMD-05/06/07/08`, `P9-CMP-03` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
+| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), `TextureView`(`P8-TEX-01`), MSAA/Resolve(`P8-TEX-03`), 동적 Viewport(`P9-CMD-04`), 명시적 `CommandPool`(`P9-CMD-01`), 병렬 명령 기록·일괄 제출(`P9-CMD-02`), Graphics/Compute/Copy 다중 큐·Timeline Fence(`P9-CMD-03`), Compute/UAV/Dispatch(`P9-CMP-01`) 공개 API·D3D12·Vulkan·Metal 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 200 ID(118 완료) 검증 통과 |
+| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-02/04/05/06`, `P8-MEM-*`, `P9-CMD-05/06/07/08`, `P9-CMP-02/03`, `P9-RG-01`, `P10`~`P12`) |
+| 수정 파일 | `include/graphics/{Types,CommandList,CommandQueue,Device}.hpp`, `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`, `tests/MultiQueueTests.cpp`, `CMakeLists.txt`, `docs/{PHASE9_MULTI_QUEUE_REPORT,PUBLIC_API,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
+| 테스트 결과 | `gfx_multi_queue_tests` 5/5 모드(D3D12 HW+bench/GBV/WARP 손실복구/Vulkan HW+bench/고정 VVL 1.3.290, `errors=0`), 설치 소비자 전체 어댑터(GTX 1660 SUPER + Intel UHD 770 + WARP, 비검증+검증), CTest 68/68 통과 (`52.49s`), GTX 1660 SUPER 48 MiB async overlap 가속 D3D12 `1.326x`·Vulkan `1.233x`, `roadmap.py --check` PASS (200 ID) (Linux/macOS 실기 미실행) |
 | 확인된 문제 | 기존 로컬 `out/core`의 `fence_wait_gpu`/`fence_wait_validation` SegFault 2건, 장시간 GBV 메모리(`P2-ACC-01`)·과거 Intel AV(`P2-ACC-02`) 미해결, Linux 물리 GPU·물리 Mac 부재 |
-| 다음 추천 작업 | `P8-TEX-02`(다중 Mipmap·Array·Cubemap), `P9-CMD-03`(다중 큐·Timeline Fence·Async 전송), `P8-MEM-01`(Upload Ring·Resource Pool), `P8/P9` Linux/Metal 검증(`P8-XFER-04/06`·`P8-CAP-02`·`P8-TEX-05/06`·`P9-CMD-05/06/07`·`P9-CMP-03`), 또는 Phase 7 CI 배포 후보 연동 |
+| 다음 추천 작업 | `P8-TEX-02`(다중 Mipmap·Array·Cubemap), `P8-MEM-01`(Upload Ring·Resource Pool), `P9-CMP-02`(Indirect/Bindless), `P9-RG-01`(Render Graph), `P8/P9` Linux/Metal 검증(`P8-XFER-04/06`·`P8-CAP-02`·`P8-TEX-05/06`·`P9-CMD-05/06/07/08`·`P9-CMP-03`), 또는 Phase 7 CI 배포 후보 연동 |
 | 주의사항 | `tools/macos_metal_package.py`의 13개 공개 헤더 allowlist와 `tools/macos_core.py`의 5개 `CORE` `.cpp`·11개 CPU 테스트 목록을 유지해야 기존 replay와 `macos-core.yml`이 깨지지 않는다. 기존 사용자 변경(`tests/VulkanAllocationBenchmarkTests.cpp`)은 덮어쓰거나 커밋하지 않는다. (`.idea/`는 `.gitignore`에 반영 완료) |
 
 ## 새 AI에게 전달할 지시문

@@ -17,6 +17,7 @@
 #include <new>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <unordered_set>
 #ifdef _WIN32
 #include <Windows.h>
@@ -211,12 +212,23 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
     }
     return instance;
 }
+bool validQueueType(QueueType t) { return t == QueueType::Graphics || t == QueueType::Compute || t == QueueType::Copy; }
+std::size_t queueIndex(QueueType t) { return static_cast<std::size_t>(t); }
+VkPipelineStageFlags stageScope(QueueType t, bool includeHost = false) {
+    const VkPipelineStageFlags host = includeHost ? VK_PIPELINE_STAGE_HOST_BIT : 0u;
+    if (t == QueueType::Copy) return VK_PIPELINE_STAGE_TRANSFER_BIT | host;
+    if (t == QueueType::Compute) return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | host;
+    return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | host;
+}
 struct Candidate {
     AdapterInfo info;
     VkPhysicalDevice physical{};
     VkPhysicalDeviceMemoryProperties memory{};
     std::uint32_t family{};
-    std::uint32_t timestampBits{};
+    std::array<std::uint32_t, 3> families{};
+    std::array<std::uint32_t, 3> timestampBits{};
+    bool dedicatedComputeQueue{};
+    bool dedicatedCopyQueue{};
     std::uint32_t maxColorAttachments{};
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
     VkPhysicalDeviceLimits limits{};
@@ -240,10 +252,42 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
         instance->GetPhysicalDeviceQueueFamilyProperties(device, &families, nullptr);
         std::vector<VkQueueFamilyProperties> queues(families);
         instance->GetPhysicalDeviceQueueFamilyProperties(device, &families, queues.data()); queues.resize(families);
-        auto queue = std::find_if(queues.begin(), queues.end(), [](auto& q) { return q.queueCount && (q.queueFlags & VK_QUEUE_GRAPHICS_BIT); });
-        if (queue == queues.end()) continue;
-        Candidate c; c.physical = device; c.family = static_cast<std::uint32_t>(queue - queues.begin());
-        c.timestampBits = queue->timestampValidBits;
+        auto graphicsIt = std::find_if(queues.begin(), queues.end(), [](auto& q) { return q.queueCount && (q.queueFlags & VK_QUEUE_GRAPHICS_BIT); });
+        if (graphicsIt == queues.end()) continue;
+        const auto graphicsFamily = static_cast<std::uint32_t>(graphicsIt - queues.begin());
+        std::uint32_t computeFamily = graphicsFamily;
+        for (std::uint32_t i = 0; i < queues.size(); ++i) {
+            if (queues[i].queueCount && (queues[i].queueFlags & VK_QUEUE_COMPUTE_BIT) && !(queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+                computeFamily = i;
+                break;
+            }
+        }
+        std::uint32_t copyFamily = graphicsFamily;
+        for (std::uint32_t i = 0; i < queues.size(); ++i) {
+            if (queues[i].queueCount && (queues[i].queueFlags & VK_QUEUE_TRANSFER_BIT) &&
+                !(queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !(queues[i].queueFlags & VK_QUEUE_COMPUTE_BIT)) {
+                copyFamily = i;
+                break;
+            }
+        }
+        if (copyFamily == graphicsFamily) {
+            for (std::uint32_t i = 0; i < queues.size(); ++i) {
+                if (i != computeFamily && queues[i].queueCount &&
+                    (queues[i].queueFlags & VK_QUEUE_TRANSFER_BIT) && !(queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+                    copyFamily = i;
+                    break;
+                }
+            }
+        }
+        Candidate c; c.physical = device; c.family = graphicsFamily;
+        c.families = {graphicsFamily, computeFamily, copyFamily};
+        c.timestampBits = {
+            queues[graphicsFamily].timestampValidBits,
+            queues[computeFamily].timestampValidBits,
+            queues[copyFamily].timestampValidBits
+        };
+        c.dedicatedComputeQueue = computeFamily != graphicsFamily;
+        c.dedicatedCopyQueue = copyFamily != graphicsFamily;
         c.maxColorAttachments = properties.properties.limits.maxColorAttachments;
         c.maxFramebufferWidth = properties.properties.limits.maxFramebufferWidth;
         c.maxFramebufferHeight = properties.properties.limits.maxFramebufferHeight;
@@ -283,13 +327,18 @@ struct NativeDevice {
     std::shared_ptr<Instance> instance;
     VkDevice handle{};
     VkQueue queue{};
+    std::array<VkQueue, 3> queues{};
     bool presentation{};
+    bool timelineSemaphores{};
     PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT{};
     PFN_vkCreateSwapchainKHR CreateSwapchainKHR{};
     PFN_vkDestroySwapchainKHR DestroySwapchainKHR{};
     PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR{};
     PFN_vkAcquireNextImageKHR AcquireNextImageKHR{};
     PFN_vkQueuePresentKHR QueuePresentKHR{};
+    PFN_vkGetSemaphoreCounterValueKHR GetSemaphoreCounterValueKHR{};
+    PFN_vkWaitSemaphoresKHR WaitSemaphoresKHR{};
+    PFN_vkSignalSemaphoreKHR SignalSemaphoreKHR{};
 #define DECLARE(name) PFN_vk##name name{};
     DEVICE_FUNCTIONS(DECLARE)
 #undef DECLARE
@@ -346,7 +395,8 @@ struct Allocation {
     bool imageInitialized{};
     bool contentsInitialized{};
     ResourceState state{ResourceState::Common};
-    std::uint64_t version{}, lastUse{};
+    std::uint64_t version{};
+    std::array<std::uint64_t, 3> lastUse{};
     void release() {
         if (buffer) native->DestroyBuffer(native->handle, buffer, nullptr);
         if (view) native->DestroyImageView(native->handle, view, nullptr);
@@ -432,11 +482,22 @@ struct NativeQueryPool {
     }
     ~NativeQueryPool() { release(); }
 };
+struct NativeTimelineSemaphore {
+    std::shared_ptr<NativeDevice> native;
+    VkSemaphore handle{};
+    std::uint64_t lastSignaled{};
+    void release() {
+        if (handle) native->DestroySemaphore(native->handle, handle, nullptr);
+        handle = {};
+    }
+    ~NativeTimelineSemaphore() { release(); }
+};
 struct VulkanCommands;
 struct NativeCommandPool {
     std::mutex mutex;
     std::shared_ptr<NativeDevice> native;
     VkCommandPool handle{};
+    QueueType qType{QueueType::Graphics};
     std::atomic<std::thread::id> recordingThread{};
     std::uint64_t epoch{1};
     std::uint64_t lastSubmitted{};
@@ -456,6 +517,7 @@ struct Recording {
     std::shared_ptr<NativeDevice> native;
     std::shared_ptr<NativeCommandPool> sharedPool;
     std::shared_ptr<NativeQueryPool> sharedQueries;
+    QueueType qType{QueueType::Graphics};
     VkCommandPool pool{};
     VkCommandBuffer command{};
     bool open{}, ended{}, inPass{};
@@ -490,23 +552,37 @@ struct Recording {
     }
     ~Recording() { release(); }
 };
-struct Pending { VkFence fence{}; std::uint64_t serial{}; std::vector<std::shared_ptr<Recording>> recordings; };
+struct Pending {
+    VkFence fence{};
+    std::uint64_t serial{};
+    std::vector<std::shared_ptr<Recording>> recordings;
+    std::vector<std::shared_ptr<NativeTimelineSemaphore>> timelineSemaphores;
+    std::vector<std::pair<std::shared_ptr<NativeTimelineSemaphore>, std::uint64_t>> signaledTimelines;
+};
+struct QueueSlot {
+    std::uint32_t family{};
+    std::uint32_t timestampBits{};
+    std::uint64_t id{};
+    std::uint64_t last{};
+    std::atomic<std::uint64_t> completed{0};
+    std::list<Pending> pending;
+};
 struct State {
     std::shared_ptr<NativeDevice> native;
     VkPhysicalDevice physical{};
     VkPhysicalDeviceMemoryProperties memory{};
     std::uint32_t family{};
+    std::vector<std::uint32_t> uniqueFamilies;
+    std::array<QueueSlot, 3> queues;
     std::uint32_t timestampBits{};
     std::uint32_t maxColorAttachments{};
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
     VkPhysicalDeviceLimits limits{};
     bool fullDrawIndexUint32{};
     std::thread::id thread{std::this_thread::get_id()};
-    std::uint64_t id{detail::allocateDeviceGeneration()}, last{};
-    std::atomic<std::uint64_t> completed{0};
+    std::uint64_t id{detail::allocateDeviceGeneration()};
     std::atomic<bool> retired{false}, lost{false};
     std::mutex recordingsMutex;
-    std::list<Pending> pending;
     std::vector<std::weak_ptr<Allocation>> allocations;
     std::vector<std::weak_ptr<NativeTextureView>> imageViews;
     std::vector<std::weak_ptr<Recording>> recordings;
@@ -514,6 +590,7 @@ struct State {
     std::vector<std::weak_ptr<NativeQueryPool>> queryPools;
     std::vector<std::weak_ptr<NativePipeline>> pipelines;
     std::vector<std::weak_ptr<NativeSwapchain>> swapchains;
+    std::vector<std::weak_ptr<NativeTimelineSemaphore>> timelineSemaphores;
     std::vector<std::weak_ptr<int>> objects;
     Result<void> checkAliveForWorker() const {
         if (retired.load(std::memory_order_acquire) || lost.load(std::memory_order_acquire))
@@ -529,15 +606,22 @@ struct State {
         if (r != VK_SUCCESS) return nativeError(r, operation);
         return {};
     }
-    Result<void> poll() {
+    Result<void> pollQueue(QueueType qType) {
         if (auto ok = check(); !ok) return ok;
-        while (!pending.empty()) {
-            auto& first = pending.front();
+        auto& q = queues[queueIndex(qType)];
+        while (!q.pending.empty()) {
+            auto& first = q.pending.front();
             const auto r = native->GetFenceStatus(native->handle, first.fence);
             if (r == VK_NOT_READY) break;
             if (auto ok = accept(r, "vkGetFenceStatus"); !ok) return ok;
-            completed.store(first.serial, std::memory_order_release);
-            native->DestroyFence(native->handle, first.fence, nullptr); pending.pop_front();
+            q.completed.store(first.serial, std::memory_order_release);
+            native->DestroyFence(native->handle, first.fence, nullptr); q.pending.pop_front();
+        }
+        return {};
+    }
+    Result<void> poll() {
+        for (QueueType t : {QueueType::Graphics, QueueType::Compute, QueueType::Copy}) {
+            if (auto ok = pollQueue(t); !ok) return ok;
         }
         return {};
     }
@@ -545,8 +629,10 @@ struct State {
         if (retired.load(std::memory_order_acquire) || !native) return;
         // The device is the lifetime boundary; public children remain inert descriptions.
         native->DeviceWaitIdle(native->handle);
-        for (auto& p : pending) native->DestroyFence(native->handle, p.fence, nullptr);
-        pending.clear();
+        for (auto& q : queues) {
+            for (auto& p : q.pending) native->DestroyFence(native->handle, p.fence, nullptr);
+            q.pending.clear();
+        }
         {
             std::scoped_lock lock(recordingsMutex);
             for (auto& weak : recordings) if (auto value = weak.lock()) value->release();
@@ -558,11 +644,66 @@ struct State {
         for (auto& weak : imageViews) if (auto value = weak.lock()) value->release();
         for (auto& weak : allocations) if (auto value = weak.lock()) value->release();
         for (auto& weak : swapchains) if (auto value = weak.lock()) value->release();
+        for (auto& weak : timelineSemaphores) if (auto value = weak.lock()) value->release();
         swapchains.clear();
+        timelineSemaphores.clear();
         commandPools.clear(); queryPools.clear(); pipelines.clear(); imageViews.clear(); allocations.clear(); objects.clear();
         native->release(); retired.store(true, std::memory_order_release);
     }
     ~State() { retire(); }
+};
+struct VulkanTimelineFence final : TimelineFence {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativeTimelineSemaphore> sem;
+    std::shared_ptr<int> token;
+    Result<std::uint64_t> completedValue() override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        std::uint64_t value{};
+        if (auto ok = owner->accept(owner->native->GetSemaphoreCounterValueKHR(owner->native->handle, sem->handle, &value), "vkGetSemaphoreCounterValueKHR"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        return value;
+    }
+    Result<void> signal(std::uint64_t value) override {
+        auto current = completedValue(); if (!current) return std::unexpected(current.error());
+        if (value <= *current || value <= sem->lastSignaled || value == UINT64_MAX) {
+            return fail(ErrorCode::InvalidArgument, "TimelineFence signal value must strictly advance");
+        }
+        VkSemaphoreSignalInfoKHR info{VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR};
+        info.semaphore = sem->handle;
+        info.value = value;
+        if (auto ok = owner->accept(owner->native->SignalSemaphoreKHR(owner->native->handle, &info), "vkSignalSemaphoreKHR"); !ok) return ok;
+        sem->lastSignaled = value;
+        return {};
+    }
+    Result<void> wait(std::uint64_t value, std::chrono::milliseconds timeout) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        if (timeout.count() < 0 || timeout.count() > 4294967294ll) {
+            return fail(ErrorCode::InvalidArgument, "TimelineFence timeout outside finite range");
+        }
+        VkSemaphoreWaitInfoKHR info{VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR};
+        info.semaphoreCount = 1;
+        info.pSemaphores = &sem->handle;
+        info.pValues = &value;
+        const auto r = owner->native->WaitSemaphoresKHR(
+            owner->native->handle, &info, static_cast<std::uint64_t>(timeout.count()) * 1000000ull);
+        if (r == VK_TIMEOUT) return fail(ErrorCode::Timeout, "TimelineFence wait timed out", r);
+        if (auto ok = owner->accept(r, "vkWaitSemaphoresKHR"); !ok) return ok;
+        // Retire any internal submission fences whose timeline signal has now completed
+        // so readback/reset/statistics immediately observe completion without a driver race.
+        for (auto& q : owner->queues) {
+            for (auto& p : q.pending) {
+                bool signaled = false;
+                for (const auto& [sigSem, sigVal] : p.signaledTimelines) {
+                    if (sigSem == sem && sigVal <= value) { signaled = true; break; }
+                }
+                if (signaled) {
+                    if (auto ok = owner->accept(owner->native->WaitForFences(owner->native->handle, 1, &p.fence, VK_TRUE, UINT64_MAX), "vkWaitForFences after timeline wait"); !ok) return ok;
+                }
+            }
+        }
+        return owner->poll();
+    }
 };
 struct VulkanBuffer final : Buffer {
     std::shared_ptr<State> owner;
@@ -574,7 +715,11 @@ struct VulkanBuffer final : Buffer {
         auto& a = *allocation;
         if (a.desc.memory != Memory::Upload || offset > a.desc.size || data.size() > a.desc.size - offset)
             return fail(ErrorCode::InvalidArgument, "Upload write memory or range invalid");
-        if (a.lastUse > owner->completed || a.version == UINT64_MAX) return fail(ErrorCode::InvalidState, "Upload buffer busy or version exhausted");
+        for (std::size_t qi = 0; qi < 3; ++qi) {
+            if (a.lastUse[qi] > owner->queues[qi].completed.load(std::memory_order_acquire))
+                return fail(ErrorCode::InvalidState, "Upload buffer busy");
+        }
+        if (a.version == UINT64_MAX) return fail(ErrorCode::InvalidState, "Upload buffer version exhausted");
         if (!data.empty()) {
             void* mapped{};
             if (auto ok = owner->accept(owner->native->MapMemory(owner->native->handle, a.memory, 0, VK_WHOLE_SIZE, 0, &mapped), "vkMapMemory upload"); !ok) return ok;
@@ -593,7 +738,10 @@ struct VulkanBuffer final : Buffer {
         auto& a = *allocation;
         if (a.desc.memory != Memory::Readback || offset > a.desc.size || bytes > a.desc.size - offset || bytes > SIZE_MAX)
             return fail(ErrorCode::InvalidArgument, "Readback read memory or range invalid");
-        if (a.lastUse > owner->completed) return fail(ErrorCode::InvalidState, "Readback buffer busy");
+        for (std::size_t qi = 0; qi < 3; ++qi) {
+            if (a.lastUse[qi] > owner->queues[qi].completed.load(std::memory_order_acquire))
+                return fail(ErrorCode::InvalidState, "Readback buffer busy");
+        }
         std::vector<std::byte> result(static_cast<std::size_t>(bytes));
         if (bytes) {
             void* mapped{};
@@ -699,11 +847,13 @@ std::uint32_t vertexBytes(VertexFormat format) {
 struct VulkanCommands final : CommandList {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeCommandPool> commandPool;
+    QueueType qType{QueueType::Graphics};
     VkCommandBuffer pooledCommand{};
     std::shared_ptr<NativeQueryPool> pooledQueries;
     std::uint64_t recordedEpoch{};
     std::shared_ptr<Recording> record;
     std::shared_ptr<int> token;
+    QueueType queueType() const override { return qType; }
     ~VulkanCommands() override {
         if (!commandPool) return;
         std::scoped_lock lock(commandPool->mutex);
@@ -772,6 +922,7 @@ struct VulkanCommands final : CommandList {
         return record->uses.emplace_back(Use{a, a->version, a->state, a->imageInitialized, a->contentsInitialized, markMutated});
     }
     Result<void> begin() override {
+        auto& qSlot = owner->queues[queueIndex(qType)];
         if (commandPool) {
             std::scoped_lock lock(commandPool->mutex);
             if (auto ok = owner->checkAliveForWorker(); !ok) return ok;
@@ -781,10 +932,11 @@ struct VulkanCommands final : CommandList {
             if (record && record->open) return fail(ErrorCode::InvalidState, "Command list is already recording");
             if (commandPool->openCount > 0) return fail(ErrorCode::InvalidState, "Another command list from this CommandPool is currently recording");
             if (recordedEpoch == commandPool->epoch) return fail(ErrorCode::InvalidState, "Pooled command list requires CommandPool::reset() before re-recording");
-            if (record && record->submitted > owner->completed.load(std::memory_order_acquire)) return fail(ErrorCode::InvalidState, "Command list is still in flight");
+            if (record && record->submitted > qSlot.completed.load(std::memory_order_acquire)) return fail(ErrorCode::InvalidState, "Command list is still in flight");
             auto next = std::make_shared<Recording>();
             next->native = owner->native;
             next->sharedPool = commandPool;
+            next->qType = qType;
             next->command = pooledCommand;
             next->sharedQueries = pooledQueries;
             VkCommandBufferBeginInfo start{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
@@ -804,17 +956,17 @@ struct VulkanCommands final : CommandList {
             record = std::move(next);
             return {};
         }
-        if (auto ok = owner->poll(); !ok) return ok;
-        if (record && (record->open || record->submitted > owner->completed.load(std::memory_order_acquire))) return fail(ErrorCode::InvalidState, "Command list open or in flight");
-        auto next = std::make_shared<Recording>(); next->native = owner->native;
-        VkCommandPoolCreateInfo pool{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}; pool.queueFamilyIndex = owner->family;
+        if (auto ok = owner->pollQueue(qType); !ok) return ok;
+        if (record && (record->open || record->submitted > qSlot.completed.load(std::memory_order_acquire))) return fail(ErrorCode::InvalidState, "Command list open or in flight");
+        auto next = std::make_shared<Recording>(); next->native = owner->native; next->qType = qType;
+        VkCommandPoolCreateInfo pool{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}; pool.queueFamilyIndex = qSlot.family;
         if (auto ok = owner->accept(vulkan::acquireOutput(next->pool, owner->native->CreateCommandPool, owner->native->handle, &pool, nullptr), "vkCreateCommandPool"); !ok) return ok;
         VkCommandBufferAllocateInfo allocate{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
         allocate.commandPool = next->pool; allocate.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; allocate.commandBufferCount = 1;
         if (auto ok = owner->accept(vulkan::acquireOutput(next->command, owner->native->AllocateCommandBuffers, owner->native->handle, &allocate), "vkAllocateCommandBuffers"); !ok) return ok;
         VkCommandBufferBeginInfo start{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}; start.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         if (auto ok = owner->accept(owner->native->BeginCommandBuffer(next->command, &start), "vkBeginCommandBuffer"); !ok) return ok;
-        if (vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) {
+        if (qType != QueueType::Copy && vulkan::timestampSupported(qSlot.timestampBits, owner->limits.timestampPeriod)) {
             VkQueryPoolCreateInfo queries{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO}; queries.queryType = VK_QUERY_TYPE_TIMESTAMP; queries.queryCount = 2;
             if (auto ok = owner->accept(vulkan::acquireOutput(next->queries, owner->native->CreateQueryPool, owner->native->handle, &queries, nullptr), "vkCreateQueryPool"); !ok) return ok;
             owner->native->CmdResetQueryPool(next->command, next->queries, 0, 2);
@@ -839,6 +991,10 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> transition(const BufferPtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy && target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidArgument, "Copy command list only supports Common, CopySource, and CopyDestination buffer states");
+        if (qType == QueueType::Compute && (vertexState(target) || indexState(target)))
+            return fail(ErrorCode::InvalidArgument, "Compute command list does not support vertex/index buffer states");
         const auto a = buffer(value); if (!a) return std::unexpected(a.error());
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess)
             return fail(ErrorCode::Unsupported, "Vulkan transfer state unsupported");
@@ -847,6 +1003,12 @@ struct VulkanCommands final : CommandList {
         if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Host buffer state is fixed");
+        const auto before = shadow(*a);
+        if (qType == QueueType::Copy && (*a)->desc.memory == Memory::Device &&
+            before != ResourceState::Common && before != ResourceState::CopySource && before != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidState, "Copy command list cannot transition buffer from a non-copy state");
+        if (qType == QueueType::Compute && (vertexState(before) || indexState(before)))
+            return fail(ErrorCode::InvalidState, "Compute command list cannot transition buffer from a vertex/index state");
         record->uses.reserve(record->uses.size() + 1);
         auto& use = retain(*a);
         VkBufferMemoryBarrier barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
@@ -854,8 +1016,8 @@ struct VulkanCommands final : CommandList {
         barrier.dstAccessMask = access(target) | ((*a)->desc.memory == Memory::Readback ? VK_ACCESS_HOST_READ_BIT : 0);
         barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.buffer = (*a)->buffer; barrier.size = VK_WHOLE_SIZE;
-        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+        const VkPipelineStageFlags scope = stageScope(qType, true);
+        owner->native->CmdPipelineBarrier(record->command, scope, scope, 0, 0, nullptr, 1, &barrier, 0, nullptr);
         if (use.shadow != target) use.mutated = true;
         use.shadow = target; return {};
     }
@@ -880,7 +1042,7 @@ struct VulkanCommands final : CommandList {
         for (auto& b : before) { b.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER; b.srcQueueFamilyIndex = b.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; b.size = VK_WHOLE_SIZE; }
         before[0].buffer = (*src)->buffer; before[0].srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT; before[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         before[1].buffer = (*dst)->buffer; before[1].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_READ_BIT; before[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 2, before, 0, nullptr);
+        owner->native->CmdPipelineBarrier(record->command, stageScope(qType, true), VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 2, before, 0, nullptr);
         VkBufferCopy region{sourceOffset, destinationOffset, bytes};
         owner->native->CmdCopyBuffer(record->command, (*src)->buffer, (*dst)->buffer, 1, &region);
         if ((*dst)->desc.memory == Memory::Readback) {
@@ -891,6 +1053,10 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy && target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidArgument, "Copy command list only supports Common, CopySource, and CopyDestination texture states");
+        if (qType == QueueType::Compute && (target == ResourceState::RenderTarget || target == ResourceState::DepthWrite || target == ResourceState::DepthRead || target == ResourceState::Present || target == ResourceState::ResolveSource || target == ResourceState::ResolveDestination))
+            return fail(ErrorCode::InvalidArgument, "Compute command list does not support graphics/present/resolve texture states");
         auto a = texture(value); if (!a) return std::unexpected(a.error());
         const bool multisampled = (*a)->textureDesc.sampleCount > 1u;
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::Present && target != ResourceState::UnorderedAccess && target != ResourceState::ResolveSource && target != ResourceState::ResolveDestination)
@@ -910,6 +1076,14 @@ struct VulkanCommands final : CommandList {
         if (target == ResourceState::ShaderRead && (*a)->textureDesc.depthStencil) return fail(ErrorCode::Unsupported, "Depth sampling unsupported");
         if (target == ResourceState::RenderTarget && !(*a)->textureDesc.renderTarget)
             return fail(ErrorCode::InvalidArgument, "Texture was not created as a render target");
+        const auto before = shadow(*a);
+        if (qType == QueueType::Copy &&
+            before != ResourceState::Common && before != ResourceState::CopySource && before != ResourceState::CopyDestination)
+            return fail(ErrorCode::InvalidState, "Copy command list cannot transition texture from a non-copy state");
+        if (qType == QueueType::Compute &&
+            (before == ResourceState::RenderTarget || before == ResourceState::DepthWrite || before == ResourceState::DepthRead ||
+             before == ResourceState::Present || before == ResourceState::ResolveSource || before == ResourceState::ResolveDestination))
+            return fail(ErrorCode::InvalidState, "Compute command list cannot transition texture from a graphics/present/resolve state");
         record->uses.reserve(record->uses.size() + 1);
         auto& use = retain(*a);
         VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
@@ -919,8 +1093,9 @@ struct VulkanCommands final : CommandList {
         barrier.dstAccessMask = access(target);
         barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = (*a)->image; barrier.subresourceRange = {imageAspect(**a), 0, 1, 0, 1};
-        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        const VkPipelineStageFlags srcStage = use.imageInitialized ? stageScope(qType, false) : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        const VkPipelineStageFlags dstStage = stageScope(qType, false);
+        owner->native->CmdPipelineBarrier(record->command, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         if (!use.imageInitialized || use.shadow != target) use.mutated = true;
         use.shadow = target; use.imageInitialized = true; return {};
     }
@@ -946,7 +1121,7 @@ struct VulkanCommands final : CommandList {
         i.oldLayout = i.newLayout = imageLayout(shadow(image));
         i.srcQueueFamilyIndex = i.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         i.image = image->image; i.subresourceRange = {imageAspect(*image), 0, 1, 0, 1};
-        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT,
+        owner->native->CmdPipelineBarrier(record->command, stageScope(qType, true),
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &b, 1, &i);
         VkBufferImageCopy region{};
         region.bufferRowLength = image->footprint.rowPitch / texelBytes(image->textureDesc.format);
@@ -1016,7 +1191,7 @@ struct VulkanCommands final : CommandList {
         i.oldLayout = i.newLayout = imageLayout(shadow(image));
         i.srcQueueFamilyIndex = i.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         i.image = image->image; i.subresourceRange = {imageAspect(*image), 0, 1, 0, 1};
-        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT,
+        owner->native->CmdPipelineBarrier(record->command, stageScope(qType, true),
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &b, 1, &i);
         VkBufferImageCopy copy{};
         copy.bufferOffset = region.bufferOffset;
@@ -1051,6 +1226,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> resolveTexture(const TexturePtr& source, const TexturePtr& destination) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "resolveTexture requires a Graphics command list");
         auto src = texture(source); if (!src) return std::unexpected(src.error());
         auto dst = texture(destination); if (!dst) return std::unexpected(dst.error());
         if (*src == *dst) return fail(ErrorCode::InvalidArgument, "Resolve source and destination must be distinct textures");
@@ -1097,10 +1273,13 @@ struct VulkanCommands final : CommandList {
         return {};
     }
     Result<void> beginRenderPass(const TexturePtr& target, Color clear) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "beginRenderPass requires a Graphics command list");
         return beginRenderPass(RenderPassDesc{{{target, LoadOp::Clear, clear}}, {}});
     }
     Result<void> beginRenderPass(const RenderPassDesc& description) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "beginRenderPass requires a Graphics command list");
         if (auto ok = validateRenderPass(description); !ok) return ok;
         if (description.colors.size() > owner->maxColorAttachments)
             return fail(ErrorCode::Unsupported, "Color attachment count exceeds adapter limit");
@@ -1213,6 +1392,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> setPipeline(const PipelinePtr& pipeline) override {
         if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "setPipeline requires a Graphics command list");
         if (!record->inPass) return fail(ErrorCode::InvalidState, "Pipeline binding requires an active render pass");
         auto value = std::dynamic_pointer_cast<VulkanPipeline>(pipeline);
         if (!value) return fail(pipeline ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Vulkan graphics pipeline");
@@ -1328,6 +1508,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> bindVertexBuffer(std::uint32_t slot, const BufferPtr& ptr, std::uint32_t stride, std::uint64_t offset, std::uint64_t size) override {
         if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "bindVertexBuffer requires a Graphics command list");
         auto a = buffer(ptr); if (!a) return std::unexpected(a.error());
         if (slot >= 32 || !stride || stride > 2048 || offset > (*a)->desc.size || size > (*a)->desc.size - offset || (*a)->desc.memory == Memory::Readback)
             return fail(ErrorCode::InvalidArgument, "Invalid vertex buffer view");
@@ -1341,6 +1522,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> bindIndexBuffer(const BufferPtr& ptr, IndexFormat format, std::uint64_t offset, std::uint64_t size) override {
         if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "bindIndexBuffer requires a Graphics command list");
         auto a = buffer(ptr); if (!a) return std::unexpected(a.error());
         if (format != IndexFormat::UInt16 && format != IndexFormat::UInt32) return fail(ErrorCode::InvalidArgument, "Invalid index format");
         if (format == IndexFormat::UInt32 && !owner->fullDrawIndexUint32) return fail(ErrorCode::Unsupported, "Adapter lacks full uint32 index range");
@@ -1388,6 +1570,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> draw(std::uint32_t vertices, std::uint32_t instances, std::uint32_t firstVertex, std::uint32_t firstInstance) override {
         if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "draw requires a Graphics command list");
         if (!record->inPass || !record->selectedPipeline) return fail(ErrorCode::InvalidState, "Draw requires active pass and compatible pipeline");
         if (!vertices || !instances || vertices > UINT32_MAX - firstVertex || instances > UINT32_MAX - firstInstance)
             return fail(ErrorCode::InvalidArgument, "Invalid draw count/index range");
@@ -1397,6 +1580,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> drawIndexed(std::uint32_t count, std::uint32_t instances, std::uint32_t firstIndex, std::int32_t baseVertex, std::uint32_t firstInstance) override {
         if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "drawIndexed requires a Graphics command list");
         if (!record->inPass || !record->selectedPipeline) return fail(ErrorCode::InvalidState, "Indexed draw requires active pass and pipeline");
         if (!count || !instances || instances > UINT32_MAX - firstInstance) return fail(ErrorCode::InvalidArgument, "Invalid indexed draw counts");
         const auto& view = record->indices;
@@ -1408,6 +1592,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> setComputePipeline(const PipelinePtr& pipeline) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Compute operations are not supported on a Copy command list");
         auto value = std::dynamic_pointer_cast<VulkanPipeline>(pipeline);
         if (!value) return fail(pipeline ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Expected a Vulkan compute pipeline");
         if (value->owner != owner) return fail(ErrorCode::WrongDevice, "Compute pipeline belongs to another generation");
@@ -1422,6 +1607,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> bindComputeResources(const ResourceBindings& bindings) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Compute operations are not supported on a Copy command list");
         const auto p = record->selectedComputePipeline;
         if (!p) return fail(ErrorCode::InvalidState, "Compute resource binding requires a compute pipeline");
         if (p->descriptorSize > 256 - record->descriptors || record->snapshots.size() >= 256) {
@@ -1600,6 +1786,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> dispatch(std::uint32_t groupCountX, std::uint32_t groupCountY, std::uint32_t groupCountZ) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Compute operations are not supported on a Copy command list");
         const auto p = record->selectedComputePipeline;
         if (!p) return fail(ErrorCode::InvalidState, "dispatch requires an active compute pipeline");
         if (!groupCountX || !groupCountY || !groupCountZ ||
@@ -1621,6 +1808,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> uavBarrier(const BufferPtr& value) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "uavBarrier is not supported on a Copy command list");
         auto a = buffer(value); if (!a) return std::unexpected(a.error());
         if (!(*a)->desc.storage) return fail(ErrorCode::InvalidArgument, "uavBarrier requires a storage buffer");
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "uavBarrier requires UnorderedAccess state");
@@ -1638,6 +1826,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> uavBarrier(const TexturePtr& value) override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "uavBarrier is not supported on a Copy command list");
         auto a = texture(value); if (!a) return std::unexpected(a.error());
         if (!(*a)->textureDesc.storage) return fail(ErrorCode::InvalidArgument, "uavBarrier requires a storage texture");
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "uavBarrier requires UnorderedAccess state");
@@ -1657,6 +1846,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> writeTimestamp(std::uint32_t index) override {
         if (auto ok = ready(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::Unsupported, "Timestamps are unsupported on Copy command lists");
         const VkQueryPool queryPool = record->queryHandle();
         if (!queryPool) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
         if (index > 1 || record->timestampWritten[index] || record->timestampsResolved) return fail(ErrorCode::InvalidArgument, "Timestamp slot invalid or already written");
@@ -1666,15 +1856,18 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> resolveTimestamps() override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::Unsupported, "Timestamps are unsupported on Copy command lists");
         if (!record->queryHandle()) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
         if (!record->timestampWritten[0] || !record->timestampWritten[1] || record->timestampsResolved) return fail(ErrorCode::InvalidState, "Two timestamps must be written once before resolving");
         // Vulkan copies query results directly to host memory after the submission fence.
         record->timestampsResolved = true; return {};
     }
     Result<double> elapsedGpuMilliseconds() override {
-        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        if (!vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
-        if (!record || !record->submitted || record->submitted > owner->completed || !record->timestampsResolved) return fail(ErrorCode::InvalidState, "GPU timestamps are not ready");
+        if (auto ok = owner->pollQueue(qType); !ok) return std::unexpected(ok.error());
+        if (qType == QueueType::Copy) return fail(ErrorCode::Unsupported, "Timestamps are unsupported on Copy command lists");
+        auto& qSlot = owner->queues[queueIndex(qType)];
+        if (!vulkan::timestampSupported(qSlot.timestampBits, owner->limits.timestampPeriod)) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (!record || !record->submitted || record->submitted > qSlot.completed.load(std::memory_order_acquire) || !record->timestampsResolved) return fail(ErrorCode::InvalidState, "GPU timestamps are not ready");
         if (record->timestampResult) return *record->timestampResult;
         const VkQueryPool queryPool = record->queryHandle();
         if (!queryPool) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
@@ -1684,7 +1877,7 @@ struct VulkanCommands final : CommandList {
         if (auto ok = owner->accept(r, "vkGetQueryPoolResults"); !ok) return std::unexpected(ok.error());
         if (!results[0].available || !results[1].available) return fail(ErrorCode::InvalidState, "GPU query availability missing");
         const auto host = std::chrono::duration<double, std::nano>(std::chrono::steady_clock::now() - record->submittedAt).count();
-        auto elapsed = vulkan::timestampMilliseconds(results[0].ticks, results[1].ticks, owner->timestampBits, owner->limits.timestampPeriod, host, record->timestampStartFirst);
+        auto elapsed = vulkan::timestampMilliseconds(results[0].ticks, results[1].ticks, qSlot.timestampBits, owner->limits.timestampPeriod, host, record->timestampStartFirst);
         if (!elapsed) return std::unexpected(elapsed.error());
         record->timestampResult = *elapsed; return *elapsed;
     }
@@ -1711,6 +1904,7 @@ struct VulkanCommandPool final : CommandPool {
             pool->ownerAlive = false;
         }
     }
+    QueueType queueType() const override { return pool->qType; }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         std::scoped_lock lock(pool->mutex);
@@ -1726,7 +1920,8 @@ struct VulkanCommandPool final : CommandPool {
             return std::unexpected(ok.error());
         }
         std::shared_ptr<NativeQueryPool> queries;
-        if (vulkan::timestampSupported(owner->timestampBits, owner->limits.timestampPeriod)) {
+        const auto& qSlot = owner->queues[queueIndex(pool->qType)];
+        if (pool->qType != QueueType::Copy && vulkan::timestampSupported(qSlot.timestampBits, owner->limits.timestampPeriod)) {
             queries = std::make_shared<NativeQueryPool>();
             queries->native = owner->native;
             VkQueryPoolCreateInfo info{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
@@ -1742,6 +1937,7 @@ struct VulkanCommandPool final : CommandPool {
         auto value = std::make_unique<VulkanCommands>();
         value->owner = owner;
         value->commandPool = pool;
+        value->qType = pool->qType;
         value->pooledCommand = cmd;
         value->pooledQueries = std::move(queries);
         value->token = std::make_shared<int>();
@@ -1751,12 +1947,12 @@ struct VulkanCommandPool final : CommandPool {
         return std::unique_ptr<CommandList>(std::move(value));
     }
     Result<void> reset() override {
-        if (auto ok = owner->poll(); !ok) return ok;
+        if (auto ok = owner->pollQueue(pool->qType); !ok) return ok;
         std::scoped_lock lock(pool->mutex);
         if (pool->openCount > 0) {
             return fail(ErrorCode::InvalidState, "Command pool cannot reset while a command list is recording");
         }
-        if (pool->lastSubmitted > owner->completed.load(std::memory_order_acquire)) {
+        if (pool->lastSubmitted > owner->queues[queueIndex(pool->qType)].completed.load(std::memory_order_acquire)) {
             return fail(ErrorCode::InvalidState, "Command pool has in-flight submissions");
         }
         if (!pool->retiredBuffers.empty()) {
@@ -1783,7 +1979,7 @@ struct VulkanCommandPool final : CommandPool {
         if (pool->openCount > 0) {
             return fail(ErrorCode::InvalidState, "Command pool cannot rebind recording thread while a command list is recording");
         }
-        if (pool->lastSubmitted > owner->completed.load(std::memory_order_acquire)) {
+        if (pool->lastSubmitted > owner->queues[queueIndex(pool->qType)].completed.load(std::memory_order_acquire)) {
             return fail(ErrorCode::InvalidState, "Command pool cannot rebind recording thread while submissions are in flight");
         }
         pool->recordingThread.store(std::this_thread::get_id(), std::memory_order_release);
@@ -1792,27 +1988,37 @@ struct VulkanCommandPool final : CommandPool {
 };
 struct VulkanQueue final : CommandQueue {
     std::shared_ptr<State> owner;
+    QueueType qType{QueueType::Graphics};
+    QueueType type() const override { return qType; }
     Result<Fence> submit(CommandList& value) override {
         CommandList* single = &value;
         return submit(std::span<CommandList* const>{&single, 1});
     }
     Result<Fence> submit(std::span<CommandList* const> lists) override {
-        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        if (lists.empty()) return fail(ErrorCode::InvalidArgument, "Batch submit requires at least one command list");
-        if (owner->last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Fence sequence exhausted");
+        SubmitDesc desc{};
+        desc.commandLists = lists;
+        return submit(desc);
+    }
+    Result<Fence> submit(const SubmitDesc& desc) override {
+        if (auto ok = owner->pollQueue(qType); !ok) return std::unexpected(ok.error());
+        if (desc.commandLists.empty()) return fail(ErrorCode::InvalidArgument, "Batch submit requires at least one command list");
+        const std::size_t qi = queueIndex(qType);
+        auto& qSlot = owner->queues[qi];
+        if (qSlot.last == UINT64_MAX) return fail(ErrorCode::InvalidState, "Fence sequence exhausted");
         std::vector<VulkanCommands*> validated;
         std::vector<std::shared_ptr<Recording>> records;
         std::vector<VkCommandBuffer> nativeBuffers;
-        validated.reserve(lists.size());
-        records.reserve(lists.size());
-        nativeBuffers.reserve(lists.size());
+        validated.reserve(desc.commandLists.size());
+        records.reserve(desc.commandLists.size());
+        nativeBuffers.reserve(desc.commandLists.size());
         std::unordered_set<VulkanCommands*> seenLists;
         std::unordered_set<Allocation*> seenRead;
         std::unordered_set<Allocation*> seenMutated;
-        for (CommandList* item : lists) {
+        for (CommandList* item : desc.commandLists) {
             if (!item) return fail(ErrorCode::InvalidArgument, "Null command list in batch submit");
             auto* commands = dynamic_cast<VulkanCommands*>(item);
             if (!commands || commands->owner != owner) return fail(ErrorCode::WrongDevice, "Command list belongs to another device");
+            if (commands->qType != qType) return fail(ErrorCode::InvalidArgument, "Command list queue type does not match target queue");
             if (!seenLists.insert(commands).second) return fail(ErrorCode::InvalidArgument, "Duplicate command list in batch submit");
             if (commands->commandPool) {
                 std::scoped_lock lock(commands->commandPool->mutex);
@@ -1840,34 +2046,95 @@ struct VulkanQueue final : CommandQueue {
             nativeBuffers.push_back(record->command);
             records.push_back(std::move(record));
         }
+        if ((!desc.waits.empty() || !desc.signals.empty()) && !owner->native->timelineSemaphores) {
+            return fail(ErrorCode::Unsupported, "Adapter does not support VK_KHR_timeline_semaphore");
+        }
+        std::vector<VkSemaphore> waitSems;
+        std::vector<std::uint64_t> waitVals;
+        std::vector<VkPipelineStageFlags> waitStages;
+        std::vector<std::shared_ptr<NativeTimelineSemaphore>> retainedTimelines;
+        waitSems.reserve(desc.waits.size());
+        waitVals.reserve(desc.waits.size());
+        waitStages.reserve(desc.waits.size());
+        const VkPipelineStageFlags waitStage = stageScope(qType, false);
+        for (const auto& w : desc.waits) {
+            if (!w.fence) return fail(ErrorCode::InvalidArgument, "Null timeline fence in submit waits");
+            auto vkFence = std::dynamic_pointer_cast<VulkanTimelineFence>(w.fence);
+            if (!vkFence || vkFence->owner != owner) return fail(ErrorCode::WrongDevice, "Timeline fence belongs to another device");
+            waitSems.push_back(vkFence->sem->handle);
+            waitVals.push_back(w.value);
+            waitStages.push_back(waitStage);
+            retainedTimelines.push_back(vkFence->sem);
+        }
+        std::vector<VkSemaphore> signalSems;
+        std::vector<std::uint64_t> signalVals;
+        std::vector<std::pair<std::shared_ptr<NativeTimelineSemaphore>, std::uint64_t>> signaledTimelines;
+        signalSems.reserve(desc.signals.size());
+        signalVals.reserve(desc.signals.size());
+        signaledTimelines.reserve(desc.signals.size());
+        std::unordered_map<NativeTimelineSemaphore*, std::uint64_t> pendingSignalMax;
+        for (const auto& s : desc.signals) {
+            if (!s.fence) return fail(ErrorCode::InvalidArgument, "Null timeline fence in submit signals");
+            auto vkFence = std::dynamic_pointer_cast<VulkanTimelineFence>(s.fence);
+            if (!vkFence || vkFence->owner != owner) return fail(ErrorCode::WrongDevice, "Timeline fence belongs to another device");
+            auto currentVal = vkFence->completedValue();
+            if (!currentVal) return std::unexpected(currentVal.error());
+            const auto it = pendingSignalMax.find(vkFence->sem.get());
+            const std::uint64_t prev = it != pendingSignalMax.end()
+                ? it->second
+                : std::max(vkFence->sem->lastSignaled, *currentVal);
+            if (s.value <= prev || s.value == UINT64_MAX) {
+                return fail(ErrorCode::InvalidArgument, "TimelineFence signal value must strictly advance");
+            }
+            pendingSignalMax[vkFence->sem.get()] = s.value;
+            signalSems.push_back(vkFence->sem->handle);
+            signalVals.push_back(s.value);
+            retainedTimelines.push_back(vkFence->sem);
+            signaledTimelines.emplace_back(vkFence->sem, s.value);
+        }
         // Allocate the retention node before native submission; no throwing work follows success.
-        auto& pending = owner->pending.emplace_back(Pending{{}, owner->last + 1, std::move(records)});
+        auto& pending = qSlot.pending.emplace_back(Pending{
+            {}, qSlot.last + 1, std::move(records), std::move(retainedTimelines), signaledTimelines});
         VkFenceCreateInfo fence{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
         auto r = vulkan::acquireOutput(pending.fence, owner->native->CreateFence, owner->native->handle, &fence, nullptr);
         if (r != VK_SUCCESS) {
-            owner->pending.pop_back();
+            qSlot.pending.pop_back();
             auto status = owner->accept(r, "vkCreateFence");
             return std::unexpected(status.error());
         }
         VkSubmitInfo info{VK_STRUCTURE_TYPE_SUBMIT_INFO};
         info.commandBufferCount = static_cast<std::uint32_t>(nativeBuffers.size());
         info.pCommandBuffers = nativeBuffers.data();
+        VkTimelineSemaphoreSubmitInfoKHR timelineInfo{VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR};
+        if (!waitSems.empty() || !signalSems.empty()) {
+            info.waitSemaphoreCount = static_cast<std::uint32_t>(waitSems.size());
+            info.pWaitSemaphores = waitSems.data();
+            info.pWaitDstStageMask = waitStages.data();
+            info.signalSemaphoreCount = static_cast<std::uint32_t>(signalSems.size());
+            info.pSignalSemaphores = signalSems.data();
+            timelineInfo.waitSemaphoreValueCount = static_cast<std::uint32_t>(waitVals.size());
+            timelineInfo.pWaitSemaphoreValues = waitVals.data();
+            timelineInfo.signalSemaphoreValueCount = static_cast<std::uint32_t>(signalVals.size());
+            timelineInfo.pSignalSemaphoreValues = signalVals.data();
+            info.pNext = &timelineInfo;
+        }
         const auto submittedAt = std::chrono::steady_clock::now();
-        r = owner->native->QueueSubmit(owner->native->queue, 1, &info, pending.fence);
+        r = owner->native->QueueSubmit(owner->native->queues[qi], 1, &info, pending.fence);
         if (r != VK_SUCCESS) {
-            owner->native->DestroyFence(owner->native->handle, pending.fence, nullptr); owner->pending.pop_back();
+            owner->native->DestroyFence(owner->native->handle, pending.fence, nullptr); qSlot.pending.pop_back();
             if (auto ok = owner->accept(r, "vkQueueSubmit"); !ok) return std::unexpected(ok.error());
         }
-        ++owner->last;
+        ++qSlot.last;
+        for (const auto& [sem, val] : signaledTimelines) sem->lastSignaled = val;
         std::unordered_set<Allocation*> versionBumped;
         for (std::size_t i = 0; i < validated.size(); ++i) {
             auto* commands = validated[i];
             auto& record = pending.recordings[i];
-            record->submitted = owner->last;
+            record->submitted = qSlot.last;
             record->submittedAt = submittedAt;
             if (commands->commandPool) {
                 std::scoped_lock lock(commands->commandPool->mutex);
-                commands->commandPool->lastSubmitted = std::max(commands->commandPool->lastSubmitted, owner->last);
+                commands->commandPool->lastSubmitted = std::max(commands->commandPool->lastSubmitted, qSlot.last);
             }
             for (auto& use : record->uses) {
                 if (use.mutated) {
@@ -1875,33 +2142,34 @@ struct VulkanQueue final : CommandQueue {
                     use.allocation->imageInitialized = use.imageInitialized;
                     use.allocation->contentsInitialized = use.contentsInitialized;
                 }
-                use.allocation->lastUse = owner->last;
+                use.allocation->lastUse[qi] = qSlot.last;
                 if (versionBumped.insert(use.allocation.get()).second) ++use.allocation->version;
             }
         }
-        return Fence{owner->last, owner->id};
+        return Fence{qSlot.last, qSlot.id};
     }
     Result<void> wait(Fence target, std::chrono::milliseconds timeout) override {
         if (auto ok = owner->check(); !ok) return ok;
         if (timeout.count() < 0 || timeout.count() > 4294967294ll) return fail(ErrorCode::InvalidArgument, "Fence timeout outside finite range");
-        if (target.device != owner->id) return fail(ErrorCode::WrongDevice, "Fence belongs to another generation");
-        if (!target.value || target.value > owner->last) return fail(ErrorCode::InvalidArgument, "Fence value was not submitted");
-        if (auto ok = owner->poll(); !ok) return ok;
-        if (target.value <= owner->completed) return {};
-        auto found = std::find_if(owner->pending.begin(), owner->pending.end(), [&](auto& p) { return p.serial == target.value; });
-        if (found == owner->pending.end()) return fail(ErrorCode::InvalidState, "Pending fence missing");
+        auto& qSlot = owner->queues[queueIndex(qType)];
+        if (target.device != qSlot.id) return fail(ErrorCode::WrongDevice, "Fence belongs to another generation or queue");
+        if (!target.value || target.value > qSlot.last) return fail(ErrorCode::InvalidArgument, "Fence value was not submitted");
+        if (auto ok = owner->pollQueue(qType); !ok) return ok;
+        if (target.value <= qSlot.completed.load(std::memory_order_acquire)) return {};
+        auto found = std::find_if(qSlot.pending.begin(), qSlot.pending.end(), [&](auto& p) { return p.serial == target.value; });
+        if (found == qSlot.pending.end()) return fail(ErrorCode::InvalidState, "Pending fence missing");
         if (auto ok = owner->accept(owner->native->WaitForFences(owner->native->handle, 1, &found->fence, VK_TRUE,
             static_cast<std::uint64_t>(timeout.count()) * 1000000ull), "vkWaitForFences"); !ok) return ok;
-        return owner->poll();
+        return owner->pollQueue(qType);
     }
     Result<void> waitIdle() override {
         if (auto ok = owner->check(); !ok) return ok;
-        if (auto ok = owner->accept(owner->native->QueueWaitIdle(owner->native->queue), "vkQueueWaitIdle"); !ok) return ok;
-        return owner->poll();
+        if (auto ok = owner->accept(owner->native->QueueWaitIdle(owner->native->queues[queueIndex(qType)]), "vkQueueWaitIdle"); !ok) return ok;
+        return owner->pollQueue(qType);
     }
     Result<std::uint64_t> completedValue() override {
-        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
-        return owner->completed;
+        if (auto ok = owner->pollQueue(qType); !ok) return std::unexpected(ok.error());
+        return owner->queues[queueIndex(qType)].completed.load(std::memory_order_acquire);
     }
 };
 #include "Presentation.hpp"
@@ -1910,7 +2178,7 @@ struct VulkanDevice final : Device {
     DeviceCaps capabilities;
     DeviceDesc description;
     bool recoverySucceeded{};
-    VulkanQueue commands;
+    std::array<VulkanQueue, 3> queues;
     ~VulkanDevice() override { owner->retire(); }
     const DeviceCaps& caps() const override { return capabilities; }
     Result<FormatSupport> queryFormatSupport(Format format) override {
@@ -1969,10 +2237,13 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
         result.trackedObjects = owner->objects.size();
         for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
-        result.pendingSubmissions = owner->pending.size();
-        for (auto& p : owner->pending) {
-            for (const auto& rec : p.recordings) {
-                result.pendingObjectReferences += 1 + rec->uses.size() + rec->passes.size() + rec->pipelines.size() + (rec->queryHandle() ? 1 : 0);
+        for (const auto& q : owner->queues) {
+            result.pendingSubmissions += q.pending.size();
+            for (const auto& p : q.pending) {
+                result.pendingObjectReferences += p.timelineSemaphores.size();
+                for (const auto& rec : p.recordings) {
+                    result.pendingObjectReferences += 1 + rec->uses.size() + rec->passes.size() + rec->pipelines.size() + (rec->queryHandle() ? 1 : 0);
+                }
             }
         }
         return result;
@@ -2010,7 +2281,13 @@ struct VulkanDevice final : Device {
         VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; info.size = desc.size;
         info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
             (desc.storage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0u);
-        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (owner->uniqueFamilies.size() > 1) {
+            info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
+            info.pQueueFamilyIndices = owner->uniqueFamilies.data();
+        } else {
+            info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
         if (auto ok = owner->accept(vulkan::acquireOutput(a->buffer, owner->native->CreateBuffer, owner->native->handle, &info, nullptr), "vkCreateBuffer"); !ok) return std::unexpected(ok.error());
         VkMemoryRequirements req{}; owner->native->GetBufferMemoryRequirements(owner->native->handle, a->buffer, &req);
         const VkMemoryPropertyFlags required = desc.memory == Memory::Device ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
@@ -2072,7 +2349,15 @@ struct VulkanDevice final : Device {
         VkImageCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
         info.imageType = VK_IMAGE_TYPE_2D; info.format = format; info.extent = {desc.width, desc.height, 1};
         info.mipLevels = info.arrayLayers = 1; info.samples = sampleBit; info.tiling = VK_IMAGE_TILING_OPTIMAL;
-        info.usage = usage; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE; info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        info.usage = usage;
+        if (owner->uniqueFamilies.size() > 1) {
+            info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
+            info.pQueueFamilyIndices = owner->uniqueFamilies.data();
+        } else {
+            info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+        info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         if (auto ok = owner->accept(vulkan::acquireOutput(a->image, owner->native->CreateImage, owner->native->handle, &info, nullptr), "vkCreateImage"); !ok) return std::unexpected(ok.error());
         VkMemoryRequirements req{}; owner->native->GetImageMemoryRequirements(owner->native->handle, a->image, &req);
         std::optional<std::uint32_t> type;
@@ -2426,18 +2711,31 @@ struct VulkanDevice final : Device {
         return PipelinePtr(value);
     }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
+        return createCommandList(QueueType::Graphics);
+    }
+    Result<std::unique_ptr<CommandList>> createCommandList(QueueType type) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        auto value = std::make_unique<VulkanCommands>(); value->owner = owner; value->token = std::make_shared<int>();
+        if (!validQueueType(type)) return fail(ErrorCode::InvalidArgument, "Unknown queue type");
+        auto value = std::make_unique<VulkanCommands>();
+        value->owner = owner;
+        value->qType = type;
+        value->token = std::make_shared<int>();
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
-        owner->objects.push_back(value->token); return std::unique_ptr<CommandList>(std::move(value));
+        owner->objects.push_back(value->token);
+        return std::unique_ptr<CommandList>(std::move(value));
     }
     Result<std::unique_ptr<CommandPool>> createCommandPool() override {
+        return createCommandPool(QueueType::Graphics);
+    }
+    Result<std::unique_ptr<CommandPool>> createCommandPool(QueueType type) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!validQueueType(type)) return fail(ErrorCode::InvalidArgument, "Unknown queue type");
         auto poolState = std::make_shared<NativeCommandPool>();
         poolState->native = owner->native;
+        poolState->qType = type;
         poolState->recordingThread.store(owner->thread, std::memory_order_release);
         VkCommandPoolCreateInfo info{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
-        info.queueFamilyIndex = owner->family;
+        info.queueFamilyIndex = owner->queues[queueIndex(type)].family;
         if (auto ok = owner->accept(vulkan::acquireOutput(poolState->handle, owner->native->CreateCommandPool, owner->native->handle, &info, nullptr), "vkCreateCommandPool"); !ok) {
             return std::unexpected(ok.error());
         }
@@ -2451,6 +2749,35 @@ struct VulkanDevice final : Device {
         owner->objects.push_back(value->token);
         return std::unique_ptr<CommandPool>(std::move(value));
     }
+    Result<TimelineFencePtr> createTimelineFence(std::uint64_t initialValue) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!owner->native->timelineSemaphores) {
+            return fail(ErrorCode::Unsupported, "Adapter does not support VK_KHR_timeline_semaphore");
+        }
+        if (initialValue >= UINT64_MAX - 1) {
+            return fail(ErrorCode::InvalidArgument, "Invalid initial timeline fence value");
+        }
+        auto sem = std::make_shared<NativeTimelineSemaphore>();
+        sem->native = owner->native;
+        sem->lastSignaled = initialValue;
+        VkSemaphoreTypeCreateInfoKHR typeInfo{VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR};
+        typeInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
+        typeInfo.initialValue = initialValue;
+        VkSemaphoreCreateInfo info{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+        info.pNext = &typeInfo;
+        if (auto ok = owner->accept(vulkan::acquireOutput(sem->handle, owner->native->CreateSemaphore, owner->native->handle, &info, nullptr), "vkCreateSemaphore timeline"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        auto value = std::make_shared<VulkanTimelineFence>();
+        value->owner = owner;
+        value->sem = sem;
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->timelineSemaphores, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->timelineSemaphores.push_back(sem);
+        owner->objects.push_back(value->token);
+        return TimelineFencePtr(std::move(value));
+    }
     Result<void> checkSurfaceSupport(Surface surface) override {
         if (auto ok = owner->check(); !ok) return ok;
         auto checked = makeSurface(owner, surface);
@@ -2461,7 +2788,12 @@ struct VulkanDevice final : Device {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         return makeSwapchain(owner, surface, desc);
     }
-    CommandQueue& queue() override { return commands; }
+    CommandQueue& queue() override { return queues[0]; }
+    Result<CommandQueue*> queue(QueueType type) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!validQueueType(type)) return fail(ErrorCode::InvalidArgument, "Unknown queue type");
+        return &queues[queueIndex(type)];
+    }
     Result<std::uint64_t> validationErrorCount() override {
         if (std::this_thread::get_id() != owner->thread) return fail(ErrorCode::InvalidState, "Validation count requires creating thread");
         return owner->native->instance->validation.errors.load(std::memory_order_relaxed);
@@ -2487,9 +2819,24 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     if (selected->info.softwareAdapter != desc.softwareAdapter) return fail(ErrorCode::InvalidArgument, "Vulkan adapter software-kind mismatch");
     auto native = std::make_shared<NativeDevice>(); native->instance = *instance;
     float priority = 1.f;
-    VkDeviceQueueCreateInfo queue{VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
-    queue.queueFamilyIndex = selected->family; queue.queueCount = 1; queue.pQueuePriorities = &priority;
-    VkDeviceCreateInfo info{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO}; info.queueCreateInfoCount = 1; info.pQueueCreateInfos = &queue;
+    std::vector<std::uint32_t> uniqueFamilies;
+    for (std::uint32_t f : selected->families) {
+        if (std::find(uniqueFamilies.begin(), uniqueFamilies.end(), f) == uniqueFamilies.end()) {
+            uniqueFamilies.push_back(f);
+        }
+    }
+    std::vector<VkDeviceQueueCreateInfo> queueInfos;
+    queueInfos.reserve(uniqueFamilies.size());
+    for (std::uint32_t f : uniqueFamilies) {
+        VkDeviceQueueCreateInfo q{VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
+        q.queueFamilyIndex = f;
+        q.queueCount = 1;
+        q.pQueuePriorities = &priority;
+        queueInfos.push_back(q);
+    }
+    VkDeviceCreateInfo info{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
+    info.queueCreateInfoCount = static_cast<std::uint32_t>(queueInfos.size());
+    info.pQueueCreateInfos = queueInfos.data();
     std::uint32_t extensionCount{};
     auto er = (*instance)->EnumerateDeviceExtensionProperties(selected->physical, nullptr, &extensionCount, nullptr);
     if (er != VK_SUCCESS) return nativeError(er, "Enumerate device extensions");
@@ -2498,14 +2845,34 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     if (er != VK_SUCCESS) return nativeError(er, "Enumerate device extensions");
     extensions.resize(extensionCount);
     const auto hasExtension = [&](const char* name) { return std::any_of(extensions.begin(), extensions.end(), [&](auto& p) { return std::strcmp(p.extensionName, name) == 0; }); };
+    std::vector<const char*> enabledDeviceExtensions;
+    void* featureChain = nullptr;
     VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT maintenance{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT};
     if ((*instance)->presentation && hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME) && hasExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME)) {
         VkPhysicalDeviceFeatures2 features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2}; features.pNext = &maintenance;
         (*instance)->GetPhysicalDeviceFeatures2(selected->physical, &features);
         native->presentation = maintenance.swapchainMaintenance1 == VK_TRUE;
+        if (native->presentation) {
+            enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            enabledDeviceExtensions.push_back(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+            maintenance.pNext = featureChain;
+            featureChain = &maintenance;
+        }
     }
-    const char* swapchainExtensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME};
-    if (native->presentation) { info.enabledExtensionCount = 2; info.ppEnabledExtensionNames = swapchainExtensions; info.pNext = &maintenance; }
+    VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR};
+    if (hasExtension(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME)) {
+        VkPhysicalDeviceFeatures2 features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2}; features.pNext = &timelineFeatures;
+        (*instance)->GetPhysicalDeviceFeatures2(selected->physical, &features);
+        if (timelineFeatures.timelineSemaphore == VK_TRUE) {
+            native->timelineSemaphores = true;
+            enabledDeviceExtensions.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+            timelineFeatures.pNext = featureChain;
+            featureChain = &timelineFeatures;
+        }
+    }
+    info.enabledExtensionCount = static_cast<std::uint32_t>(enabledDeviceExtensions.size());
+    info.ppEnabledExtensionNames = enabledDeviceExtensions.empty() ? nullptr : enabledDeviceExtensions.data();
+    info.pNext = featureChain;
     VkPhysicalDeviceFeatures enabled{}; enabled.fullDrawIndexUint32 = selected->features.fullDrawIndexUint32; info.pEnabledFeatures = &enabled;
     if (auto r = vulkan::acquireOutput(native->handle, (*instance)->CreateDevice, selected->physical, &info, nullptr); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
 #define LOAD(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); \
@@ -2519,15 +2886,39 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
         LOAD_WSI(CreateSwapchainKHR) LOAD_WSI(DestroySwapchainKHR) LOAD_WSI(GetSwapchainImagesKHR) LOAD_WSI(AcquireNextImageKHR) LOAD_WSI(QueuePresentKHR)
 #undef LOAD_WSI
     }
-    native->GetDeviceQueue(native->handle, selected->family, 0, &native->queue);
+    if (native->timelineSemaphores) {
+        native->GetSemaphoreCounterValueKHR = reinterpret_cast<PFN_vkGetSemaphoreCounterValueKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkGetSemaphoreCounterValueKHR"));
+        native->WaitSemaphoresKHR = reinterpret_cast<PFN_vkWaitSemaphoresKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkWaitSemaphoresKHR"));
+        native->SignalSemaphoreKHR = reinterpret_cast<PFN_vkSignalSemaphoreKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkSignalSemaphoreKHR"));
+        if (!native->GetSemaphoreCounterValueKHR || !native->WaitSemaphoresKHR || !native->SignalSemaphoreKHR) {
+            native->timelineSemaphores = false;
+        }
+    }
+    for (std::size_t i = 0; i < 3; ++i) {
+        native->GetDeviceQueue(native->handle, selected->families[i], 0, &native->queues[i]);
+    }
+    native->queue = native->queues[0];
     auto owner = std::make_shared<State>(); owner->native = native; owner->physical = selected->physical;
     if (!owner->id) return fail(ErrorCode::InvalidState, "Device generation sequence exhausted");
-    owner->memory = selected->memory; owner->family = selected->family;
-    owner->timestampBits = selected->timestampBits;
+    owner->memory = selected->memory;
+    owner->family = selected->family;
+    owner->uniqueFamilies = std::move(uniqueFamilies);
+    owner->timestampBits = selected->timestampBits[0];
+    for (std::size_t i = 0; i < 3; ++i) {
+        owner->queues[i].family = selected->families[i];
+        owner->queues[i].timestampBits = selected->timestampBits[i];
+        owner->queues[i].id = (i == 0) ? owner->id : detail::allocateDeviceGeneration();
+        if (!owner->queues[i].id) return fail(ErrorCode::InvalidState, "Queue generation sequence exhausted");
+    }
     owner->maxColorAttachments = selected->maxColorAttachments;
     owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
     owner->limits = selected->limits; owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
-    auto device = std::make_unique<VulkanDevice>(); device->owner = owner; device->commands.owner = owner;
+    auto device = std::make_unique<VulkanDevice>(); device->owner = owner;
+    const std::array<QueueType, 3> queueTypes{QueueType::Graphics, QueueType::Compute, QueueType::Copy};
+    for (std::size_t i = 0; i < 3; ++i) {
+        device->queues[i].owner = owner;
+        device->queues[i].qType = queueTypes[i];
+    }
     device->description = desc; device->description.adapter = selected->info.id;
     device->capabilities.backend = Backend::Vulkan; device->capabilities.adapterName = selected->info.name;
     device->capabilities.softwareAdapter = selected->info.softwareAdapter; device->capabilities.adapterId = selected->info.id;
@@ -2540,6 +2931,9 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
 #endif
     device->capabilities.resourceBinding = device->capabilities.bindingLayouts = true;
     device->capabilities.compute = true;
+    device->capabilities.dedicatedComputeQueue = selected->dedicatedComputeQueue;
+    device->capabilities.dedicatedCopyQueue = selected->dedicatedCopyQueue;
+    device->capabilities.timelineFences = native->timelineSemaphores;
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &depthProperties) == VK_SUCCESS && (depthProperties.sampleCounts & VK_SAMPLE_COUNT_1_BIT);
