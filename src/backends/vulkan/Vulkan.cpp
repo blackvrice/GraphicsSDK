@@ -267,7 +267,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
 #define DEVICE_FUNCTIONS(X) \
     X(DestroyDevice) X(GetDeviceQueue) X(DeviceWaitIdle) X(QueueWaitIdle) X(QueueSubmit) \
     X(CreateBuffer) X(DestroyBuffer) X(GetBufferMemoryRequirements) X(AllocateMemory) X(FreeMemory) X(BindBufferMemory) \
-    X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) \
+    X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) X(CmdResolveImage) \
     X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
     X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(CreateComputePipelines) X(DestroyPipeline) \
     X(CreateSampler) X(DestroySampler) X(CreateDescriptorSetLayout) X(DestroyDescriptorSetLayout) \
@@ -377,6 +377,7 @@ struct NativePipeline {
     VkRenderPass pass{};
     std::vector<Format> colors;
     std::optional<Format> depth;
+    std::uint32_t sampleCount{1};
     DepthState depthState;
     struct Input { std::uint32_t slot{}, stride{}, extent{}, alignment{1}; VertexInputRate rate{}; };
     std::vector<Input> inputs;
@@ -462,7 +463,7 @@ struct Recording {
     std::shared_ptr<NativePipeline> selectedComputePipeline;
     std::vector<Format> passColors;
     bool passDepth{}, depthReadOnly{};
-    std::uint32_t width{}, height{};
+    std::uint32_t width{}, height{}, passSampleCount{1};
     std::array<VertexView, 32> vertices;
     IndexView indices;
     std::vector<std::unique_ptr<NativeBindings>> snapshots;
@@ -611,10 +612,18 @@ struct VulkanPipeline final : Pipeline {
     std::shared_ptr<NativePipeline> native;
     std::shared_ptr<int> token;
 };
+VkSampleCountFlagBits vulkanSampleCount(std::uint32_t count) {
+    switch (count) {
+    case 2u: return VK_SAMPLE_COUNT_2_BIT;
+    case 4u: return VK_SAMPLE_COUNT_4_BIT;
+    case 8u: return VK_SAMPLE_COUNT_8_BIT;
+    default: return VK_SAMPLE_COUNT_1_BIT;
+    }
+}
 VkImageLayout imageLayout(ResourceState state) {
     if (state == ResourceState::Present) return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    if (state == ResourceState::CopySource) return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    if (state == ResourceState::CopyDestination) return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    if (state == ResourceState::CopySource || state == ResourceState::ResolveSource) return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    if (state == ResourceState::CopyDestination || state == ResourceState::ResolveDestination) return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     if (state == ResourceState::RenderTarget) return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     if (state == ResourceState::ShaderRead) return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     if (state == ResourceState::DepthWrite) return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -624,8 +633,8 @@ VkImageLayout imageLayout(ResourceState state) {
 }
 VkAccessFlags access(ResourceState state) {
     if (state == ResourceState::Present) return 0;
-    if (state == ResourceState::CopySource) return VK_ACCESS_TRANSFER_READ_BIT;
-    if (state == ResourceState::CopyDestination) return VK_ACCESS_TRANSFER_WRITE_BIT;
+    if (state == ResourceState::CopySource || state == ResourceState::ResolveSource) return VK_ACCESS_TRANSFER_READ_BIT;
+    if (state == ResourceState::CopyDestination || state == ResourceState::ResolveDestination) return VK_ACCESS_TRANSFER_WRITE_BIT;
     if (state == ResourceState::RenderTarget) return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     if (state == ResourceState::ShaderRead) return VK_ACCESS_SHADER_READ_BIT;
     if (state == ResourceState::ConstantBuffer) return VK_ACCESS_UNIFORM_READ_BIT;
@@ -843,10 +852,18 @@ struct VulkanCommands final : CommandList {
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = texture(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::Present && target != ResourceState::UnorderedAccess)
+        const bool multisampled = (*a)->textureDesc.sampleCount > 1u;
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::Present && target != ResourceState::UnorderedAccess && target != ResourceState::ResolveSource && target != ResourceState::ResolveDestination)
             return fail(ErrorCode::Unsupported, "Vulkan texture transfer state unsupported");
         if (target == ResourceState::Present && !(*a)->swapchain) return fail(ErrorCode::InvalidArgument, "Present requires a swapchain backbuffer");
         if (target == ResourceState::UnorderedAccess && !(*a)->textureDesc.storage) return fail(ErrorCode::InvalidArgument, "UnorderedAccess state requires a storage texture");
+        if ((target == ResourceState::ResolveSource || target == ResourceState::ResolveDestination) && ((*a)->textureDesc.depthStencil || (*a)->swapchain))
+            return fail(ErrorCode::Unsupported, "Depth or swapchain texture resolve transition is unsupported");
+        if (target == ResourceState::ResolveDestination && multisampled)
+            return fail(ErrorCode::InvalidArgument, "Multisampled texture cannot be a resolve destination");
+        if ((target == ResourceState::CopySource || target == ResourceState::CopyDestination) && multisampled)
+            return fail(ErrorCode::InvalidArgument, "Multisampled texture does not support direct copy states; use ResolveSource");
+        if (target == ResourceState::ShaderRead && multisampled) return fail(ErrorCode::Unsupported, "Multisampled texture sampling unsupported");
         if (target == ResourceState::ShaderRead && (*a)->swapchain) return fail(ErrorCode::Unsupported, "Backbuffer sampling unsupported");
         if ((target == ResourceState::DepthWrite || target == ResourceState::DepthRead) && !(*a)->textureDesc.depthStencil)
             return fail(ErrorCode::InvalidArgument, "Depth state requires depth texture");
@@ -867,6 +884,8 @@ struct VulkanCommands final : CommandList {
         use.shadow = target; use.imageInitialized = true; return {};
     }
     Result<void> copyTexture(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& buffer, bool upload) {
+        if (image->textureDesc.sampleCount > 1u)
+            return fail(ErrorCode::InvalidArgument, "Direct buffer copy is invalid for multisampled textures; resolve first");
         if (buffer->desc.size < image->footprint.size ||
             buffer->desc.memory == (upload ? Memory::Readback : Memory::Upload))
             return fail(ErrorCode::InvalidArgument, "Texture copy buffer size or memory kind invalid");
@@ -920,6 +939,9 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> copyTextureRegion(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& buffer, const TextureCopyRegion& region, bool upload) {
         const auto& desc = image->textureDesc;
+        if (desc.sampleCount > 1u) {
+            return fail(ErrorCode::InvalidArgument, "Direct buffer copy is invalid for multisampled textures; resolve first");
+        }
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > desc.width || region.width > desc.width - region.x ||
@@ -986,6 +1008,53 @@ struct VulkanCommands final : CommandList {
         auto dst = buffer(destination); if (!dst) return std::unexpected(dst.error());
         return copyTextureRegion(*src, *dst, region, false);
     }
+    Result<void> resolveTexture(const TexturePtr& source, const TexturePtr& destination) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = texture(source); if (!src) return std::unexpected(src.error());
+        auto dst = texture(destination); if (!dst) return std::unexpected(dst.error());
+        if (*src == *dst) return fail(ErrorCode::InvalidArgument, "Resolve source and destination must be distinct textures");
+        if ((*src)->textureDesc.depthStencil || (*dst)->textureDesc.depthStencil)
+            return fail(ErrorCode::Unsupported, "Depth texture resolve is unsupported");
+        if ((*src)->swapchain || (*dst)->swapchain)
+            return fail(ErrorCode::Unsupported, "Swapchain backbuffer resolve is unsupported");
+        if ((*src)->textureDesc.sampleCount <= 1u || (*dst)->textureDesc.sampleCount != 1u)
+            return fail(ErrorCode::InvalidArgument, "resolveTexture requires multisampled source and single-sampled destination");
+        if ((*src)->textureDesc.width != (*dst)->textureDesc.width ||
+            (*src)->textureDesc.height != (*dst)->textureDesc.height ||
+            (*src)->textureDesc.format != (*dst)->textureDesc.format)
+            return fail(ErrorCode::InvalidArgument, "Resolve source and destination extent/format must match");
+        if (shadow(*src) != ResourceState::ResolveSource || shadow(*dst) != ResourceState::ResolveDestination)
+            return fail(ErrorCode::InvalidState, "resolveTexture requires ResolveSource and ResolveDestination states");
+        const auto srcUse = find(*src);
+        if (!(srcUse ? srcUse->contentsInitialized : (*src)->contentsInitialized))
+            return fail(ErrorCode::InvalidState, "Resolve source texture must have initialized contents");
+        record->uses.reserve(record->uses.size() + 2);
+        retain(*src);
+        retain(*dst);
+        VkImageMemoryBarrier barriers[2]{};
+        for (auto& b : barriers) {
+            b.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            b.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+            b.srcQueueFamilyIndex = b.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            b.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+        }
+        barriers[0].image = (*src)->image;
+        barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barriers[0].oldLayout = barriers[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barriers[1].image = (*dst)->image;
+        barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barriers[1].oldLayout = barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2, barriers);
+        VkImageResolve region{};
+        region.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+        region.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+        region.extent = {(*src)->textureDesc.width, (*src)->textureDesc.height, 1};
+        owner->native->CmdResolveImage(record->command, (*src)->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            (*dst)->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        find(*dst)->contentsInitialized = true;
+        return {};
+    }
     Result<void> beginRenderPass(const TexturePtr& target, Color clear) override {
         return beginRenderPass(RenderPassDesc{{{target, LoadOp::Clear, clear}}, {}});
     }
@@ -1024,7 +1093,7 @@ struct VulkanCommands final : CommandList {
             formats.push_back(a->textureDesc.format);
             VkAttachmentDescription attachment{};
             attachment.format = textureFormat(a->textureDesc.format);
-            attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            attachment.samples = vulkanSampleCount(a->textureDesc.sampleCount);
             attachment.loadOp = color.load == LoadOp::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -1055,7 +1124,7 @@ struct VulkanCommands final : CommandList {
             const auto use = find(a);
             if (depth.load == LoadOp::Load && !(use ? use->contentsInitialized : a->contentsInitialized)) return fail(ErrorCode::InvalidState, "Depth Load requires initialized contents");
             colors.push_back(a); views.push_back(nativeView);
-            VkAttachmentDescription attachment{}; attachment.format = VK_FORMAT_D32_SFLOAT; attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            VkAttachmentDescription attachment{}; attachment.format = VK_FORMAT_D32_SFLOAT; attachment.samples = vulkanSampleCount(a->textureDesc.sampleCount);
             attachment.loadOp = depth.load == LoadOp::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.initialLayout = attachment.finalLayout = imageLayout(shadow(a));
@@ -1085,7 +1154,7 @@ struct VulkanCommands final : CommandList {
         for (auto& v : retainedViews) record->textureViews.push_back(std::move(v));
         record->passes.push_back(std::move(pass));
         record->passDepth = hasDepth; record->depthReadOnly = description.depth.readOnly;
-        record->passColors = std::move(formats); record->width = desc.width; record->height = desc.height; record->selectedPipeline.reset(); record->selectedBindings = {};
+        record->passColors = std::move(formats); record->width = desc.width; record->height = desc.height; record->passSampleCount = desc.sampleCount; record->selectedPipeline.reset(); record->selectedBindings = {};
         owner->native->CmdBeginRenderPass(record->command, &begin, VK_SUBPASS_CONTENTS_INLINE);
         const VkViewport viewport{0, float(desc.height), float(desc.width), -float(desc.height), 0, 1};
         const VkRect2D scissor{{0, 0}, {desc.width, desc.height}};
@@ -1105,6 +1174,7 @@ struct VulkanCommands final : CommandList {
         if (value->owner != owner) return fail(ErrorCode::WrongDevice, "Pipeline belongs to another generation");
         if (value->native->isCompute) return fail(ErrorCode::InvalidArgument, "Graphics setPipeline rejects a compute pipeline");
         if (value->native->colors != record->passColors || value->native->depth.has_value() != record->passDepth) return fail(ErrorCode::InvalidArgument, "Pipeline outputs do not match active pass");
+        if (value->native->sampleCount != record->passSampleCount) return fail(ErrorCode::InvalidArgument, "Pipeline sample count does not match active pass");
         if (std::find(record->pipelines.begin(), record->pipelines.end(), value->native) == record->pipelines.end()) record->pipelines.push_back(value->native);
         record->selectedPipeline = value->native;
         record->selectedBindings = {};
@@ -1157,6 +1227,7 @@ struct VulkanCommands final : CommandList {
             }
             if (a->swapchain) return fail(ErrorCode::InvalidArgument, "Swapchain backbuffer sampling unsupported");
             if (a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Depth texture sampling unsupported");
+            if (a->textureDesc.sampleCount > 1u) return fail(ErrorCode::Unsupported, "Multisampled texture sampling unsupported");
             if (shadow(a) != ResourceState::ShaderRead) return fail(ErrorCode::InvalidState, "Texture binding requires ShaderRead");
             const auto use = find(a);
             if (!(use ? use->contentsInitialized : a->contentsInitialized)) return fail(ErrorCode::InvalidState, "Sampled texture must have initialized contents");
@@ -1750,6 +1821,25 @@ struct VulkanDevice final : Device {
         result.texture2D = result.copySource && result.copyDestination && (isDepth ? result.depthStencil : result.sampled);
         result.partialRegionCopy = result.texture2D && !isDepth;
         result.storage = !isDepth && (features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
+        result.sampleCounts = result.texture2D ? 1u : 0u;
+        if (result.texture2D && (isDepth ? result.depthStencil : result.renderTarget)) {
+            const VkImageUsageFlags msaaUsage = isDepth
+                ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+                : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+            VkImageFormatProperties msaaProps{};
+            if (owner->native->instance->GetPhysicalDeviceImageFormatProperties(
+                    owner->physical, vkFormat, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, msaaUsage, 0, &msaaProps) == VK_SUCCESS) {
+                const VkSampleCountFlags fbMask = isDepth
+                    ? owner->limits.framebufferDepthSampleCounts
+                    : owner->limits.framebufferColorSampleCounts;
+                const VkSampleCountFlags supportedMask = msaaProps.sampleCounts & fbMask;
+                for (const std::uint32_t count : {2u, 4u, 8u}) {
+                    if ((supportedMask & vulkanSampleCount(count)) != 0u) {
+                        result.sampleCounts |= count;
+                    }
+                }
+            }
+        }
         return result;
     }
     Result<void> checkStatus() override { return owner->poll(); }
@@ -1833,22 +1923,34 @@ struct VulkanDevice final : Device {
                 return fail(ErrorCode::Unsupported, "Adapter format lacks Vulkan storage image support");
             }
         }
-        const VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-            (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0u) | (desc.storage ? VK_IMAGE_USAGE_STORAGE_BIT : 0u));
+        const VkSampleCountFlagBits sampleBit = vulkanSampleCount(desc.sampleCount);
+        const VkImageUsageFlags usage = desc.sampleCount > 1u
+            ? (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
+            : (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+               (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0u) | (desc.storage ? VK_IMAGE_USAGE_STORAGE_BIT : 0u)));
         VkImageFormatProperties properties{};
         const auto r = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, format,
             VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties);
         if (r == VK_ERROR_FORMAT_NOT_SUPPORTED) return fail(ErrorCode::Unsupported, "Vulkan color image format unsupported", r);
         if (auto ok = owner->accept(r, "vkGetPhysicalDeviceImageFormatProperties"); !ok) return std::unexpected(ok.error());
-        if (desc.width > properties.maxExtent.width || desc.height > properties.maxExtent.height || !(properties.sampleCounts & VK_SAMPLE_COUNT_1_BIT))
-            return fail(ErrorCode::Unsupported, "Vulkan image exceeds adapter format limits");
+        const VkSampleCountFlags fbMask = desc.depthStencil
+            ? owner->limits.framebufferDepthSampleCounts
+            : owner->limits.framebufferColorSampleCounts;
+        if (desc.width > properties.maxExtent.width || desc.height > properties.maxExtent.height ||
+            !(properties.sampleCounts & sampleBit) ||
+            (desc.sampleCount > 1u && !(fbMask & sampleBit)))
+            return fail(ErrorCode::Unsupported, "Vulkan image exceeds adapter format or MSAA sample limits");
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->textureDesc = desc;
-        const auto rowBytes = desc.width * texelBytes(desc.format);
-        const auto rowPitch = (rowBytes + 255u) & ~255u;
-        a->footprint = {std::uint64_t(rowPitch) * desc.height, rowPitch, rowBytes, desc.height};
+        if (desc.sampleCount == 1u) {
+            const auto rowBytes = desc.width * texelBytes(desc.format);
+            const auto rowPitch = (rowBytes + 255u) & ~255u;
+            a->footprint = {std::uint64_t(rowPitch) * desc.height, rowPitch, rowBytes, desc.height};
+        } else {
+            a->footprint = {};
+        }
         VkImageCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
         info.imageType = VK_IMAGE_TYPE_2D; info.format = format; info.extent = {desc.width, desc.height, 1};
-        info.mipLevels = info.arrayLayers = 1; info.samples = VK_SAMPLE_COUNT_1_BIT; info.tiling = VK_IMAGE_TILING_OPTIMAL;
+        info.mipLevels = info.arrayLayers = 1; info.samples = sampleBit; info.tiling = VK_IMAGE_TILING_OPTIMAL;
         info.usage = usage; info.sharingMode = VK_SHARING_MODE_EXCLUSIVE; info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         if (auto ok = owner->accept(vulkan::acquireOutput(a->image, owner->native->CreateImage, owner->native->handle, &info, nullptr), "vkCreateImage"); !ok) return std::unexpected(ok.error());
         VkMemoryRequirements req{}; owner->native->GetImageMemoryRequirements(owner->native->handle, a->image, &req);
@@ -1918,6 +2020,20 @@ struct VulkanDevice final : Device {
         if (desc.vertex.format != ShaderFormat::SPIRV || (hasFragment && desc.fragment.format != ShaderFormat::SPIRV))
             return fail(ErrorCode::Unsupported, "Vulkan requires explicit SPIRV shader format");
         if (auto ok = validateRenderTargets(targets, desc.depthState); !ok) return std::unexpected(ok.error());
+        if (targets.sampleCount > 1u) {
+            for (const auto colorFormat : targets.colors) {
+                auto support = queryFormatSupport(colorFormat);
+                if (!support) return std::unexpected(support.error());
+                if ((support->sampleCounts & targets.sampleCount) == 0u)
+                    return fail(ErrorCode::Unsupported, "Adapter does not support pipeline color MSAA sample count");
+            }
+            if (targets.depth) {
+                auto support = queryFormatSupport(*targets.depth);
+                if (!support) return std::unexpected(support.error());
+                if ((support->sampleCounts & targets.sampleCount) == 0u)
+                    return fail(ErrorCode::Unsupported, "Adapter does not support pipeline depth MSAA sample count");
+            }
+        }
         if (!hasFragment && !targets.colors.empty()) return fail(ErrorCode::InvalidArgument, "Color outputs require a fragment shader");
         if (targets.colors.size() > owner->maxColorAttachments) return fail(ErrorCode::Unsupported, "Color outputs exceed adapter limit");
         if (targets.depth) {
@@ -1953,7 +2069,7 @@ struct VulkanDevice final : Device {
             const VkFormatFeatureFlags required = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | (desc.alphaBlend ? VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT : 0);
             if ((properties.optimalTilingFeatures & required) != required) return fail(ErrorCode::Unsupported, "Adapter format lacks attachment/blending support");
         }
-        auto p = std::make_shared<NativePipeline>(); p->native = owner->native; p->colors = targets.colors; p->depth = targets.depth; p->depthState = desc.depthState;
+        auto p = std::make_shared<NativePipeline>(); p->native = owner->native; p->colors = targets.colors; p->depth = targets.depth; p->sampleCount = targets.sampleCount; p->depthState = desc.depthState;
         p->bindings = resourceLayout; p->sampled = desc.sampledTexture; p->minimumBytes.resize(resourceLayout.entries.size());
         std::array<unsigned, 3> totals{}; std::array<std::array<unsigned, 3>, 2> perStage{};
         auto stages = [](ShaderVisibility v) -> VkShaderStageFlags { return v == ShaderVisibility::All ? VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT : v == ShaderVisibility::Vertex ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT; };
@@ -2023,17 +2139,18 @@ struct VulkanDevice final : Device {
         VkPipelineLayoutCreateInfo layout{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         if (p->setLayout) { layout.setLayoutCount = 1; layout.pSetLayouts = &p->setLayout; }
         if (auto ok = owner->accept(vulkan::acquireOutput(p->layout, owner->native->CreatePipelineLayout, owner->native->handle, &layout, nullptr), "vkCreatePipelineLayout"); !ok) return std::unexpected(ok.error());
+        const VkSampleCountFlagBits sampleBit = vulkanSampleCount(targets.sampleCount);
         std::vector<VkAttachmentDescription> attachments;
         std::vector<VkAttachmentReference> references;
         for (auto format : targets.colors) {
             VkAttachmentDescription a{}; a.format = textureFormat(format);
-            a.samples = VK_SAMPLE_COUNT_1_BIT; a.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; a.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            a.samples = sampleBit; a.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; a.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             a.initialLayout = a.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             references.push_back({static_cast<std::uint32_t>(attachments.size()), a.initialLayout}); attachments.push_back(a);
         }
         VkAttachmentReference depthReference{};
         if (targets.depth) {
-            VkAttachmentDescription a{}; a.format = VK_FORMAT_D32_SFLOAT; a.samples = VK_SAMPLE_COUNT_1_BIT;
+            VkAttachmentDescription a{}; a.format = VK_FORMAT_D32_SFLOAT; a.samples = sampleBit;
             a.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; a.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             a.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; a.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             a.initialLayout = a.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -2054,7 +2171,7 @@ struct VulkanDevice final : Device {
         VkPipelineInputAssemblyStateCreateInfo assembly{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO}; assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkPipelineViewportStateCreateInfo viewport{VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO}; viewport.viewportCount = viewport.scissorCount = 1;
         VkPipelineRasterizationStateCreateInfo raster{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO}; raster.polygonMode = VK_POLYGON_MODE_FILL; raster.cullMode = VK_CULL_MODE_NONE; raster.frontFace = VK_FRONT_FACE_CLOCKWISE; raster.lineWidth = 1;
-        VkPipelineMultisampleStateCreateInfo samples{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO}; samples.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+        VkPipelineMultisampleStateCreateInfo samples{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO}; samples.rasterizationSamples = sampleBit;
         std::vector<VkPipelineColorBlendAttachmentState> blending(targets.colors.size());
         for (auto& b : blending) {
             b.blendEnable = desc.alphaBlend; b.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; b.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; b.colorBlendOp = VK_BLEND_OP_ADD;

@@ -30,7 +30,7 @@ struct MemoryBudget {
     MemorySegment segment{MemorySegment::Local};
     std::uint64_t budgetBytes{}, usageBytes{}, availableForReservationBytes{}, reservationBytes{};
 };
-enum class ResourceState { Common, CopySource, CopyDestination, ShaderRead, RenderTarget, Present, VertexBuffer, IndexBuffer, VertexAndIndexBuffer, ConstantBuffer, DepthWrite, DepthRead, UnorderedAccess };
+enum class ResourceState { Common, CopySource, CopyDestination, ShaderRead, RenderTarget, Present, VertexBuffer, IndexBuffer, VertexAndIndexBuffer, ConstantBuffer, DepthWrite, DepthRead, UnorderedAccess, ResolveSource, ResolveDestination };
 enum class IndexFormat { UInt16, UInt32 };
 struct Color { float r{}, g{}, b{}, a{1}; };
 // Active render-pass viewport in top-left pixel coordinates with depth bounds in [0, 1].
@@ -40,7 +40,7 @@ struct Viewport {
     bool operator==(const Viewport&) const = default;
 };
 struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; bool storage{}; };
-struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA8UNorm}; bool renderTarget{}, depthStencil{}, storage{}; };
+struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA8UNorm}; bool renderTarget{}, depthStencil{}, storage{}; std::uint32_t sampleCount{1}; };
 enum class TextureViewUsage { ShaderRead, RenderTarget, DepthStencil, Storage };
 // Subresource view descriptor over a Texture. When format is unset, inherits the parent texture format.
 struct TextureViewDesc {
@@ -86,6 +86,8 @@ struct FormatSupport {
     bool copyDestination{};
     bool partialRegionCopy{};
     bool storage{};
+    // Bitmask of supported sample counts among 1, 2, 4, 8 for attachment creation with this format.
+    std::uint32_t sampleCounts{1};
     bool operator==(const FormatSupport&) const = default;
 };
 struct DeviceCaps {

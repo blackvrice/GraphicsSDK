@@ -36,6 +36,8 @@ Result<std::shared_ptr<NativePipeline>> graphics(State& owner,const GraphicsPipe
     auto p=std::make_shared<NativePipeline>();p->vertices=desc.vertexLayout;p->bindings=desc.bindingLayout;
     p->targets=desc.renderTargets.value_or(RenderTargetLayout{{desc.colorFormat},{}});p->depthState=desc.depthState;p->sampled=desc.sampledTexture;
     if(auto ok=validateRenderTargets(p->targets,p->depthState);!ok)return std::unexpected(ok.error());
+    if(p->targets.sampleCount>1u && ![owner.device supportsTextureSampleCount:p->targets.sampleCount])
+        return fail(ErrorCode::Unsupported,"Metal device does not support pipeline MSAA sample count");
     if(desc.sampledTexture){
         if(!p->bindings.entries.empty()||!p->bindings.samplers.empty())return fail(ErrorCode::InvalidArgument,"sampledTexture and custom Metal layout are exclusive");
         p->bindings.entries={{BindingType::Texture2D,0,1,0,ShaderVisibility::Fragment}};
@@ -77,6 +79,7 @@ Result<std::shared_ptr<NativePipeline>> graphics(State& owner,const GraphicsPipe
             color.blendingEnabled=desc.alphaBlend; color.sourceRGBBlendFactor=MTLBlendFactorSourceAlpha;color.destinationRGBBlendFactor=MTLBlendFactorOneMinusSourceAlpha;
             color.sourceAlphaBlendFactor=MTLBlendFactorOne;color.destinationAlphaBlendFactor=MTLBlendFactorOneMinusSourceAlpha;}
         if(p->targets.depth)descriptor.depthAttachmentPixelFormat=pixelFormat(*p->targets.depth);
+        descriptor.rasterSampleCount=p->targets.sampleCount;
         NSError* error=nil;MTLRenderPipelineReflection* reflection=nil;
         p->pipeline=[owner.device newRenderPipelineStateWithDescriptor:descriptor options:MTLPipelineOptionArgumentInfo|MTLPipelineOptionBufferTypeInfo reflection:&reflection error:&error];
         if(!p->pipeline||!reflection){const char* message=error.localizedDescription.UTF8String;return fail(ErrorCode::BackendFailure,message?message:"Metal render pipeline/reflection creation failed",error.code);}

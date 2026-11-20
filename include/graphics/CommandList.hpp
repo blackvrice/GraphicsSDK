@@ -29,6 +29,10 @@ public:
         const BufferPtr& source, const TexturePtr& destination, const TextureCopyRegion& region) = 0;
     [[nodiscard]] virtual Result<void> copyTextureToBufferRegion(
         const TexturePtr& source, const BufferPtr& destination, const TextureCopyRegion& region) = 0;
+    // Resolves a multisampled color texture (sampleCount > 1) into a single-sampled color texture
+    // of matching extent and format. Runs outside an active render pass and requires ResolveSource /
+    // ResolveDestination states. Depth resolve is Unsupported. Validation rejection is atomic.
+    [[nodiscard]] virtual Result<void> resolveTexture(const TexturePtr& source, const TexturePtr& destination) = 0;
     [[nodiscard]] virtual Result<void> beginRenderPass(const TexturePtr&, Color clear) = 0;
     [[nodiscard]] virtual Result<void> beginRenderPass(const RenderPassDesc&) = 0;
     [[nodiscard]] virtual Result<void> endRenderPass() = 0;

@@ -7,12 +7,15 @@ namespace {
 auto bad(const char* message){return std::unexpected(Error{ErrorCode::InvalidArgument,message});}
 bool colorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float || f==Format::BGRA8UNorm;}
 bool loadOp(LoadOp op){return op==LoadOp::Clear || op==LoadOp::Load;}
+bool validSampleCount(std::uint32_t n){return n==1u || n==2u || n==4u || n==8u;}
 }
 Result<void> validateTextureDescription(TextureDesc d) {
     if(!d.width || !d.height || d.width>16384 || d.height>16384 ||
        (!colorFormat(d.format) && d.format!=Format::D32Float) ||
        d.depthStencil!=(d.format==Format::D32Float) ||
-       (d.depthStencil && (d.renderTarget || d.storage)))return bad("Invalid texture extent/format/attachment usage");
+       (d.depthStencil && (d.renderTarget || d.storage)) ||
+       !validSampleCount(d.sampleCount) ||
+       (d.sampleCount>1u && ((!d.renderTarget && !d.depthStencil) || d.storage)))return bad("Invalid texture extent/format/attachment usage");
     return {};
 }
 Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureViewDesc viewDesc) {
@@ -40,6 +43,9 @@ Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureView
     }
     if (viewDesc.usage == TextureViewUsage::ShaderRead && textureDesc.depthStencil) {
         return std::unexpected(Error{ErrorCode::Unsupported, "Depth texture sampling view is unsupported"});
+    }
+    if (viewDesc.usage == TextureViewUsage::ShaderRead && textureDesc.sampleCount > 1u) {
+        return std::unexpected(Error{ErrorCode::Unsupported, "Multisampled texture sampling view is unsupported"});
     }
     if (viewDesc.usage == TextureViewUsage::RenderTarget && (!textureDesc.renderTarget || textureDesc.depthStencil)) {
         return bad("RenderTarget view requires a color renderTarget texture");
@@ -77,6 +83,7 @@ Result<TextureFootprint> computeTextureRegionFootprint(
 }
 Result<void> validateRenderTargets(const RenderTargetLayout& layout,DepthState depth) {
     if(layout.colors.size()>8 || (layout.colors.empty() && !layout.depth))return bad("Render layout requires 1..8 color attachments or depth");
+    if(!validSampleCount(layout.sampleCount))return bad("Render layout sampleCount must be 1, 2, 4, or 8");
     for(auto f:layout.colors)if(!colorFormat(f))return bad("Color attachment requires a color format");
     if(layout.depth && *layout.depth!=Format::D32Float)return bad("Only D32Float depth is supported");
     if(depth.compare<CompareOp::Never || depth.compare>CompareOp::Always ||
@@ -87,7 +94,7 @@ Result<void> validateRenderPass(const RenderPassDesc& pass) {
     const bool hasDepth = pass.depth.texture || pass.depth.view;
     if(pass.colors.size()>8 || (pass.colors.empty() && !hasDepth))return bad("Render pass requires color or depth attachments");
     std::unordered_set<const Texture*> used;
-    std::uint32_t width=0,height=0;
+    std::uint32_t width=0,height=0,samples=0;
     auto attachment=[&](const TexturePtr& rawTexture, const TextureViewPtr& view, bool depth)->Result<void> {
         if(rawTexture && view)return bad("Specify either texture or view on attachment, not both");
         TexturePtr texture = rawTexture;
@@ -105,7 +112,8 @@ Result<void> validateRenderPass(const RenderPassDesc& pass) {
         auto valid=validateTextureDescription(d);if(!valid)return valid;
         if(depth?!d.depthStencil:(!d.renderTarget || !colorFormat(d.format)))return bad("Incorrect render attachment usage");
         if(width && (width!=d.width || height!=d.height))return bad("Render attachment extents must match");
-        width=d.width;height=d.height;return {};
+        if(samples && samples!=d.sampleCount)return bad("Render attachment sample counts must match");
+        width=d.width;height=d.height;samples=d.sampleCount;return {};
     };
     for(const auto& color:pass.colors) {
         if(!loadOp(color.load))return bad("Invalid color load operation");

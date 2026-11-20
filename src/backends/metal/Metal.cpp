@@ -112,7 +112,7 @@ struct Attachment {
     bool readOnly{};
     std::shared_ptr<NativeTextureView> textureView;
 };
-enum class OperationKind { Buffer, UploadTexture, ReadTexture, Pass, Compute };
+enum class OperationKind { Buffer, UploadTexture, ReadTexture, Pass, Compute, Resolve };
 struct Operation {
     std::shared_ptr<Allocation> source, destination;
     std::uint64_t bytes{};
@@ -412,6 +412,18 @@ struct MetalCommands final : CommandList {
                     [encoder endEncoding];
                     continue;
                 }
+                if (op.kind == OperationKind::Resolve) {
+                    MTLRenderPassDescriptor* descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+                    if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal resolve pass descriptor allocation failed");
+                    descriptor.colorAttachments[0].texture = op.source->texture;
+                    descriptor.colorAttachments[0].loadAction = MTLLoadActionLoad;
+                    descriptor.colorAttachments[0].storeAction = MTLStoreActionMultisampleResolve;
+                    descriptor.colorAttachments[0].resolveTexture = op.destination->texture;
+                    id<MTLRenderCommandEncoder> encoder = [next renderCommandEncoderWithDescriptor:descriptor];
+                    if (!encoder) return fail(ErrorCode::BackendFailure, "Metal resolve encoder creation failed");
+                    [encoder endEncoding];
+                    continue;
+                }
                 if (op.kind == OperationKind::Pass) {
                     MTLRenderPassDescriptor* descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
                     if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal pass descriptor allocation failed");
@@ -611,12 +623,22 @@ struct MetalCommands final : CommandList {
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
+        const bool multisampled = (*a)->textureDesc.sampleCount > 1u;
         if ((*a)->backbuffer) {
             if (target != ResourceState::RenderTarget && target != ResourceState::CopySource && target != ResourceState::Present)
                 return fail(ErrorCode::Unsupported, "Metal drawable supports RenderTarget, CopySource and Present");
         } else if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
-            target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::ShaderRead && target != ResourceState::UnorderedAccess)
+            target != ResourceState::RenderTarget && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::ShaderRead && target != ResourceState::UnorderedAccess &&
+            target != ResourceState::ResolveSource && target != ResourceState::ResolveDestination)
             return fail(ErrorCode::Unsupported, "Metal texture state is outside the transfer/pass/compute slice");
+        if ((target == ResourceState::ResolveSource || target == ResourceState::ResolveDestination) && ((*a)->textureDesc.depthStencil || (*a)->backbuffer))
+            return fail(ErrorCode::Unsupported, "Metal depth or drawable resolve transition is unsupported");
+        if (target == ResourceState::ResolveDestination && multisampled)
+            return fail(ErrorCode::InvalidArgument, "Metal multisampled texture cannot be a resolve destination");
+        if ((target == ResourceState::CopySource || target == ResourceState::CopyDestination) && multisampled)
+            return fail(ErrorCode::InvalidArgument, "Metal multisampled texture does not support direct copy states; use ResolveSource");
+        if (target == ResourceState::ShaderRead && multisampled)
+            return fail(ErrorCode::Unsupported, "Metal multisampled texture sampling unsupported");
         if (target == ResourceState::UnorderedAccess && !(*a)->textureDesc.storage)
             return fail(ErrorCode::InvalidArgument, "Metal UnorderedAccess requires a storage texture");
         if (target == ResourceState::RenderTarget && !(*a)->textureDesc.renderTarget)
@@ -649,6 +671,8 @@ struct MetalCommands final : CommandList {
     }
     bool initialized(const std::shared_ptr<Allocation>& a) { auto u = find(a); return u ? u->initialized : a->initialized; }
     Result<void> textureCopy(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& host, bool upload) {
+        if (image->textureDesc.sampleCount > 1u)
+            return fail(ErrorCode::InvalidArgument, "Metal direct buffer copy is invalid for multisampled textures; resolve first");
         if (host->desc.size < image->footprint.size || (upload ? host->desc.memory == Memory::Readback : host->desc.memory == Memory::Upload))
             return fail(ErrorCode::InvalidArgument, "Metal texture copy footprint/memory invalid");
         if (shadow(image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource) ||
@@ -668,6 +692,8 @@ struct MetalCommands final : CommandList {
     }
     Result<void> textureCopyRegion(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& host, const TextureCopyRegion& region, bool upload) {
         const auto& desc = image->textureDesc;
+        if (desc.sampleCount > 1u)
+            return fail(ErrorCode::InvalidArgument, "Metal direct buffer copy is invalid for multisampled textures; resolve first");
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > desc.width || region.width > desc.width - region.x ||
@@ -718,6 +744,35 @@ struct MetalCommands final : CommandList {
         auto src = allocation(source); if (!src) return std::unexpected(src.error());
         auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
         return textureCopyRegion(*src, *dst, region, false);
+    }
+    Result<void> resolveTexture(const TexturePtr& source, const TexturePtr& destination) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = allocation(source); if (!src) return std::unexpected(src.error());
+        auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
+        if (*src == *dst) return fail(ErrorCode::InvalidArgument, "Metal resolve source and destination must be distinct textures");
+        if ((*src)->textureDesc.depthStencil || (*dst)->textureDesc.depthStencil)
+            return fail(ErrorCode::Unsupported, "Metal depth texture resolve is unsupported");
+        if ((*src)->backbuffer || (*dst)->backbuffer)
+            return fail(ErrorCode::Unsupported, "Metal drawable resolve is unsupported");
+        if ((*src)->textureDesc.sampleCount <= 1u || (*dst)->textureDesc.sampleCount != 1u)
+            return fail(ErrorCode::InvalidArgument, "Metal resolveTexture requires multisampled source and single-sampled destination");
+        if ((*src)->textureDesc.width != (*dst)->textureDesc.width ||
+            (*src)->textureDesc.height != (*dst)->textureDesc.height ||
+            (*src)->textureDesc.format != (*dst)->textureDesc.format)
+            return fail(ErrorCode::InvalidArgument, "Metal resolve source and destination extent/format must match");
+        if (shadow(*src) != ResourceState::ResolveSource || shadow(*dst) != ResourceState::ResolveDestination)
+            return fail(ErrorCode::InvalidState, "Metal resolveTexture requires ResolveSource and ResolveDestination states");
+        if (!initialized(*src)) return fail(ErrorCode::InvalidState, "Metal resolve source texture contents uninitialized");
+        uses.reserve(uses.size() + 2);
+        operations.reserve(operations.size() + 1);
+        retain(*src);
+        retain(*dst).initialized = true;
+        Operation op;
+        op.kind = OperationKind::Resolve;
+        op.source = *src;
+        op.destination = *dst;
+        operations.push_back(std::move(op));
+        return {};
     }
     Result<void> beginRenderPass(const TexturePtr& value, Color clear) override { return beginRenderPass(RenderPassDesc{{{value,LoadOp::Clear,clear}},{}}); }
     Result<void> beginRenderPass(const RenderPassDesc& desc) override {
@@ -779,6 +834,7 @@ struct MetalCommands final : CommandList {
         std::vector<Format> colors;std::optional<Format> depth;
         for(const auto& a:operations[passOperation].attachments){if(a.allocation->textureDesc.depthStencil)depth=a.allocation->textureDesc.format;else colors.push_back(a.allocation->textureDesc.format);}
         if(p->native->targets.colors!=colors||p->native->targets.depth!=depth)return fail(ErrorCode::InvalidArgument,"Metal pipeline/pass attachment formats differ");
+        if(p->native->targets.sampleCount!=operations[passOperation].attachments.front().allocation->textureDesc.sampleCount)return fail(ErrorCode::InvalidArgument,"Metal pipeline/pass sample counts differ");
         selected=p->native;bindings.reset();return {};
     }
     Result<void> bindTexture(const TexturePtr& value) override {
@@ -817,6 +873,7 @@ struct MetalCommands final : CommandList {
             }
             if(a->backbuffer)return fail(ErrorCode::InvalidArgument,"Metal backbuffer sampling unsupported");
             if(a->textureDesc.depthStencil)return fail(ErrorCode::Unsupported,"Metal depth sampling unsupported");
+            if(a->textureDesc.sampleCount>1u)return fail(ErrorCode::Unsupported,"Metal multisampled texture sampling unsupported");
             if(shadow(a)!=ResourceState::ShaderRead||!initialized(a))return fail(ErrorCode::InvalidState,"Metal sampling requires initialized ShaderRead texture");
             (*next)[*at].allocation=a;(*next)[*at].textureView=v;
         }
@@ -1153,6 +1210,12 @@ struct MetalDevice final : Device {
         result.copyDestination = true;
         result.partialRegionCopy = !isDepth;
         result.storage = !isDepth;
+        result.sampleCounts = 1u;
+        for (const std::uint32_t count : {2u, 4u, 8u}) {
+            if ([owner->device supportsTextureSampleCount:count]) {
+                result.sampleCounts |= count;
+            }
+        }
         return result;
     }
     Result<void> checkStatus() override { return owner->poll(); }
@@ -1200,6 +1263,9 @@ struct MetalDevice final : Device {
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (desc.sampleCount > 1u && ![owner->device supportsTextureSampleCount:desc.sampleCount]) {
+            return fail(ErrorCode::Unsupported, "Metal device does not support requested MSAA sample count");
+        }
         @autoreleasepool {
             const auto format = desc.format == Format::RGBA8UNorm ? MTLPixelFormatRGBA8Unorm :
                 desc.format == Format::BGRA8UNorm ? MTLPixelFormatBGRA8Unorm :
@@ -1207,9 +1273,14 @@ struct MetalDevice final : Device {
             MTLTextureDescriptor* descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format width:desc.width height:desc.height mipmapped:NO];
             if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal texture descriptor creation failed");
             descriptor.resourceOptions = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
-            descriptor.usage = MTLTextureUsageShaderRead;
-            if (desc.renderTarget || desc.depthStencil) descriptor.usage |= MTLTextureUsageRenderTarget;
-            if (desc.storage) descriptor.usage |= MTLTextureUsageShaderWrite;
+            if (desc.sampleCount > 1u) {
+                descriptor.textureType = MTLTextureType2DMultisample;
+                descriptor.sampleCount = desc.sampleCount;
+                descriptor.usage = MTLTextureUsageRenderTarget;
+            } else {
+                descriptor.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+                if (desc.storage) descriptor.usage |= MTLTextureUsageShaderWrite;
+            }
             auto a = std::make_shared<Allocation>(); a->textureDesc = desc;
             a->texture = [owner->device newTextureWithDescriptor:descriptor];
             if (!a->texture) return fail(ErrorCode::OutOfMemory, "Metal texture allocation failed");
@@ -1217,9 +1288,13 @@ struct MetalDevice final : Device {
             if (!a->bytes || a->texture.storageMode != MTLStorageModePrivate || a->texture.hazardTrackingMode != MTLHazardTrackingModeTracked ||
                 a->texture.pixelFormat != format || a->texture.width != desc.width || a->texture.height != desc.height)
                 return fail(ErrorCode::BackendFailure, "Metal texture descriptor/storage mismatch");
-            const auto rowBytes = desc.width * (desc.format == Format::RGBA16Float ? 8u : 4u);
-            const auto rowPitch = (rowBytes+255u)&~255u;
-            a->footprint = {std::uint64_t(rowPitch)*desc.height,rowPitch,rowBytes,desc.height};
+            if (desc.sampleCount == 1u) {
+                const auto rowBytes = desc.width * (desc.format == Format::RGBA16Float ? 8u : 4u);
+                const auto rowPitch = (rowBytes+255u)&~255u;
+                a->footprint = {std::uint64_t(rowPitch)*desc.height,rowPitch,rowBytes,desc.height};
+            } else {
+                a->footprint = {};
+            }
             auto value = std::make_shared<MetalTexture>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
             std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
             std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
@@ -1242,7 +1317,7 @@ struct MetalDevice final : Device {
             const MTLPixelFormat format = pixelFormat(*resolved->format);
             id<MTLTexture> nativeTex = [parent->allocation->texture
                 newTextureViewWithPixelFormat:format
-                textureType:MTLTextureType2D
+                textureType:(parent->allocation->textureDesc.sampleCount > 1u ? MTLTextureType2DMultisample : MTLTextureType2D)
                 levels:NSMakeRange(resolved->baseMipLevel, resolved->mipLevelCount)
                 slices:NSMakeRange(resolved->baseArrayLayer, resolved->arrayLayerCount)];
             if (!nativeTex) return fail(ErrorCode::OutOfMemory, "Metal texture view creation failed");

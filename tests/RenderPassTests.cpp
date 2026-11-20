@@ -126,6 +126,42 @@ void cpu(){
            gfx::ErrorCode::InvalidArgument, "Depth attachment rejects RenderTarget view");
     reject(gfx::validateRenderPass({{{color, L::Clear, {}}, {nullptr, L::Clear, {}, colorRtvView}}, {}}),
            gfx::ErrorCode::InvalidArgument, "Duplicate underlying texture via raw+view rejected");
+
+    // MSAA portable CPU contracts
+    for (const std::uint32_t samples : {2u, 4u, 8u}) {
+        take(gfx::validateTextureDescription({16, 16, F::RGBA8UNorm, true, false, false, samples}));
+        take(gfx::validateTextureDescription({16, 16, F::D32Float, false, true, false, samples}));
+        take(gfx::validateRenderTargets({{F::RGBA8UNorm}, F::D32Float, samples}, {true, true, C::Less}));
+    }
+    for (const std::uint32_t badSamples : {0u, 3u, 5u, 16u}) {
+        reject(gfx::validateTextureDescription({16, 16, F::RGBA8UNorm, true, false, false, badSamples}),
+               gfx::ErrorCode::InvalidArgument, "Invalid MSAA texture sampleCount");
+        reject(gfx::validateRenderTargets({{F::RGBA8UNorm}, {}, badSamples}),
+               gfx::ErrorCode::InvalidArgument, "Invalid MSAA render layout sampleCount");
+    }
+    reject(gfx::validateTextureDescription({16, 16, F::RGBA8UNorm, false, false, false, 4u}),
+           gfx::ErrorCode::InvalidArgument, "MSAA texture requires renderTarget or depthStencil");
+    reject(gfx::validateTextureDescription({16, 16, F::RGBA8UNorm, true, false, true, 4u}),
+           gfx::ErrorCode::InvalidArgument, "MSAA storage texture rejected");
+
+    const gfx::TextureDesc msaaColorDesc{16, 16, F::RGBA8UNorm, true, false, false, 4u};
+    const gfx::TextureDesc msaaDepthDesc{16, 16, F::D32Float, false, true, false, 4u};
+    const auto msaaRtv = take(gfx::validateTextureView(msaaColorDesc, {std::nullopt, gfx::TextureViewUsage::RenderTarget}));
+    const auto msaaDsv = take(gfx::validateTextureView(msaaDepthDesc, {std::nullopt, gfx::TextureViewUsage::DepthStencil}));
+    reject(gfx::validateTextureView(msaaColorDesc, {std::nullopt, gfx::TextureViewUsage::ShaderRead}),
+           gfx::ErrorCode::Unsupported, "MSAA ShaderRead view unsupported");
+
+    auto msaaColor = std::make_shared<Stub>(msaaColorDesc);
+    auto msaaDepth = std::make_shared<Stub>(msaaDepthDesc);
+    auto msaaColor2 = std::make_shared<Stub>(gfx::TextureDesc{16, 16, F::RGBA8UNorm, true, false, false, 2u});
+    auto msaaRtvView = std::make_shared<StubView>(msaaColor, msaaRtv);
+    auto msaaDsvView = std::make_shared<StubView>(msaaDepth, msaaDsv);
+    take(gfx::validateRenderPass({{{msaaColor}}, {msaaDepth}}));
+    take(gfx::validateRenderPass({{{nullptr, L::Clear, {}, msaaRtvView}}, {nullptr, L::Clear, 1.0f, false, msaaDsvView}}));
+    reject(gfx::validateRenderPass({{{msaaColor}}, {depth}}),
+           gfx::ErrorCode::InvalidArgument, "Mismatched MSAA color and 1x depth rejected");
+    reject(gfx::validateRenderPass({{{msaaColor}, {msaaColor2}}, {}}),
+           gfx::ErrorCode::InvalidArgument, "Mismatched MSAA color sample counts rejected");
 }
 constexpr auto vertex=R"(
 cbuffer Draw:register(b0){float4 color;float4 geometry;}

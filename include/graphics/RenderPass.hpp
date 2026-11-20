@@ -13,6 +13,7 @@ struct DepthState {
 struct RenderTargetLayout {
     std::vector<Format> colors{Format::RGBA8UNorm};
     std::optional<Format> depth;
+    std::uint32_t sampleCount{1};
     bool operator==(const RenderTargetLayout&) const = default;
 };
 enum class LoadOp { Clear, Load };

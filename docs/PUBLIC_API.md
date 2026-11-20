@@ -30,13 +30,15 @@ native 호출/스케줄링 시간까지 포함하는 hard real-time 상한은 �
 [펜스 대기 수정과 검증 범위](PHASE2_FENCE_WAIT_REPORT.md)를 따른다.
 
 Texture::footprint는 buffer-texture copy의 총 바이트, aligned rowPitch,
-유효 rowBytes 및 높이를 반환한다. 행 padding을 이미지 데이터로 해석하지 않는다.
-`Device::createTextureView(texture, desc)`는 지정 용도(`ShaderRead`, `RenderTarget`, `DepthStencil`;
-`Storage`는 Compute 전까지 `Unsupported`)와 subresource 범위의 `TextureView`를 생성한다.
+유효 rowBytes 및 높이를 반환한다(`sampleCount > 1`인 MSAA 텍스처는 직접 버퍼 복사를 허용하지 않으므로 `footprint()`가 0이다). 행 padding을 이미지 데이터로 해석하지 않는다.
+`Device::createTextureView(texture, desc)`는 지정 용도(`ShaderRead`, `RenderTarget`, `DepthStencil`, `Storage`)와 subresource 범위의 `TextureView`를 생성한다(`sampleCount > 1` MSAA 텍스처는 `RenderTarget`/`DepthStencil` 뷰를 허용하고 `ShaderRead` 뷰는 `Unsupported`).
 `desc.format`이 비어 있으면 부모 텍스처 포맷을 상속하며, `ColorAttachment::view`, `DepthAttachment::view`,
-`TextureBinding::view`, `CommandList::bindTextureView`로 바인딩할 수 있다(`texture`와 `view` 동시 지정은 거부).
+`TextureBinding::view`, `StorageTextureBinding::view`, `CommandList::bindTextureView`로 바인딩할 수 있다(`texture`와 `view` 동시 지정은 거부).
 뷰는 부모 텍스처 수명을 유지하며 GPU 제출 완료 전 조기 파괴되어도 네이티브 뷰 수명이 보존된다.
 [Texture View 보고서](PHASE8_TEXTURE_VIEW_REPORT.md)를 따른다.
+`TextureDesc::sampleCount`와 `RenderTargetLayout::sampleCount`는 `1`, `2`, `4`, `8`을 지원하며(`sampleCount > 1`은 `renderTarget` 또는 `depthStencil` 전용, `storage=false`), 어댑터별 지원 샘플 수는 `Device::queryFormatSupport(format).sampleCounts` 비트마스크로 조회한다.
+렌더 패스 내 모든 어태치먼트와 파이프라인의 `sampleCount`는 일치해야 하며, `CommandList::resolveTexture(source, destination)`는 렌더 패스 밖에서 `ResolveSource` 상태의 MSAA 컬러 텍스처를 `ResolveDestination` 상태의 동일 크기·동일 포맷 단일 샘플 컬러 텍스처로 리졸브한다(Depth·스왑체인 리졸브는 `Unsupported`, 검증 실패는 원자적 거부).
+[MSAA·Resolve 보고서](PHASE8_MSAA_REPORT.md)를 따른다.
 Buffer::write는 Upload, Buffer::read는 Readback 메모리에만 허용한다.
 
 CommandList는 transition, copy, color/depth render pass, pipeline, resource/vertex/index binding,
@@ -106,7 +108,7 @@ caps는 실제 구현 범위와 어댑터·SDK 유효 한도(`maxTextureDimensio
 `constantBufferAlignment`, `textureCopyRowAlignment`, `textureCopyOffsetAlignment`, `maxVertexStreams`,
 `maxConstantBufferSize`)를 나타낸다. `Device::queryFormatSupport(format)`은 생성 스레드에서 GPU 대기나
 자원 할당 없이 선택 어댑터와 SDK의 유효 `FormatSupport`(`texture2D`, `renderTarget`, `depthStencil`,
-`sampled`, `linearFilter`, `blendable`, `copySource`, `copyDestination`, `partialRegionCopy`)를 조회한다.
+`sampled`, `linearFilter`, `blendable`, `copySource`, `copyDestination`, `partialRegionCopy`, `storage`, `sampleCounts`)를 조회한다.
 알 수 없는 `Format` 값은 `InvalidArgument`, 다른 스레드는 `InvalidState`, 손실·퇴역 장치는 `DeviceLost`다.
 [GPU 한도·포맷 조회 보고서](PHASE8_CAPABILITY_REPORT.md)
 backendCompiled는 컴파일 여부이며 런타임 가용성을

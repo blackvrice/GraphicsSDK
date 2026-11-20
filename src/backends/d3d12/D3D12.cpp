@@ -78,10 +78,12 @@ D3D12_RESOURCE_STATES native(ResourceState state) {
     case ResourceState::DepthWrite:return D3D12_RESOURCE_STATE_DEPTH_WRITE;
     case ResourceState::DepthRead:return D3D12_RESOURCE_STATE_DEPTH_READ;
     case ResourceState::UnorderedAccess:return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+    case ResourceState::ResolveSource:return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
+    case ResourceState::ResolveDestination:return D3D12_RESOURCE_STATE_RESOLVE_DEST;
     }
     return D3D12_RESOURCE_STATE_COMMON;
 }
-bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::UnorderedAccess; }
+bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::ResolveDestination; }
 D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
     return visibility==ShaderVisibility::Vertex?D3D12_SHADER_VISIBILITY_VERTEX:visibility==ShaderVisibility::Fragment?D3D12_SHADER_VISIBILITY_PIXEL:D3D12_SHADER_VISIBILITY_ALL;
 }
@@ -268,21 +270,35 @@ struct DXTexture final : Texture, Retirable {
     TextureFootprint footprint() const override { return layout; }
     Result<void> initViews() {
         auto nativeDesc = resource->GetDesc();
-        UINT rows{}; UINT64 rowSize{}, total{};
-        owner->device->GetCopyableFootprints(&nativeDesc, 0, 1, 0, &placed, &rows, &rowSize, &total);
-        layout = {total, placed.Footprint.RowPitch, static_cast<UINT>(rowSize), rows};
+        if (desc.sampleCount == 1u) {
+            UINT rows{}; UINT64 rowSize{}, total{};
+            owner->device->GetCopyableFootprints(&nativeDesc, 0, 1, 0, &placed, &rows, &rowSize, &total);
+            layout = {total, placed.Footprint.RowPitch, static_cast<UINT>(rowSize), rows};
+        } else {
+            placed = {};
+            layout = {};
+        }
         if (desc.renderTarget) {
             D3D12_DESCRIPTOR_HEAP_DESC heap{}; heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; heap.NumDescriptors = 1;
             HRESULT result = owner->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&rtv));
             if (FAILED(result)) return owner->failure(result, "Create RTV heap failed");
-            owner->device->CreateRenderTargetView(resource.Get(), nullptr, rtv->GetCPUDescriptorHandleForHeapStart());
+            if (desc.sampleCount > 1u) {
+                D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+                rtvDesc.Format = native(desc.format);
+                rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
+                owner->device->CreateRenderTargetView(resource.Get(), &rtvDesc, rtv->GetCPUDescriptorHandleForHeapStart());
+            } else {
+                owner->device->CreateRenderTargetView(resource.Get(), nullptr, rtv->GetCPUDescriptorHandleForHeapStart());
+            }
         }
         if(desc.depthStencil) {
             D3D12_DESCRIPTOR_HEAP_DESC heap{};heap.Type=D3D12_DESCRIPTOR_HEAP_TYPE_DSV;heap.NumDescriptors=2;
             HRESULT result=owner->device->CreateDescriptorHeap(&heap,IID_PPV_ARGS(&dsv));
             if(FAILED(result))return owner->failure(result,"Create DSV heap failed");
             auto handle=dsv->GetCPUDescriptorHandleForHeapStart();
-            D3D12_DEPTH_STENCIL_VIEW_DESC view{};view.Format=DXGI_FORMAT_D32_FLOAT;view.ViewDimension=D3D12_DSV_DIMENSION_TEXTURE2D;
+            D3D12_DEPTH_STENCIL_VIEW_DESC view{};
+            view.Format=DXGI_FORMAT_D32_FLOAT;
+            view.ViewDimension=desc.sampleCount>1u?D3D12_DSV_DIMENSION_TEXTURE2DMS:D3D12_DSV_DIMENSION_TEXTURE2D;
             owner->device->CreateDepthStencilView(resource.Get(),&view,handle);
             handle.ptr+=owner->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);view.Flags=D3D12_DSV_FLAG_READ_ONLY_DEPTH;
             owner->device->CreateDepthStencilView(resource.Get(),&view,handle);
@@ -361,7 +377,7 @@ struct DXCommands final : CommandList {
     std::shared_ptr<DXPipeline> computePipeline;
     std::vector<std::shared_ptr<DXTexture>> colorTargets;
     std::shared_ptr<DXTexture> depthTarget;
-    UINT passWidth{},passHeight{};
+    UINT passWidth{},passHeight{},passSampleCount{1};
     bool depthReadOnly{};
     struct VertexBinding { std::shared_ptr<DXBuffer> buffer; UINT stride{},size{}; std::uint64_t offset{}; };
     std::array<VertexBinding,32> vertexBuffers{};
@@ -390,7 +406,7 @@ struct DXCommands final : CommandList {
     void clearRecordingState() {
         references.clear(); retained.clear(); uses.clear(); pipeline.reset(); computePipeline.reset();
         colorTargets.clear(); depthTarget.reset();
-        passWidth = passHeight = 0; depthReadOnly = false;
+        passWidth = passHeight = 0; passSampleCount = 1; depthReadOnly = false;
         boundResources.clear(); boundComputeResources.clear();
         vertexBuffers = {}; indexBuffer.reset(); indexSize = indexElementSize = 0;
         descriptorCount = 0; submitted = 0; renderPass = false; recording = false; ended = false;
@@ -493,6 +509,15 @@ struct DXCommands final : CommandList {
         auto status = ready(true); if (!status) return status;
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
         const bool depth=(*object)->desc.depthStencil;
+        const bool multisampled=(*object)->desc.sampleCount>1u;
+        if (next == ResourceState::ShaderRead && multisampled)
+            return invalid("Multisampled texture sampling is unsupported", ErrorCode::Unsupported);
+        if ((next == ResourceState::ResolveSource || next == ResourceState::ResolveDestination) && (depth || (*object)->backbuffer))
+            return invalid("Depth or swapchain texture resolve transition is unsupported", ErrorCode::Unsupported);
+        if (next == ResourceState::ResolveDestination && multisampled)
+            return invalid("Multisampled texture cannot be a resolve destination", ErrorCode::InvalidArgument);
+        if ((next == ResourceState::CopySource || next == ResourceState::CopyDestination) && multisampled)
+            return invalid("Multisampled texture does not support direct copy states; use ResolveSource", ErrorCode::InvalidArgument);
         if (!validState(next) || vertexState(next) || indexState(next) || next==ResourceState::ConstantBuffer || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
             (next == ResourceState::UnorderedAccess && !(*object)->desc.storage) ||
             (next == ResourceState::Present && !(*object)->backbuffer) || (next == ResourceState::ShaderRead && ((*object)->backbuffer || depth)) ||
@@ -522,6 +547,7 @@ struct DXCommands final : CommandList {
         auto status = ready(true); if (!status) return status;
         auto source = owned<DXBuffer>(src); auto destination = owned<DXTexture>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
+        if ((*destination)->desc.sampleCount > 1u) return invalid("Direct buffer copy is invalid for multisampled textures; resolve first", ErrorCode::InvalidArgument);
         if ((*source)->desc.memory == Memory::Readback || (*source)->desc.size < (*destination)->layout.size) return invalid("Upload buffer is too small or not copyable", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture upload requires CopySource/CopyDestination");
@@ -536,6 +562,7 @@ struct DXCommands final : CommandList {
         auto status = ready(true); if (!status) return status;
         auto source = owned<DXTexture>(src); auto destination = owned<DXBuffer>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
+        if ((*source)->desc.sampleCount > 1u) return invalid("Direct buffer copy is invalid for multisampled textures; resolve first", ErrorCode::InvalidArgument);
         if ((*destination)->desc.memory == Memory::Upload || (*destination)->desc.size < (*source)->layout.size) return invalid("Readback buffer is too small or not copyable", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture download requires CopySource/CopyDestination");
@@ -548,6 +575,9 @@ struct DXCommands final : CommandList {
     }
     Result<void> copyTextureRegion(const std::shared_ptr<DXTexture>& image, const std::shared_ptr<DXBuffer>& buffer, const TextureCopyRegion& region, bool upload) {
         const auto& desc = image->desc;
+        if (desc.sampleCount > 1u) {
+            return invalid("Direct buffer copy is invalid for multisampled textures; resolve first", ErrorCode::InvalidArgument);
+        }
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > desc.width || region.width > desc.width - region.x ||
@@ -602,6 +632,28 @@ struct DXCommands final : CommandList {
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
         return copyTextureRegion(*source, *destination, region, false);
     }
+    Result<void> resolveTexture(const TexturePtr& src, const TexturePtr& dst) override {
+        auto status = ready(true); if (!status) return status;
+        auto source = owned<DXTexture>(src); auto destination = owned<DXTexture>(dst);
+        if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
+        if (*source == *destination) return invalid("Resolve source and destination must be distinct textures", ErrorCode::InvalidArgument);
+        if ((*source)->desc.depthStencil || (*destination)->desc.depthStencil)
+            return invalid("Depth texture resolve is unsupported", ErrorCode::Unsupported);
+        if ((*source)->backbuffer || (*destination)->backbuffer)
+            return invalid("Swapchain backbuffer resolve is unsupported", ErrorCode::Unsupported);
+        if ((*source)->desc.sampleCount <= 1u || (*destination)->desc.sampleCount != 1u)
+            return invalid("resolveTexture requires multisampled source and single-sampled destination", ErrorCode::InvalidArgument);
+        if ((*source)->desc.width != (*destination)->desc.width ||
+            (*source)->desc.height != (*destination)->desc.height ||
+            (*source)->desc.format != (*destination)->desc.format)
+            return invalid("Resolve source and destination extent/format must match", ErrorCode::InvalidArgument);
+        if (current(**source) != ResourceState::ResolveSource || current(**destination) != ResourceState::ResolveDestination)
+            return invalid("resolveTexture requires ResolveSource and ResolveDestination states");
+        use((*source)->tracker, (*source)->resource);
+        use((*destination)->tracker, (*destination)->resource);
+        list->ResolveSubresource((*destination)->resource.Get(), 0, (*source)->resource.Get(), 0, native((*source)->desc.format));
+        return {};
+    }
     Result<void> beginRenderPass(const TexturePtr& ptr, Color clear) override {
         auto status = ready(true); if (!status) return status;
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());
@@ -646,7 +698,7 @@ struct DXCommands final : CommandList {
             depthHeap=(*object)->dsv;
         }
         const auto& extent=colors.empty()?depth:colors.front();
-        passWidth=extent->desc.width;passHeight=extent->desc.height;
+        passWidth=extent->desc.width;passHeight=extent->desc.height;passSampleCount=extent->desc.sampleCount;
         std::array<D3D12_CPU_DESCRIPTOR_HANDLE,8> handles{};
         for(UINT i=0;i<colors.size();++i) {
             use(colors[i]->tracker,colors[i]->resource);retain(colorHeaps[i]);handles[i]=colorHeaps[i]->GetCPUDescriptorHandleForHeapStart();
@@ -666,7 +718,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> endRenderPass() override {
         auto status = ready(); if (!status) return status;
-        if (!renderPass) return invalid("No active render pass"); renderPass = false;colorTargets.clear();depthTarget.reset();passWidth=passHeight=0;depthReadOnly=false;return {};
+        if (!renderPass) return invalid("No active render pass"); renderPass = false;colorTargets.clear();depthTarget.reset();passWidth=passHeight=0;passSampleCount=1;depthReadOnly=false;return {};
     }
     Result<void> setPipeline(const PipelinePtr& ptr) override {
         auto status = ready(); if (!status) return status;
@@ -715,12 +767,16 @@ struct DXCommands final : CommandList {
                 if ((*view)->desc.usage != TextureViewUsage::ShaderRead)
                     return invalid("Texture binding view requires ShaderRead usage", ErrorCode::InvalidArgument);
                 const auto& parent = (*view)->parent;
+                if (parent->desc.sampleCount > 1u)
+                    return invalid("Multisampled texture sampling is unsupported", ErrorCode::Unsupported);
                 if (parent->backbuffer || parent->desc.depthStencil || current(*parent) != ResourceState::ShaderRead)
                     return invalid("Texture binding requires a color texture in ShaderRead");
                 snapshot[*at].texture = parent;
                 snapshot[*at].textureView = *view;
             } else {
                 auto object=owned<DXTexture>(binding.texture);if(!object)return std::unexpected(object.error());
+                if ((*object)->desc.sampleCount > 1u)
+                    return invalid("Multisampled texture sampling is unsupported", ErrorCode::Unsupported);
                 if((*object)->backbuffer || (*object)->desc.depthStencil || current(**object)!=ResourceState::ShaderRead)return invalid("Texture binding requires a color texture in ShaderRead");
                 snapshot[*at].texture=*object;
             }
@@ -813,6 +869,7 @@ struct DXCommands final : CommandList {
         auto status = ready(); if (!status) return status;
         if (!renderPass || !pipeline || (pipeline->descriptorSize && !textureBound)) return invalid("Draw requires compatible target, pipeline and bindings");
         if(pipeline->renderTargets.colors.size()!=colorTargets.size() || pipeline->renderTargets.depth.has_value()!=static_cast<bool>(depthTarget))return invalid("Pipeline attachment count/depth does not match pass");
+        if(pipeline->renderTargets.sampleCount!=passSampleCount)return invalid("Pipeline sample count does not match pass");
         for(size_t i=0;i<colorTargets.size();++i)if(pipeline->renderTargets.colors[i]!=colorTargets[i]->desc.format)return invalid("Pipeline color formats do not match pass");
         if(depthTarget && (*pipeline->renderTargets.depth!=depthTarget->desc.format || (depthReadOnly && pipeline->depthState.writeEnabled)))return invalid("Pipeline depth format/access does not match pass");
         for(const auto& resource:boundResources) {
@@ -1251,6 +1308,24 @@ public:
         result.copyDestination = result.texture2D;
         result.partialRegionCopy = result.texture2D && !isDepth;
         result.storage = !isDepth && (s1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW) != 0;
+        result.sampleCounts = result.texture2D ? 1u : 0u;
+        const bool msaaEligible = isDepth
+            ? result.depthStencil
+            : (result.renderTarget &&
+               (s1 & D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RENDERTARGET) != 0 &&
+               (s1 & D3D12_FORMAT_SUPPORT1_MULTISAMPLE_RESOLVE) != 0);
+        if (msaaEligible) {
+            for (const UINT count : {2u, 4u, 8u}) {
+                D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msaa{};
+                msaa.Format = dxgiFormat;
+                msaa.SampleCount = count;
+                if (SUCCEEDED(state->device->CheckFeatureSupport(
+                        D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &msaa, sizeof(msaa))) &&
+                    msaa.NumQualityLevels > 0) {
+                    result.sampleCounts |= count;
+                }
+            }
+        }
         return result;
     }
     Result<void> checkStatus() override {return state->check();}
@@ -1328,6 +1403,13 @@ public:
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         status=validateTextureDescription(desc);if(!status)return std::unexpected(status.error());
+        if (desc.sampleCount > 1u) {
+            auto support = queryFormatSupport(desc.format);
+            if (!support) return std::unexpected(support.error());
+            if ((support->sampleCounts & desc.sampleCount) == 0u) {
+                return invalid("Adapter does not support requested MSAA sample count for this format", ErrorCode::Unsupported);
+            }
+        }
         if (desc.storage) {
             D3D12_FEATURE_DATA_FORMAT_SUPPORT support{};
             support.Format = native(desc.format);
@@ -1340,7 +1422,8 @@ public:
         auto texture = std::make_shared<DXTexture>(); texture->owner = state; texture->desc = desc;
         D3D12_RESOURCE_DESC nativeDesc{};
         nativeDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; nativeDesc.Width = desc.width; nativeDesc.Height = desc.height;
-        nativeDesc.DepthOrArraySize = 1; nativeDesc.MipLevels = 1; nativeDesc.Format = native(desc.format); nativeDesc.SampleDesc.Count = 1;
+        nativeDesc.DepthOrArraySize = 1; nativeDesc.MipLevels = 1; nativeDesc.Format = native(desc.format);
+        nativeDesc.SampleDesc.Count = desc.sampleCount; nativeDesc.SampleDesc.Quality = 0;
         if (desc.renderTarget) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         if (desc.storage) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
         if(desc.depthStencil)nativeDesc.Flags=D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL|D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
@@ -1375,8 +1458,12 @@ public:
             if (FAILED(hr)) return state->failure(hr, "Create TextureView RTV heap failed");
             D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
             rtvDesc.Format = viewFormat;
-            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-            rtvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
+            if (parent->desc.sampleCount > 1u) {
+                rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
+            } else {
+                rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+                rtvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
+            }
             state->device->CreateRenderTargetView(parent->resource.Get(), &rtvDesc, view->rtv->GetCPUDescriptorHandleForHeapStart());
         } else if (resolved->usage == TextureViewUsage::DepthStencil) {
             D3D12_DESCRIPTOR_HEAP_DESC heap{};
@@ -1387,8 +1474,12 @@ public:
             auto handle = view->dsv->GetCPUDescriptorHandleForHeapStart();
             D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
             dsvDesc.Format = viewFormat;
-            dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-            dsvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
+            if (parent->desc.sampleCount > 1u) {
+                dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
+            } else {
+                dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+                dsvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
+            }
             state->device->CreateDepthStencilView(parent->resource.Get(), &dsvDesc, handle);
             handle.ptr += state->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
             dsvDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH;
@@ -1411,6 +1502,22 @@ public:
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         const auto targets=desc.renderTargets.value_or(RenderTargetLayout{{desc.colorFormat},{}});
         status=validateRenderTargets(targets,desc.depthState);if(!status)return std::unexpected(status.error());
+        if (targets.sampleCount > 1u) {
+            for (const auto colorFormat : targets.colors) {
+                auto support = queryFormatSupport(colorFormat);
+                if (!support) return std::unexpected(support.error());
+                if ((support->sampleCounts & targets.sampleCount) == 0u) {
+                    return invalid("Adapter does not support pipeline color MSAA sample count", ErrorCode::Unsupported);
+                }
+            }
+            if (targets.depth) {
+                auto support = queryFormatSupport(*targets.depth);
+                if (!support) return std::unexpected(support.error());
+                if ((support->sampleCounts & targets.sampleCount) == 0u) {
+                    return invalid("Adapter does not support pipeline depth MSAA sample count", ErrorCode::Unsupported);
+                }
+            }
+        }
         const bool hasFragment=!desc.fragment.bytes.empty();
         if (desc.vertex.stage != ShaderStage::Vertex || desc.vertex.bytes.empty() || (hasFragment && desc.fragment.stage!=ShaderStage::Fragment) || (!hasFragment && !targets.colors.empty())) return invalid("Invalid graphics pipeline shaders", ErrorCode::InvalidArgument);
         if (desc.vertex.format == ShaderFormat::DXIL || (hasFragment && desc.fragment.format == ShaderFormat::DXIL)) {
@@ -1518,6 +1625,7 @@ public:
         pso.pRootSignature = pipeline->root.Get(); pso.VS = {desc.vertex.bytes.data(), desc.vertex.bytes.size()}; pso.PS = {desc.fragment.bytes.data(), desc.fragment.bytes.size()};
         pso.InputLayout={inputs.data(),static_cast<UINT>(inputs.size())};
         pso.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; pso.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; pso.RasterizerState.DepthClipEnable = TRUE;
+        pso.RasterizerState.MultisampleEnable = targets.sampleCount > 1u ? TRUE : FALSE;
         auto& blend = pso.BlendState.RenderTarget[0]; blend.BlendEnable = desc.alphaBlend;
         blend.SrcBlend = D3D12_BLEND_SRC_ALPHA; blend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA; blend.BlendOp = D3D12_BLEND_OP_ADD;
         blend.SrcBlendAlpha = D3D12_BLEND_ONE; blend.DestBlendAlpha = D3D12_BLEND_ZERO; blend.BlendOpAlpha = D3D12_BLEND_OP_ADD; blend.LogicOp = D3D12_LOGIC_OP_NOOP;
@@ -1527,7 +1635,8 @@ public:
         pso.DepthStencilState.DepthFunc=static_cast<D3D12_COMPARISON_FUNC>(static_cast<UINT>(desc.depthState.compare)+1);
         pso.DSVFormat=targets.depth?native(*targets.depth):DXGI_FORMAT_UNKNOWN;
         pso.SampleMask = UINT_MAX; pso.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        pso.NumRenderTargets=static_cast<UINT>(targets.colors.size());for(UINT i=0;i<pso.NumRenderTargets;++i)pso.RTVFormats[i]=native(targets.colors[i]);pso.SampleDesc.Count=1;
+        pso.NumRenderTargets=static_cast<UINT>(targets.colors.size());for(UINT i=0;i<pso.NumRenderTargets;++i)pso.RTVFormats[i]=native(targets.colors[i]);
+        pso.SampleDesc.Count=targets.sampleCount;pso.SampleDesc.Quality=0;
         result = state->device->CreateGraphicsPipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
         if (FAILED(result)) return state->failure(result, "Graphics pipeline creation failed");
         state->track(pipeline);
