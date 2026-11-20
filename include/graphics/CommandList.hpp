@@ -13,6 +13,13 @@ public:
     [[nodiscard]] virtual Result<void> transition(const BufferPtr&, ResourceState) = 0;
     [[nodiscard]] virtual Result<void> transition(const TexturePtr&, ResourceState) = 0;
     [[nodiscard]] virtual Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) = 0;
+    // Offset-aware sub-range buffer copy. Source and destination must be distinct buffers
+    // with non-empty in-bounds ranges. Validation rejection preserves recorded state and
+    // captures no new resource references or observed versions.
+    [[nodiscard]] virtual Result<void> copyBufferRegion(
+        const BufferPtr& source, std::uint64_t sourceOffset,
+        const BufferPtr& destination, std::uint64_t destinationOffset,
+        std::uint64_t bytes) = 0;
     [[nodiscard]] virtual Result<void> copyBufferToTexture(const BufferPtr&, const TexturePtr&) = 0;
     [[nodiscard]] virtual Result<void> copyTextureToBuffer(const TexturePtr&, const BufferPtr&) = 0;
     [[nodiscard]] virtual Result<void> beginRenderPass(const TexturePtr&, Color clear) = 0;

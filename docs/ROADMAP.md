@@ -1,6 +1,6 @@
 # GraphicsSDK 세부 개발 로드맵
 
-기준일: 2026-11-02 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
+기준일: 2026-11-20 · 기준 코드: `6556b81` · 현재 단계: **Phase 3**
 
 이 문서는 현재 작업 상태표다. 원본 요구사항의 Phase 순서와 기존 검증 범위를 유지하면서 큰 묶음을 독립 작업으로 분할했다. 초기 개발 snapshot 0.0.1이며, Phase 3 또는 v0.1 전체 완료를 의미하지 않는다.
 
@@ -41,6 +41,11 @@ python tools/roadmap.py --write
 | 5 — Shader pipeline | 0 | 8 | 0 | 0 | 0 | DXC DXIL/SPIR-V·MSL·일반 reflection·cache. 현재 제한된 SPIR-V drawing과 구분. |
 | 6 — GPU 자원 최적화 | 18 | 0 | 0 | 8 | 0 | 완료된 후보 관측과 남은 정책/성능/채택을 구분한다. 이 목록 전체를 Phase 3 선행 gate로 만들지 않는다. |
 | 7 — 독립 SDK 배포 | 9 | 6 | 0 | 0 | 0 | Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·릴리스 수용은 미완료. |
+| 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+) | 3 | 0 | 0 | 9 | 0 | 기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다. |
+| 9 — Command·멀티스레드·Shader·Compute·Render Graph | 0 | 0 | 0 | 7 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
+| 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region | 0 | 0 | 0 | 4 | 0 | 저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다. |
+| 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 0 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
+| 12 — GraphicsUI·Sandbox RHI 호환성 | 0 | 0 | 0 | 2 | 0 | GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다. |
 
 ## 다음 권장 작업
 
@@ -351,3 +356,148 @@ Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·
 | [x] `P7-PKG-13`<br>완료 · 필수 | **Windows x64 D3D12·Vulkan 배포 후보**<br>MSVC Release의 D3D12·Vulkan 전용 ZIP과 매니페스트를 생성했다. Vulkan 컴파일 고지, 재배치 설치·링크, 소비자 버전·backend 및 무결성을 검사했다.<br>완료: 두 후보의 출처·바이트·고지 확인, 독립 CPU 소비자 및 버전·경로·변조 거부. | 선행: `P7-PKG-08`<br>근거: [PHASE7_WINDOWS_RELEASE_CANDIDATE](PHASE7_WINDOWS_RELEASE_CANDIDATE.md), [windows_release_candidate.py](../tools/windows_release_candidate.py), [test_windows_release_candidate.py](../tests/test_windows_release_candidate.py), [CMakeLists.txt](../tests/windows_release_consumer/CMakeLists.txt) |
 | [x] `P7-PKG-14`<br>완료 · 필수 | **공통 배포 후보 무결성 검사**<br>네 매니페스트의 해시를 고정해 여섯 설치 ZIP과 Linux 디버그 ZIP 두 개의 프로필·버전·파일·고지 및 소스 식별자를 확인했다.<br>완료: Windows와 Linux의 공통 검사 결과 일치, 누락·추가·변조·프로필 교체 거부와 재현 가능한 JSON. | 선행: `P7-PKG-11`, `P7-PKG-12`, `P7-PKG-13`<br>근거: [PHASE7_COMMON_CANDIDATE_AUDIT](PHASE7_COMMON_CANDIDATE_AUDIT.md), [release_candidate_audit.py](../tools/release_candidate_audit.py), [test_release_candidate_audit.py](../tests/test_release_candidate_audit.py) |
 | [x] `P7-PKG-15`<br>완료 · 필수 | **Windows 배포 후보의 오프스크린 GPU 검사**<br>고정 Windows ZIP에서 독립 소비자를 빌드하고 재배치 설치본의 헤더·라이브러리를 확인했다. D3D12 WARP와 하드웨어의 렌더링, Vulkan 하드웨어의 전송과 그리기를 검증했다.<br>완료: ZIP·SDK 지문·실행별 어댑터와 전체 참조 결과 연결, WARP·하드웨어 및 전송·그리기 결과 구분. | 선행: `P7-PKG-13`<br>근거: [PHASE7_WINDOWS_CANDIDATE_GPU](PHASE7_WINDOWS_CANDIDATE_GPU.md), [windows_release_gpu.py](../tools/windows_release_gpu.py), [test_windows_release_gpu.py](../tests/test_windows_release_gpu.py) |
+
+## Phase 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+)
+
+기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다.
+
+### P8-XFER — 오프셋 버퍼 복사·부분 텍스처 전송
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [x] `P8-XFER-01`<br>완료 · 후속 최적화 | **오프셋 기반 버퍼 복사 API 계약 (copyBufferRegion)**<br>CommandList::copyBufferRegion(source, sourceOffset, destination, destinationOffset, bytes) 공개 인터페이스와 오버플로 안전 범위·별칭·메모리 방향·상태·원자적 거부 계약을 정의하고 기존 copyBuffer를 오프셋 0 축약형으로 유지했다.<br>완료: 표준 C++23 공개 헤더 선언, 기존 13개 공개 헤더 구성 유지, API 문서 계약 기록. | 선행: `P2-CORE-08`, `P3-WIN-02`<br>근거: [CommandList.hpp](../include/graphics/CommandList.hpp), [PUBLIC_API](PUBLIC_API.md), [PHASE8_BUFFER_REGION_REPORT](PHASE8_BUFFER_REGION_REPORT.md) |
+| [x] `P8-XFER-02`<br>완료 · 후속 최적화 | **copyBufferRegion D3D12 구현 및 실기/Validation/WARP 검증**<br>D3D12 백엔드에 CopyBufferRegion 오프셋 복사와 원자적 거부를 구현했다. 두 물리 GPU(GTX 1660 SUPER·Intel UHD 770)의 일반·Debug+GBV 및 WARP와 설치 find_package 소비자에서 가드 바이트 보존, upload-ring 스타일 멀티 슬라이스 복사, 수명 회수, 오류 0을 확인했다.<br>완료: D3D12 하드웨어·Validation(GBV)·WARP 및 설치 소비자 전체 바이트·가드·거부·수명 검증 통과. | 선행: `P8-XFER-01`<br>근거: [D3D12.cpp](../src/backends/d3d12/D3D12.cpp), [BufferRegionTests.cpp](../tests/BufferRegionTests.cpp), [PHASE8_BUFFER_REGION_REPORT](PHASE8_BUFFER_REGION_REPORT.md) |
+| [x] `P8-XFER-03`<br>완료 · 후속 최적화 | **copyBufferRegion Windows Vulkan 구현 및 실기/VVL 검증**<br>Vulkan 백엔드에 VkBufferCopy 오프셋 복사와 uses.reserve 기반 원자적 거부를 구현했다. 두 Windows 물리 GPU의 일반·고정 VVL 1.3.290(core+sync) 및 설치 find_package 소비자에서 48회 region 복사, 38개 거부, 193,282바이트 일치와 validation 오류 0을 확인했다.<br>완료: Windows Vulkan 물리 GPU·고정 VVL 및 설치 소비자 전체 바이트·가드·거부·수명 검증 통과. | 선행: `P8-XFER-01`<br>근거: [Vulkan.cpp](../src/backends/vulkan/Vulkan.cpp), [BufferRegionTests.cpp](../tests/BufferRegionTests.cpp), [PHASE8_BUFFER_REGION_REPORT](PHASE8_BUFFER_REGION_REPORT.md) |
+| [ ] `P8-XFER-04`<br>미완료 · 후속 최적화 | **copyBufferRegion macOS Metal 및 Linux Vulkan 실기/CI 검증**<br>Metal.cpp에 4바이트 정렬 blit 및 비정렬 오프셋용 gfx_copy_tail 컴퓨트 커널 경로를 반영했다. Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal에서 실제 빌드·실행·전체 바이트/가드 검증을 완료해야 한다.<br>완료: Linux Vulkan 및 macOS Metal CI/실기에서 정렬·비정렬 오프셋 복사, 가드 바이트, 수명과 거부 테스트 통과. | 선행: `P8-XFER-01`<br>환경: Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)<br>근거: [Metal.cpp](../src/backends/metal/Metal.cpp), [PHASE8_BUFFER_REGION_REPORT](PHASE8_BUFFER_REGION_REPORT.md) |
+| [ ] `P8-XFER-05`<br>미완료 · 후속 최적화 | **부분 2D 텍스처 업로드/다운로드 (Region Texture Copy)**<br>bufferOffset·bufferRowPitch 및 텍스처 사각 영역(x, y, width, height)을 지정하는 부분 텍스처 업로드/다운로드 API를 설계하고 D3D12/Vulkan/Metal에 구현한다.<br>완료: 영역 외 픽셀 보존, 홀수 폭/피치 정렬, 경계 거부, D3D12/Vulkan/Metal 검증 및 설치 소비자 통과. | 선행: `P8-XFER-02`, `P8-XFER-03` |
+
+### P8-CAP — GPU Capability 및 포맷 지원 조회
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P8-CAP-01`<br>미완료 · 후속 최적화 | **GPU 한도 및 포맷 지원 조회 API (DeviceCaps 확장·queryFormatSupport)**<br>최대 텍스처 크기, 최대 color attachment 수, 상수 버퍼/텍스처 행·오프셋 정렬 한도와 포맷별 샘플링/렌더타깃/깊이/블렌딩/압축 지원 여부를 실제 백엔드 조회로 제공한다.<br>완료: 하드웨어별 실제 조회 값과 미지원 포맷 명시적 반환, D3D12/Vulkan/Metal 테스트 통과. | 선행: `P8-XFER-01` |
+
+### P8-TEX — Texture View·고급 텍스처·압축 포맷
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P8-TEX-01`<br>미완료 · 후속 최적화 | **Texture View 및 Subresource View (SRV/RTV/DSV/UAV)**<br>텍스처의 특정 mip/array slice·format 재해석을 표현하는 TextureView 객체와 수명·장치 세대·바인딩 호환 계약을 구현한다.<br>완료: View 생성·바인딩·수명 회수 및 잘못된 범위/포맷 거부 테스트 통과. | 선행: `P8-CAP-01` |
+| [ ] `P8-TEX-02`<br>미완료 · 후속 최적화 | **Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원**<br>1D/3D/2DArray/Cubemap/CubemapArray 차원과 다중 Mipmap 생성·서브리소스 복사·샘플링을 백엔드별 Capability와 함께 구현한다.<br>완료: 차원별 업로드/샘플링/readback 참조 일치 및 미지원 조합 거부 검증. | 선행: `P8-TEX-01` |
+| [ ] `P8-TEX-03`<br>미완료 · 후속 최적화 | **MSAA 텍스처 및 Resolve 경로**<br>어댑터별 샘플 수 조회, MSAA color/depth attachment 생성, 명시적 Resolve 명령과 validation 계약을 구현한다.<br>완료: 지원 샘플 수에서 MSAA 렌더링·Resolve 전체 픽셀 검증 및 미지원 샘플 수 거부 통과. | 선행: `P8-TEX-01` |
+| [ ] `P8-TEX-04`<br>미완료 · 후속 최적화 | **압축 텍스처 포맷 (BC1~BC7·ASTC·ETC2/EAC)**<br>블록 압축 포맷의 footprint 계산, 어댑터 지원 여부 조회, 압축 블록 업로드/샘플링 및 미지원 포맷의 명시적 Unsupported 오류를 구현한다.<br>완료: 지원 GPU에서 BC/ASTC/ETC2 블록 정렬·업로드·샘플링 참조와 미지원 포맷 거부 검증 통과. | 선행: `P8-CAP-01`, `P8-TEX-02` |
+
+### P8-MEM — GPU 메모리 관리·Upload Ring·Resource Pool
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P8-MEM-01`<br>미완료 · 후속 최적화 | **공개 Upload Ring·Staging/Readback/Transient Resource Pool**<br>P6-OPT-10 CPU 링 모델과 copyBufferRegion을 바탕으로 fence 기반 회수형 Upload Ring, Readback Pool, Transient/Buffer/Texture Pool 및 VRAM Budget 압박 정책을 구현·측정한다.<br>완료: 동일 조건 전후 CPU/GPU/VRAM 실측 비교표와 수명·wrap·OOM·장치 손실 회귀 통과. | 선행: `P8-XFER-02`, `P8-XFER-03`, `P6-OPT-10` |
+| [ ] `P8-MEM-02`<br>미완료 · 후속 최적화 | **Fragmentation 분석·Residency·Resource Aliasing·Sparse 기반**<br>메모리 단편화 진단 지표, Residency 제어, 비겹침 수명 기반 Resource Aliasing, Sparse/Virtual Texture 기반 API와 Capability를 단계적으로 추가한다.<br>완료: Capability 조회, Aliasing 배리어/validation 오류 0, 단편화·메모리 절감 실측 기록. | 선행: `P8-MEM-01` |
+
+## Phase 9 — Command·멀티스레드·Shader·Compute·Render Graph
+
+동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다.
+
+### P9-CMD — Command System·멀티스레딩·다중 큐
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P9-CMD-01`<br>미완료 · 후속 최적화 | **동적 Viewport 설정(setViewport) 및 Command Pool·재사용**<br>렌더 패스 내 동적 setViewport(x, y, width, height, minDepth, maxDepth)와 명시적 CommandPool 기반 CommandList 재사용 계약을 D3D12/Vulkan/Metal에 구현한다.<br>완료: 부분 뷰포트 전체 픽셀 참조, 깊이 범위 클램프, 풀 재사용/수명 회귀 및 validation 0 통과. | 선행: `P8-XFER-01` |
+| [ ] `P9-CMD-02`<br>미완료 · 후속 최적화 | **병렬 명령 기록·Thread-local Command Allocator 및 벤치마크**<br>단일 생성 스레드 제약을 해치지 않는 스레드별 CommandPool/CommandList 병렬 기록 소유권 모델과 제출 순서 계약을 구현하고 멀티스레드 CPU 오버헤드 절감을 실측한다.<br>완료: 병렬 기록 전체 이미지 참조, 데이터 레이스·validation 오류 0, 1 vs N 스레드 실측 비교표. | 선행: `P9-CMD-01` |
+| [ ] `P9-CMD-03`<br>미완료 · 후속 최적화 | **Graphics/Compute/Copy 다중 큐·Timeline Fence·Async 전송**<br>Graphics/Compute/Copy 큐 분리, 큐 간 Timeline Fence 동기화, 비동기 Upload/Readback 및 Frames-in-Flight 스케줄링을 구현한다.<br>완료: Cross-queue 동기화 전체 바이트/이미지 검증, sync validation 오류 0, 비동기 전송 실측. | 선행: `P9-CMD-02` |
+
+### P9-SHD — Shader·Pipeline 캐시 영속화·Variant·Hot Reload
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P9-SHD-01`<br>미완료 · 후속 최적화 | **Shader Binary/Pipeline Cache 영속화·Variant·Hot Reload**<br>GPU/드라이버·SDK 지문 기반 무효화를 포함한 디스크 영속 Shader/Pipeline Cache, Variant 관리, Pipeline Prewarming과 개발용 Hot Reload를 구현한다.<br>완료: 드라이버/입력 변경 무효화, 손상 캐시 복구, cold vs warm 실측 및 전체 이미지 일치. | 선행: `P5-SHD-08` |
+
+### P9-CMP — Compute 및 GPU-driven Rendering
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P9-CMP-01`<br>미완료 · 후속 최적화 | **Compute Shader·Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch**<br>Compute 파이프라인, Storage Buffer/Texture(UAV) 바인딩, UAV 배리어, dispatch(x, y, z)를 D3D12/Vulkan/Metal에 구현하고 caps.compute를 실제 지원 범위로 갱신한다.<br>완료: Compute 연산 전체 바이트/텍스처 참조, Graphics-Compute 동기화, validation 오류 0 통과. | 선행: `P8-CAP-01` |
+| [ ] `P9-CMP-02`<br>미완료 · 후속 최적화 | **Async Compute·Indirect/MDI·Bindless·GPU Culling·Mesh/Task Shader**<br>Capability 기반으로 Indirect Draw, Multi-Draw Indirect, Descriptor Indexing/Bindless, GPU Culling, Mesh/Task Shader를 지원 플랫폼에서 단계적으로 제공한다.<br>완료: 각 기능별 Capability 조회, 지원 GPU 전체 참조 및 미지원 장치 명시적 Unsupported 반환. | 선행: `P9-CMP-01`, `P9-CMD-03` |
+
+### P9-RG — 선택적 Render Graph
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P9-RG-01`<br>미완료 · 후속 최적화 | **선택적 Render Graph (의존성·자동 배리어·Aliasing·Pass Culling·진단)**<br>직접 CommandList API를 유지한 채 상위 선택 모듈로 Render Pass 의존성 분석, 자동 배리어 삽입, Transient Aliasing, 미사용 Pass Culling, 다중 큐 스케줄링과 진단 덤프를 제공한다.<br>완료: 복합 그래픽스+컴퓨트 그래프 전체 이미지 참조, sync validation 오류 0, 수동 배리어 대비 성능 비교. | 선행: `P8-MEM-01`, `P9-CMD-03`, `P9-CMP-01` |
+
+## Phase 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region
+
+저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다.
+
+### P10-PRES — Frame Pacing 및 저지연 렌더링
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P10-PRES-01`<br>미완료 · 후속 최적화 | **Frame Pacing·Present Mode·VRR·최대 지연·저지연/처리량 모드**<br>VSync/Immediate/Mailbox/VRR(Tearing) Capability 조회 및 선택, Maximum Frame Latency, CPU-GPU 큐 지연과 GPU Stall 감지, 저지연·처리량 우선 모드를 구현한다.<br>완료: 모드별 프레임 시간 편차·큐 지연 실측 기록과 미지원 Present Mode 거부 검증 통과. | 선행: `P8-CAP-01` |
+
+### P10-HDR — HDR 및 Color Space
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P10-HDR-01`<br>미완료 · 후속 최적화 | **HDR 및 Color Space (sRGB·Linear·Display P3·Rec.2020·HDR10·scRGB·10-bit)**<br>스왑체인 색 공간·10-bit 출력 Capability 조회, HDR Render Target, HDR10/scRGB/P3 메타데이터 설정 및 플랫폼별 지원 경계를 구현한다.<br>완료: 플랫폼별 색 공간 지원 매트릭스, HDR/sRGB 오프스크린·스왑체인 검증 및 미지원 거부 통과. | 선행: `P10-PRES-01` |
+
+### P10-SURF — Multi-Window / Multi-Surface
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P10-SURF-01`<br>미완료 · 후속 최적화 | **Multi-Window / Multi-Surface·다중 스왑체인 동기화·DPI/리사이즈 고도화**<br>단일 Device에서 다중 창·다중 스왑체인 공유 리소스 렌더링, 다중 모니터 DPI 변화, 최소화/복원 및 Present 동기화를 Windows/Linux/macOS에서 고도화한다.<br>완료: 다중 창 동시 렌더링·독립 리사이즈·수명 회수 자동/수동 검증 통과. | 선행: `P10-PRES-01` |
+
+### P10-DIRTY — Dirty Region Rendering 기반
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P10-DIRTY-01`<br>미완료 · 후속 최적화 | **Dirty Region Rendering 기반 (Preserve·부분 복사·Partial Present 조회)**<br>RenderTarget Load/Preserve, Scissor·Viewport·부분 텍스처 복사, 플랫폼별 Partial Present 지원 조회를 통합하고 전체 프레임 대비 부분 렌더링 성능을 실측한다.<br>완료: 비갱신 영역 픽셀 보존 검증 및 전체 vs 부분 렌더링 CPU/GPU 시간 실측 비교. | 선행: `P8-XFER-05`, `P9-CMD-01`, `P10-SURF-01` |
+
+## Phase 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging
+
+외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다.
+
+### P11-INT — Native GPU Interoperability
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P11-INT-01`<br>미완료 · 후속 최적화 | **Native GPU Interoperability (External Memory·Fence·Semaphore·Handle)**<br>공개 헤더의 OS/API 무의존성을 유지하면서 불투명 핸들 기반 Native Device/Buffer/Texture/Fence/Semaphore import·export와 소유권 이전·동기화 계약을 구현한다.<br>완료: Cross-API 공유 리소스 전체 바이트/이미지 검증, 수명·소유권·오류 계약 통과. | 선행: `P8-CAP-01`, `P9-CMD-03` |
+
+### P11-VID — Zero-Copy Video 기반
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P11-VID-01`<br>미완료 · 후속 최적화 | **Zero-Copy Video 기반 (NV12·P010·하드웨어 코덱 연계·GPU 색 변환)**<br>NV12/P010 다중 평면 YUV 텍스처 및 평면별 View, 하드웨어 디코드/인코드 텍스처 공유, GPU 색 변환 셰이더 경로와 Zero-Copy 불가 환경의 안전 복사 폴백을 구현한다.<br>완료: NV12/P010 전체 프레임 변환 참조 일치, Zero-Copy 및 폴백 경로 모두 validation 0 통과. | 선행: `P8-TEX-01`, `P9-CMP-01`, `P11-INT-01` |
+
+### P11-AI — GPU Compute 및 AI 연산 연계
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P11-AI-01`<br>미완료 · 후속 최적화 | **GPU Compute 및 외부 AI 연산(CUDA/DirectML/ONNX Runtime) 연계 검토**<br>AI 실행 엔진을 내장하지 않고 외부 CUDA/DirectML/ONNX Runtime과 GPU 버퍼·동기화 펜스를 안전하게 공유하는 Interop 설계 및 프로토타입 검증을 수행한다.<br>완료: 소유권·동기화 경계 설계 문서 및 지원 환경 기준 연계 검증 기록. | 선행: `P9-CMP-01`, `P11-INT-01` |
+
+### P11-PROF — GPU Profiling 및 진단
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P11-PROF-01`<br>미완료 · 후속 최적화 | **GPU Profiling 확장 (다중 Timestamp Scope·Draw/Dispatch·Cache·Stall 통계)**<br>2슬롯 제한을 넘는 다중 GPU Timestamp Scope, Draw/Dispatch 카운트, Pipeline Cache Hit Rate, Upload/Readback 통계, VRAM Budget 및 GPU Stall 진단 API를 제공한다.<br>완료: 계측 ON/OFF 분리 검증, 정확한 카운터/GPU 시간 일치, 미측정 항목 null 계약 유지. | 선행: `P8-MEM-01`, `P9-CMP-01` |
+
+### P11-DBG — 디버깅·캡처·크래시·Fuzz 검증
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P11-DBG-01`<br>미완료 · 후속 최적화 | **디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz)**<br>GPU Crash Breadcrumbs, RenderDoc/PIX 캡처 호환성 검증, 자동 Resource Leak Detection, Fault Injection 및 입력 Fuzz 테스트를 구축한다.<br>완료: 의도적 오류/누수/손실 주입 제어 통과 및 RenderDoc/PIX 캡처 확인 기록. | 선행: `P11-PROF-01` |
+
+## Phase 12 — GraphicsUI·Sandbox RHI 호환성
+
+GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다.
+
+### P12-UI — GraphicsUI 공통 기반 지원
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P12-UI-01`<br>미완료 · 후속 최적화 | **GraphicsUI 공통 기반 검증 (2D·Alpha·Scissor·Dynamic VB/IB·Atlas·Multi-Surface)**<br>GraphicsUI가 요구하는 2D 알파 블렌딩, Scissor, 동적 정점/인덱스 업로드, 텍스처/폰트 아틀라스 부분 갱신, 오프스크린 타깃, 다중 창 저지연 출력을 통합 예제로 검증한다.<br>완료: 상위 UI 위젯 의존성 없이 SDK 공개 API만으로 전체 픽셀 참조와 저지연 프레임 타이밍 확인. | 선행: `P8-XFER-05`, `P9-CMD-01`, `P10-DIRTY-01` |
+
+### P12-SBX — Sandbox RHI 호환 어댑터 설계
+
+| 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
+|---|---|---|
+| [ ] `P12-SBX-01`<br>미완료 · 후속 최적화 | **Sandbox RHI 호환성 분석 및 비침투 어댑터 설계**<br>읽기 전용 Sandbox RHI(RenderDevice/RhiTypes/UploadRing/DeferredDestruction/Timestamp)와 GraphicsSDK 공개 API 차이를 해소하고 Sandbox를 수정하지 않는 독립 호환 어댑터 계약을 설계한다.<br>완료: 항목별 1:1 매핑·격차 해소 검증 및 독립 예제/테스트에서 어댑터 계약 통과. | 선행: `P8-MEM-01`, `P9-CMD-01`, `P11-PROF-01` |

@@ -695,10 +695,17 @@ struct VulkanCommands final : CommandList {
         use.shadow = target; return {};
     }
     Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) override {
+        return copyBufferRegion(source, 0, destination, 0, bytes);
+    }
+    Result<void> copyBufferRegion(const BufferPtr& source, std::uint64_t sourceOffset, const BufferPtr& destination, std::uint64_t destinationOffset, std::uint64_t bytes) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto src = buffer(source); if (!src) return std::unexpected(src.error());
         auto dst = buffer(destination); if (!dst) return std::unexpected(dst.error());
-        if (!bytes || bytes > (*src)->desc.size || bytes > (*dst)->desc.size || *src == *dst)
+        if (!bytes ||
+            sourceOffset > (*src)->desc.size || bytes > (*src)->desc.size - sourceOffset ||
+            destinationOffset > (*dst)->desc.size || bytes > (*dst)->desc.size - destinationOffset ||
+            *src == *dst ||
+            (*src)->desc.memory == Memory::Readback || (*dst)->desc.memory == Memory::Upload)
             return fail(ErrorCode::InvalidArgument, "Buffer copy range or alias invalid");
         if (shadow(*src) != ResourceState::CopySource || shadow(*dst) != ResourceState::CopyDestination)
             return fail(ErrorCode::InvalidState, "Buffer copy requires explicit source/destination states");
@@ -709,7 +716,7 @@ struct VulkanCommands final : CommandList {
         before[0].buffer = (*src)->buffer; before[0].srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT; before[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         before[1].buffer = (*dst)->buffer; before[1].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_READ_BIT; before[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 2, before, 0, nullptr);
-        VkBufferCopy region{0, 0, bytes};
+        VkBufferCopy region{sourceOffset, destinationOffset, bytes};
         owner->native->CmdCopyBuffer(record->command, (*src)->buffer, (*dst)->buffer, 1, &region);
         if ((*dst)->desc.memory == Memory::Readback) {
             auto after = before[1]; after.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; after.dstAccessMask = VK_ACCESS_HOST_READ_BIT;

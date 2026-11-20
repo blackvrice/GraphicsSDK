@@ -99,6 +99,7 @@ struct Operation {
     std::shared_ptr<Allocation> source, destination;
     std::uint64_t bytes{};
     std::string marker;
+    std::uint64_t sourceOffset{}, destinationOffset{};
     OperationKind kind{OperationKind::Buffer};
     std::vector<Attachment> attachments;
     std::vector<std::string> markers;
@@ -166,12 +167,13 @@ struct State {
     Result<void> prepareTail() {
         if (tailPipeline) return {};
         @autoreleasepool {
-            // macOS blits require a four-byte size. One thread copies only the logical tail,
-            // preserving all destination bytes beyond the requested copy (including partial copies).
+            // macOS blits require four-byte aligned offsets and sizes. This compute kernel
+            // copies any unaligned byte range while preserving all surrounding destination bytes.
             NSString* source = @"#include <metal_stdlib>\nusing namespace metal;\n"
                 "kernel void gfx_copy_tail(const device uchar* src [[buffer(0)]], device uchar* dst [[buffer(1)]],"
-                "constant ulong& offset [[buffer(2)]], constant uint& count [[buffer(3)]]) {"
-                "for (uint i=0; i<count; ++i) dst[offset+i]=src[offset+i]; }";
+                "constant ulong& srcOffset [[buffer(2)]], constant ulong& dstOffset [[buffer(3)]],"
+                "constant ulong& count [[buffer(4)]], uint gid [[thread_position_in_grid]], uint threads [[threads_per_grid]]) {"
+                "for (ulong i=gid; i<count; i+=threads) dst[dstOffset+i]=src[srcOffset+i]; }";
             NSError* error = nil;
             id<MTLLibrary> library = [device newLibraryWithSource:source options:nil error:&error];
             if (!library) {
@@ -295,7 +297,10 @@ struct MetalCommands final : CommandList {
         // Finalize into a fresh native buffer. An encoder/compiler failure discards that
         // uncommitted buffer and leaves the accepted CPU recording open and retryable.
         @autoreleasepool {
-            if (std::any_of(operations.begin(), operations.end(), [](const auto& op) { return op.kind == OperationKind::Buffer && (op.bytes & 3) != 0; }))
+            if (std::any_of(operations.begin(), operations.end(), [](const auto& op) {
+                return op.kind == OperationKind::Buffer && op.bytes &&
+                    ((op.bytes & 3) || (op.sourceOffset & 3) || (op.destinationOffset & 3));
+            }))
                 if (auto ok = owner->prepareTail(); !ok) return ok;
             id<MTLCommandBuffer> next = [owner->queue commandBuffer];
             if (!next) return fail(ErrorCode::OutOfMemory, "Metal command buffer creation failed");
@@ -392,11 +397,12 @@ struct MetalCommands final : CommandList {
                     [encoder insertDebugSignpost:label]; [encoder endEncoding];
                     continue;
                 }
-                const auto aligned = op.bytes & ~std::uint64_t{3};
+                const bool offsetsAligned = ((op.sourceOffset & 3) == 0) && ((op.destinationOffset & 3) == 0);
+                const auto aligned = offsetsAligned ? (op.bytes & ~std::uint64_t{3}) : std::uint64_t{0};
                 if (aligned) {
                     id<MTLBlitCommandEncoder> encoder = [next blitCommandEncoder];
                     if (!encoder) return fail(ErrorCode::OutOfMemory, "Metal blit encoder creation failed");
-                    [encoder copyFromBuffer:op.source->buffer sourceOffset:0 toBuffer:op.destination->buffer destinationOffset:0 size:aligned];
+                    [encoder copyFromBuffer:op.source->buffer sourceOffset:op.sourceOffset toBuffer:op.destination->buffer destinationOffset:op.destinationOffset size:aligned];
                     [encoder endEncoding];
                 }
                 if (op.bytes != aligned) {
@@ -405,10 +411,15 @@ struct MetalCommands final : CommandList {
                     [encoder setComputePipelineState:owner->tailPipeline];
                     [encoder setBuffer:op.source->buffer offset:0 atIndex:0];
                     [encoder setBuffer:op.destination->buffer offset:0 atIndex:1];
-                    [encoder setBytes:&aligned length:sizeof(aligned) atIndex:2];
-                    const auto count = static_cast<std::uint32_t>(op.bytes-aligned);
-                    [encoder setBytes:&count length:sizeof(count) atIndex:3];
-                    [encoder dispatchThreads:MTLSizeMake(1,1,1) threadsPerThreadgroup:MTLSizeMake(1,1,1)];
+                    const auto srcOff = op.sourceOffset + aligned;
+                    const auto dstOff = op.destinationOffset + aligned;
+                    const auto count = op.bytes - aligned;
+                    [encoder setBytes:&srcOff length:sizeof(srcOff) atIndex:2];
+                    [encoder setBytes:&dstOff length:sizeof(dstOff) atIndex:3];
+                    [encoder setBytes:&count length:sizeof(count) atIndex:4];
+                    const auto maxThreads = std::max<NSUInteger>(1, std::min<NSUInteger>(256, owner->tailPipeline.maxTotalThreadsPerThreadgroup));
+                    const auto width = static_cast<NSUInteger>(std::min<std::uint64_t>(count, maxThreads));
+                    [encoder dispatchThreadgroups:MTLSizeMake(1,1,1) threadsPerThreadgroup:MTLSizeMake(width,1,1)];
                     [encoder endEncoding];
                 }
                 if (op.destination->buffer.storageMode == MTLStorageModeManaged) {
@@ -493,15 +504,23 @@ struct MetalCommands final : CommandList {
         return {};
     }
     Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) override {
+        return copyBufferRegion(source, 0, destination, 0, bytes);
+    }
+    Result<void> copyBufferRegion(const BufferPtr& source, std::uint64_t sourceOffset, const BufferPtr& destination, std::uint64_t destinationOffset, std::uint64_t bytes) override {
         if (auto ok = outsidePass(); !ok) return ok;
         auto src = allocation(source); if (!src) return std::unexpected(src.error());
         auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
-        if (!bytes || bytes > (*src)->desc.size || bytes > (*dst)->desc.size || *src == *dst)
+        if (!bytes ||
+            sourceOffset > (*src)->desc.size || bytes > (*src)->desc.size - sourceOffset ||
+            destinationOffset > (*dst)->desc.size || bytes > (*dst)->desc.size - destinationOffset ||
+            *src == *dst ||
+            (*src)->desc.memory == Memory::Readback || (*dst)->desc.memory == Memory::Upload)
             return fail(ErrorCode::InvalidArgument, "Metal copy range or alias invalid");
         if (shadow(*src) != ResourceState::CopySource || shadow(*dst) != ResourceState::CopyDestination)
             return fail(ErrorCode::InvalidState, "Metal copy requires source and destination states");
         uses.reserve(uses.size()+2); operations.reserve(operations.size()+1);
-        retain(*src); retain(*dst); operations.push_back(Operation{*src,*dst,bytes,{}});
+        retain(*src); retain(*dst);
+        operations.push_back(Operation{*src,*dst,bytes,{},sourceOffset,destinationOffset});
         return {};
     }
     bool initialized(const std::shared_ptr<Allocation>& a) { auto u = find(a); return u ? u->initialized : a->initialized; }

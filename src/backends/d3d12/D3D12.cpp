@@ -424,16 +424,22 @@ struct DXCommands final : CommandList {
         return change(use((*object)->tracker, (*object)->resource), next);
     }
     Result<void> copyBuffer(const BufferPtr& src, const BufferPtr& dst, std::uint64_t bytes) override {
+        return copyBufferRegion(src, 0, dst, 0, bytes);
+    }
+    Result<void> copyBufferRegion(const BufferPtr& src, std::uint64_t srcOffset, const BufferPtr& dst, std::uint64_t dstOffset, std::uint64_t bytes) override {
         auto status = ready(true); if (!status) return status;
         auto source = owned<DXBuffer>(src); auto destination = owned<DXBuffer>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
-        if (src == dst || !bytes || bytes > (*source)->desc.size || bytes > (*destination)->desc.size || (*source)->desc.memory == Memory::Readback || (*destination)->desc.memory == Memory::Upload)
+        if (src == dst || !bytes ||
+            srcOffset > (*source)->desc.size || bytes > (*source)->desc.size - srcOffset ||
+            dstOffset > (*destination)->desc.size || bytes > (*destination)->desc.size - dstOffset ||
+            (*source)->desc.memory == Memory::Readback || (*destination)->desc.memory == Memory::Upload)
             return invalid("Invalid buffer copy", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource) return invalid("Source is not CopySource");
         if (current(**destination) != ResourceState::CopyDestination) return invalid("Destination is not CopyDestination");
         use((*source)->tracker, (*source)->resource, (*source)->desc.memory);
         use((*destination)->tracker, (*destination)->resource, (*destination)->desc.memory);
-        list->CopyBufferRegion((*destination)->resource.Get(), 0, (*source)->resource.Get(), 0, bytes); return {};
+        list->CopyBufferRegion((*destination)->resource.Get(), dstOffset, (*source)->resource.Get(), srcOffset, bytes); return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& src, const TexturePtr& dst) override {
         auto status = ready(true); if (!status) return status;

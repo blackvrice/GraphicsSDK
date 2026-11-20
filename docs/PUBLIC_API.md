@@ -51,8 +51,13 @@ CPU 시간은 wrap 모호성의 보수적 상한 확인에만 사용하고 GPU �
 지원 여부·수명·범위는 [Vulkan 타임스탬프 계약](VULKAN.md)을 따른다.
 
 transition/copy의 validation 거부는 명령 목록의 기존 상태를 유지하며 새 자원 참조나
-observed-version snapshot을 추가하지 않는다. `copyBuffer`, `copyBufferToTexture`,
+observed-version snapshot을 추가하지 않는다. `copyBuffer`, `copyBufferRegion`, `copyBufferToTexture`,
 `copyTextureToBuffer`는 메모리/범위·양쪽의 논리 상태를 확인한 뒤에만 자원을 기록한다.
+`copyBufferRegion(source, sourceOffset, destination, destinationOffset, bytes)`는
+서로 다른 두 버퍼의 비어 있지 않은 범위(`bytes > 0`, 오버플로 없는 경계 내 오프셋)를 복사하며
+대상 버퍼의 지정 범위 밖 바이트를 변경하지 않는다. `copyBuffer(source, destination, bytes)`는
+양쪽 오프셋 0의 축약형이다. Metal은 4바이트 정렬 오프셋·크기에 blit을 사용하고 비정렬 오프셋이나
+꼬리 바이트는 내부 전송 커널로 처리한다. [오프셋 버퍼 복사 보고서](PHASE8_BUFFER_REGION_REPORT.md)
 논리 상태는 앞서 같은 명령 목록에서 수락한 transition을 포함한다. Upload/Readback heap의
 지원하지 않는 transition도 참조를 보유하기 전에 거부한다. 기존에 정상 사용한 자원과 그
 version 검사는 유지하므로, 정상 기록 뒤의 upload 변경은 여전히 submit을 실패시킨다.

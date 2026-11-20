@@ -21,7 +21,9 @@ def require(value, message):
 def load():
     data = json.loads(DATA.read_text(encoding='utf-8'))
     require(type(data['schema_version']) is int and data['schema_version'] == 1, 'Unsupported schema')
-    require(type(data['active_phase']) is int and data['active_phase'] in range(8), 'Unknown active phase')
+    phase_count = len(data['phases'])
+    require(phase_count >= 8 and {p['id'] for p in data['phases']} == set(range(phase_count)), 'Phase index differs')
+    require(type(data['active_phase']) is int and data['active_phase'] in range(phase_count), 'Unknown active phase')
     require(re.fullmatch(r'[0-9a-f]{40}', data['baseline_commit']), 'Invalid baseline commit')
     require(isinstance(data['tasks'], list) and isinstance(data['groups'], list), 'Task/group list required')
     tasks = data['tasks']
@@ -29,13 +31,13 @@ def load():
     require(len(tasks) == len(ids), 'Duplicate task ID')
     groups = {g['id']: g for g in data['groups']}
     require(len(groups) == len(data['groups']), 'Duplicate group ID')
-    require({p['id'] for p in data['phases']} == set(range(8)) and len(data['phases']) == 8, 'Phase index differs')
     for task in tasks:
         name = task['id']
-        require(re.fullmatch(r'P[0-7]-[A-Z]+-\d{2}', name), 'Invalid ID: ' + name)
+        match = re.fullmatch(r'P(\d+)-[A-Z]+-\d{2}', name)
+        require(match is not None, 'Invalid ID: ' + name)
         require(task['status'] in STATUS and task['gate'] in GATE, 'Invalid status/gate: ' + name)
         require(task['group'] in groups and name.startswith(task['group'] + '-'), 'Invalid group: ' + name)
-        require(type(task['phase']) is int and task['phase'] == int(name[1]) == groups[task['group']]['phase'], 'Phase differs: ' + name)
+        require(type(task['phase']) is int and task['phase'] == int(match.group(1)) == groups[task['group']]['phase'] and task['phase'] in range(phase_count), 'Phase differs: ' + name)
         require(all(isinstance(task[k], str) and task[k].strip() for k in ('title', 'work', 'done_when')), 'Missing work/acceptance: ' + name)
         require(isinstance(task['depends_on'], list) and isinstance(task['evidence'], list), 'Dependency/evidence list required: ' + name)
         require(len(set(task['depends_on'])) == len(task['depends_on']), 'Duplicate dependency: ' + name)
@@ -174,10 +176,11 @@ def main():
     action.add_argument('--summary', action='store_true')
     action.add_argument('--next', action='store_true')
     action.add_argument('--task')
-    parser.add_argument('--phase', type=int, choices=range(8))
+    parser.add_argument('--phase', type=int)
     args = parser.parse_args()
     data, ids = load()
     phase = data['active_phase'] if args.phase is None else args.phase
+    require(phase in range(len(data['phases'])), 'Unknown phase: ' + str(phase))
     if args.check or args.write:
         expected = render(data, ids)
         if args.write:
