@@ -323,3 +323,36 @@
   - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
   - `P9-RG-01`: 선택적 Render Graph.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P9-CMD-05/06/07/08`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-20 — `P8-MEM-01` 공개 Upload Ring·Readback/Transient Resource Pool 구현·실기 검증
+
+- **기준 커밋**: `c8942feb` (`Add multi-queue separation, TimelineFence, and async transfer support`)
+- **작업 목적**:
+  - 하위 4개 작업(`P8-MEM-02`, `P9-RG-01`, `P11-PROF-01`, `P12-SBX-01`)을 여는 `P8-MEM-01` 구현: 기존 13개 공개 헤더(`Resources.hpp`/`Device.hpp`)와 공통 `Backend.cpp`(5개 CORE 유닛 유지)에 Fence 회수형 `UploadRing`, `ReadbackPool`, `TransientResourcePool` + `BudgetPressurePolicy`를 구현하고 Windows 실기(GTX 1660 SUPER + Intel UHD 770)·Validation·WARP 소멸/손실복구·설치 소비자 및 24프레임 동일 조건 전후 실측으로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P8-MEM-03`으로 정직하게 분리 유지.
+- **수정 파일 (14개)**:
+  - `include/graphics/Resources.hpp`, `include/graphics/Device.hpp`
+  - `src/foundation/Backend.cpp`, `src/backends/d3d12/D3D12.cpp`
+  - `tests/MemoryPoolTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE8_MEMORY_POOL_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 벤치마크 결과** (격리 빌드 `out/p8-memory-pool`, 설치 `out/p8-memory-pool-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `4F34C4C28073BE5007C44B1A553474895F49EA7A8CEA5FADEFADA66B69A8052E`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0, 13개 공개 헤더 계약 유지.
+  - `gfx_memory_pool_tests --d3d12 --benchmark` (GTX 1660 SUPER): 통과 (`assertions=18129, frames=10, rejections=73`).
+  - `gfx_memory_pool_tests --d3d12 --validation` (Debug + GBV, GTX 1660 SUPER): 통과 (`assertions=385, errors=0`; D3D12 Copy 큐 동일 리스트 재승격 보강 포함).
+  - `gfx_memory_pool_tests --d3d12 --warp` (WARP 소멸 순서 + `removeForTesting`/`recover`): 통과 (`assertions=754, frames=20, rejections=137`).
+  - `gfx_memory_pool_tests --vulkan --benchmark` (GTX 1660 SUPER): 통과 (`assertions=18129, frames=10, rejections=73`).
+  - `gfx_memory_pool_tests --vulkan --validation` (고정 VVL 1.3.290 core+sync, GTX 1660 SUPER): 통과 (`assertions=385, errors=0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12(GTX 1660 SUPER·Intel UHD 770·WARP) 및 Vulkan(GTX 1660 SUPER·Intel UHD 770) 비검증·검증 전체 통과 (`errors=0`).
+  - CTest 73종 회귀(CPU 11종 + Phase 8/9 전체 + `memory_pool_*` 5종 + `multi_queue_*` 5종 + Vulkan 코어/타임스탬프/검증): **73/73 통과** (`47.21s`).
+  - **24프레임 동일 조건 전후 실측 비교** (GTX 1660 SUPER, 16×16 KiB 업로드 + 256×256 RT Clear/복사 + Readback, 5회 중앙값):
+    - D3D12: Wall `107.112 ms` → **`7.833 ms`** (**13.675x**), GPU `0.932 vs 0.926 ms`, 피크 고유 자원 `20 → 7`, 풀 적중 `46/48`.
+    - Vulkan: Wall `71.534 ms` → **`7.217 ms`** (**9.912x**), GPU `2.097 vs 2.067 ms`, 피크 고유 자원 `19 → 6`, 풀 적중 `46/48`.
+  - `tools/roadmap.py --check`: PASS (201 task IDs: 119 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P9-RG-01`: 선택적 Render Graph.
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P11-PROF-01`: GPU Profiling 확장.
+  - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`: Linux Vulkan 및 macOS Metal CI/실기 검증.

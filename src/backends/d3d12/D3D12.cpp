@@ -555,18 +555,16 @@ struct DXCommands final : CommandList {
         }
         const auto targetNative = native(next);
         if (qType == QueueType::Copy) {
-            // D3D12 Copy queues require resources to enter in COMMON for implicit promotion
-            // by CopyBufferRegion/CopyTextureRegion and decay back to COMMON on submit.
-            // Only emit an explicit transition between distinct non-COMMON copy states
-            // within the same Copy command list (e.g. COPY_DEST -> COPY_SOURCE).
-            if (usage.nativeState != D3D12_RESOURCE_STATE_COMMON &&
-                targetNative != D3D12_RESOURCE_STATE_COMMON &&
-                usage.nativeState != targetNative) {
+            // D3D12 Copy queues implicitly promote resources from COMMON on copy operations.
+            // Transitioning directly to COPY_SOURCE/COPY_DEST can trigger Debug Layer #1334
+            // on CopyTextureRegion, so switching away from a promoted state within the same
+            // Copy list transitions back to COMMON to synchronize and allow re-promotion.
+            if (usage.nativeState != D3D12_RESOURCE_STATE_COMMON && usage.nativeState != targetNative) {
                 D3D12_RESOURCE_BARRIER barrier{}; barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
                 barrier.Transition.pResource = usage.resource.Get(); barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-                barrier.Transition.StateBefore = usage.nativeState; barrier.Transition.StateAfter = targetNative;
+                barrier.Transition.StateBefore = usage.nativeState; barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
                 list->ResourceBarrier(1, &barrier);
-                usage.nativeState = targetNative;
+                usage.nativeState = D3D12_RESOURCE_STATE_COMMON;
             }
             usage.state = next; return {};
         }

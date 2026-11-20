@@ -76,6 +76,14 @@ Copy 큐에서 그래픽스·컴퓨트·타임스탬프 연산이나 비-Copy �
 제공하며, `CommandQueue::submit(const SubmitDesc&)`는 `waits`와 `signals`를 통해 CPU 대기 없이
 `Copy -> Compute -> Graphics -> Copy` 교차 큐 GPU 동기화를 수행한다. [다중 큐·Timeline Fence 보고서](PHASE9_MULTI_QUEUE_REPORT.md)를 따른다.
 
+`Device::createUploadRing(UploadRingDesc)`, `Device::createReadbackPool(ReadbackPoolDesc)`,
+`Device::createTransientResourcePool(TransientPoolDesc)`는 기본 `createBuffer`/`createTexture`의
+자원별 전용 할당 계약을 바꾸지 않는 명시적 opt-in 재사용 계층이다. `UploadRing`은 2..16개 세그먼트로
+power-of-two 정렬 패킹·wrap·Fence 회수·`discardPending()`·포화 시 `OutOfMemory` 반환을 제공하며,
+`ReadbackPool`과 `TransientResourcePool`은 Fence 완료 기반 회수, 중복/외부 반환 거부, LRU 상한 축출 및
+`BudgetPressurePolicy`(D3D12 실측 OS VRAM 예산 조회 / Vulkan `Unavailable` 정직 반환 및 결정적 `Soft`/`Hard`
+축출)를 지원한다. [공개 Upload Ring · Resource Pool 보고서](PHASE8_MEMORY_POOL_REPORT.md)를 따른다.
+
 Vulkan `debugMarker(text)`는 debug-utils 확장과 함수가 있을 때 실제 label을 넣는다.
 정상 recording에서 함수가 없으면 Unsupported이며 creating thread·recording·퇴역 검사를 먼저 한다.
 지원 시 빈 문자열은 허용하고, NUL-free UTF-8과 UINT32_MAX 이하 길이를 요구한다. Substring·임시

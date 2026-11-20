@@ -43,6 +43,12 @@ public:
     [[nodiscard]] virtual Result<std::unique_ptr<CommandPool>> createCommandPool(QueueType type) = 0;
     // Creating thread only. Creates a 64-bit GPU/CPU timeline fence for cross-queue synchronization.
     [[nodiscard]] virtual Result<TimelineFencePtr> createTimelineFence(std::uint64_t initialValue = 0) = 0;
+    // Creating thread only. Creates a fence-reclaimed segmented UploadRing on this device.
+    [[nodiscard]] Result<std::unique_ptr<UploadRing>> createUploadRing(UploadRingDesc desc = {});
+    // Creating thread only. Creates a fence-reclaimed ReadbackPool on this device.
+    [[nodiscard]] Result<std::unique_ptr<ReadbackPool>> createReadbackPool(ReadbackPoolDesc desc = {});
+    // Creating thread only. Creates a fence-reclaimed TransientResourcePool with VRAM budget pressure policy.
+    [[nodiscard]] Result<std::unique_ptr<TransientResourcePool>> createTransientResourcePool(TransientPoolDesc desc = {});
     // Creating thread only. Validate a live native surface and selected queue;
     // does not create a swapchain or guarantee format/present support.
     [[nodiscard]] virtual Result<void> checkSurfaceSupport(Surface) = 0;
@@ -57,6 +63,7 @@ public:
 private:
     struct GraphicsCache;
     std::unique_ptr<GraphicsCache> graphicsCache;
+    std::shared_ptr<bool> lifetimeGuard;
 };
 [[nodiscard]] Result<std::unique_ptr<Device>> createDevice(DeviceDesc desc = {});
 }
