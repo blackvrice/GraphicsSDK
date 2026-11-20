@@ -38,6 +38,21 @@ void cpu(){
     }reject(gfx::validateRenderPass(p),gfx::ErrorCode::InvalidArgument,"Malformed render pass");}
     good.colors[0].texture=std::make_shared<Stub>(gfx::TextureDesc{17,16,F::RGBA8UNorm,true});reject(gfx::validateRenderPass(good),gfx::ErrorCode::InvalidArgument,"Attachment dimensions must match");
     good.colors.clear();good.depth.readOnly=true;good.depth.load=L::Load;take(gfx::validateRenderPass(good));
+    const auto rgba8Footprint = take(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 63, 7));
+    check(rgba8Footprint.rowBytes == 252 && rgba8Footprint.rowPitch == 256 && rgba8Footprint.height == 7 && rgba8Footprint.size == 1792,
+          "RGBA8 default region footprint alignment");
+    const auto rgba16Footprint = take(gfx::computeTextureRegionFootprint(F::RGBA16Float, 33, 5, 1024));
+    check(rgba16Footprint.rowBytes == 264 && rgba16Footprint.rowPitch == 1024 && rgba16Footprint.height == 5 && rgba16Footprint.size == 5120,
+          "RGBA16Float custom rowPitch footprint");
+    const auto d32Footprint = take(gfx::computeTextureRegionFootprint(F::D32Float, 19, 11));
+    check(d32Footprint.rowBytes == 76 && d32Footprint.rowPitch == 256 && d32Footprint.size == 2816,
+          "D32Float region footprint");
+    reject(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 0, 4), gfx::ErrorCode::InvalidArgument, "Zero region width");
+    reject(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 4, 0), gfx::ErrorCode::InvalidArgument, "Zero region height");
+    reject(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 16385, 1), gfx::ErrorCode::InvalidArgument, "Oversized region width");
+    reject(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 65, 2, 256), gfx::ErrorCode::InvalidArgument, "rowPitch smaller than rowBytes");
+    reject(gfx::computeTextureRegionFootprint(F::RGBA8UNorm, 16, 2, 300), gfx::ErrorCode::InvalidArgument, "Unaligned custom rowPitch");
+    reject(gfx::computeTextureRegionFootprint(static_cast<F>(99), 4, 4), gfx::ErrorCode::InvalidArgument, "Unknown format footprint");
 }
 constexpr auto vertex=R"(
 cbuffer Draw:register(b0){float4 color;float4 geometry;}

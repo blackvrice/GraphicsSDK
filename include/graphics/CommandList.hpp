@@ -22,6 +22,13 @@ public:
         std::uint64_t bytes) = 0;
     [[nodiscard]] virtual Result<void> copyBufferToTexture(const BufferPtr&, const TexturePtr&) = 0;
     [[nodiscard]] virtual Result<void> copyTextureToBuffer(const TexturePtr&, const BufferPtr&) = 0;
+    // Partial 2D buffer<->texture region copies. bufferOffset must be 512-byte aligned and
+    // bufferRowPitch (if non-zero) 256-byte aligned. Color formats support arbitrary sub-regions;
+    // D32Float rejects partial sub-regions with Unsupported. Validation rejection is atomic.
+    [[nodiscard]] virtual Result<void> copyBufferToTextureRegion(
+        const BufferPtr& source, const TexturePtr& destination, const TextureCopyRegion& region) = 0;
+    [[nodiscard]] virtual Result<void> copyTextureToBufferRegion(
+        const TexturePtr& source, const BufferPtr& destination, const TextureCopyRegion& region) = 0;
     [[nodiscard]] virtual Result<void> beginRenderPass(const TexturePtr&, Color clear) = 0;
     [[nodiscard]] virtual Result<void> beginRenderPass(const RenderPassDesc&) = 0;
     [[nodiscard]] virtual Result<void> endRenderPass() = 0;

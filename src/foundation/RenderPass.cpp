@@ -14,6 +14,28 @@ Result<void> validateTextureDescription(TextureDesc d) {
        d.depthStencil!=(d.format==Format::D32Float) || (d.depthStencil && d.renderTarget))return bad("Invalid texture extent/format/attachment usage");
     return {};
 }
+Result<TextureFootprint> computeTextureRegionFootprint(
+    Format format, std::uint32_t width, std::uint32_t height, std::uint32_t rowPitch) {
+    if (!width || !height || width > 16384 || height > 16384) {
+        return bad("Texture copy region extent must be 1..16384");
+    }
+    std::uint32_t texelBytes = 0;
+    if (format == Format::RGBA8UNorm || format == Format::BGRA8UNorm || format == Format::D32Float) {
+        texelBytes = 4;
+    } else if (format == Format::RGBA16Float) {
+        texelBytes = 8;
+    } else {
+        return bad("Unsupported texture format for region footprint");
+    }
+    const std::uint32_t rowBytes = width * texelBytes;
+    const std::uint32_t minimumPitch = (rowBytes + 255u) & ~255u;
+    const std::uint32_t resolvedPitch = rowPitch ? rowPitch : minimumPitch;
+    if (resolvedPitch < rowBytes || (resolvedPitch % 256u) != 0) {
+        return bad("Texture copy rowPitch must be a 256-byte multiple at least rowBytes");
+    }
+    const std::uint64_t totalBytes = static_cast<std::uint64_t>(resolvedPitch) * height;
+    return TextureFootprint{totalBytes, resolvedPitch, rowBytes, height};
+}
 Result<void> validateRenderTargets(const RenderTargetLayout& layout,DepthState depth) {
     if(layout.colors.size()>8 || (layout.colors.empty() && !layout.depth))return bad("Render layout requires 1..8 color attachments or depth");
     for(auto f:layout.colors)if(!colorFormat(f))return bad("Color attachment requires a color format");

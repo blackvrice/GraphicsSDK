@@ -52,12 +52,18 @@ CPU 시간은 wrap 모호성의 보수적 상한 확인에만 사용하고 GPU �
 
 transition/copy의 validation 거부는 명령 목록의 기존 상태를 유지하며 새 자원 참조나
 observed-version snapshot을 추가하지 않는다. `copyBuffer`, `copyBufferRegion`, `copyBufferToTexture`,
-`copyTextureToBuffer`는 메모리/범위·양쪽의 논리 상태를 확인한 뒤에만 자원을 기록한다.
+`copyTextureToBuffer`, `copyBufferToTextureRegion`, `copyTextureToBufferRegion`은 메모리/범위·양쪽의 논리 상태를 확인한 뒤에만 자원을 기록한다.
 `copyBufferRegion(source, sourceOffset, destination, destinationOffset, bytes)`는
 서로 다른 두 버퍼의 비어 있지 않은 범위(`bytes > 0`, 오버플로 없는 경계 내 오프셋)를 복사하며
 대상 버퍼의 지정 범위 밖 바이트를 변경하지 않는다. `copyBuffer(source, destination, bytes)`는
 양쪽 오프셋 0의 축약형이다. Metal은 4바이트 정렬 오프셋·크기에 blit을 사용하고 비정렬 오프셋이나
 꼬리 바이트는 내부 전송 커널로 처리한다. [오프셋 버퍼 복사 보고서](PHASE8_BUFFER_REGION_REPORT.md)
+`copyBufferToTextureRegion`과 `copyTextureToBufferRegion`은 `TextureCopyRegion`의 512바이트 정렬 `bufferOffset`,
+256바이트 정렬 `bufferRowPitch`(`0`이면 `width`의 최소 256바이트 정렬 피치)와 2D 영역 `(x, y, width, height)`을 복사한다.
+`computeTextureRegionFootprint(format, width, height, rowPitch)`로 GPU 없이 휴대용 버퍼 크기를 계산할 수 있다.
+컬러 포맷(`RGBA8UNorm`, `BGRA8UNorm`, `RGBA16Float`)은 임의 부분 영역 복사를 지원하며 영역 밖 텍셀과 버퍼 가드/패딩 바이트를 보존한다.
+`D32Float`는 전체 영역 복사만 허용하고 부분 영역 복사는 `Unsupported`를 반환한다.
+[부분 2D 텍스처 복사 보고서](PHASE8_TEXTURE_REGION_REPORT.md)
 논리 상태는 앞서 같은 명령 목록에서 수락한 transition을 포함한다. Upload/Readback heap의
 지원하지 않는 transition도 참조를 보유하기 전에 거부한다. 기존에 정상 사용한 자원과 그
 version 검사는 유지하므로, 정상 기록 뒤의 upload 변경은 여전히 submit을 실패시킨다.

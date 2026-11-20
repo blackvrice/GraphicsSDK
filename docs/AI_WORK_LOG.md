@@ -51,3 +51,31 @@
   - `P8-CAP-01`: GPU 한도 및 포맷 지원 조회 API (`DeviceCaps` 확장·`queryFormatSupport`).
   - `P9-CMD-01`: 동적 `setViewport` 및 `CommandPool` 재사용.
   - 기존 Phase 7 흐름: 배포 후보 생성·설치 smoke CI 연동 (`P7-PKG-05/06/07` 준비).
+
+---
+
+## 2026-11-20 — `P8-XFER-05` 부분 2D 텍스처 업로드·다운로드 구현 및 실기 검증
+
+- **기준 커밋**: `d58ecb5e` (`Add offset-aware copyBufferRegion and expand development roadmap and dashboard`)
+- **작업 목적**:
+  - 선행 충족 작업 `P8-XFER-05` 구현: 512바이트 정렬 `bufferOffset`, 256바이트 정렬 `bufferRowPitch` 및 2D 사각 영역 `(x, y, width, height)` 기반 부분 텍스처 복사 API(`TextureCopyRegion`, `computeTextureRegionFootprint`, `copyBufferToTextureRegion`, `copyTextureToBufferRegion`)를 세 백엔드에 구현하고 Windows 실기·Validation·설치 소비자로 검증.
+  - macOS Metal 및 Linux Vulkan 실행 검증은 `P8-XFER-06`으로 정직하게 분리 유지.
+- **수정 파일**:
+  - `include/graphics/Types.hpp`, `include/graphics/RenderPass.hpp`, `include/graphics/CommandList.hpp`, `src/foundation/RenderPass.cpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/RenderPassTests.cpp`, `tests/TextureRegionTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE8_TEXTURE_REGION_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 내용과 결과** (격리 빌드 `out/p8-texture-region`, 설치 `out/p8-texture-region-install`, SDK 지문 `638800e78674a9bda385dfa04f11ae005dd226742a6944cf37881ae97fdb95e7`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 빌드 경고 0, 오류 0.
+  - `gfx_texture_region_tests --d3d12` (물리 GPU 2종): 통과 (`assertions=340, region_uploads=20, region_downloads=14, rejections=52, verified_bytes=186400`).
+  - `gfx_texture_region_tests --d3d12 --validation` (Debug + GBV, 2종): 통과 (`assertions=342`, validation 오류 `0`).
+  - `gfx_texture_region_tests --d3d12 --warp` (WARP 1종): 통과 (`assertions=171, verified_bytes=93200`).
+  - `gfx_texture_region_tests` (Windows Vulkan 2종): 통과 (`assertions=340, verified_bytes=186400`).
+  - `gfx_texture_region_tests --validation` (고정 VVL 1.3.290, 2종): 통과 (`assertions=342`, validation 오류 `0`).
+  - 설치 소비자(`find_package 0.0.1 EXACT`): D3D12 일반/GBV 및 Vulkan 일반/고정 VVL 4모드 모두 통과.
+  - CTest 22종 회귀(`render_pass_contracts`, `render_pass_*`, `vulkan_texture_transfer`, `copy_atomicity_*`, `d3d12_*`, `bgra_*`, `buffer_region_*`, `texture_region_*` 등): 22/22 통과.
+  - `tools/roadmap.py --check`: PASS (191 task IDs: 110 완료, 81 미완료).
+- **다음 추천 작업**:
+  - `P8-CAP-01`: GPU 한도 및 포맷 지원 조회 API (`DeviceCaps` 확장·`queryFormatSupport`).
+  - `P9-CMD-01`: 동적 `setViewport` 및 `CommandPool` 재사용.
+  - `P8-XFER-04`, `P8-XFER-06`: Linux Vulkan 및 macOS Metal CI/실기 검증.

@@ -801,6 +801,74 @@ struct VulkanCommands final : CommandList {
         auto dst = buffer(destination); if (!dst) return std::unexpected(dst.error());
         return copyTexture(*src, *dst, false);
     }
+    Result<void> copyTextureRegion(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& buffer, const TextureCopyRegion& region, bool upload) {
+        const auto& desc = image->textureDesc;
+        auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
+        if (!footprint) return std::unexpected(footprint.error());
+        if (region.x > desc.width || region.width > desc.width - region.x ||
+            region.y > desc.height || region.height > desc.height - region.y) {
+            return fail(ErrorCode::InvalidArgument, "Texture copy region exceeds texture dimensions");
+        }
+        const bool fullExtent = region.x == 0 && region.y == 0 && region.width == desc.width && region.height == desc.height;
+        if (desc.depthStencil && !fullExtent) {
+            return fail(ErrorCode::Unsupported, "Partial sub-region copy is unsupported for depth textures");
+        }
+        if ((region.bufferOffset % 512u) != 0 ||
+            region.bufferOffset > buffer->desc.size || footprint->size > buffer->desc.size - region.bufferOffset ||
+            buffer->desc.memory == (upload ? Memory::Readback : Memory::Upload)) {
+            return fail(ErrorCode::InvalidArgument, "Texture region copy buffer alignment, bounds or memory kind invalid");
+        }
+        if (shadow(image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource) ||
+            shadow(buffer) != (upload ? ResourceState::CopySource : ResourceState::CopyDestination)) {
+            return fail(ErrorCode::InvalidState, "Texture region copy requires explicit source/destination states");
+        }
+        record->uses.reserve(record->uses.size() + 2);
+        retain(image);
+        retain(buffer);
+        VkBufferMemoryBarrier b{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
+        b.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_HOST_READ_BIT | VK_ACCESS_HOST_WRITE_BIT;
+        b.dstAccessMask = upload ? VK_ACCESS_TRANSFER_READ_BIT : VK_ACCESS_TRANSFER_WRITE_BIT;
+        b.srcQueueFamilyIndex = b.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        b.buffer = buffer->buffer; b.size = VK_WHOLE_SIZE;
+        VkImageMemoryBarrier i{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+        i.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+        i.dstAccessMask = upload ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_TRANSFER_READ_BIT;
+        i.oldLayout = i.newLayout = imageLayout(shadow(image));
+        i.srcQueueFamilyIndex = i.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        i.image = image->image; i.subresourceRange = {imageAspect(*image), 0, 1, 0, 1};
+        owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | VK_PIPELINE_STAGE_HOST_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &b, 1, &i);
+        VkBufferImageCopy copy{};
+        copy.bufferOffset = region.bufferOffset;
+        copy.bufferRowLength = footprint->rowPitch / texelBytes(desc.format);
+        copy.imageSubresource = {imageAspect(*image), 0, 0, 1};
+        copy.imageOffset = {static_cast<std::int32_t>(region.x), static_cast<std::int32_t>(region.y), 0};
+        copy.imageExtent = {region.width, region.height, 1};
+        if (upload) {
+            owner->native->CmdCopyBufferToImage(record->command, buffer->buffer, image->image, i.newLayout, 1, &copy);
+            if (fullExtent) find(image)->contentsInitialized = true;
+        } else {
+            owner->native->CmdCopyImageToBuffer(record->command, image->image, i.newLayout, buffer->buffer, 1, &copy);
+            if (buffer->desc.memory == Memory::Readback) {
+                b.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; b.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+                owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT,
+                    0, 0, nullptr, 1, &b, 0, nullptr);
+            }
+        }
+        return {};
+    }
+    Result<void> copyBufferToTextureRegion(const BufferPtr& source, const TexturePtr& destination, const TextureCopyRegion& region) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = buffer(source); if (!src) return std::unexpected(src.error());
+        auto dst = texture(destination); if (!dst) return std::unexpected(dst.error());
+        return copyTextureRegion(*dst, *src, region, true);
+    }
+    Result<void> copyTextureToBufferRegion(const TexturePtr& source, const BufferPtr& destination, const TextureCopyRegion& region) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = texture(source); if (!src) return std::unexpected(src.error());
+        auto dst = buffer(destination); if (!dst) return std::unexpected(dst.error());
+        return copyTextureRegion(*src, *dst, region, false);
+    }
     Result<void> beginRenderPass(const TexturePtr& target, Color clear) override {
         return beginRenderPass(RenderPassDesc{{{target, LoadOp::Clear, clear}}, {}});
     }

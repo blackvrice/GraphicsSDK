@@ -21,6 +21,8 @@ struct DepthAttachment { TexturePtr texture; LoadOp load{LoadOp::Clear}; float c
 // All attachments are stored. Load requires previously initialized contents.
 struct RenderPassDesc { std::vector<ColorAttachment> colors; DepthAttachment depth; };
 [[nodiscard]] Result<void> validateTextureDescription(TextureDesc);
+[[nodiscard]] Result<TextureFootprint> computeTextureRegionFootprint(
+    Format format, std::uint32_t width, std::uint32_t height, std::uint32_t rowPitch = 0);
 [[nodiscard]] Result<void> validateRenderTargets(const RenderTargetLayout&, DepthState = {});
 [[nodiscard]] Result<void> validateRenderPass(const RenderPassDesc&);
 }

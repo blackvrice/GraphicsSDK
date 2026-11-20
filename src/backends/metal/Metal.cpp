@@ -100,6 +100,9 @@ struct Operation {
     std::uint64_t bytes{};
     std::string marker;
     std::uint64_t sourceOffset{}, destinationOffset{};
+    TextureCopyRegion textureRegion{};
+    std::uint32_t textureRowPitch{};
+    std::uint64_t textureImageBytes{};
     OperationKind kind{OperationKind::Buffer};
     std::vector<Attachment> attachments;
     std::vector<std::string> markers;
@@ -373,17 +376,19 @@ struct MetalCommands final : CommandList {
                     const bool upload = op.kind == OperationKind::UploadTexture;
                     auto image = upload ? op.destination : op.source;
                     auto host = upload ? op.source : op.destination;
-                    const auto f = image->footprint;
+                    const auto& r = op.textureRegion;
                     id<MTLBlitCommandEncoder> encoder = [next blitCommandEncoder];
                     if (!encoder) return fail(ErrorCode::OutOfMemory, "Metal texture blit encoder creation failed");
                     if (upload) {
-                        [encoder copyFromBuffer:host->buffer sourceOffset:0 sourceBytesPerRow:f.rowPitch sourceBytesPerImage:f.size
-                            sourceSize:MTLSizeMake(image->textureDesc.width,image->textureDesc.height,1) toTexture:image->texture
-                            destinationSlice:0 destinationLevel:0 destinationOrigin:MTLOriginMake(0,0,0)];
+                        [encoder copyFromBuffer:host->buffer sourceOffset:r.bufferOffset
+                            sourceBytesPerRow:op.textureRowPitch sourceBytesPerImage:op.textureImageBytes
+                            sourceSize:MTLSizeMake(r.width,r.height,1) toTexture:image->texture
+                            destinationSlice:0 destinationLevel:0 destinationOrigin:MTLOriginMake(r.x,r.y,0)];
                     } else {
-                        [encoder copyFromTexture:image->texture sourceSlice:0 sourceLevel:0 sourceOrigin:MTLOriginMake(0,0,0)
-                            sourceSize:MTLSizeMake(image->textureDesc.width,image->textureDesc.height,1) toBuffer:host->buffer
-                            destinationOffset:0 destinationBytesPerRow:f.rowPitch destinationBytesPerImage:f.size];
+                        [encoder copyFromTexture:image->texture sourceSlice:0 sourceLevel:0
+                            sourceOrigin:MTLOriginMake(r.x,r.y,0) sourceSize:MTLSizeMake(r.width,r.height,1)
+                            toBuffer:host->buffer destinationOffset:r.bufferOffset
+                            destinationBytesPerRow:op.textureRowPitch destinationBytesPerImage:op.textureImageBytes];
                         if (host->buffer.storageMode == MTLStorageModeManaged) [encoder synchronizeResource:host->buffer];
                     }
                     [encoder endEncoding];
@@ -534,9 +539,41 @@ struct MetalCommands final : CommandList {
         uses.reserve(uses.size()+2); operations.reserve(operations.size()+1);
         retain(image); retain(host);
         Operation op; op.source = upload ? host : image; op.destination = upload ? image : host;
+        op.textureRegion = {0, image->footprint.rowPitch, 0, 0, image->textureDesc.width, image->textureDesc.height};
+        op.textureRowPitch = image->footprint.rowPitch;
+        op.textureImageBytes = image->footprint.size;
         op.kind = upload ? OperationKind::UploadTexture : OperationKind::ReadTexture;
         operations.push_back(std::move(op));
         if (upload) find(image)->initialized = true;
+        return {};
+    }
+    Result<void> textureCopyRegion(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& host, const TextureCopyRegion& region, bool upload) {
+        const auto& desc = image->textureDesc;
+        auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
+        if (!footprint) return std::unexpected(footprint.error());
+        if (region.x > desc.width || region.width > desc.width - region.x ||
+            region.y > desc.height || region.height > desc.height - region.y)
+            return fail(ErrorCode::InvalidArgument, "Metal texture copy region exceeds texture dimensions");
+        const bool fullExtent = region.x == 0 && region.y == 0 && region.width == desc.width && region.height == desc.height;
+        if (desc.depthStencil && !fullExtent)
+            return fail(ErrorCode::Unsupported, "Partial sub-region copy is unsupported for depth textures");
+        if ((region.bufferOffset % 512u) != 0 ||
+            region.bufferOffset > host->desc.size || footprint->size > host->desc.size - region.bufferOffset ||
+            (upload ? host->desc.memory == Memory::Readback : host->desc.memory == Memory::Upload))
+            return fail(ErrorCode::InvalidArgument, "Metal texture region copy buffer alignment, bounds or memory kind invalid");
+        if (shadow(image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource) ||
+            shadow(host) != (upload ? ResourceState::CopySource : ResourceState::CopyDestination))
+            return fail(ErrorCode::InvalidState, "Metal texture region copy requires explicit transfer states");
+        if (!upload && !initialized(image)) return fail(ErrorCode::InvalidState, "Metal texture contents uninitialized");
+        uses.reserve(uses.size()+2); operations.reserve(operations.size()+1);
+        retain(image); retain(host);
+        Operation op; op.source = upload ? host : image; op.destination = upload ? image : host;
+        op.textureRegion = region;
+        op.textureRowPitch = footprint->rowPitch;
+        op.textureImageBytes = footprint->size;
+        op.kind = upload ? OperationKind::UploadTexture : OperationKind::ReadTexture;
+        operations.push_back(std::move(op));
+        if (upload && fullExtent) find(image)->initialized = true;
         return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& source, const TexturePtr& destination) override {
@@ -550,6 +587,18 @@ struct MetalCommands final : CommandList {
         auto src = allocation(source); if (!src) return std::unexpected(src.error());
         auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
         return textureCopy(*src,*dst,false);
+    }
+    Result<void> copyBufferToTextureRegion(const BufferPtr& source, const TexturePtr& destination, const TextureCopyRegion& region) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = allocation(source); if (!src) return std::unexpected(src.error());
+        auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
+        return textureCopyRegion(*dst, *src, region, true);
+    }
+    Result<void> copyTextureToBufferRegion(const TexturePtr& source, const BufferPtr& destination, const TextureCopyRegion& region) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        auto src = allocation(source); if (!src) return std::unexpected(src.error());
+        auto dst = allocation(destination); if (!dst) return std::unexpected(dst.error());
+        return textureCopyRegion(*src, *dst, region, false);
     }
     Result<void> beginRenderPass(const TexturePtr& value, Color clear) override { return beginRenderPass(RenderPassDesc{{{value,LoadOp::Clear,clear}},{}}); }
     Result<void> beginRenderPass(const RenderPassDesc& desc) override {

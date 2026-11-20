@@ -3255,16 +3255,43 @@
       "id": "P8-XFER-05",
       "phase": 8,
       "group": "P8-XFER",
-      "title": "부분 2D 텍스처 업로드/다운로드 (Region Texture Copy)",
-      "status": "todo",
+      "title": "부분 2D 텍스처 업로드/다운로드 (API·D3D12·Windows Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P8-XFER-02",
         "P8-XFER-03"
       ],
-      "work": "bufferOffset·bufferRowPitch 및 텍스처 사각 영역(x, y, width, height)을 지정하는 부분 텍스처 업로드/다운로드 API를 설계하고 D3D12/Vulkan/Metal에 구현한다.",
-      "done_when": "영역 외 픽셀 보존, 홀수 폭/피치 정렬, 경계 거부, D3D12/Vulkan/Metal 검증 및 설치 소비자 통과.",
-      "evidence": []
+      "work": "TextureCopyRegion, computeTextureRegionFootprint, copyBufferToTextureRegion/copyTextureToBufferRegion을 공개 API와 D3D12/Vulkan/Metal 백엔드에 구현했다. CPU footprint 테스트와 Windows 물리 GPU 2종의 D3D12(일반·Debug+GBV·WARP)·Vulkan(일반·고정 VVL 1.3.290)·설치 find_package 소비자에서 컬러 3포맷 부분 복사, D32 부분 복사 Unsupported, 영역 외 텍셀·버퍼 가드 보존, 원자적 거부를 확인했다.",
+      "done_when": "CPU footprint 및 Windows D3D12/Vulkan/Validation/WARP·설치 소비자 전체 텍셀·가드·거부 검증 통과.",
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/RenderPass.hpp",
+        "include/graphics/CommandList.hpp",
+        "src/foundation/RenderPass.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "tests/TextureRegionTests.cpp",
+        "docs/PHASE8_TEXTURE_REGION_REPORT.md"
+      ]
+    },
+    {
+      "id": "P8-XFER-06",
+      "phase": 8,
+      "group": "P8-XFER",
+      "title": "부분 2D 텍스처 복사 macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P8-XFER-05"
+      ],
+      "work": "Metal.cpp와 Vulkan.cpp의 부분 2D 텍스처 복사 구현을 Linux Vulkan(lavapipe/물리 GPU) 및 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·전체 텍셀 및 버퍼 가드 검증으로 확인한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 컬러 3포맷 부분 복사, D32 부분 거부, 가드 바이트 및 수명 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "docs/PHASE8_TEXTURE_REGION_REPORT.md"
+      ]
     },
     {
       "id": "P8-CAP-01",

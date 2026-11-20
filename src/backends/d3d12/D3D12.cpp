@@ -469,6 +469,62 @@ struct DXCommands final : CommandList {
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; b.PlacedFootprint = (*source)->placed;
         list->CopyTextureRegion(&b, 0, 0, 0, &a, nullptr); return {};
     }
+    Result<void> copyTextureRegion(const std::shared_ptr<DXTexture>& image, const std::shared_ptr<DXBuffer>& buffer, const TextureCopyRegion& region, bool upload) {
+        const auto& desc = image->desc;
+        auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
+        if (!footprint) return std::unexpected(footprint.error());
+        if (region.x > desc.width || region.width > desc.width - region.x ||
+            region.y > desc.height || region.height > desc.height - region.y) {
+            return invalid("Texture copy region exceeds texture dimensions", ErrorCode::InvalidArgument);
+        }
+        const bool fullExtent = region.x == 0 && region.y == 0 && region.width == desc.width && region.height == desc.height;
+        if (desc.depthStencil && !fullExtent) {
+            return invalid("Partial sub-region copy is unsupported for depth textures", ErrorCode::Unsupported);
+        }
+        if ((region.bufferOffset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT) != 0 ||
+            region.bufferOffset > buffer->desc.size || footprint->size > buffer->desc.size - region.bufferOffset ||
+            buffer->desc.memory == (upload ? Memory::Readback : Memory::Upload)) {
+            return invalid("Texture region copy buffer alignment, bounds or memory kind invalid", ErrorCode::InvalidArgument);
+        }
+        if (current(*buffer) != (upload ? ResourceState::CopySource : ResourceState::CopyDestination) ||
+            current(*image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource)) {
+            return invalid("Texture region copy requires CopySource/CopyDestination states");
+        }
+        use(buffer->tracker, buffer->resource, buffer->desc.memory);
+        use(image->tracker, image->resource);
+        D3D12_TEXTURE_COPY_LOCATION bufferLocation{};
+        bufferLocation.pResource = buffer->resource.Get();
+        bufferLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+        bufferLocation.PlacedFootprint.Offset = region.bufferOffset;
+        bufferLocation.PlacedFootprint.Footprint.Format = native(desc.format);
+        bufferLocation.PlacedFootprint.Footprint.Width = region.width;
+        bufferLocation.PlacedFootprint.Footprint.Height = region.height;
+        bufferLocation.PlacedFootprint.Footprint.Depth = 1;
+        bufferLocation.PlacedFootprint.Footprint.RowPitch = footprint->rowPitch;
+        D3D12_TEXTURE_COPY_LOCATION textureLocation{};
+        textureLocation.pResource = image->resource.Get();
+        textureLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+        textureLocation.SubresourceIndex = 0;
+        if (upload) {
+            list->CopyTextureRegion(&textureLocation, region.x, region.y, 0, &bufferLocation, nullptr);
+        } else {
+            D3D12_BOX sourceBox{region.x, region.y, 0, region.x + region.width, region.y + region.height, 1};
+            list->CopyTextureRegion(&bufferLocation, 0, 0, 0, &textureLocation, fullExtent ? nullptr : &sourceBox);
+        }
+        return {};
+    }
+    Result<void> copyBufferToTextureRegion(const BufferPtr& src, const TexturePtr& dst, const TextureCopyRegion& region) override {
+        auto status = ready(true); if (!status) return status;
+        auto source = owned<DXBuffer>(src); auto destination = owned<DXTexture>(dst);
+        if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
+        return copyTextureRegion(*destination, *source, region, true);
+    }
+    Result<void> copyTextureToBufferRegion(const TexturePtr& src, const BufferPtr& dst, const TextureCopyRegion& region) override {
+        auto status = ready(true); if (!status) return status;
+        auto source = owned<DXTexture>(src); auto destination = owned<DXBuffer>(dst);
+        if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
+        return copyTextureRegion(*source, *destination, region, false);
+    }
     Result<void> beginRenderPass(const TexturePtr& ptr, Color clear) override {
         auto status = ready(true); if (!status) return status;
         auto object = owned<DXTexture>(ptr); if (!object) return std::unexpected(object.error());

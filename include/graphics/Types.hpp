@@ -36,6 +36,14 @@ struct Color { float r{}, g{}, b{}, a{1}; };
 struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; };
 struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA8UNorm}; bool renderTarget{}, depthStencil{}; };
 struct TextureFootprint { std::uint64_t size{}; std::uint32_t rowPitch{}, rowBytes{}, height{}; };
+// Portable 2D buffer<->texture copy region. bufferOffset must be a multiple of 512 bytes.
+// bufferRowPitch=0 selects the 256-byte aligned pitch for width; non-zero must be a
+// multiple of 256 bytes and >= width * bytesPerTexel.
+struct TextureCopyRegion {
+    std::uint64_t bufferOffset{};
+    std::uint32_t bufferRowPitch{};
+    std::uint32_t x{}, y{}, width{}, height{};
+};
 struct Fence { std::uint64_t value{}, device{}; };
 struct DeviceDesc {
     Backend backend{Backend::D3D12}; bool validation{}; bool softwareAdapter{}; bool enableDeviceLossTesting{};
