@@ -1,6 +1,6 @@
 # GraphicsSDK 전체 개발 대시보드
 
-- 기준일: 2026-11-20
+- 기준일: 2026-11-21
 - 현재 버전: `0.0.1` (초기 개발 스냅샷 · `v0.0.2` 확장 슬라이스 진행 중)
 - 현재 Active Phase: **Phase 3 (Vulkan)** (기존 필수 게이트 보존 + Phase 8~12 후속 고도화 병행)
 - 상태 원본: [ROADMAP_TASKS.json](ROADMAP_TASKS.json) · [생성된 세부 로드맵](ROADMAP.md)
@@ -23,12 +23,12 @@
 | Phase 5 | Shader Pipeline | 8 | 0 | 8 | 0 | 0 | DXIL/SPIR-V/MSL/Reflection/Cache 구현 누적 · 선행 수용 잔여 |
 | Phase 6 | GPU 자원 최적화 | 26 | 18 | 0 | 0 | 8 | 기준선·4슬롯 기각·링 모델 완료 · 후보/판정 잔여 |
 | Phase 7 | 독립 SDK 배포 | 15 | 9 | 6 | 0 | 0 | 6프로필 후보·공통 감사·Windows GPU smoke 완료 · CI/최종 수용 잔여 |
-| Phase 8 | GPU 자원·전송·Capability·Texture·Memory Pool 확장 | 17 | 8 | 0 | 0 | 9 | `copyBufferRegion`·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(`P8-TEX-01`)·MSAA/Resolve(`P8-TEX-03`)·`UploadRing`/Pools(`P8-MEM-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 다중 차원/압축/Aliasing 잔여 |
+| Phase 8 | GPU 자원·전송·Capability·Texture·Memory Pool 확장 | 18 | 9 | 0 | 0 | 9 | `copyBufferRegion`·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(`P8-TEX-01`)·1D/3D/2DArray/Cubemap/Mipmap(`P8-TEX-02`)·MSAA/Resolve(`P8-TEX-03`)·`UploadRing`/Pools(`P8-MEM-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 압축/Aliasing 잔여 |
 | Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 14 | 6 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·병렬 기록/일괄 제출(`P9-CMD-02`)·다중 큐/Timeline Fence(`P9-CMD-03`)·Compute/UAV(`P9-CMP-01`)·선택적 Render Graph(`P9-RG-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 Indirect 대기 |
 | Phase 10 | Frame Pacing·HDR·Multi-Surface·Dirty Region | 4 | 0 | 0 | 0 | 4 | 계획 등록 완료 · 순차 구현 대기 |
 | Phase 11 | Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 6 | 1 | 0 | 0 | 5 | GPU Profiling 확장(`P11-PROF-01`: 다중 32-Scope GPU Timestamp·ON/OFF 분리·카운터/Stall/VRAM null 계약) D3D12/Win Vulkan 완료 · Linux/Metal 검증(`P11-PROF-02`) 및 Interop/Video/Debugging 대기 |
 | Phase 12 | GraphicsUI·Sandbox RHI 호환성 | 3 | 1 | 0 | 0 | 2 | Sandbox RHI 1:1 매핑 및 비침투 독립 어댑터(`P12-SBX-01`) Win D3D12/Vulkan 완료 · Linux/Metal 검증(`P12-SBX-02`) 및 GraphicsUI 통합(`P12-UI-01`) 대기 |
-| **합계** | **전체 13 Phases** | **204** | **122** | **38** | **8** | **36** | **진행 중** |
+| **합계** | **전체 13 Phases** | **205** | **123** | **38** | **8** | **36** | **진행 중** |
 
 ---
 
@@ -41,7 +41,7 @@
 | `0.0.1` | Core RHI(D3D12/Vulkan/Metal), 버퍼/2D 텍스처, Depth/MRT, 바인딩/정점 입력, Timestamp, 스왑체인, 파이프라인 캐시, 6프로필 배포 후보 | `P0`~`P7` | 개발 스냅샷 진행 중 |
 | `v0.0.2` | 오프셋 버퍼 복사(`copyBufferRegion`) · 부분 2D 텍스처 복사 | `P8-XFER-01`~`06` | `01~03, 05` 완료 · `04, 06`(Linux/Metal 실기) 잔여 |
 | `v0.0.3` | GPU 한도 및 포맷 지원 조회(`DeviceCaps` 확장·`queryFormatSupport`) | `P8-CAP-01`, `P8-CAP-02` | `01` 완료 · `02`(Linux/Metal 실기) 잔여 |
-| `v0.0.4` | Texture View·Subresource View·Mipmap·Texture Array·Cubemap | `P8-TEX-01`, `P8-TEX-02`, `P8-TEX-05` | `01`(`TextureView`) 완료 · `05`(Linux/Metal) 및 `02` 잔여 |
+| `v0.0.4` | Texture View·Subresource View·1D/3D·2DArray·Cubemap·Mipmap | `P8-TEX-01`, `P8-TEX-02`, `P8-TEX-05`, `P8-TEX-07` | `01, 02` 완료 · `05, 07`(Linux/Metal) 잔여 |
 | `v0.0.5` | MSAA 텍스처·Resolve·압축 텍스처(BC1~BC7/ASTC/ETC2) | `P8-TEX-03`, `P8-TEX-06`, `P8-TEX-04` | `03`(MSAA·Resolve) 완료 · `06`(Linux/Metal) 및 `04` 잔여 |
 | `v0.0.6` | 공개 Upload Ring·Staging/Readback/Transient Pool·VRAM Budget | `P8-MEM-01`~`03`, `P6-OPT-*` | `01`(`UploadRing`/Pools·Budget 정책) 완료 · `03`(Linux/Metal) 및 `02` 잔여 |
 | `v0.0.7` | 동적 Viewport·Command Pool·병렬 명령 기록·다중 큐·Timeline Fence | `P9-CMD-01`~`08` | `01, 02, 03, 04` 완료 · `05, 06, 07, 08`(Linux/Metal) 잔여 |
@@ -68,6 +68,7 @@
 | 2D 텍스처 전체 전송 (RGBA8/BGRA8/RGBA16F/D32) | 물리 GPU + GBV + WARP | 물리 GPU + 고정 VVL | SW + 고정 VVL | 호스팅 가상 + Validation |
 | 부분 2D 텍스처 복사 (`copyBufferToTextureRegion` / `copyTextureToBufferRegion`) | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P8-XFER-06`) | 구현(macOS CI 대기, `P8-XFER-06`) |
 | Texture View (`createTextureView` SRV/RTV/DSV/UAV) | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P8-TEX-05`) | 구현(macOS CI 대기, `P8-TEX-05`) |
+| 1D/3D·2DArray·Cubemap·다중 Mipmap (`TextureDimension`) | **물리 GPU + GBV + WARP (`P8-TEX-02`)** | **물리 GPU + 고정 VVL (`P8-TEX-02`)** | 구현(Linux CI 대기, `P8-TEX-07`) | 구현(macOS CI 대기, `P8-TEX-07`) |
 | MSAA 텍스처(2x/4x/8x)·`resolveTexture` | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P8-TEX-06`) | 구현(macOS CI 대기, `P8-TEX-06`) |
 | 공개 `UploadRing`·`ReadbackPool`·`TransientResourcePool` | **물리 GPU + GBV + WARP (13.68x)** | **물리 GPU + 고정 VVL (9.91x)** | 구현(Linux CI 대기, `P8-MEM-03`) | 구현(macOS CI 대기, `P8-MEM-03`) |
 | 동적 Viewport (`setViewport`) | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P9-CMD-05`) | 구현(macOS CI 대기, `P9-CMD-05`) |

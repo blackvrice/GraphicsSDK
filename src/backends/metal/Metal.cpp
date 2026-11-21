@@ -402,6 +402,30 @@ struct MetalPipeline final : Pipeline {
 bool vertexState(ResourceState s) { return s == ResourceState::VertexBuffer || s == ResourceState::VertexAndIndexBuffer; }
 bool indexState(ResourceState s) { return s == ResourceState::IndexBuffer || s == ResourceState::VertexAndIndexBuffer; }
 bool visible(ShaderVisibility v,unsigned stage) { return v == ShaderVisibility::All || unsigned(v) == stage; }
+bool isSampledTextureBinding(BindingType type) {
+    return type == BindingType::Texture2D || type == BindingType::Texture1D ||
+           type == BindingType::Texture3D || type == BindingType::Texture2DArray ||
+           type == BindingType::TextureCube;
+}
+BindingType bindingTypeForDimension(TextureDimension dim) {
+    switch (dim) {
+    case TextureDimension::Texture1D: return BindingType::Texture1D;
+    case TextureDimension::Texture3D: return BindingType::Texture3D;
+    case TextureDimension::Texture2DArray: return BindingType::Texture2DArray;
+    case TextureDimension::TextureCube: return BindingType::TextureCube;
+    case TextureDimension::Texture2D: default: return BindingType::Texture2D;
+    }
+}
+MTLTextureType metalTextureType(TextureDimension dim, std::uint32_t sampleCount) {
+    if (sampleCount > 1u) return MTLTextureType2DMultisample;
+    switch (dim) {
+    case TextureDimension::Texture1D: return MTLTextureType1D;
+    case TextureDimension::Texture3D: return MTLTextureType3D;
+    case TextureDimension::Texture2DArray: return MTLTextureType2DArray;
+    case TextureDimension::TextureCube: return MTLTextureTypeCube;
+    case TextureDimension::Texture2D: default: return MTLTextureType2D;
+    }
+}
 MTLPixelFormat pixelFormat(Format f) {
     switch(f) { case Format::RGBA8UNorm:return MTLPixelFormatRGBA8Unorm;case Format::BGRA8UNorm:return MTLPixelFormatBGRA8Unorm;
     case Format::RGBA16Float:return MTLPixelFormatRGBA16Float;case Format::D32Float:return MTLPixelFormatDepth32Float; }
@@ -545,7 +569,7 @@ struct MetalCommands final : CommandList {
                     for (const auto& entry : p.bindings.entries) {
                         for (unsigned element = 0; element < entry.count; ++element) {
                             const auto& view = (*c.bindings)[offset++];
-                            if (entry.type == BindingType::Texture2D || entry.type == BindingType::StorageTexture2D) {
+                            if (isSampledTextureBinding(entry.type) || entry.type == BindingType::StorageTexture2D) {
                                 id<MTLTexture> tex = view.textureView ? view.textureView->texture : view.allocation->texture;
                                 [encoder setTexture:tex atIndex:entry.slot + element];
                             } else {
@@ -600,8 +624,12 @@ struct MetalCommands final : CommandList {
                     }
                     id<MTLRenderCommandEncoder> encoder = [next renderCommandEncoderWithDescriptor:descriptor];
                     if (!encoder) return fail(ErrorCode::BackendFailure, "Metal render encoder creation failed");
-                    const auto& extent = op.attachments.front().allocation->textureDesc;
-                    [encoder setViewport:MTLViewport{0,0,double(extent.width),double(extent.height),0,1}];
+                    const auto& firstAtt = op.attachments.front();
+                    const auto& extent = firstAtt.allocation->textureDesc;
+                    const std::uint32_t firstMip = firstAtt.textureView ? firstAtt.textureView->desc.baseMipLevel : 0u;
+                    const std::uint32_t passW = std::max(1u, extent.width >> firstMip);
+                    const std::uint32_t passH = std::max(1u, extent.height >> firstMip);
+                    [encoder setViewport:MTLViewport{0,0,double(passW),double(passH),0,1}];
                     [encoder setCullMode:MTLCullModeNone];
                     for (const auto& item : op.order) {
                         if (!item.first) { [encoder insertDebugSignpost:labels[item.second]]; continue; }
@@ -616,7 +644,7 @@ struct MetalCommands final : CommandList {
                         for (const auto& entry : p.bindings.entries) for (unsigned element=0;element<entry.count;++element) {
                             const auto& view = (*draw.bindings)[offset++];
                             for (unsigned stage=0;stage<2;++stage) if (visible(entry.visibility,stage)) {
-                                if (entry.type == BindingType::Texture2D) {
+                                if (isSampledTextureBinding(entry.type)) {
                                     id<MTLTexture> sampledTexture = view.textureView ? view.textureView->texture : view.allocation->texture;
                                     if (stage==0) [encoder setVertexTexture:sampledTexture atIndex:entry.slot+element];
                                     else [encoder setFragmentTexture:sampledTexture atIndex:entry.slot+element];
@@ -650,11 +678,11 @@ struct MetalCommands final : CommandList {
                     if (upload) {
                         [encoder copyFromBuffer:host->buffer sourceOffset:r.bufferOffset
                             sourceBytesPerRow:op.textureRowPitch sourceBytesPerImage:op.textureImageBytes
-                            sourceSize:MTLSizeMake(r.width,r.height,1) toTexture:image->texture
-                            destinationSlice:0 destinationLevel:0 destinationOrigin:MTLOriginMake(r.x,r.y,0)];
+                            sourceSize:MTLSizeMake(r.width,r.height,r.depth) toTexture:image->texture
+                            destinationSlice:r.arrayLayer destinationLevel:r.mipLevel destinationOrigin:MTLOriginMake(r.x,r.y,r.z)];
                     } else {
-                        [encoder copyFromTexture:image->texture sourceSlice:0 sourceLevel:0
-                            sourceOrigin:MTLOriginMake(r.x,r.y,0) sourceSize:MTLSizeMake(r.width,r.height,1)
+                        [encoder copyFromTexture:image->texture sourceSlice:r.arrayLayer sourceLevel:r.mipLevel
+                            sourceOrigin:MTLOriginMake(r.x,r.y,r.z) sourceSize:MTLSizeMake(r.width,r.height,r.depth)
                             toBuffer:host->buffer destinationOffset:r.bufferOffset
                             destinationBytesPerRow:op.textureRowPitch destinationBytesPerImage:op.textureImageBytes];
                         if (host->buffer.storageMode == MTLStorageModeManaged) [encoder synchronizeResource:host->buffer];
@@ -868,9 +896,11 @@ struct MetalCommands final : CommandList {
         uses.reserve(uses.size()+2); operations.reserve(operations.size()+1);
         retain(image, upload); retain(host, !upload);
         Operation op; op.source = upload ? host : image; op.destination = upload ? image : host;
-        op.textureRegion = {0, image->footprint.rowPitch, 0, 0, image->textureDesc.width, image->textureDesc.height};
+        const std::uint32_t sliceH = image->textureDesc.dimension == TextureDimension::Texture1D ? 1u : image->textureDesc.height;
+        const std::uint32_t depth0 = image->textureDesc.dimension == TextureDimension::Texture3D ? image->textureDesc.depth : 1u;
+        op.textureRegion = {0, image->footprint.rowPitch, 0, 0, image->textureDesc.width, sliceH, 0, 0, 0, depth0};
         op.textureRowPitch = image->footprint.rowPitch;
-        op.textureImageBytes = image->footprint.size;
+        op.textureImageBytes = static_cast<std::uint64_t>(image->footprint.rowPitch) * sliceH;
         op.kind = upload ? OperationKind::UploadTexture : OperationKind::ReadTexture;
         operations.push_back(std::move(op));
         if (upload) find(image)->initialized = true;
@@ -880,16 +910,26 @@ struct MetalCommands final : CommandList {
         const auto& desc = image->textureDesc;
         if (desc.sampleCount > 1u)
             return fail(ErrorCode::InvalidArgument, "Metal direct buffer copy is invalid for multisampled textures; resolve first");
+        if (region.mipLevel >= desc.mipLevels || region.arrayLayer >= desc.arrayLayers || !region.depth)
+            return fail(ErrorCode::InvalidArgument, "Metal texture copy region subresource or depth invalid");
+        const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
+        const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
+        const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
-        if (region.x > desc.width || region.width > desc.width - region.x ||
-            region.y > desc.height || region.height > desc.height - region.y)
-            return fail(ErrorCode::InvalidArgument, "Metal texture copy region exceeds texture dimensions");
-        const bool fullExtent = region.x == 0 && region.y == 0 && region.width == desc.width && region.height == desc.height;
+        if (region.x > mipW || region.width > mipW - region.x ||
+            region.y > mipH || region.height > mipH - region.y ||
+            region.z > mipD || region.depth > mipD - region.z)
+            return fail(ErrorCode::InvalidArgument, "Metal texture copy region exceeds subresource dimensions");
+        if (footprint->size > UINT64_MAX / region.depth)
+            return fail(ErrorCode::InvalidArgument, "Metal texture copy region byte size overflow");
+        const std::uint64_t totalBytes = footprint->size * region.depth;
+        const bool fullSlice = region.x == 0 && region.y == 0 && region.width == mipW && region.height == mipH;
+        const bool fullExtent = fullSlice && region.z == 0 && region.depth == mipD;
         if (desc.depthStencil && !fullExtent)
             return fail(ErrorCode::Unsupported, "Partial sub-region copy is unsupported for depth textures");
         if ((region.bufferOffset % 512u) != 0 ||
-            region.bufferOffset > host->desc.size || footprint->size > host->desc.size - region.bufferOffset ||
+            region.bufferOffset > host->desc.size || totalBytes > host->desc.size - region.bufferOffset ||
             (upload ? host->desc.memory == Memory::Readback : host->desc.memory == Memory::Upload))
             return fail(ErrorCode::InvalidArgument, "Metal texture region copy buffer alignment, bounds or memory kind invalid");
         if (shadow(image) != (upload ? ResourceState::CopyDestination : ResourceState::CopySource) ||
@@ -904,7 +944,7 @@ struct MetalCommands final : CommandList {
         op.textureImageBytes = footprint->size;
         op.kind = upload ? OperationKind::UploadTexture : OperationKind::ReadTexture;
         operations.push_back(std::move(op));
-        if (upload && fullExtent) find(image)->initialized = true;
+        if (upload && fullSlice) find(image)->initialized = true;
         return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& source, const TexturePtr& destination) override {
@@ -1007,9 +1047,14 @@ struct MetalCommands final : CommandList {
         uses.reserve(uses.size()+op.attachments.size()); operations.reserve(operations.size()+1);
         for (const auto& a : op.attachments) retain(a.allocation, !a.readOnly).initialized = true;
         operations.push_back(std::move(op)); inPass = true; passOperation = operations.size()-1;
-        selected.reset();bindings.reset();const auto& extent=operations.back().attachments.front().allocation->textureDesc;
-        viewport={0,0,double(extent.width),double(extent.height),0.0,1.0};
-        scissor={0,0,extent.width,extent.height};
+        selected.reset();bindings.reset();
+        const auto& firstAtt = operations.back().attachments.front();
+        const auto& extent = firstAtt.allocation->textureDesc;
+        const std::uint32_t firstMip = firstAtt.textureView ? firstAtt.textureView->desc.baseMipLevel : 0u;
+        const std::uint32_t passW = std::max(1u, extent.width >> firstMip);
+        const std::uint32_t passH = std::max(1u, extent.height >> firstMip);
+        viewport={0,0,double(passW),double(passH),0.0,1.0};
+        scissor={0,0,passW,passH};
         return {};
     }
     Result<void> endRenderPass() override {
@@ -1052,18 +1097,19 @@ struct MetalCommands final : CommandList {
             std::size_t at=element;for(unsigned i=0;i<index;++i)at+=selected->bindings.entries[i].count;
             if((*next)[at].allocation)return fail(ErrorCode::InvalidArgument,"Duplicate Metal binding element");return at;};
         for(const auto& view:data.textures){
-            auto at=slot(view.binding,view.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());
             if(view.texture&&view.view)return fail(ErrorCode::InvalidArgument,"Specify either texture or view in TextureBinding, not both");
             std::shared_ptr<Allocation> a;
             std::shared_ptr<NativeTextureView> v;
+            TextureDimension resolvedDim{TextureDimension::Texture2D};
             if(view.view){
                 auto found=textureView(view.view);if(!found)return std::unexpected(found.error());
                 if((*found)->desc.usage!=TextureViewUsage::ShaderRead)return fail(ErrorCode::InvalidArgument,"Metal texture binding view requires ShaderRead usage");
-                v=*found;a=v->allocation;
+                v=*found;a=v->allocation;resolvedDim=v->desc.dimension.value_or(a->textureDesc.dimension);
             }else{
                 auto found=allocation(view.texture);if(!found)return std::unexpected(found.error());
-                a=*found;
+                a=*found;resolvedDim=a->textureDesc.dimension;
             }
+            auto at=slot(view.binding,view.element,bindingTypeForDimension(resolvedDim));if(!at)return std::unexpected(at.error());
             if(a->backbuffer)return fail(ErrorCode::InvalidArgument,"Metal backbuffer sampling unsupported");
             if(a->textureDesc.depthStencil)return fail(ErrorCode::Unsupported,"Metal depth sampling unsupported");
             if(a->textureDesc.sampleCount>1u)return fail(ErrorCode::Unsupported,"Metal multisampled texture sampling unsupported");
@@ -1100,15 +1146,21 @@ struct MetalCommands final : CommandList {
     Result<void> setViewport(const Viewport& value) override {
         if (auto ok = ready(); !ok) return ok;
         if (!inPass) return fail(ErrorCode::InvalidState, "Metal viewport requires pass");
-        const auto d = operations[passOperation].attachments.front().allocation->textureDesc;
-        if (auto ok = validateViewport(value, d.width, d.height); !ok) return ok;
+        const auto& firstAtt = operations[passOperation].attachments.front();
+        const auto d = firstAtt.allocation->textureDesc;
+        const std::uint32_t mip = firstAtt.textureView ? firstAtt.textureView->desc.baseMipLevel : 0u;
+        if (auto ok = validateViewport(value, std::max(1u, d.width >> mip), std::max(1u, d.height >> mip)); !ok) return ok;
         viewport = MTLViewport{value.x, value.y, value.width, value.height, value.minDepth, value.maxDepth};
         return {};
     }
     Result<void> setScissor(std::uint32_t x,std::uint32_t y,std::uint32_t width,std::uint32_t height) override {
         if(auto ok=ready();!ok)return ok;if(!inPass)return fail(ErrorCode::InvalidState,"Metal scissor requires pass");
-        const auto d=operations[passOperation].attachments.front().allocation->textureDesc;
-        if(!width||!height||x>d.width||width>d.width-x||y>d.height||height>d.height-y)return fail(ErrorCode::InvalidArgument,"Metal scissor outside attachment");
+        const auto& firstAtt = operations[passOperation].attachments.front();
+        const auto d = firstAtt.allocation->textureDesc;
+        const std::uint32_t mip = firstAtt.textureView ? firstAtt.textureView->desc.baseMipLevel : 0u;
+        const std::uint32_t passW = std::max(1u, d.width >> mip);
+        const std::uint32_t passH = std::max(1u, d.height >> mip);
+        if(!width||!height||x>passW||width>passW-x||y>passH||height>passH-y)return fail(ErrorCode::InvalidArgument,"Metal scissor outside attachment");
         scissor={x,y,width,height};return {};
     }
     Result<void> recordDraw(std::uint32_t count,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance,bool indexed) {
@@ -1164,18 +1216,21 @@ struct MetalCommands final : CommandList {
             return at;
         };
         for (const auto& view : data.textures) {
-            auto at = slot(view.binding, view.element, BindingType::Texture2D); if (!at) return std::unexpected(at.error());
             if (view.texture && view.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in TextureBinding, not both");
             std::shared_ptr<Allocation> a;
             std::shared_ptr<NativeTextureView> v;
+            TextureDimension resolvedDim{TextureDimension::Texture2D};
             if (view.view) {
                 auto found = textureView(view.view); if (!found) return std::unexpected(found.error());
                 if ((*found)->desc.usage != TextureViewUsage::ShaderRead) return fail(ErrorCode::InvalidArgument, "Metal texture view requires ShaderRead usage");
                 v = *found; a = v->allocation;
+                resolvedDim = v->desc.dimension.value_or(a->textureDesc.dimension);
             } else {
                 auto found = allocation(view.texture); if (!found) return std::unexpected(found.error());
                 a = *found;
+                resolvedDim = a->textureDesc.dimension;
             }
+            auto at = slot(view.binding, view.element, bindingTypeForDimension(resolvedDim)); if (!at) return std::unexpected(at.error());
             if (a->backbuffer || a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Metal compute sampled texture invalid");
             if (shadow(a) != ResourceState::ShaderRead || !initialized(a)) return fail(ErrorCode::InvalidState, "Metal compute sampling requires initialized ShaderRead texture");
             (*next)[*at] = {a, 0, 0, v, ResourceState::ShaderRead};
@@ -1620,28 +1675,38 @@ struct MetalDevice final : Device {
             const auto format = desc.format == Format::RGBA8UNorm ? MTLPixelFormatRGBA8Unorm :
                 desc.format == Format::BGRA8UNorm ? MTLPixelFormatBGRA8Unorm :
                 desc.format == Format::RGBA16Float ? MTLPixelFormatRGBA16Float : MTLPixelFormatDepth32Float;
-            MTLTextureDescriptor* descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format width:desc.width height:desc.height mipmapped:NO];
+            const std::uint32_t sliceH = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+            const std::uint32_t texDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
+            MTLTextureDescriptor* descriptor = [[MTLTextureDescriptor alloc] init];
             if (!descriptor) return fail(ErrorCode::OutOfMemory, "Metal texture descriptor creation failed");
+            descriptor.textureType = metalTextureType(desc.dimension, desc.sampleCount);
+            descriptor.pixelFormat = format;
+            descriptor.width = desc.width;
+            descriptor.height = sliceH;
+            descriptor.depth = texDepth;
+            descriptor.mipmapLevelCount = desc.mipLevels;
+            descriptor.arrayLength = desc.dimension == TextureDimension::Texture2DArray ? desc.arrayLayers : 1u;
             descriptor.resourceOptions = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
             if (desc.sampleCount > 1u) {
-                descriptor.textureType = MTLTextureType2DMultisample;
                 descriptor.sampleCount = desc.sampleCount;
                 descriptor.usage = MTLTextureUsageRenderTarget;
             } else {
-                descriptor.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-                if (desc.storage) descriptor.usage |= MTLTextureUsageShaderWrite;
+                MTLTextureUsage usage = desc.depthStencil ? MTLTextureUsageRenderTarget : MTLTextureUsageShaderRead;
+                if (desc.renderTarget) usage |= MTLTextureUsageRenderTarget;
+                if (desc.storage) usage |= MTLTextureUsageShaderWrite;
+                descriptor.usage = usage;
             }
             auto a = std::make_shared<Allocation>(); a->textureDesc = desc;
             a->texture = [owner->device newTextureWithDescriptor:descriptor];
             if (!a->texture) return fail(ErrorCode::OutOfMemory, "Metal texture allocation failed");
             a->bytes = a->texture.allocatedSize;
             if (!a->bytes || a->texture.storageMode != MTLStorageModePrivate || a->texture.hazardTrackingMode != MTLHazardTrackingModeTracked ||
-                a->texture.pixelFormat != format || a->texture.width != desc.width || a->texture.height != desc.height)
+                a->texture.pixelFormat != format || a->texture.width != desc.width || a->texture.height != sliceH || a->texture.depth != texDepth)
                 return fail(ErrorCode::BackendFailure, "Metal texture descriptor/storage mismatch");
             if (desc.sampleCount == 1u) {
                 const auto rowBytes = desc.width * (desc.format == Format::RGBA16Float ? 8u : 4u);
                 const auto rowPitch = (rowBytes+255u)&~255u;
-                a->footprint = {std::uint64_t(rowPitch)*desc.height,rowPitch,rowBytes,desc.height};
+                a->footprint = {std::uint64_t(rowPitch)*sliceH*texDepth,rowPitch,rowBytes,sliceH};
             } else {
                 a->footprint = {};
             }
@@ -1667,7 +1732,7 @@ struct MetalDevice final : Device {
             const MTLPixelFormat format = pixelFormat(*resolved->format);
             id<MTLTexture> nativeTex = [parent->allocation->texture
                 newTextureViewWithPixelFormat:format
-                textureType:(parent->allocation->textureDesc.sampleCount > 1u ? MTLTextureType2DMultisample : MTLTextureType2D)
+                textureType:metalTextureType(*resolved->dimension, parent->allocation->textureDesc.sampleCount)
                 levels:NSMakeRange(resolved->baseMipLevel, resolved->mipLevelCount)
                 slices:NSMakeRange(resolved->baseArrayLayer, resolved->arrayLayerCount)];
             if (!nativeTex) return fail(ErrorCode::OutOfMemory, "Metal texture view creation failed");
@@ -1732,7 +1797,7 @@ struct MetalDevice final : Device {
             for (const auto& s : p->bindings.samplers) {
                 MTLSamplerDescriptor* sd = [[MTLSamplerDescriptor alloc] init];
                 sd.minFilter = sd.magFilter = s.filter == SamplerFilter::Point ? MTLSamplerMinMagFilterNearest : MTLSamplerMinMagFilterLinear;
-                sd.sAddressMode = sd.tAddressMode = s.address == SamplerAddress::Clamp ? MTLSamplerAddressModeClampToEdge : MTLSamplerAddressModeRepeat;
+                sd.sAddressMode = sd.tAddressMode = sd.rAddressMode = s.address == SamplerAddress::Clamp ? MTLSamplerAddressModeClampToEdge : MTLSamplerAddressModeRepeat;
                 id<MTLSamplerState> sampler = [owner->device newSamplerStateWithDescriptor:sd];
                 if (!sampler) return fail(ErrorCode::OutOfMemory, "Metal compute sampler creation failed");
                 p->samplers.push_back(sampler);

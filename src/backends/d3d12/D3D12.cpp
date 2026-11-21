@@ -96,6 +96,69 @@ D3D12_COMMAND_LIST_TYPE d3dQueueType(QueueType t) {
          : t == QueueType::Copy ? D3D12_COMMAND_LIST_TYPE_COPY
          : D3D12_COMMAND_LIST_TYPE_DIRECT;
 }
+bool isSampledTextureBinding(BindingType type) {
+    return type == BindingType::Texture2D || type == BindingType::Texture1D ||
+           type == BindingType::Texture3D || type == BindingType::Texture2DArray ||
+           type == BindingType::TextureCube;
+}
+BindingType bindingTypeForDimension(TextureDimension dim) {
+    switch (dim) {
+    case TextureDimension::Texture1D: return BindingType::Texture1D;
+    case TextureDimension::Texture3D: return BindingType::Texture3D;
+    case TextureDimension::Texture2DArray: return BindingType::Texture2DArray;
+    case TextureDimension::TextureCube: return BindingType::TextureCube;
+    case TextureDimension::Texture2D: default: return BindingType::Texture2D;
+    }
+}
+BindingType bindingTypeForResource(ShaderResourceType type) {
+    switch (type) {
+    case ShaderResourceType::Texture1D: return BindingType::Texture1D;
+    case ShaderResourceType::Texture2D: return BindingType::Texture2D;
+    case ShaderResourceType::Texture3D: return BindingType::Texture3D;
+    case ShaderResourceType::Texture2DArray: return BindingType::Texture2DArray;
+    case ShaderResourceType::TextureCube: return BindingType::TextureCube;
+    case ShaderResourceType::ConstantBuffer: return BindingType::ConstantBuffer;
+    case ShaderResourceType::StorageBuffer: return BindingType::StorageBuffer;
+    case ShaderResourceType::StorageTexture2D: default: return BindingType::StorageTexture2D;
+    }
+}
+D3D12_SHADER_RESOURCE_VIEW_DESC fillD3D12SrvDesc(
+    Format fmt, TextureDimension dim, UINT baseMip, UINT mipCount, UINT baseLayer, UINT layerCount) {
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv{};
+    srv.Format = native(fmt);
+    srv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    switch (dim) {
+    case TextureDimension::Texture1D:
+        srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
+        srv.Texture1D.MostDetailedMip = baseMip;
+        srv.Texture1D.MipLevels = mipCount;
+        break;
+    case TextureDimension::Texture3D:
+        srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+        srv.Texture3D.MostDetailedMip = baseMip;
+        srv.Texture3D.MipLevels = mipCount;
+        break;
+    case TextureDimension::Texture2DArray:
+        srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+        srv.Texture2DArray.MostDetailedMip = baseMip;
+        srv.Texture2DArray.MipLevels = mipCount;
+        srv.Texture2DArray.FirstArraySlice = baseLayer;
+        srv.Texture2DArray.ArraySize = layerCount;
+        break;
+    case TextureDimension::TextureCube:
+        srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+        srv.TextureCube.MostDetailedMip = baseMip;
+        srv.TextureCube.MipLevels = mipCount;
+        break;
+    case TextureDimension::Texture2D:
+    default:
+        srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv.Texture2D.MostDetailedMip = baseMip;
+        srv.Texture2D.MipLevels = mipCount;
+        break;
+    }
+    return srv;
+}
 // Non-owning presentation identity: retaining a texture/command cannot keep a
 // destroyed swapchain usable or retain the public wrapper through this identity.
 struct SwapChainScope { IDXGISwapChain3* chain{}; };
@@ -335,20 +398,21 @@ struct DXTexture final : Texture, Retirable {
             placed = {};
             layout = {};
         }
-        if (desc.renderTarget) {
+        if (desc.renderTarget && desc.dimension == TextureDimension::Texture2D) {
             D3D12_DESCRIPTOR_HEAP_DESC heap{}; heap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; heap.NumDescriptors = 1;
             HRESULT result = owner->device->CreateDescriptorHeap(&heap, IID_PPV_ARGS(&rtv));
             if (FAILED(result)) return owner->failure(result, "Create RTV heap failed");
+            D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+            rtvDesc.Format = native(desc.format);
             if (desc.sampleCount > 1u) {
-                D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-                rtvDesc.Format = native(desc.format);
                 rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
-                owner->device->CreateRenderTargetView(resource.Get(), &rtvDesc, rtv->GetCPUDescriptorHandleForHeapStart());
             } else {
-                owner->device->CreateRenderTargetView(resource.Get(), nullptr, rtv->GetCPUDescriptorHandleForHeapStart());
+                rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+                rtvDesc.Texture2D.MipSlice = 0;
             }
+            owner->device->CreateRenderTargetView(resource.Get(), &rtvDesc, rtv->GetCPUDescriptorHandleForHeapStart());
         }
-        if(desc.depthStencil) {
+        if (desc.depthStencil && desc.dimension == TextureDimension::Texture2D) {
             D3D12_DESCRIPTOR_HEAP_DESC heap{};heap.Type=D3D12_DESCRIPTOR_HEAP_TYPE_DSV;heap.NumDescriptors=2;
             HRESULT result=owner->device->CreateDescriptorHeap(&heap,IID_PPV_ARGS(&dsv));
             if(FAILED(result))return owner->failure(result,"Create DSV heap failed");
@@ -786,18 +850,30 @@ struct DXCommands final : CommandList {
         if (desc.sampleCount > 1u) {
             return invalid("Direct buffer copy is invalid for multisampled textures; resolve first", ErrorCode::InvalidArgument);
         }
+        if (region.mipLevel >= desc.mipLevels || region.arrayLayer >= desc.arrayLayers || !region.depth) {
+            return invalid("Texture copy region subresource or depth invalid", ErrorCode::InvalidArgument);
+        }
+        const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
+        const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
+        const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
-        if (region.x > desc.width || region.width > desc.width - region.x ||
-            region.y > desc.height || region.height > desc.height - region.y) {
-            return invalid("Texture copy region exceeds texture dimensions", ErrorCode::InvalidArgument);
+        if (region.x > mipW || region.width > mipW - region.x ||
+            region.y > mipH || region.height > mipH - region.y ||
+            region.z > mipD || region.depth > mipD - region.z) {
+            return invalid("Texture copy region exceeds subresource dimensions", ErrorCode::InvalidArgument);
         }
-        const bool fullExtent = region.x == 0 && region.y == 0 && region.width == desc.width && region.height == desc.height;
+        if (footprint->size > UINT64_MAX / region.depth) {
+            return invalid("Texture copy region byte size overflow", ErrorCode::InvalidArgument);
+        }
+        const std::uint64_t totalBytes = footprint->size * region.depth;
+        const bool fullExtent = region.x == 0 && region.y == 0 && region.z == 0 &&
+            region.width == mipW && region.height == mipH && region.depth == mipD;
         if (desc.depthStencil && !fullExtent) {
             return invalid("Partial sub-region copy is unsupported for depth textures", ErrorCode::Unsupported);
         }
         if ((region.bufferOffset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT) != 0 ||
-            region.bufferOffset > buffer->desc.size || footprint->size > buffer->desc.size - region.bufferOffset ||
+            region.bufferOffset > buffer->desc.size || totalBytes > buffer->desc.size - region.bufferOffset ||
             buffer->desc.memory == (upload ? Memory::Readback : Memory::Upload)) {
             return invalid("Texture region copy buffer alignment, bounds or memory kind invalid", ErrorCode::InvalidArgument);
         }
@@ -820,16 +896,16 @@ struct DXCommands final : CommandList {
         bufferLocation.PlacedFootprint.Footprint.Format = native(desc.format);
         bufferLocation.PlacedFootprint.Footprint.Width = region.width;
         bufferLocation.PlacedFootprint.Footprint.Height = region.height;
-        bufferLocation.PlacedFootprint.Footprint.Depth = 1;
+        bufferLocation.PlacedFootprint.Footprint.Depth = region.depth;
         bufferLocation.PlacedFootprint.Footprint.RowPitch = footprint->rowPitch;
         D3D12_TEXTURE_COPY_LOCATION textureLocation{};
         textureLocation.pResource = image->resource.Get();
         textureLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-        textureLocation.SubresourceIndex = 0;
+        textureLocation.SubresourceIndex = region.mipLevel + region.arrayLayer * desc.mipLevels;
         if (upload) {
-            list->CopyTextureRegion(&textureLocation, region.x, region.y, 0, &bufferLocation, nullptr);
+            list->CopyTextureRegion(&textureLocation, region.x, region.y, region.z, &bufferLocation, nullptr);
         } else {
-            D3D12_BOX sourceBox{region.x, region.y, 0, region.x + region.width, region.y + region.height, 1};
+            D3D12_BOX sourceBox{region.x, region.y, region.z, region.x + region.width, region.y + region.height, region.z + region.depth};
             list->CopyTextureRegion(&bufferLocation, 0, 0, 0, &textureLocation, fullExtent ? nullptr : &sourceBox);
         }
         if (owner->profiler) owner->profiler->recordCopy();
@@ -917,7 +993,12 @@ struct DXCommands final : CommandList {
             depthHeap=(*object)->dsv;
         }
         const auto& extent=colors.empty()?depth:colors.front();
-        passWidth=extent->desc.width;passHeight=extent->desc.height;passSampleCount=extent->desc.sampleCount;
+        const std::uint32_t firstMip = !pass.colors.empty()
+            ? (pass.colors.front().view ? pass.colors.front().view->description().baseMipLevel : 0u)
+            : (pass.depth.view ? pass.depth.view->description().baseMipLevel : 0u);
+        passWidth = std::max(1u, extent->desc.width >> firstMip);
+        passHeight = std::max(1u, extent->desc.height >> firstMip);
+        passSampleCount = extent->desc.sampleCount;
         std::array<D3D12_CPU_DESCRIPTOR_HANDLE,8> handles{};
         for(UINT i=0;i<colors.size();++i) {
             use(colors[i]->tracker,colors[i]->resource,Memory::Device,true);retain(colorHeaps[i]);handles[i]=colorHeaps[i]->GetCPUDescriptorHandleForHeapStart();
@@ -981,7 +1062,6 @@ struct DXCommands final : CommandList {
         };
         // Validate the entire set before consuming descriptors or changing native bindings.
         for(const auto& binding:bindings.textures) {
-            auto at=slot(binding.binding,binding.element,BindingType::Texture2D);if(!at)return std::unexpected(at.error());
             if (binding.texture && binding.view)
                 return invalid("Specify either texture or view in TextureBinding, not both", ErrorCode::InvalidArgument);
             if (binding.view) {
@@ -989,6 +1069,9 @@ struct DXCommands final : CommandList {
                 if ((*view)->desc.usage != TextureViewUsage::ShaderRead)
                     return invalid("Texture binding view requires ShaderRead usage", ErrorCode::InvalidArgument);
                 const auto& parent = (*view)->parent;
+                const auto viewDim = (*view)->desc.dimension.value_or(parent->desc.dimension);
+                auto at = slot(binding.binding, binding.element, bindingTypeForDimension(viewDim));
+                if (!at) return std::unexpected(at.error());
                 if (parent->desc.sampleCount > 1u)
                     return invalid("Multisampled texture sampling is unsupported", ErrorCode::Unsupported);
                 if (parent->backbuffer || parent->desc.depthStencil || current(*parent) != ResourceState::ShaderRead)
@@ -997,6 +1080,8 @@ struct DXCommands final : CommandList {
                 snapshot[*at].textureView = *view;
             } else {
                 auto object=owned<DXTexture>(binding.texture);if(!object)return std::unexpected(object.error());
+                auto at = slot(binding.binding, binding.element, bindingTypeForDimension((*object)->desc.dimension));
+                if (!at) return std::unexpected(at.error());
                 if ((*object)->desc.sampleCount > 1u)
                     return invalid("Multisampled texture sampling is unsupported", ErrorCode::Unsupported);
                 if((*object)->backbuffer || (*object)->desc.depthStencil || current(**object)!=ResourceState::ShaderRead)return invalid("Texture binding requires a color texture in ShaderRead");
@@ -1031,9 +1116,9 @@ struct DXCommands final : CommandList {
                     if (resource.textureView) {
                         owner->device->CreateShaderResourceView(resource.texture->resource.Get(), &resource.textureView->srvDesc, cpu);
                     } else {
-                        D3D12_SHADER_RESOURCE_VIEW_DESC view{};view.Format=native(resource.texture->desc.format);view.ViewDimension=D3D12_SRV_DIMENSION_TEXTURE2D;
-                        view.Shader4ComponentMapping=D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;view.Texture2D.MipLevels=1;
-                        owner->device->CreateShaderResourceView(resource.texture->resource.Get(),&view,cpu);
+                        const auto& td = resource.texture->desc;
+                        const auto view = fillD3D12SrvDesc(td.format, td.dimension, 0, td.mipLevels, 0, td.arrayLayers);
+                        owner->device->CreateShaderResourceView(resource.texture->resource.Get(), &view, cpu);
                     }
                 } else {
                     D3D12_CONSTANT_BUFFER_VIEW_DESC view{resource.buffer->resource->GetGPUVirtualAddress()+resource.offset,static_cast<UINT>(resource.size)};
@@ -1176,17 +1261,21 @@ struct DXCommands final : CommandList {
             return at;
         };
         for (const auto& binding : bindings.textures) {
-            auto at = slot(binding.binding, binding.element, BindingType::Texture2D); if (!at) return std::unexpected(at.error());
             if (binding.texture && binding.view) return invalid("Specify either texture or view in TextureBinding, not both", ErrorCode::InvalidArgument);
             if (binding.view) {
                 auto view = ownedView(binding.view); if (!view) return std::unexpected(view.error());
                 if ((*view)->desc.usage != TextureViewUsage::ShaderRead) return invalid("Texture binding view requires ShaderRead usage", ErrorCode::InvalidArgument);
                 const auto& parent = (*view)->parent;
+                const auto viewDim = (*view)->desc.dimension.value_or(parent->desc.dimension);
+                auto at = slot(binding.binding, binding.element, bindingTypeForDimension(viewDim));
+                if (!at) return std::unexpected(at.error());
                 if (parent->backbuffer || parent->desc.depthStencil || current(*parent) != ResourceState::ShaderRead)
                     return invalid("Compute texture binding requires a color texture in ShaderRead");
                 snapshot[*at] = {parent, *view, nullptr, 0, 0, false};
             } else {
                 auto object = owned<DXTexture>(binding.texture); if (!object) return std::unexpected(object.error());
+                auto at = slot(binding.binding, binding.element, bindingTypeForDimension((*object)->desc.dimension));
+                if (!at) return std::unexpected(at.error());
                 if ((*object)->backbuffer || (*object)->desc.depthStencil || current(**object) != ResourceState::ShaderRead)
                     return invalid("Compute texture binding requires a color texture in ShaderRead");
                 snapshot[*at] = {*object, nullptr, nullptr, 0, 0, false};
@@ -1271,11 +1360,8 @@ struct DXCommands final : CommandList {
                     } else if (resource.textureView) {
                         owner->device->CreateShaderResourceView(resource.texture->resource.Get(), &resource.textureView->srvDesc, cpu);
                     } else {
-                        D3D12_SHADER_RESOURCE_VIEW_DESC srv{};
-                        srv.Format = native(resource.texture->desc.format);
-                        srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-                        srv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-                        srv.Texture2D.MipLevels = 1;
+                        const auto& td = resource.texture->desc;
+                        const auto srv = fillD3D12SrvDesc(td.format, td.dimension, 0, td.mipLevels, 0, td.arrayLayers);
                         owner->device->CreateShaderResourceView(resource.texture->resource.Get(), &srv, cpu);
                     }
                 } else if (resource.isStorage) {
@@ -1935,8 +2021,14 @@ public:
         }
         auto texture = std::make_shared<DXTexture>(); texture->owner = state; texture->desc = desc;
         D3D12_RESOURCE_DESC nativeDesc{};
-        nativeDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; nativeDesc.Width = desc.width; nativeDesc.Height = desc.height;
-        nativeDesc.DepthOrArraySize = 1; nativeDesc.MipLevels = 1; nativeDesc.Format = native(desc.format);
+        nativeDesc.Dimension = desc.dimension == TextureDimension::Texture1D ? D3D12_RESOURCE_DIMENSION_TEXTURE1D
+                             : desc.dimension == TextureDimension::Texture3D ? D3D12_RESOURCE_DIMENSION_TEXTURE3D
+                             : D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        nativeDesc.Width = desc.width;
+        nativeDesc.Height = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+        nativeDesc.DepthOrArraySize = static_cast<UINT16>(desc.dimension == TextureDimension::Texture3D ? desc.depth : desc.arrayLayers);
+        nativeDesc.MipLevels = static_cast<UINT16>(desc.mipLevels);
+        nativeDesc.Format = native(desc.format);
         nativeDesc.SampleDesc.Count = desc.sampleCount; nativeDesc.SampleDesc.Quality = 0;
         if (desc.renderTarget) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         if (desc.storage) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -1974,6 +2066,12 @@ public:
             rtvDesc.Format = viewFormat;
             if (parent->desc.sampleCount > 1u) {
                 rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
+            } else if (parent->desc.dimension == TextureDimension::Texture2DArray ||
+                       parent->desc.dimension == TextureDimension::TextureCube) {
+                rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+                rtvDesc.Texture2DArray.MipSlice = resolved->baseMipLevel;
+                rtvDesc.Texture2DArray.FirstArraySlice = resolved->baseArrayLayer;
+                rtvDesc.Texture2DArray.ArraySize = 1;
             } else {
                 rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
                 rtvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
@@ -1990,6 +2088,11 @@ public:
             dsvDesc.Format = viewFormat;
             if (parent->desc.sampleCount > 1u) {
                 dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
+            } else if (parent->desc.dimension == TextureDimension::Texture2DArray) {
+                dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+                dsvDesc.Texture2DArray.MipSlice = resolved->baseMipLevel;
+                dsvDesc.Texture2DArray.FirstArraySlice = resolved->baseArrayLayer;
+                dsvDesc.Texture2DArray.ArraySize = 1;
             } else {
                 dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
                 dsvDesc.Texture2D.MipSlice = resolved->baseMipLevel;
@@ -2003,11 +2106,10 @@ public:
             view->uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
             view->uavDesc.Texture2D.MipSlice = resolved->baseMipLevel;
         } else {
-            view->srvDesc.Format = viewFormat;
-            view->srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-            view->srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-            view->srvDesc.Texture2D.MostDetailedMip = resolved->baseMipLevel;
-            view->srvDesc.Texture2D.MipLevels = resolved->mipLevelCount;
+            view->srvDesc = fillD3D12SrvDesc(
+                *resolved->format, *resolved->dimension,
+                resolved->baseMipLevel, resolved->mipLevelCount,
+                resolved->baseArrayLayer, resolved->arrayLayerCount);
         }
         state->track(view);
         return TextureViewPtr(view);
@@ -2071,7 +2173,7 @@ public:
                         if(sampler.space==resource.space && (sampler.visibility==visibility || sampler.visibility==ShaderVisibility::All) &&
                            resource.slot==sampler.slot && resource.count==1)found=true;
                 } else {
-                    const auto type=resource.type==ShaderResourceType::Texture2D?BindingType::Texture2D:BindingType::ConstantBuffer;
+                    const auto type = bindingTypeForResource(resource.type);
                     for(UINT i=0;i<pipeline->bindings.entries.size();++i) {
                         const auto& entry=pipeline->bindings.entries[i];
                         if(entry.type==type && entry.space==resource.space && (entry.visibility==visibility || entry.visibility==ShaderVisibility::All) &&
@@ -2115,7 +2217,7 @@ public:
         std::vector<D3D12_ROOT_PARAMETER> parameters(ranges.size());
         for(UINT i=0;i<ranges.size();++i) {
             const auto& entry=pipeline->bindings.entries[i];
-            ranges[i]={entry.type==BindingType::Texture2D?D3D12_DESCRIPTOR_RANGE_TYPE_SRV:D3D12_DESCRIPTOR_RANGE_TYPE_CBV,entry.count,entry.slot,entry.space,0};
+            ranges[i]={isSampledTextureBinding(entry.type)?D3D12_DESCRIPTOR_RANGE_TYPE_SRV:D3D12_DESCRIPTOR_RANGE_TYPE_CBV,entry.count,entry.slot,entry.space,0};
             parameters[i].ParameterType=D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;parameters[i].DescriptorTable={1,&ranges[i]};parameters[i].ShaderVisibility=native(entry.visibility);
         }
         std::vector<D3D12_STATIC_SAMPLER_DESC> samplers;
@@ -2202,11 +2304,7 @@ public:
                     if (sampler.space == resource.space && sampler.slot == resource.slot) found = true;
                 }
             } else {
-                const auto expectedType =
-                    resource.type == ShaderResourceType::Texture2D ? BindingType::Texture2D :
-                    resource.type == ShaderResourceType::ConstantBuffer ? BindingType::ConstantBuffer :
-                    resource.type == ShaderResourceType::StorageBuffer ? BindingType::StorageBuffer :
-                    BindingType::StorageTexture2D;
+                const auto expectedType = bindingTypeForResource(resource.type);
                 for (UINT i = 0; i < pipeline->bindings.entries.size(); ++i) {
                     const auto& entry = pipeline->bindings.entries[i];
                     if (entry.type == expectedType && entry.space == resource.space &&
@@ -2227,7 +2325,7 @@ public:
         for (UINT i = 0; i < ranges.size(); ++i) {
             const auto& entry = pipeline->bindings.entries[i];
             const auto rangeType =
-                entry.type == BindingType::Texture2D ? D3D12_DESCRIPTOR_RANGE_TYPE_SRV :
+                isSampledTextureBinding(entry.type) ? D3D12_DESCRIPTOR_RANGE_TYPE_SRV :
                 entry.type == BindingType::ConstantBuffer ? D3D12_DESCRIPTOR_RANGE_TYPE_CBV :
                 D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
             ranges[i] = {rangeType, entry.count, entry.slot, entry.space, 0};

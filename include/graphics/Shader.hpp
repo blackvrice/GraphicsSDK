@@ -17,7 +17,7 @@ struct ShaderBinary {
     ShaderFormat format{ShaderFormat::DXBC};
     bool operator==(const ShaderBinary&) const = default;
 };
-enum class ShaderResourceType { Unsupported, Texture2D, ConstantBuffer, Sampler, StorageBuffer, StorageTexture2D };
+enum class ShaderResourceType { Unsupported, Texture2D, ConstantBuffer, Sampler, StorageBuffer, StorageTexture2D, Texture1D, Texture3D, Texture2DArray, TextureCube };
 struct ShaderBinding { std::string name; std::uint32_t slot{}, count{}, space{}; ShaderResourceType type{}; std::uint32_t minimumBytes{}; };
 struct ShaderLocation {
     std::uint32_t location{}, components{};

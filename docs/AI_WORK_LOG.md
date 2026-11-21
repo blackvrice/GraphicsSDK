@@ -444,3 +444,30 @@
   - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
   - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
   - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).
+
+
+---
+
+## 2026-11-21 — `P8-TEX-02` Texture1D/3D·Texture2DArray·Cubemap·Mipmap 구현·실기 검증
+
+- **기준 커밋**: `05fd2211` (`Add non-intrusive Sandbox RHI compatibility adapter and gap analysis (P12-SBX-01)`)
+- **작업 목적**:
+  - 선행 충족 작업 `P8-TEX-02` 완료: 기존 13개 공개 헤더·5개 `CORE` 번역 단위·11개 CPU CTest와 하위 호환을 유지하면서 `TextureDimension`(1D/2D/3D/2DArray/Cube)·다중 Mipmap·서브리소스 복사(`mipLevel`, `arrayLayer`, `z`, `depth`)·차원별 바인딩/리플렉션(HLSL DXBC/DXIL, SPIR-V 1.3 `Sampled1D`, Metal MSL)·mip 스케일 렌더패스를 D3D12/Vulkan/Metal에 구현하고 Windows D3D12/Vulkan/Validation/WARP/설치 소비자에서 실기 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P8-TEX-07`로 정직하게 분리.
+- **수정 파일 (23개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/Bindings.hpp`, `include/graphics/Shader.hpp`
+  - `src/foundation/RenderPass.cpp`, `src/foundation/Bindings.cpp`, `src/foundation/Backend.cpp`, `src/shader/Shader.cpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Spirv.hpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`, `src/backends/metal/MetalGraphics.hpp`
+  - `tests/TextureDimensionTests.cpp`, `tests/BindingTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE8_TEXTURE_DIMENSION_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 검증 결과** (격리 빌드 `out/p8-texture-dimensions`, 설치 `out/p8-texture-dimensions-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `2895827C25E953A36F723665BF7E76F4EA2A06E50BAD499D70B112FF6FD7E58A`):
+  - `gfx_texture_dimension_tests` 5/5 모드 통과: D3D12(`assertions=949, rejections=34, subresources=38, sampled_passes=37`), D3D12 Debug+GBV(`val_errors=0, assertions=951`), D3D12 WARP(+손실/복구, `assertions=1094, rejections=35, subresources=45, sampled_passes=43`), Vulkan(`assertions=935`), Vulkan 고정 VVL 1.3.290(`val_errors=0, assertions=937`).
+  - 독립 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)`): D3D12(GTX 1660 SUPER·Intel UHD 770·WARP) 및 Vulkan(GTX 1660 SUPER·Intel UHD 770) 비검증·검증 **9/9 전체 통과** (`val_errors=0`).
+  - 전체 CTest 회귀: **142/142 (100%) 통과 (`182.28s`)** (`tests/BindingTests.cpp` 100행의 기존 미지원 예시 `Texture3D<float4>`는 정식 지원에 맞춰 실제 미지원인 `Texture2DMS<float4>`로 갱신).
+  - `tools/roadmap.py --check`: PASS (205 task IDs: 123 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-04`: 압축 텍스처 포맷 (BC1~BC7·ASTC·ETC2/EAC).
+  - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
+  - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).

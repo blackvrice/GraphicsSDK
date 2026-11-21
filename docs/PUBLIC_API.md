@@ -36,6 +36,10 @@ Texture::footprint는 buffer-texture copy의 총 바이트, aligned rowPitch,
 `TextureBinding::view`, `StorageTextureBinding::view`, `CommandList::bindTextureView`로 바인딩할 수 있다(`texture`와 `view` 동시 지정은 거부).
 뷰는 부모 텍스처 수명을 유지하며 GPU 제출 완료 전 조기 파괴되어도 네이티브 뷰 수명이 보존된다.
 [Texture View 보고서](PHASE8_TEXTURE_VIEW_REPORT.md)를 따른다.
+`TextureDesc`는 하위 호환 기본값으로 `dimension`(기본 `Texture2D`, 확장 `Texture1D`, `Texture3D`, `Texture2DArray`, `TextureCube`), `depth`(기본 `1`, 3D는 `1..2048`), `mipLevels`(기본 `1`, 최대 `1 + floor(log2(max(w, h, d)))`), `arrayLayers`(기본 `1`, `Texture2DArray`는 `1..2048`, `TextureCube`는 정사각형 `width == height` 및 `6`)를 지원한다.
+`TextureViewDesc::dimension`은 생략 시 부모 텍스처 차원(단, `Texture2DArray`/`TextureCube`의 단일 슬라이스 `RenderTarget`/`DepthStencil` 뷰는 `Texture2D`)을 상속한다. `TextureCube`의 `ShaderRead` 뷰는 6레이어 `TextureCube` 또는 임의 슬라이스 범위의 `Texture2DArray` 차원을 지원하며, `Texture1D`/`Texture3D`의 `renderTarget`/`depthStencil`/`storage`, `Texture2DArray`/`TextureCube`의 `storage`, `TextureCube`의 `depthStencil`, `MSAA + mipLevels > 1` 또는 비-2D MSAA, 비정사각형/6레이어 외 `TextureCube`는 `validateTextureDescription`에서 명시적으로 거부한다.
+`BindingType`과 `ShaderResourceType`은 `Texture1D`, `Texture2D`, `Texture3D`, `Texture2DArray`, `TextureCube`를 구분해 HLSL(DXBC/DXIL), SPIR-V 1.3(`OpCapability Sampled1D` 포함), Metal MSL 리플렉션 및 `bindResources`/`bindComputeResources` 차원 일치 검증을 강제한다.
+[다중 차원·Mipmap 텍스처 보고서](PHASE8_TEXTURE_DIMENSION_REPORT.md)를 따른다.
 `TextureDesc::sampleCount`와 `RenderTargetLayout::sampleCount`는 `1`, `2`, `4`, `8`을 지원하며(`sampleCount > 1`은 `renderTarget` 또는 `depthStencil` 전용, `storage=false`), 어댑터별 지원 샘플 수는 `Device::queryFormatSupport(format).sampleCounts` 비트마스크로 조회한다.
 렌더 패스 내 모든 어태치먼트와 파이프라인의 `sampleCount`는 일치해야 하며, `CommandList::resolveTexture(source, destination)`는 렌더 패스 밖에서 `ResolveSource` 상태의 MSAA 컬러 텍스처를 `ResolveDestination` 상태의 동일 크기·동일 포맷 단일 샘플 컬러 텍스처로 리졸브한다(Depth·스왑체인 리졸브는 `Unsupported`, 검증 실패는 원자적 거부).
 [MSAA·Resolve 보고서](PHASE8_MSAA_REPORT.md)를 따른다.
@@ -125,8 +129,8 @@ observed-version snapshot을 추가하지 않는다. `copyBuffer`, `copyBufferRe
 양쪽 오프셋 0의 축약형이다. Metal은 4바이트 정렬 오프셋·크기에 blit을 사용하고 비정렬 오프셋이나
 꼬리 바이트는 내부 전송 커널로 처리한다. [오프셋 버퍼 복사 보고서](PHASE8_BUFFER_REGION_REPORT.md)
 `copyBufferToTextureRegion`과 `copyTextureToBufferRegion`은 `TextureCopyRegion`의 512바이트 정렬 `bufferOffset`,
-256바이트 정렬 `bufferRowPitch`(`0`이면 `width`의 최소 256바이트 정렬 피치)와 2D 영역 `(x, y, width, height)`을 복사한다.
-`computeTextureRegionFootprint(format, width, height, rowPitch)`로 GPU 없이 휴대용 버퍼 크기를 계산할 수 있다.
+256바이트 정렬 `bufferRowPitch`(`0`이면 `width`의 최소 256바이트 정렬 피치), mip/레이어 선택(`mipLevel`, `arrayLayer`), 그리고 2D/3D 영역 `(x, y, z, width, height, depth)`을 복사한다(3D 슬라이스는 버퍼 내에서 `rowPitch * height` 간격으로 연속 배치, mip 스케일 경계 `max(1, dim >> mipLevel)` 검증).
+`computeTextureRegionFootprint(format, width, height, rowPitch)`로 GPU 없이 단일 2D 슬라이스의 휴대용 버퍼 크기를 계산할 수 있다(3D 영역은 `sliceFootprint.size * depth`).
 컬러 포맷(`RGBA8UNorm`, `BGRA8UNorm`, `RGBA16Float`)은 임의 부분 영역 복사를 지원하며 영역 밖 텍셀과 버퍼 가드/패딩 바이트를 보존한다.
 `D32Float`는 전체 영역 복사만 허용하고 부분 영역 복사는 `Unsupported`를 반환한다.
 [부분 2D 텍스처 복사 보고서](PHASE8_TEXTURE_REGION_REPORT.md)

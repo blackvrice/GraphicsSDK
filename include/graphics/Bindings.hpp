@@ -3,7 +3,7 @@
 #include <vector>
 
 namespace gfx {
-enum class BindingType { Texture2D, ConstantBuffer, StorageBuffer, StorageTexture2D };
+enum class BindingType { Texture2D, ConstantBuffer, StorageBuffer, StorageTexture2D, Texture1D, Texture3D, Texture2DArray, TextureCube };
 enum class ShaderVisibility { Vertex, Fragment, All, Compute };
 enum class SamplerFilter { Point, Linear };
 enum class SamplerAddress { Clamp, Repeat };

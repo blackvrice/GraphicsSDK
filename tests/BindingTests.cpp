@@ -97,7 +97,7 @@ void pipelineContracts(gfx::Device& d){
     case 7:bad.bindingLayout.samplers[0].visibility=Vis::Vertex;break;
     case 8:bad.fragment=p.vertex;bad.fragment.stage=gfx::ShaderStage::Fragment;break;
     }reject(d.createGraphicsPipeline(bad),gfx::ErrorCode::InvalidArgument,"Shader and layout mismatch must fail before driver validation");}
-    for(auto declaration:{"Texture3D<float4> t:register(t0);float4 PS():SV_Target{return t.Load(int4(0,0,0,0));}",
+    for(auto declaration:{"Texture2DMS<float4> t:register(t0);float4 PS():SV_Target{return t.Load(int2(0,0),0);}",
                           "Texture2D<uint4> t:register(t0);float4 PS():SV_Target{return t.Load(int3(0,0,0));}",
                           "StructuredBuffer<float4> t:register(t0);float4 PS():SV_Target{return t[0];}"}){
         auto bad=p;bad.vertex=take(gfx::compileHlsl(plainVertex,"VS",gfx::ShaderStage::Vertex));bad.fragment=take(gfx::compileHlsl(declaration,"PS",gfx::ShaderStage::Fragment));

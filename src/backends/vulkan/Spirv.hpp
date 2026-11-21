@@ -24,7 +24,7 @@ inline Result<ParsedSpirv> parseSpirv(const ShaderBinary& shader, ShaderStage st
     std::memcpy(words.data(), shader.bytes.data(), shader.bytes.size());
     if (words[0] != 0x07230203 || words[4] || !words[3] || words[3] > 1048576) return bad("Invalid SPIR-V header");
     if (words[1] != 0x00010300) return unsupported("Initial Vulkan 1.1 shader path requires SPIR-V 1.3");
-    struct Type { unsigned op{}, a{}, b{}; };
+    struct Type { unsigned op{}, a{}, b{}, c{}; };
     struct Variable { unsigned pointer{}, storage{}; };
     struct ScalarConstant { unsigned type{}, value{}; };
     std::map<unsigned, Type> types;
@@ -41,7 +41,7 @@ inline Result<ParsedSpirv> parseSpirv(const ShaderBinary& shader, ShaderStage st
     std::map<unsigned, unsigned> inputs, outputs;
     SpirvShaderInterface reflection{};
     reflection.stage = stage;
-    unsigned entries{}, memoryModels{}, capabilities{}, origins{}, localSizes{}, entryId{}, executionId{};
+    unsigned entries{}, memoryModels{}, capabilities{}, sampled1dCapabilities{}, origins{}, localSizes{}, entryId{}, executionId{};
     auto id = [&](unsigned value) { return value && value < words[3]; };
     for (std::size_t at = 5; at < words.size();) {
         const unsigned n = words[at] >> 16, op = words[at] & 65535;
@@ -55,8 +55,9 @@ inline Result<ParsedSpirv> parseSpirv(const ShaderBinary& shader, ShaderStage st
             names.try_emplace(p[1], name, static_cast<std::size_t>(end - name));
         } else if (op == 17) { // OpCapability
             if (n != 2) return bad("Invalid capability framing");
-            if (p[1] != 1) return unsupported("Only Shader capability is supported");
-            ++capabilities;
+            if (p[1] == 1) ++capabilities;
+            else if (p[1] == 43) ++sampled1dCapabilities;
+            else return unsupported("Only Shader and Sampled1D capabilities are supported");
         } else if (op == 10 || op == 11) {
             return unsupported("SPIR-V extensions/imports unsupported");
         } else if (op == 72) { // Uniform/storage block member Offset; stage interface members remain unsupported.
@@ -103,11 +104,13 @@ inline Result<ParsedSpirv> parseSpirv(const ShaderBinary& shader, ShaderStage st
                 auto& map = p[2] == 11 ? builtins : p[2] == 30 ? locations : p[2] == 33 ? slots : sets;
                 if (!map.emplace(p[1], p[3]).second) return bad("Duplicate interface/resource decoration");
             }
-        } else if (op == 25) { // 2D image: sampled float32 (sampled=1, Unknown) or compute storage 2D (sampled=2, Rgba32f/Rgba16f/Rgba8)
-            const bool sampled2d = n == 9 && p[3] == 1 && !p[4] && !p[5] && !p[6] && p[7] == 1 && !p[8];
+        } else if (op == 25) { // Sampled float32 1D/2D/3D/2DArray/Cube (sampled=1, Unknown) or compute storage 2D (sampled=2)
+            const bool sampledDim = n == 9 && !p[4] && !p[6] && p[7] == 1 && !p[8] &&
+                ((p[3] == 0 && !p[5]) || (p[3] == 1 && (p[5] == 0 || p[5] == 1)) ||
+                 (p[3] == 2 && !p[5]) || (p[3] == 3 && !p[5]));
             const bool storage2d = stage == ShaderStage::Compute && n == 9 && p[3] == 1 && !p[4] && !p[5] && !p[6] && p[7] == 2 && (p[8] == 1 || p[8] == 2 || p[8] == 4);
-            if (!sampled2d && !storage2d) return unsupported("Only separate sampled or compute storage float Texture2D supported");
-            if (!id(p[1]) || !types.emplace(p[1], Type{op, p[2], p[7]}).second) return bad("Invalid image type");
+            if (!sampledDim && !storage2d) return unsupported("Only separate sampled float 1D/2D/3D/2DArray/Cube or compute storage Texture2D supported");
+            if (!id(p[1]) || !types.emplace(p[1], Type{op, p[2], p[7], (p[3] << 1) | p[5]}).second) return bad("Invalid image type");
         } else if (op == 26) {
             if (n != 2 || !id(p[1]) || !types.emplace(p[1], Type{op}).second) return bad("Invalid sampler type");
         } else if (op == 28) {
@@ -131,7 +134,7 @@ inline Result<ParsedSpirv> parseSpirv(const ShaderBinary& shader, ShaderStage st
         }
         at += n;
     }
-    if (entries != 1 || memoryModels != 1 || capabilities != 1 ||
+    if (entries != 1 || memoryModels != 1 || capabilities != 1 || sampled1dCapabilities > 1 ||
         origins != (stage == ShaderStage::Fragment ? 1u : 0u) ||
         localSizes != (stage == ShaderStage::Compute ? 1u : 0u))
         return bad("SPIR-V requires one Shader capability, memory model, execution mode and entry point");
@@ -172,7 +175,18 @@ inline Result<ParsedSpirv> parseSpirv(const ShaderBinary& shader, ShaderStage st
                 if (descriptor->second.op == 26) binding.type = ShaderResourceType::Sampler;
                 else if (descriptor->second.op == 25) {
                     if (components(descriptor->second.a) != 1) return unsupported("Image requires float32 texel type");
-                    binding.type = descriptor->second.b == 2 ? ShaderResourceType::StorageTexture2D : ShaderResourceType::Texture2D;
+                    if (descriptor->second.b == 2) {
+                        binding.type = ShaderResourceType::StorageTexture2D;
+                    } else {
+                        switch (descriptor->second.c) {
+                        case 0u: binding.type = ShaderResourceType::Texture1D; break;
+                        case 2u: binding.type = ShaderResourceType::Texture2D; break;
+                        case 3u: binding.type = ShaderResourceType::Texture2DArray; break;
+                        case 4u: binding.type = ShaderResourceType::Texture3D; break;
+                        case 6u: binding.type = ShaderResourceType::TextureCube; break;
+                        default: return unsupported("Unsupported sampled image dimension");
+                        }
+                    }
                 } else return unsupported("Only separate sampled/storage image and sampler descriptors supported");
             } else if (v.storage == 12 || (v.storage == 2 && bufferBlocks.contains(type))) {
                 if ((!blocks.contains(type) && !bufferBlocks.contains(type)) || !structures.contains(type))
@@ -260,6 +274,10 @@ inline Result<std::vector<std::uint32_t>> inspectSpirv(const ShaderBinary& shade
             if (slot >= bindings.entries.size()) return bad("Missing resource layout entry");
             const auto& entry = bindings.entries[slot];
             const auto expected = resource.type == ShaderResourceType::Texture2D ? BindingType::Texture2D
+                                : resource.type == ShaderResourceType::Texture1D ? BindingType::Texture1D
+                                : resource.type == ShaderResourceType::Texture3D ? BindingType::Texture3D
+                                : resource.type == ShaderResourceType::Texture2DArray ? BindingType::Texture2DArray
+                                : resource.type == ShaderResourceType::TextureCube ? BindingType::TextureCube
                                 : resource.type == ShaderResourceType::ConstantBuffer ? BindingType::ConstantBuffer
                                 : resource.type == ShaderResourceType::StorageBuffer ? BindingType::StorageBuffer
                                 : BindingType::StorageTexture2D;

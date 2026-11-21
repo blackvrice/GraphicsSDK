@@ -100,16 +100,26 @@ Result<std::shared_ptr<NativePipeline>> graphics(State& owner,const GraphicsPipe
             }
             if(a.type!=MTLArgumentTypeTexture&&a.type!=MTLArgumentTypeBuffer)return fail(ErrorCode::Unsupported,"MSL resource type outside the graphics binding profile");
             if(a.access!=MTLArgumentAccessReadOnly)return fail(ErrorCode::Unsupported,"Writable MSL graphics resources unsupported");
-            if(a.type==MTLArgumentTypeTexture&&(a.textureType!=MTLTextureType2D||a.isDepthTexture||a.textureDataType!=MTLDataTypeFloat))return fail(ErrorCode::Unsupported,"Only non-depth float texture2d arguments supported");
+            if(a.type==MTLArgumentTypeTexture){
+                if(a.isDepthTexture||a.textureDataType!=MTLDataTypeFloat)return fail(ErrorCode::Unsupported,"Only non-depth float texture arguments supported");
+                if(a.textureType!=MTLTextureType1D&&a.textureType!=MTLTextureType2D&&a.textureType!=MTLTextureType3D&&a.textureType!=MTLTextureType2DArray&&a.textureType!=MTLTextureTypeCube)
+                    return fail(ErrorCode::Unsupported,"Unsupported MSL texture dimension");
+            }
             if(a.type==MTLArgumentTypeBuffer){
                 if(a.index>=14||a.bufferDataType!=MTLDataTypeStruct||!a.bufferDataSize||a.bufferDataSize>65536||a.bufferAlignment>256)
                     return fail(ErrorCode::Unsupported,"Metal constants require a bounded flat struct at buffer 0..13");
                 for(MTLStructMember* member in a.bufferStructType.members)if(member.dataType==MTLDataTypePointer||member.dataType==MTLDataTypeTexture||member.dataType==MTLDataTypeSampler||member.dataType==MTLDataTypeArray||member.dataType==MTLDataTypeStruct)
                     return fail(ErrorCode::Unsupported,"Nested/pointer/argument-buffer constants unsupported");
             }
+            const auto expectedBinding = a.type==MTLArgumentTypeBuffer ? BindingType::ConstantBuffer
+                : a.textureType==MTLTextureType1D ? BindingType::Texture1D
+                : a.textureType==MTLTextureType3D ? BindingType::Texture3D
+                : a.textureType==MTLTextureType2DArray ? BindingType::Texture2DArray
+                : a.textureType==MTLTextureTypeCube ? BindingType::TextureCube
+                : BindingType::Texture2D;
             const auto count=std::max<NSUInteger>(1,a.arrayLength);bool found=false;
             for(std::size_t i=0;i<p->bindings.entries.size();++i){const auto& e=p->bindings.entries[i];
-                if(e.type!=(a.type==MTLArgumentTypeTexture?BindingType::Texture2D:BindingType::ConstantBuffer)||!visible(e.visibility,stage)||a.index<e.slot||a.index-e.slot+count>e.count)continue;
+                if(e.type!=expectedBinding||!visible(e.visibility,stage)||a.index<e.slot||a.index-e.slot+count>e.count)continue;
                 coverage[i][stage]+=static_cast<unsigned>(count);if(a.type==MTLArgumentTypeBuffer)p->minimumBytes[i]=std::max<std::uint64_t>(p->minimumBytes[i],a.bufferDataSize);found=true;break;}
             if(!found)return fail(ErrorCode::InvalidArgument,"MSL resource range/type/visibility missing from layout");
         }

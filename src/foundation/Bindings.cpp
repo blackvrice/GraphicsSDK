@@ -10,10 +10,16 @@ bool valid(ShaderVisibility v) {
 bool overlaps(ShaderVisibility a, ShaderVisibility b) {
     return a == b || a == ShaderVisibility::All || b == ShaderVisibility::All;
 }
+bool sampledTextureBinding(BindingType type) {
+    return type == BindingType::Texture2D || type == BindingType::Texture1D ||
+           type == BindingType::Texture3D || type == BindingType::Texture2DArray ||
+           type == BindingType::TextureCube;
+}
 bool storageBinding(BindingType type) {
     return type == BindingType::StorageBuffer || type == BindingType::StorageTexture2D;
 }
 bool sameRegisterBank(BindingType a, BindingType b) {
+    if (sampledTextureBinding(a) && sampledTextureBinding(b)) return true;
     if (storageBinding(a) && storageBinding(b)) return true;
     return a == b;
 }
@@ -31,14 +37,14 @@ Result<void> validateBindingLayout(const BindingLayout& layout) {
     unsigned total=0;
     for(size_t i=0;i<layout.entries.size();++i) {
         const auto& e=layout.entries[i];
-        const bool validType = e.type==BindingType::Texture2D || e.type==BindingType::ConstantBuffer ||
-                               e.type==BindingType::StorageBuffer || e.type==BindingType::StorageTexture2D;
+        const bool isSampled = sampledTextureBinding(e.type);
+        const bool validType = isSampled || e.type==BindingType::ConstantBuffer || storageBinding(e.type);
         if(!validType || !valid(e.visibility) || !e.count || e.space>=0xfffffff0u)return bad();
-        const auto limit = e.type==BindingType::Texture2D ? 128u : e.type==BindingType::ConstantBuffer ? 14u : 64u;
+        const auto limit = isSampled ? 128u : e.type==BindingType::ConstantBuffer ? 14u : 64u;
         if(e.slot>=limit || e.count>limit-e.slot || e.count>256-total)return bad();
         total+=e.count;
         for(unsigned stage=0;stage<3;++stage)if(visibleOnStage(e.visibility, stage)) {
-            auto& count = e.type==BindingType::Texture2D ? textures[stage] :
+            auto& count = isSampled ? textures[stage] :
                           e.type==BindingType::ConstantBuffer ? constants[stage] : uavs[stage];
             count+=e.count;if(count>limit)return bad();
         }

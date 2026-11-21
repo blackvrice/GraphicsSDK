@@ -384,6 +384,7 @@ struct Allocation {
     VkBuffer buffer{};
     VkImage image{};
     VkImageView view{};
+    VkImageView attachmentView{};
     VkDeviceMemory memory{};
     VkDeviceSize bytes{};
     std::shared_ptr<NativeSwapchain> swapchain;
@@ -399,13 +400,47 @@ struct Allocation {
     std::array<std::uint64_t, 3> lastUse{};
     void release() {
         if (buffer) native->DestroyBuffer(native->handle, buffer, nullptr);
+        if (attachmentView && attachmentView != view) native->DestroyImageView(native->handle, attachmentView, nullptr);
         if (view) native->DestroyImageView(native->handle, view, nullptr);
         if (image && !swapchain) native->DestroyImage(native->handle, image, nullptr);
         if (memory) native->FreeMemory(native->handle, memory, nullptr);
-        buffer = {}; view = {}; image = {}; memory = {};
+        buffer = {}; view = {}; attachmentView = {}; image = {}; memory = {};
     }
     ~Allocation() { release(); }
 };
+bool isSampledTextureBinding(BindingType type) {
+    return type == BindingType::Texture2D || type == BindingType::Texture1D ||
+           type == BindingType::Texture3D || type == BindingType::Texture2DArray ||
+           type == BindingType::TextureCube;
+}
+BindingType bindingTypeForDimension(TextureDimension dim) {
+    switch (dim) {
+    case TextureDimension::Texture1D: return BindingType::Texture1D;
+    case TextureDimension::Texture3D: return BindingType::Texture3D;
+    case TextureDimension::Texture2DArray: return BindingType::Texture2DArray;
+    case TextureDimension::TextureCube: return BindingType::TextureCube;
+    case TextureDimension::Texture2D: default: return BindingType::Texture2D;
+    }
+}
+VkImageType vulkanImageType(TextureDimension dim) {
+    switch (dim) {
+    case TextureDimension::Texture1D: return VK_IMAGE_TYPE_1D;
+    case TextureDimension::Texture3D: return VK_IMAGE_TYPE_3D;
+    case TextureDimension::Texture2D:
+    case TextureDimension::Texture2DArray:
+    case TextureDimension::TextureCube:
+    default: return VK_IMAGE_TYPE_2D;
+    }
+}
+VkImageViewType vulkanImageViewType(TextureDimension dim) {
+    switch (dim) {
+    case TextureDimension::Texture1D: return VK_IMAGE_VIEW_TYPE_1D;
+    case TextureDimension::Texture3D: return VK_IMAGE_VIEW_TYPE_3D;
+    case TextureDimension::Texture2DArray: return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    case TextureDimension::TextureCube: return VK_IMAGE_VIEW_TYPE_CUBE;
+    case TextureDimension::Texture2D: default: return VK_IMAGE_VIEW_TYPE_2D;
+    }
+}
 bool currentBackbuffer(const Allocation& a) {
     if (!a.swapchain) return true;
     const auto& s = *a.swapchain;
@@ -1118,7 +1153,8 @@ struct VulkanCommands final : CommandList {
         barrier.srcAccessMask = use.imageInitialized ? access(use.shadow) : 0;
         barrier.dstAccessMask = access(target);
         barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = (*a)->image; barrier.subresourceRange = {imageAspect(**a), 0, 1, 0, 1};
+        barrier.image = (*a)->image;
+        barrier.subresourceRange = {imageAspect(**a), 0, std::max(1u, (*a)->textureDesc.mipLevels), 0, std::max(1u, (*a)->textureDesc.arrayLayers)};
         const VkPipelineStageFlags srcStage = use.imageInitialized ? stageScope(qType, false) : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         const VkPipelineStageFlags dstStage = stageScope(qType, false);
         owner->native->CmdPipelineBarrier(record->command, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -1148,13 +1184,16 @@ struct VulkanCommands final : CommandList {
         i.dstAccessMask = upload ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_TRANSFER_READ_BIT;
         i.oldLayout = i.newLayout = imageLayout(shadow(image));
         i.srcQueueFamilyIndex = i.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        i.image = image->image; i.subresourceRange = {imageAspect(*image), 0, 1, 0, 1};
+        i.image = image->image;
+        i.subresourceRange = {imageAspect(*image), 0, std::max(1u, image->textureDesc.mipLevels), 0, std::max(1u, image->textureDesc.arrayLayers)};
         owner->native->CmdPipelineBarrier(record->command, stageScope(qType, true),
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &b, 1, &i);
         VkBufferImageCopy region{};
         region.bufferRowLength = image->footprint.rowPitch / texelBytes(image->textureDesc.format);
+        region.bufferImageHeight = image->footprint.height;
         region.imageSubresource = {imageAspect(*image), 0, 0, 1};
-        region.imageExtent = {image->textureDesc.width, image->textureDesc.height, 1};
+        region.imageExtent = {image->textureDesc.width, image->footprint.height,
+            image->textureDesc.dimension == TextureDimension::Texture3D ? image->textureDesc.depth : 1u};
         if (upload) {
             owner->native->CmdCopyBufferToImage(record->command, buffer->buffer, image->image, i.newLayout, 1, &region);
             find(image)->contentsInitialized = true;
@@ -1187,18 +1226,30 @@ struct VulkanCommands final : CommandList {
         if (desc.sampleCount > 1u) {
             return fail(ErrorCode::InvalidArgument, "Direct buffer copy is invalid for multisampled textures; resolve first");
         }
+        if (region.mipLevel >= desc.mipLevels || region.arrayLayer >= desc.arrayLayers || !region.depth) {
+            return fail(ErrorCode::InvalidArgument, "Texture copy region subresource or depth invalid");
+        }
+        const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
+        const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
+        const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
-        if (region.x > desc.width || region.width > desc.width - region.x ||
-            region.y > desc.height || region.height > desc.height - region.y) {
-            return fail(ErrorCode::InvalidArgument, "Texture copy region exceeds texture dimensions");
+        if (region.x > mipW || region.width > mipW - region.x ||
+            region.y > mipH || region.height > mipH - region.y ||
+            region.z > mipD || region.depth > mipD - region.z) {
+            return fail(ErrorCode::InvalidArgument, "Texture copy region exceeds subresource dimensions");
         }
-        const bool fullExtent = region.x == 0 && region.y == 0 && region.width == desc.width && region.height == desc.height;
+        if (footprint->size > UINT64_MAX / region.depth) {
+            return fail(ErrorCode::InvalidArgument, "Texture copy region byte size overflow");
+        }
+        const std::uint64_t totalBytes = footprint->size * region.depth;
+        const bool fullSlice = region.x == 0 && region.y == 0 && region.width == mipW && region.height == mipH;
+        const bool fullExtent = fullSlice && region.z == 0 && region.depth == mipD;
         if (desc.depthStencil && !fullExtent) {
             return fail(ErrorCode::Unsupported, "Partial sub-region copy is unsupported for depth textures");
         }
         if ((region.bufferOffset % 512u) != 0 ||
-            region.bufferOffset > buffer->desc.size || footprint->size > buffer->desc.size - region.bufferOffset ||
+            region.bufferOffset > buffer->desc.size || totalBytes > buffer->desc.size - region.bufferOffset ||
             buffer->desc.memory == (upload ? Memory::Readback : Memory::Upload)) {
             return fail(ErrorCode::InvalidArgument, "Texture region copy buffer alignment, bounds or memory kind invalid");
         }
@@ -1219,18 +1270,20 @@ struct VulkanCommands final : CommandList {
         i.dstAccessMask = upload ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_TRANSFER_READ_BIT;
         i.oldLayout = i.newLayout = imageLayout(shadow(image));
         i.srcQueueFamilyIndex = i.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        i.image = image->image; i.subresourceRange = {imageAspect(*image), 0, 1, 0, 1};
+        i.image = image->image;
+        i.subresourceRange = {imageAspect(*image), 0, std::max(1u, desc.mipLevels), 0, std::max(1u, desc.arrayLayers)};
         owner->native->CmdPipelineBarrier(record->command, stageScope(qType, true),
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &b, 1, &i);
         VkBufferImageCopy copy{};
         copy.bufferOffset = region.bufferOffset;
         copy.bufferRowLength = footprint->rowPitch / texelBytes(desc.format);
-        copy.imageSubresource = {imageAspect(*image), 0, 0, 1};
-        copy.imageOffset = {static_cast<std::int32_t>(region.x), static_cast<std::int32_t>(region.y), 0};
-        copy.imageExtent = {region.width, region.height, 1};
+        copy.bufferImageHeight = region.height;
+        copy.imageSubresource = {imageAspect(*image), region.mipLevel, region.arrayLayer, 1};
+        copy.imageOffset = {static_cast<std::int32_t>(region.x), static_cast<std::int32_t>(region.y), static_cast<std::int32_t>(region.z)};
+        copy.imageExtent = {region.width, region.height, region.depth};
         if (upload) {
             owner->native->CmdCopyBufferToImage(record->command, buffer->buffer, image->image, i.newLayout, 1, &copy);
-            if (fullExtent) find(image)->contentsInitialized = true;
+            if (fullSlice) find(image)->contentsInitialized = true;
         } else {
             owner->native->CmdCopyImageToBuffer(record->command, image->image, i.newLayout, buffer->buffer, 1, &copy);
             if (buffer->desc.memory == Memory::Readback) {
@@ -1286,9 +1339,11 @@ struct VulkanCommands final : CommandList {
             b.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
         }
         barriers[0].image = (*src)->image;
+        barriers[0].subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, std::max(1u, (*src)->textureDesc.mipLevels), 0, std::max(1u, (*src)->textureDesc.arrayLayers)};
         barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         barriers[0].oldLayout = barriers[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         barriers[1].image = (*dst)->image;
+        barriers[1].subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, std::max(1u, (*dst)->textureDesc.mipLevels), 0, std::max(1u, (*dst)->textureDesc.arrayLayers)};
         barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barriers[1].oldLayout = barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -1334,7 +1389,7 @@ struct VulkanCommands final : CommandList {
             } else {
                 auto tex = texture(color.texture); if (!tex) return std::unexpected(tex.error());
                 a = *tex;
-                nativeView = a->view;
+                nativeView = a->attachmentView ? a->attachmentView : a->view;
             }
             if (shadow(a) != ResourceState::RenderTarget) return fail(ErrorCode::InvalidState, "Attachment requires RenderTarget state");
             const auto use = find(a);
@@ -1369,7 +1424,7 @@ struct VulkanCommands final : CommandList {
             } else {
                 auto tex = texture(depth.texture); if (!tex) return std::unexpected(tex.error());
                 a = *tex;
-                nativeView = a->view;
+                nativeView = a->attachmentView ? a->attachmentView : a->view;
             }
             if (shadow(a) != (depth.readOnly ? ResourceState::DepthRead : ResourceState::DepthWrite)) return fail(ErrorCode::InvalidState, "Depth attachment read/write state mismatch");
             const auto use = find(a);
@@ -1395,12 +1450,17 @@ struct VulkanCommands final : CommandList {
         info.subpassCount = 1; info.pSubpasses = &subpass; info.dependencyCount = 2; info.pDependencies = dependencies.data();
         if (auto ok = owner->accept(vulkan::acquireOutput(pass->pass, owner->native->CreateRenderPass, owner->native->handle, &info, nullptr), "vkCreateRenderPass"); !ok) return ok;
         const auto desc = colors.front()->textureDesc;
+        const std::uint32_t firstMip = !description.colors.empty()
+            ? (description.colors.front().view ? description.colors.front().view->description().baseMipLevel : 0u)
+            : (description.depth.view ? description.depth.view->description().baseMipLevel : 0u);
+        const std::uint32_t passW = std::max(1u, desc.width >> firstMip);
+        const std::uint32_t passH = std::max(1u, desc.height >> firstMip);
         VkFramebufferCreateInfo framebuffer{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
         framebuffer.renderPass = pass->pass; framebuffer.attachmentCount = static_cast<std::uint32_t>(views.size()); framebuffer.pAttachments = views.data();
-        framebuffer.width = desc.width; framebuffer.height = desc.height; framebuffer.layers = 1;
+        framebuffer.width = passW; framebuffer.height = passH; framebuffer.layers = 1;
         if (auto ok = owner->accept(vulkan::acquireOutput(pass->framebuffer, owner->native->CreateFramebuffer, owner->native->handle, &framebuffer, nullptr), "vkCreateFramebuffer"); !ok) return ok;
         VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}; begin.renderPass = pass->pass; begin.framebuffer = pass->framebuffer;
-        begin.renderArea.extent = {desc.width, desc.height}; begin.clearValueCount = static_cast<std::uint32_t>(clears.size()); begin.pClearValues = clears.data();
+        begin.renderArea.extent = {passW, passH}; begin.clearValueCount = static_cast<std::uint32_t>(clears.size()); begin.pClearValues = clears.data();
         for (std::size_t idx = 0; idx < colors.size(); ++idx) {
             const bool isDepthAttachment = hasDepth && (idx + 1 == colors.size());
             const bool markMutated = !isDepthAttachment || !description.depth.readOnly;
@@ -1409,10 +1469,10 @@ struct VulkanCommands final : CommandList {
         for (auto& v : retainedViews) record->textureViews.push_back(std::move(v));
         record->passes.push_back(std::move(pass));
         record->passDepth = hasDepth; record->depthReadOnly = description.depth.readOnly;
-        record->passColors = std::move(formats); record->width = desc.width; record->height = desc.height; record->passSampleCount = desc.sampleCount; record->selectedPipeline.reset(); record->selectedBindings = {};
+        record->passColors = std::move(formats); record->width = passW; record->height = passH; record->passSampleCount = desc.sampleCount; record->selectedPipeline.reset(); record->selectedBindings = {};
         owner->native->CmdBeginRenderPass(record->command, &begin, VK_SUBPASS_CONTENTS_INLINE);
-        const VkViewport viewport{0, float(desc.height), float(desc.width), -float(desc.height), 0, 1};
-        const VkRect2D scissor{{0, 0}, {desc.width, desc.height}};
+        const VkViewport viewport{0, float(passH), float(passW), -float(passH), 0, 1};
+        const VkRect2D scissor{{0, 0}, {passW, passH}};
         owner->native->CmdSetViewport(record->command, 0, 1, &viewport); owner->native->CmdSetScissor(record->command, 0, 1, &scissor);
         record->inPass = true;
         if (owner->profiler) owner->profiler->recordRenderPass();
@@ -1468,21 +1528,24 @@ struct VulkanCommands final : CommandList {
             return at;
         };
         for (const auto& b : bindings.textures) {
-            auto at = slot(b.binding, b.element, BindingType::Texture2D); if (!at) return std::unexpected(at.error());
             if (b.texture && b.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in TextureBinding, not both");
             std::shared_ptr<Allocation> a;
             VkImageView nativeView{};
+            TextureDimension resolvedDim{TextureDimension::Texture2D};
             if (b.view) {
                 auto v = textureView(b.view); if (!v) return std::unexpected(v.error());
                 if ((*v)->desc.usage != TextureViewUsage::ShaderRead) return fail(ErrorCode::InvalidArgument, "Texture binding view requires ShaderRead usage");
                 a = (*v)->allocation;
                 nativeView = (*v)->view;
+                resolvedDim = (*v)->desc.dimension.value_or(a->textureDesc.dimension);
                 snapshot->textureViews.push_back(*v);
             } else {
                 auto tex = texture(b.texture); if (!tex) return std::unexpected(tex.error());
                 a = *tex;
                 nativeView = a->view;
+                resolvedDim = a->textureDesc.dimension;
             }
+            auto at = slot(b.binding, b.element, bindingTypeForDimension(resolvedDim)); if (!at) return std::unexpected(at.error());
             if (a->swapchain) return fail(ErrorCode::InvalidArgument, "Swapchain backbuffer sampling unsupported");
             if (a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Depth texture sampling unsupported");
             if (a->textureDesc.sampleCount > 1u) return fail(ErrorCode::Unsupported, "Multisampled texture sampling unsupported");
@@ -1515,7 +1578,7 @@ struct VulkanCommands final : CommandList {
         record->uses.reserve(record->uses.size() + p->descriptorSize); record->snapshots.reserve(record->snapshots.size() + 1);
         if (p->setLayout) {
             std::array<unsigned, 3> counts{};
-            for (const auto& e : p->bindings.entries) counts[e.type == BindingType::Texture2D ? 0 : 1] += e.count;
+            for (const auto& e : p->bindings.entries) counts[isSampledTextureBinding(e.type) ? 0 : 1] += e.count;
             counts[2] = static_cast<unsigned>(p->samplers.size());
             std::vector<VkDescriptorPoolSize> sizes;
             const VkDescriptorType types[]{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_SAMPLER};
@@ -1677,19 +1740,22 @@ struct VulkanCommands final : CommandList {
         };
 
         for (const auto& b : bindings.textures) {
-            auto at = slot(b.binding, b.element, BindingType::Texture2D); if (!at) return std::unexpected(at.error());
             if (b.texture && b.view) return fail(ErrorCode::InvalidArgument, "Specify either texture or view in TextureBinding, not both");
             std::shared_ptr<Allocation> a;
             VkImageView nativeView{};
+            TextureDimension resolvedDim{TextureDimension::Texture2D};
             if (b.view) {
                 auto v = textureView(b.view); if (!v) return std::unexpected(v.error());
                 if ((*v)->desc.usage != TextureViewUsage::ShaderRead) return fail(ErrorCode::InvalidArgument, "Texture binding view requires ShaderRead usage");
                 a = (*v)->allocation; nativeView = (*v)->view;
+                resolvedDim = (*v)->desc.dimension.value_or(a->textureDesc.dimension);
                 snapshot->textureViews.push_back(*v);
             } else {
                 auto tex = texture(b.texture); if (!tex) return std::unexpected(tex.error());
                 a = *tex; nativeView = a->view;
+                resolvedDim = a->textureDesc.dimension;
             }
+            auto at = slot(b.binding, b.element, bindingTypeForDimension(resolvedDim)); if (!at) return std::unexpected(at.error());
             if (a->swapchain || a->textureDesc.depthStencil) return fail(ErrorCode::InvalidArgument, "Sampled compute texture must be a non-swapchain color texture");
             if (shadow(a) != ResourceState::ShaderRead) return fail(ErrorCode::InvalidState, "Compute texture binding requires ShaderRead");
             const auto use = find(a);
@@ -1783,7 +1849,7 @@ struct VulkanCommands final : CommandList {
         if (p->setLayout) {
             std::array<unsigned, 5> counts{};
             for (const auto& e : p->bindings.entries) {
-                const unsigned idx = e.type == BindingType::Texture2D ? 0 :
+                const unsigned idx = isSampledTextureBinding(e.type) ? 0 :
                                      e.type == BindingType::ConstantBuffer ? 1 :
                                      e.type == BindingType::StorageBuffer ? 2 : 3;
                 counts[idx] += e.count;
@@ -1878,7 +1944,7 @@ struct VulkanCommands final : CommandList {
         barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
         barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = (*a)->image;
-        barrier.subresourceRange = {imageAspect(**a), 0, 1, 0, 1};
+        barrier.subresourceRange = {imageAspect(**a), 0, std::max(1u, (*a)->textureDesc.mipLevels), 0, std::max(1u, (*a)->textureDesc.arrayLayers)};
         owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         if (owner->profiler) owner->profiler->recordUavBarrier();
@@ -2462,6 +2528,10 @@ struct VulkanDevice final : Device {
                 return fail(ErrorCode::Unsupported, "Adapter format lacks Vulkan storage image support");
             }
         }
+        const VkImageType imageType = vulkanImageType(desc.dimension);
+        const VkImageCreateFlags createFlags = desc.dimension == TextureDimension::TextureCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u;
+        const std::uint32_t sliceHeight = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+        const std::uint32_t imageDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
         const VkSampleCountFlagBits sampleBit = vulkanSampleCount(desc.sampleCount);
         const VkImageUsageFlags usage = desc.sampleCount > 1u
             ? (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
@@ -2469,27 +2539,30 @@ struct VulkanDevice final : Device {
                (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0u) | (desc.storage ? VK_IMAGE_USAGE_STORAGE_BIT : 0u)));
         VkImageFormatProperties properties{};
         const auto r = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, format,
-            VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties);
+            imageType, VK_IMAGE_TILING_OPTIMAL, usage, createFlags, &properties);
         if (r == VK_ERROR_FORMAT_NOT_SUPPORTED) return fail(ErrorCode::Unsupported, "Vulkan color image format unsupported", r);
         if (auto ok = owner->accept(r, "vkGetPhysicalDeviceImageFormatProperties"); !ok) return std::unexpected(ok.error());
         const VkSampleCountFlags fbMask = desc.depthStencil
             ? owner->limits.framebufferDepthSampleCounts
             : owner->limits.framebufferColorSampleCounts;
-        if (desc.width > properties.maxExtent.width || desc.height > properties.maxExtent.height ||
+        if (desc.width > properties.maxExtent.width || sliceHeight > properties.maxExtent.height ||
+            imageDepth > properties.maxExtent.depth || desc.mipLevels > properties.maxMipLevels ||
+            desc.arrayLayers > properties.maxArrayLayers ||
             !(properties.sampleCounts & sampleBit) ||
             (desc.sampleCount > 1u && !(fbMask & sampleBit)))
-            return fail(ErrorCode::Unsupported, "Vulkan image exceeds adapter format or MSAA sample limits");
+            return fail(ErrorCode::Unsupported, "Vulkan image exceeds adapter format, dimension, mip, array, or MSAA limits");
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->textureDesc = desc;
         if (desc.sampleCount == 1u) {
             const auto rowBytes = desc.width * texelBytes(desc.format);
             const auto rowPitch = (rowBytes + 255u) & ~255u;
-            a->footprint = {std::uint64_t(rowPitch) * desc.height, rowPitch, rowBytes, desc.height};
+            a->footprint = {std::uint64_t(rowPitch) * sliceHeight * imageDepth, rowPitch, rowBytes, sliceHeight};
         } else {
             a->footprint = {};
         }
         VkImageCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
-        info.imageType = VK_IMAGE_TYPE_2D; info.format = format; info.extent = {desc.width, desc.height, 1};
-        info.mipLevels = info.arrayLayers = 1; info.samples = sampleBit; info.tiling = VK_IMAGE_TILING_OPTIMAL;
+        info.flags = createFlags;
+        info.imageType = imageType; info.format = format; info.extent = {desc.width, sliceHeight, imageDepth};
+        info.mipLevels = desc.mipLevels; info.arrayLayers = desc.arrayLayers; info.samples = sampleBit; info.tiling = VK_IMAGE_TILING_OPTIMAL;
         info.usage = usage;
         if (owner->uniqueFamilies.size() > 1) {
             info.sharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -2511,9 +2584,15 @@ struct VulkanDevice final : Device {
         if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, a->memory, 0), "vkBindImageMemory"); !ok) return std::unexpected(ok.error());
         {
             VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
-            view.image = a->image; view.viewType = VK_IMAGE_VIEW_TYPE_2D; view.format = format;
-            view.subresourceRange = {imageAspect(*a), 0, 1, 0, 1};
+            view.image = a->image; view.viewType = vulkanImageViewType(desc.dimension); view.format = format;
+            view.subresourceRange = {imageAspect(*a), 0, desc.mipLevels, 0, desc.arrayLayers};
             if (auto ok = owner->accept(vulkan::acquireOutput(a->view, owner->native->CreateImageView, owner->native->handle, &view, nullptr), "vkCreateImageView"); !ok) return std::unexpected(ok.error());
+        }
+        if ((desc.renderTarget || desc.depthStencil) && desc.dimension == TextureDimension::Texture2D && desc.mipLevels > 1u) {
+            VkImageViewCreateInfo attView{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+            attView.image = a->image; attView.viewType = VK_IMAGE_VIEW_TYPE_2D; attView.format = format;
+            attView.subresourceRange = {imageAspect(*a), 0, 1, 0, 1};
+            if (auto ok = owner->accept(vulkan::acquireOutput(a->attachmentView, owner->native->CreateImageView, owner->native->handle, &attView, nullptr), "vkCreateImageView attachment"); !ok) return std::unexpected(ok.error());
         }
         auto value = std::make_shared<VulkanTexture>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
@@ -2537,7 +2616,7 @@ struct VulkanDevice final : Device {
         nativeView->desc = *resolved;
         VkImageViewCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
         info.image = parent->allocation->image;
-        info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        info.viewType = vulkanImageViewType(*resolved->dimension);
         info.format = textureFormat(*resolved->format);
         info.subresourceRange = {
             imageAspect(*parent->allocation),
@@ -2627,7 +2706,7 @@ struct VulkanDevice final : Device {
         for (unsigned i = 0; i < resourceLayout.entries.size(); ++i) {
             const auto& e = resourceLayout.entries[i]; p->descriptorSize += e.count;
             p->minimumBytes[i] = std::max(vertexMinimum[i], fragmentMinimum[i]);
-            count(e.type == BindingType::Texture2D ? 0 : 1, e.count, e.visibility);
+            count(isSampledTextureBinding(e.type) ? 0 : 1, e.count, e.visibility);
         }
         for (const auto& s : resourceLayout.samplers) count(2, 1, s.visibility);
         const auto& limits = owner->limits;
@@ -2641,13 +2720,14 @@ struct VulkanDevice final : Device {
             info.magFilter = info.minFilter = s.filter == SamplerFilter::Point ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
             info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
             info.addressModeU = info.addressModeV = info.addressModeW = s.address == SamplerAddress::Clamp ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            info.maxLod = VK_LOD_CLAMP_NONE;
             VkSampler sampler{};
             if (auto ok = owner->accept(vulkan::acquireOutput(sampler, owner->native->CreateSampler, owner->native->handle, &info, nullptr), "vkCreateSampler"); !ok) return std::unexpected(ok.error());
             p->samplers.push_back(sampler); p->linear |= s.filter == SamplerFilter::Linear;
         }
         std::vector<VkDescriptorSetLayoutBinding> resources;
         for (unsigned i = 0; i < resourceLayout.entries.size(); ++i) {
-            const auto& e = resourceLayout.entries[i]; resources.push_back({i, e.type == BindingType::Texture2D ? VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, e.count, stages(e.visibility), nullptr});
+            const auto& e = resourceLayout.entries[i]; resources.push_back({i, isSampledTextureBinding(e.type) ? VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, e.count, stages(e.visibility), nullptr});
         }
         for (unsigned i = 0; i < p->samplers.size(); ++i) resources.push_back({32 + i, VK_DESCRIPTOR_TYPE_SAMPLER, 1, stages(resourceLayout.samplers[i].visibility), &p->samplers[i]});
         if (!resources.empty()) {
@@ -2771,7 +2851,7 @@ struct VulkanDevice final : Device {
         std::array<unsigned, 5> totals{};
         for (const auto& e : desc.bindingLayout.entries) {
             p->descriptorSize += e.count;
-            const unsigned idx = e.type == BindingType::Texture2D ? 0 :
+            const unsigned idx = isSampledTextureBinding(e.type) ? 0 :
                                  e.type == BindingType::ConstantBuffer ? 1 :
                                  e.type == BindingType::StorageBuffer ? 2 : 3;
             totals[idx] += e.count;
@@ -2792,6 +2872,7 @@ struct VulkanDevice final : Device {
             info.magFilter = info.minFilter = s.filter == SamplerFilter::Point ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
             info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
             info.addressModeU = info.addressModeV = info.addressModeW = s.address == SamplerAddress::Clamp ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            info.maxLod = VK_LOD_CLAMP_NONE;
             VkSampler sampler{};
             if (auto ok = owner->accept(vulkan::acquireOutput(sampler, owner->native->CreateSampler, owner->native->handle, &info, nullptr), "vkCreateSampler"); !ok) return std::unexpected(ok.error());
             p->samplers.push_back(sampler);
@@ -2801,7 +2882,7 @@ struct VulkanDevice final : Device {
         for (unsigned i = 0; i < desc.bindingLayout.entries.size(); ++i) {
             const auto& e = desc.bindingLayout.entries[i];
             const VkDescriptorType dtype =
-                e.type == BindingType::Texture2D ? VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE :
+                isSampledTextureBinding(e.type) ? VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE :
                 e.type == BindingType::ConstantBuffer ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER :
                 e.type == BindingType::StorageBuffer ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER :
                 VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;

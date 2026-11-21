@@ -42,9 +42,20 @@ struct Viewport {
     bool operator==(const Viewport&) const = default;
 };
 struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; bool storage{}; };
-struct TextureDesc { std::uint32_t width{}, height{}; Format format{Format::RGBA8UNorm}; bool renderTarget{}, depthStencil{}, storage{}; std::uint32_t sampleCount{1}; };
+enum class TextureDimension { Texture2D = 0, Texture1D, Texture3D, Texture2DArray, TextureCube };
+struct TextureDesc {
+    std::uint32_t width{}, height{};
+    Format format{Format::RGBA8UNorm};
+    bool renderTarget{}, depthStencil{}, storage{};
+    std::uint32_t sampleCount{1};
+    TextureDimension dimension{TextureDimension::Texture2D};
+    std::uint32_t depth{1};
+    std::uint32_t mipLevels{1};
+    std::uint32_t arrayLayers{1};
+};
 enum class TextureViewUsage { ShaderRead, RenderTarget, DepthStencil, Storage };
-// Subresource view descriptor over a Texture. When format is unset, inherits the parent texture format.
+// Subresource view descriptor over a Texture. When format or dimension is unset,
+// inherits the parent texture format/dimension (or Texture2D for single-slice RT/DS views).
 struct TextureViewDesc {
     std::optional<Format> format;
     TextureViewUsage usage{TextureViewUsage::ShaderRead};
@@ -52,16 +63,22 @@ struct TextureViewDesc {
     std::uint32_t mipLevelCount{1};
     std::uint32_t baseArrayLayer{};
     std::uint32_t arrayLayerCount{1};
+    std::optional<TextureDimension> dimension;
     bool operator==(const TextureViewDesc&) const = default;
 };
 struct TextureFootprint { std::uint64_t size{}; std::uint32_t rowPitch{}, rowBytes{}, height{}; };
-// Portable 2D buffer<->texture copy region. bufferOffset must be a multiple of 512 bytes.
+// Portable buffer<->texture subresource copy region. bufferOffset must be a multiple of 512 bytes.
 // bufferRowPitch=0 selects the 256-byte aligned pitch for width; non-zero must be a
-// multiple of 256 bytes and >= width * bytesPerTexel.
+// multiple of 256 bytes and >= width * bytesPerTexel. For 3D regions, depth slices are
+// packed contiguously at slice stride rowPitch * height bytes.
 struct TextureCopyRegion {
     std::uint64_t bufferOffset{};
     std::uint32_t bufferRowPitch{};
     std::uint32_t x{}, y{}, width{}, height{};
+    std::uint32_t mipLevel{};
+    std::uint32_t arrayLayer{};
+    std::uint32_t z{};
+    std::uint32_t depth{1};
 };
 struct Fence { std::uint64_t value{}, device{}; };
 struct DeviceDesc {

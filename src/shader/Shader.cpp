@@ -163,7 +163,13 @@ Result<std::vector<ShaderBinding>> d3d12ShaderBindings(const D3D12ShaderReflecti
         HRESULT result = reflection.native->GetResourceBindingDesc(index, &binding);
         if (FAILED(result)) return std::unexpected(Error{ErrorCode::BackendFailure, "Shader binding reflection failed", result});
         ShaderBinding entry{binding.Name,binding.BindPoint,binding.BindCount,binding.Space};
-        if(binding.Type==D3D_SIT_TEXTURE && binding.Dimension==D3D_SRV_DIMENSION_TEXTURE2D && binding.ReturnType==D3D_RETURN_TYPE_FLOAT)entry.type=ShaderResourceType::Texture2D;
+        if(binding.Type==D3D_SIT_TEXTURE && binding.ReturnType==D3D_RETURN_TYPE_FLOAT) {
+            if(binding.Dimension==D3D_SRV_DIMENSION_TEXTURE2D)entry.type=ShaderResourceType::Texture2D;
+            else if(binding.Dimension==D3D_SRV_DIMENSION_TEXTURE1D)entry.type=ShaderResourceType::Texture1D;
+            else if(binding.Dimension==D3D_SRV_DIMENSION_TEXTURE3D)entry.type=ShaderResourceType::Texture3D;
+            else if(binding.Dimension==D3D_SRV_DIMENSION_TEXTURE2DARRAY)entry.type=ShaderResourceType::Texture2DArray;
+            else if(binding.Dimension==D3D_SRV_DIMENSION_TEXTURECUBE)entry.type=ShaderResourceType::TextureCube;
+        }
         if(binding.Type==D3D_SIT_SAMPLER && !(binding.uFlags&D3D_SIF_COMPARISON_SAMPLER))entry.type=ShaderResourceType::Sampler;
         if(binding.Type==D3D_SIT_UAV_RWBYTEADDRESS)entry.type=ShaderResourceType::StorageBuffer;
         if(binding.Type==D3D_SIT_UAV_RWTYPED && binding.Dimension==D3D_SRV_DIMENSION_TEXTURE2D)entry.type=ShaderResourceType::StorageTexture2D;

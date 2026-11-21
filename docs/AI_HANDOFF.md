@@ -1,6 +1,6 @@
 # 다른 AI를 위한 개발 인수인계
 
-2026-11-21 갱신. 직전 확인 기준 HEAD는 `353ff060`이며 이번 세션에서 `P12-SBX-01`(Sandbox RHI 호환성 분석 및 비침투 독립 어댑터 `examples/sandbox_adapter/SandboxRhiAdapter.hpp`·`tests/SandboxAdapterTests.cpp`) 구현·검증과 `P12-SBX-02`(Linux/Metal 실행 검증) 분리를 반영했다.
+2026-11-21 갱신. 직전 확인 기준 HEAD는 `05fd2211`이며 이번 세션에서 `P8-TEX-02`(Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원) 구현·검증과 `P8-TEX-07`(Linux/Metal 실행 검증) 분리를 반영했다.
 이 값은 인수인계 기준이며 새 세션에서는 반드시 실제 `git status`, `git log`, `docs/ROADMAP_TASKS.json`을 다시 확인한다.
 기존 작업 방식과 코드 품질 기준은 루트 [AGENTS.md](../AGENTS.md)를, 시간순 세션 이력은 [AI_WORK_LOG.md](AI_WORK_LOG.md)를 따른다.
 
@@ -8,17 +8,17 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 마지막 작업 | `P12-SBX-01` (읽기 전용 Sandbox RHI 1:1 매핑·격차 분석 및 SDK 공개 헤더/코어 미수정 비침투 어댑터 `SandboxRhiAdapter.hpp`: 세대 `HandlePool`, `DeferredDestructionQueue`, `framesInFlight` 슬롯·`UploadRing` stage-before-record 및 포화 추적, 오프셋/부분 복사·동적 Viewport/Scissor·완료 프레임 GPU 타임스탬프 회수·미지원 `Unsupported` 거부, Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290 오류 0·WARP 손실·설치 소비자 9/9·CTest 5/5), `P12-SBX-02` 분리 |
-| 마지막 확인 Commit | 직전 HEAD `353ff060` (이번 세션 커밋은 `git log -1`로 확인) |
+| 마지막 작업 | `P8-TEX-02` (Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원: 하위 호환 `TextureDimension`, `TextureDesc::dimension/depth/mipLevels/arrayLayers`, `TextureViewDesc::dimension`, `TextureCopyRegion::mipLevel/arrayLayer/z/depth`, 5차원 `BindingType`/`ShaderResourceType` 및 HLSL/SPIR-V 1.3 `Sampled1D`/MSL 리플렉션, D3D12/Vulkan/Metal 구현, Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290 오류 0·WARP 손실/복구·설치 소비자 9/9·CTest 142/142), `P8-TEX-07` 분리 |
+| 마지막 확인 Commit | 직전 HEAD `05fd2211` (이번 세션 커밋은 `git log -1`로 확인) |
 | 현재 브랜치 | `main` (`origin`: `https://github.com/blackvrice/GraphicsSDK.git`) |
-| 현재 버전 | `0.0.1` (`v0.0.10` Render Graph + GPU Profiling + Sandbox 비침투 어댑터 완료) |
-| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`, `P9-RG-02`, `P11-PROF-02`, `P12-SBX-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
-| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), `TextureView`(`P8-TEX-01`), MSAA/Resolve(`P8-TEX-03`), 공개 `UploadRing`/Readback·Transient Pool(`P8-MEM-01`), 동적 Viewport(`P9-CMD-04`), 명시적 `CommandPool`(`P9-CMD-01`), 병렬 명령 기록·일괄 제출(`P9-CMD-02`), Graphics/Compute/Copy 다중 큐·Timeline Fence(`P9-CMD-03`), Compute/UAV/Dispatch(`P9-CMP-01`), 선택적 `RenderGraph`(`P9-RG-01`), GPU Profiling 확장(`P11-PROF-01`), Sandbox RHI 비침투 어댑터(`P12-SBX-01`) 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 204 ID(122 완료) 검증 통과 |
-| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-02/04/05/06`, `P8-MEM-02/03`, `P9-CMD-05/06/07/08`, `P9-CMP-02/03`, `P9-RG-02`, `P10`~`P12`, `P11-PROF-02`, `P12-SBX-02`) |
-| 수정 파일 | `examples/sandbox_adapter/SandboxRhiAdapter.hpp`, `tests/SandboxAdapterTests.cpp`, `CMakeLists.txt`, `docs/{PHASE12_SANDBOX_ADAPTER_REPORT,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` (Sandbox 참고 사본 및 `include/graphics/`·`src/` 미수정) |
-| 테스트 결과 | `gfx_sandbox_adapter_tests` 5/5 모드(D3D12/GBV/WARP 손실/Vulkan/고정 VVL 1.3.290, `val_errors=0`), 설치 소비자 전체 어댑터 9/9(GTX 1660 SUPER + Intel UHD 770 + WARP, 비검증+검증), `sandbox_adapter_*` CTest 5/5 통과(`1.88s`, SDK 코어 미수정으로 직전 132/132 회귀 유지), `roadmap.py --check` PASS (204 ID) (Linux/macOS 실기 미실행) |
+| 현재 버전 | `0.0.1` (`v0.0.4` 다중 차원/Mipmap + `v0.0.10` 확장 슬라이스 누적) |
+| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06/07`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`, `P9-RG-02`, `P11-PROF-02`, `P12-SBX-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
+| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), `TextureView`(`P8-TEX-01`), 1D/3D/2DArray/Cubemap/Mipmap(`P8-TEX-02`), MSAA/Resolve(`P8-TEX-03`), 공개 `UploadRing`/Readback·Transient Pool(`P8-MEM-01`), 동적 Viewport(`P9-CMD-04`), 명시적 `CommandPool`(`P9-CMD-01`), 병렬 명령 기록·일괄 제출(`P9-CMD-02`), Graphics/Compute/Copy 다중 큐·Timeline Fence(`P9-CMD-03`), Compute/UAV/Dispatch(`P9-CMP-01`), 선택적 `RenderGraph`(`P9-RG-01`), GPU Profiling 확장(`P11-PROF-01`), Sandbox RHI 비침투 어댑터(`P12-SBX-01`) 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 205 ID(123 완료) 검증 통과 |
+| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-04/05/06/07`, `P8-MEM-02/03`, `P9-CMD-05/06/07/08`, `P9-CMP-02/03`, `P9-RG-02`, `P10`~`P12`, `P11-PROF-02`, `P12-SBX-02`) |
+| 수정 파일 | `include/graphics/{Types,Bindings,Shader}.hpp`, `src/foundation/{RenderPass,Bindings,Backend}.cpp`, `src/shader/Shader.cpp`, `src/backends/vulkan/{Spirv.hpp,Vulkan.cpp}`, `src/backends/d3d12/D3D12.cpp`, `src/backends/metal/{Metal.cpp,MetalGraphics.hpp}`, `tests/{TextureDimensionTests,BindingTests}.cpp`, `CMakeLists.txt`, `docs/{PHASE8_TEXTURE_DIMENSION_REPORT,PUBLIC_API,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
+| 테스트 결과 | `gfx_texture_dimension_tests` 5/5 모드(D3D12/GBV/WARP 손실복구/Vulkan/고정 VVL 1.3.290, `val_errors=0`, 거부 34~35건·서브리소스 38~45건·샘플링 패스 37~43건), 설치 소비자 전체 어댑터 9/9(GTX 1660 SUPER + Intel UHD 770 + WARP, 비검증+검증), 전체 CTest 142/142 통과(`182.28s`), `roadmap.py --check` PASS (205 ID) (Linux/macOS 실기 미실행) |
 | 확인된 문제 | 장시간 GBV 메모리(`P2-ACC-01`)·과거 Intel AV(`P2-ACC-02`) 미해결, Linux 물리 GPU·물리 Mac 부재 |
-| 다음 추천 작업 | `P8-TEX-02`(Texture1D/3D·Texture2DArray·Cubemap·Mipmap), `P11-DBG-01`(디버깅 고도화), `P9-CMP-02`(Indirect/Bindless), `P10-PRES-01`(Frame Pacing/VRR), `P8/P9/P11/P12` Linux/Metal 검증 |
+| 다음 추천 작업 | `P8-TEX-04`(압축 텍스처 BC1~BC7/ASTC/ETC2), `P11-DBG-01`(디버깅 고도화), `P9-CMP-02`(Indirect/Bindless), `P10-PRES-01`(Frame Pacing/VRR), `P8/P9/P11/P12` Linux/Metal 검증 |
 | 주의사항 | `tools/macos_metal_package.py`의 13개 공개 헤더 allowlist와 `tools/macos_core.py`의 5개 `CORE` `.cpp`·11개 CPU 테스트 목록을 유지해야 기존 replay와 `macos-core.yml`이 깨지지 않는다. 기존 사용자 변경(`tests/VulkanAllocationBenchmarkTests.cpp`)은 덮어쓰거나 커밋하지 않는다. (`.idea/`는 `.gitignore`에 반영 완료) |
 
 ## 새 AI에게 전달할 지시문
