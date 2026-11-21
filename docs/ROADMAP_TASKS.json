@@ -3476,16 +3476,47 @@
       "id": "P8-TEX-04",
       "phase": 8,
       "group": "P8-TEX",
-      "title": "압축 텍스처 포맷 (BC1~BC7·ASTC·ETC2/EAC)",
-      "status": "todo",
+      "title": "압축 텍스처 포맷 (BC1~BC7·ASTC·ETC2/EAC) (API·CPU·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P8-CAP-01",
         "P8-TEX-02"
       ],
-      "work": "블록 압축 포맷의 footprint 계산, 어댑터 지원 여부 조회, 압축 블록 업로드/샘플링 및 미지원 포맷의 명시적 Unsupported 오류를 구현한다.",
-      "done_when": "지원 GPU에서 BC/ASTC/ETC2 블록 정렬·업로드·샘플링 참조와 미지원 포맷 거부 검증 통과.",
-      "evidence": []
+      "work": "Format 14종(BC1~BC7, ETC2RGB8/RGBA8, EACR11/RG11, ASTC 4x4/6x6/8x8), FormatBlockInfo, queryFormatBlockInfo, 블록 정렬 computeTextureRegionFootprint 및 D3D12/Vulkan(textureCompressionBC/ETC2/ASTC_LDR 자동 활성화)/Metal 지원을 구현했다. Windows D3D12(GTX 1660 SUPER·Intel UHD 770 7sup/7unsup·Debug+GBV·WARP 손실/복구)·Vulkan(GTX 1660 SUPER 7sup/7unsup·Intel UHD 770 14sup/0unsup BC+ETC2/EAC+ASTC 전 포맷 실기·고정 VVL 1.3.290 core+sync)·설치 find_package 소비자 9/9 및 전체 CTest 147/147(186.95s)에서 5-mip/테일 mip/블록 패치/2DArray/Cube 하드웨어 디코딩 샘플링 참조 일치, bit-exact 블록 readback, 미지원 포맷 Unsupported 거부, 자원 0 회수, validation 오류 0을 확인했다.",
+      "done_when": "Windows D3D12/Vulkan/Validation/WARP/설치 소비자에서 지원 GPU BC/ASTC/ETC2 블록 정렬·업로드·샘플링 참조와 미지원 포맷 거부 검증 통과.",
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/RenderPass.hpp",
+        "src/foundation/RenderPass.cpp",
+        "src/foundation/Backend.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/metal/Metal.cpp",
+        "tests/CompressedTextureTests.cpp",
+        "CMakeLists.txt",
+        "docs/PUBLIC_API.md",
+        "docs/PHASE8_COMPRESSED_TEXTURE_REPORT.md"
+      ]
+    },
+    {
+      "id": "P8-TEX-08",
+      "phase": 8,
+      "group": "P8-TEX",
+      "title": "압축 텍스처 포맷 (BC1~BC7·ASTC·ETC2/EAC) macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P8-TEX-04"
+      ],
+      "work": "Metal.cpp와 Vulkan.cpp의 BC1~BC7/ETC2/EAC/ASTC 지원 조회·업로드·하드웨어 디코딩 샘플링·미지원 포맷 Unsupported 거부 계약을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행으로 확인한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 지원 압축 포맷 업로드/샘플링/readback 및 미지원 포맷 Unsupported 거부·자원 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "docs/PHASE8_COMPRESSED_TEXTURE_REPORT.md"
+      ]
     },
     {
       "id": "P8-MEM-01",

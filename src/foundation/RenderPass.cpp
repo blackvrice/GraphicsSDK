@@ -7,7 +7,13 @@ namespace gfx {
 namespace {
 auto bad(const char* message){return std::unexpected(Error{ErrorCode::InvalidArgument,message});}
 auto unsupported(const char* message){return std::unexpected(Error{ErrorCode::Unsupported,message});}
-bool colorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float || f==Format::BGRA8UNorm;}
+bool uncompressedColorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float || f==Format::BGRA8UNorm;}
+bool compressedFormat(Format f) {
+    return f >= Format::BC1UNorm && f <= Format::ASTC8x8UNorm;
+}
+bool knownTextureFormat(Format f) {
+    return uncompressedColorFormat(f) || f == Format::D32Float || compressedFormat(f);
+}
 bool loadOp(LoadOp op){return op==LoadOp::Clear || op==LoadOp::Load;}
 bool validSampleCount(std::uint32_t n){return n==1u || n==2u || n==4u || n==8u;}
 bool validDimension(TextureDimension d) {
@@ -30,13 +36,54 @@ std::uint32_t maxMipCount(const TextureDesc& d) {
     return mips;
 }
 }
+Result<FormatBlockInfo> queryFormatBlockInfo(Format format) {
+    switch (format) {
+    case Format::RGBA8UNorm:
+    case Format::BGRA8UNorm:
+    case Format::D32Float:
+        return FormatBlockInfo{1u, 1u, 4u, false};
+    case Format::RGBA16Float:
+        return FormatBlockInfo{1u, 1u, 8u, false};
+    case Format::BC1UNorm:
+    case Format::BC4UNorm:
+    case Format::ETC2RGB8UNorm:
+    case Format::EACR11UNorm:
+        return FormatBlockInfo{4u, 4u, 8u, true};
+    case Format::BC2UNorm:
+    case Format::BC3UNorm:
+    case Format::BC5UNorm:
+    case Format::BC6HUFloat:
+    case Format::BC7UNorm:
+    case Format::ETC2RGBA8UNorm:
+    case Format::EACRG11UNorm:
+    case Format::ASTC4x4UNorm:
+        return FormatBlockInfo{4u, 4u, 16u, true};
+    case Format::ASTC6x6UNorm:
+        return FormatBlockInfo{6u, 6u, 16u, true};
+    case Format::ASTC8x8UNorm:
+        return FormatBlockInfo{8u, 8u, 16u, true};
+    }
+    return bad("Unknown texture format");
+}
 Result<void> validateTextureDescription(TextureDesc d) {
     if (!validDimension(d.dimension)) return bad("Unknown texture dimension");
-    if ((!colorFormat(d.format) && d.format != Format::D32Float) ||
-        d.depthStencil != (d.format == Format::D32Float) ||
+    const auto blockInfo = queryFormatBlockInfo(d.format);
+    if (!blockInfo) return std::unexpected(blockInfo.error());
+    if (d.depthStencil != (d.format == Format::D32Float) ||
         (d.depthStencil && (d.renderTarget || d.storage)) ||
         !validSampleCount(d.sampleCount)) {
         return bad("Invalid texture format, attachment usage, or sample count");
+    }
+    if (blockInfo->compressed) {
+        if (d.renderTarget || d.storage) {
+            return unsupported("Block-compressed textures support transfer and ShaderRead sampling only");
+        }
+        if (d.sampleCount > 1u) {
+            return bad("Block-compressed textures cannot be multisampled");
+        }
+        if (d.dimension == TextureDimension::Texture1D || d.dimension == TextureDimension::Texture3D) {
+            return unsupported("Block-compressed textures require Texture2D, Texture2DArray, or TextureCube dimension");
+        }
     }
     if (d.sampleCount > 1u) {
         if (d.dimension != TextureDimension::Texture2D || d.mipLevels != 1u || d.arrayLayers != 1u || d.depth != 1u ||
@@ -75,6 +122,10 @@ Result<void> validateTextureDescription(TextureDesc d) {
             return unsupported("TextureCube depthStencil and storage usages are unsupported");
         break;
     }
+    if (blockInfo->compressed &&
+        ((d.width % blockInfo->blockWidth) != 0u || (d.height % blockInfo->blockHeight) != 0u)) {
+        return bad("Block-compressed texture mip 0 extent must be a multiple of the format block dimensions");
+    }
     if (!d.mipLevels || d.mipLevels > maxMipCount(d)) {
         return bad("Texture mipLevels outside valid mip chain range");
     }
@@ -83,8 +134,7 @@ Result<void> validateTextureDescription(TextureDesc d) {
 Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureViewDesc viewDesc) {
     if (auto ok = validateTextureDescription(textureDesc); !ok) return std::unexpected(ok.error());
     const Format resolvedFormat = viewDesc.format.value_or(textureDesc.format);
-    const bool knownFormat = colorFormat(resolvedFormat) || resolvedFormat == Format::D32Float;
-    if (!knownFormat) return bad("Unknown texture view format");
+    if (!knownTextureFormat(resolvedFormat)) return bad("Unknown texture view format");
     if (viewDesc.usage != TextureViewUsage::ShaderRead &&
         viewDesc.usage != TextureViewUsage::RenderTarget &&
         viewDesc.usage != TextureViewUsage::DepthStencil &&
@@ -170,27 +220,25 @@ Result<TextureFootprint> computeTextureRegionFootprint(
     if (!width || !height || width > 16384 || height > 16384) {
         return bad("Texture copy region extent must be 1..16384");
     }
-    std::uint32_t texelBytes = 0;
-    if (format == Format::RGBA8UNorm || format == Format::BGRA8UNorm || format == Format::D32Float) {
-        texelBytes = 4;
-    } else if (format == Format::RGBA16Float) {
-        texelBytes = 8;
-    } else {
+    const auto info = queryFormatBlockInfo(format);
+    if (!info) {
         return bad("Unsupported texture format for region footprint");
     }
-    const std::uint32_t rowBytes = width * texelBytes;
+    const std::uint32_t blocksX = (width + info->blockWidth - 1u) / info->blockWidth;
+    const std::uint32_t blocksY = (height + info->blockHeight - 1u) / info->blockHeight;
+    const std::uint32_t rowBytes = blocksX * info->bytesPerBlock;
     const std::uint32_t minimumPitch = (rowBytes + 255u) & ~255u;
     const std::uint32_t resolvedPitch = rowPitch ? rowPitch : minimumPitch;
     if (resolvedPitch < rowBytes || (resolvedPitch % 256u) != 0) {
         return bad("Texture copy rowPitch must be a 256-byte multiple at least rowBytes");
     }
-    const std::uint64_t totalBytes = static_cast<std::uint64_t>(resolvedPitch) * height;
-    return TextureFootprint{totalBytes, resolvedPitch, rowBytes, height};
+    const std::uint64_t totalBytes = static_cast<std::uint64_t>(resolvedPitch) * blocksY;
+    return TextureFootprint{totalBytes, resolvedPitch, rowBytes, blocksY};
 }
 Result<void> validateRenderTargets(const RenderTargetLayout& layout,DepthState depth) {
     if(layout.colors.size()>8 || (layout.colors.empty() && !layout.depth))return bad("Render layout requires 1..8 color attachments or depth");
     if(!validSampleCount(layout.sampleCount))return bad("Render layout sampleCount must be 1, 2, 4, or 8");
-    for(auto f:layout.colors)if(!colorFormat(f))return bad("Color attachment requires a color format");
+    for(auto f:layout.colors)if(!uncompressedColorFormat(f))return bad("Color attachment requires an uncompressed color format");
     if(layout.depth && *layout.depth!=Format::D32Float)return bad("Only D32Float depth is supported");
     if(depth.compare<CompareOp::Never || depth.compare>CompareOp::Always ||
        (depth.writeEnabled && !depth.testEnabled) || ((depth.testEnabled || depth.writeEnabled) && !layout.depth))return bad("Invalid depth state or missing depth format");
@@ -217,7 +265,7 @@ Result<void> validateRenderPass(const RenderPassDesc& pass) {
         const auto d=texture->description();
         auto valid=validateTextureDescription(d);if(!valid)return valid;
         if(!view && d.dimension!=TextureDimension::Texture2D)return bad("Non-Texture2D render attachments require an explicit single-slice TextureView");
-        if(depth?!d.depthStencil:(!d.renderTarget || !colorFormat(d.format)))return bad("Incorrect render attachment usage");
+        if(depth?!d.depthStencil:(!d.renderTarget || !uncompressedColorFormat(d.format)))return bad("Incorrect render attachment usage");
         const std::uint32_t mip = view ? view->description().baseMipLevel : 0u;
         const std::uint32_t attW = std::max(1u, d.width >> mip);
         const std::uint32_t attH = std::max(1u, d.height >> mip);

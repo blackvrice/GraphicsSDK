@@ -48,16 +48,21 @@ std::uint64_t estimateTextureBytes(const Texture& texture) noexcept {
     const auto d = texture.description();
     const std::uint64_t fp = texture.footprint().size;
     if (fp > 0 && d.mipLevels <= 1u && d.arrayLayers <= 1u) return fp;
-    const std::uint64_t bpp = (d.format == Format::RGBA16Float) ? 8u : 4u;
+    const auto block = queryFormatBlockInfo(d.format);
+    const std::uint32_t bw = block ? block->blockWidth : 1u;
+    const std::uint32_t bh = block ? block->blockHeight : 1u;
+    const std::uint64_t bpb = block ? block->bytesPerBlock : 4u;
     const std::uint64_t samples = std::max<std::uint32_t>(1u, d.sampleCount);
     const std::uint32_t mips = std::max<std::uint32_t>(1u, d.mipLevels);
     const std::uint32_t layers = std::max<std::uint32_t>(1u, d.arrayLayers);
     std::uint64_t perLayer = 0;
     for (std::uint32_t m = 0; m < mips; ++m) {
-        const std::uint64_t mw = std::max<std::uint32_t>(1u, d.width >> m);
-        const std::uint64_t mh = d.dimension == TextureDimension::Texture1D ? 1u : std::max<std::uint32_t>(1u, d.height >> m);
+        const std::uint32_t mw = std::max<std::uint32_t>(1u, d.width >> m);
+        const std::uint32_t mh = d.dimension == TextureDimension::Texture1D ? 1u : std::max<std::uint32_t>(1u, d.height >> m);
         const std::uint64_t md = d.dimension == TextureDimension::Texture3D ? std::max<std::uint32_t>(1u, d.depth >> m) : 1u;
-        perLayer += mw * mh * md * bpp * samples;
+        const std::uint64_t bx = (mw + bw - 1u) / bw;
+        const std::uint64_t by = (mh + bh - 1u) / bh;
+        perLayer += bx * by * md * bpb * samples;
     }
     return perLayer * layers;
 }

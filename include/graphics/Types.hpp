@@ -22,7 +22,33 @@ struct AdapterInfo {
     std::uint32_t vendorId{}, deviceId{};
     std::uint64_t dedicatedVideoMemory{}, sharedSystemMemory{};
 };
-enum class Format { RGBA8UNorm, RGBA16Float, D32Float, BGRA8UNorm };
+enum class Format {
+    RGBA8UNorm,
+    RGBA16Float,
+    D32Float,
+    BGRA8UNorm,
+    BC1UNorm,
+    BC2UNorm,
+    BC3UNorm,
+    BC4UNorm,
+    BC5UNorm,
+    BC6HUFloat,
+    BC7UNorm,
+    ETC2RGB8UNorm,
+    ETC2RGBA8UNorm,
+    EACR11UNorm,
+    EACRG11UNorm,
+    ASTC4x4UNorm,
+    ASTC6x6UNorm,
+    ASTC8x8UNorm
+};
+struct FormatBlockInfo {
+    std::uint32_t blockWidth{1};
+    std::uint32_t blockHeight{1};
+    std::uint32_t bytesPerBlock{};
+    bool compressed{};
+    bool operator==(const FormatBlockInfo&) const = default;
+};
 enum class Memory { Device, Upload, Readback };
 enum class MemorySegment { Local, NonLocal };
 // OS process/adapter snapshot, not SDK allocation accounting or total/free VRAM.

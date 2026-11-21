@@ -471,3 +471,32 @@
   - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
   - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
   - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).
+
+
+---
+
+## 2026-11-21 — `P8-TEX-04` 압축 텍스처 포맷 (BC1~BC7·ASTC·ETC2/EAC) 구현·실기 검증
+
+- **기준 커밋**: `eda2bab4` (`Add Texture1D/3D, Texture2DArray, Cubemap, and Mipmap support (P8-TEX-02)`)
+- **작업 목적**:
+  - 선행 충족 작업 `P8-TEX-04` 완료: 기존 13개 공개 헤더·5개 `CORE` 번역 단위·11개 CPU CTest를 유지하면서 14개 블록 압축 포맷(`BC1UNorm`~`BC7UNorm`, `ETC2RGB8UNorm`, `ETC2RGBA8UNorm`, `EACR11UNorm`, `EACRG11UNorm`, `ASTC4x4UNorm`, `ASTC6x6UNorm`, `ASTC8x8UNorm`)과 `FormatBlockInfo`/`queryFormatBlockInfo`, 블록 정렬 footprint·부분 복사·어댑터 지원 조회·미지원 포맷 명시적 `Unsupported` 거부를 D3D12/Vulkan/Metal에 구현하고 Windows 실기 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P8-TEX-08`로 정직하게 분리.
+- **수정 파일 (17개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/RenderPass.hpp`
+  - `src/foundation/RenderPass.cpp`, `src/foundation/Backend.cpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/CompressedTextureTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE8_COMPRESSED_TEXTURE_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 검증 결과** (격리 빌드 `out/p8-compressed-textures`, 설치 `out/p8-compressed-textures-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `36F4DCA045D3B2DFB51F994652E1B6A4117E0DAECA20C743FCF7B5BB40ECD290`):
+  - `gfx_compressed_texture_tests` 5/5 모드 통과:
+    - D3D12(GTX 1660 SUPER 7sup/7unsup + Intel UHD 770 7sup/7unsup, `assertions=2561, sampled_passes=84`), Debug+GBV(`val_errors=0, assertions=2565`), WARP(+손실/복구, `assertions=1451, sampled_passes=47`).
+    - Vulkan(GTX 1660 SUPER 7sup/7unsup + **Intel UHD 770 14sup/0unsup BC+ETC2/EAC+ASTC 전체 실기**, `assertions=3408, sampled_passes=113`), 고정 VVL 1.3.290(`val_errors=0, assertions=3412`).
+  - 독립 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)`): D3D12(GTX 1660 SUPER·Intel UHD 770·WARP 7/7) 및 Vulkan(GTX 1660 SUPER 7/7 · **Intel UHD 770 14/0**) 비검증·검증 **9/9 전체 통과 (`val_errors=0`)**.
+  - 전체 CTest 회귀: **147/147 (100%) 통과 (`186.95s`)**.
+  - `tools/roadmap.py --check`: PASS (206 task IDs: 124 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
+  - `P8-MEM-02`: Fragmentation 분석·Residency·Resource Aliasing.
+  - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).

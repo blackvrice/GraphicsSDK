@@ -627,6 +627,15 @@ struct State {
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
     VkPhysicalDeviceLimits limits{};
     bool fullDrawIndexUint32{};
+    bool textureCompressionBC{};
+    bool textureCompressionETC2{};
+    bool textureCompressionASTC_LDR{};
+    bool compressionFeatureEnabled(Format f) const noexcept {
+        if (f >= Format::BC1UNorm && f <= Format::BC7UNorm) return textureCompressionBC;
+        if (f >= Format::ETC2RGB8UNorm && f <= Format::EACRG11UNorm) return textureCompressionETC2;
+        if (f >= Format::ASTC4x4UNorm && f <= Format::ASTC8x8UNorm) return textureCompressionASTC_LDR;
+        return true;
+    }
     std::thread::id thread{std::this_thread::get_id()};
     std::uint64_t id{detail::allocateDeviceGeneration()};
     std::shared_ptr<detail::ProfilingTracker> profiler;
@@ -871,6 +880,20 @@ VkFormat textureFormat(Format f) {
     case Format::BGRA8UNorm: return VK_FORMAT_B8G8R8A8_UNORM;
     case Format::RGBA16Float: return VK_FORMAT_R16G16B16A16_SFLOAT;
     case Format::D32Float: return VK_FORMAT_D32_SFLOAT;
+    case Format::BC1UNorm: return VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+    case Format::BC2UNorm: return VK_FORMAT_BC2_UNORM_BLOCK;
+    case Format::BC3UNorm: return VK_FORMAT_BC3_UNORM_BLOCK;
+    case Format::BC4UNorm: return VK_FORMAT_BC4_UNORM_BLOCK;
+    case Format::BC5UNorm: return VK_FORMAT_BC5_UNORM_BLOCK;
+    case Format::BC6HUFloat: return VK_FORMAT_BC6H_UFLOAT_BLOCK;
+    case Format::BC7UNorm: return VK_FORMAT_BC7_UNORM_BLOCK;
+    case Format::ETC2RGB8UNorm: return VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+    case Format::ETC2RGBA8UNorm: return VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+    case Format::EACR11UNorm: return VK_FORMAT_EAC_R11_UNORM_BLOCK;
+    case Format::EACRG11UNorm: return VK_FORMAT_EAC_R11G11_UNORM_BLOCK;
+    case Format::ASTC4x4UNorm: return VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
+    case Format::ASTC6x6UNorm: return VK_FORMAT_ASTC_6x6_UNORM_BLOCK;
+    case Format::ASTC8x8UNorm: return VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
     }
     return VK_FORMAT_UNDEFINED;
 }
@@ -1188,11 +1211,14 @@ struct VulkanCommands final : CommandList {
         i.subresourceRange = {imageAspect(*image), 0, std::max(1u, image->textureDesc.mipLevels), 0, std::max(1u, image->textureDesc.arrayLayers)};
         owner->native->CmdPipelineBarrier(record->command, stageScope(qType, true),
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &b, 1, &i);
+        const auto blockInfo = queryFormatBlockInfo(image->textureDesc.format);
+        if (!blockInfo) return std::unexpected(blockInfo.error());
+        const std::uint32_t sliceHeight = image->textureDesc.dimension == TextureDimension::Texture1D ? 1u : image->textureDesc.height;
         VkBufferImageCopy region{};
-        region.bufferRowLength = image->footprint.rowPitch / texelBytes(image->textureDesc.format);
-        region.bufferImageHeight = image->footprint.height;
+        region.bufferRowLength = (image->footprint.rowPitch / blockInfo->bytesPerBlock) * blockInfo->blockWidth;
+        region.bufferImageHeight = image->footprint.height * blockInfo->blockHeight;
         region.imageSubresource = {imageAspect(*image), 0, 0, 1};
-        region.imageExtent = {image->textureDesc.width, image->footprint.height,
+        region.imageExtent = {image->textureDesc.width, sliceHeight,
             image->textureDesc.dimension == TextureDimension::Texture3D ? image->textureDesc.depth : 1u};
         if (upload) {
             owner->native->CmdCopyBufferToImage(record->command, buffer->buffer, image->image, i.newLayout, 1, &region);
@@ -1232,12 +1258,24 @@ struct VulkanCommands final : CommandList {
         const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
         const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
         const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
+        const auto blockInfo = queryFormatBlockInfo(desc.format);
+        if (!blockInfo) return std::unexpected(blockInfo.error());
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > mipW || region.width > mipW - region.x ||
             region.y > mipH || region.height > mipH - region.y ||
             region.z > mipD || region.depth > mipD - region.z) {
             return fail(ErrorCode::InvalidArgument, "Texture copy region exceeds subresource dimensions");
+        }
+        if (blockInfo->compressed) {
+            if ((region.x % blockInfo->blockWidth) != 0u || (region.y % blockInfo->blockHeight) != 0u) {
+                return fail(ErrorCode::InvalidArgument, "Compressed texture copy region origin must be block-aligned");
+            }
+            const bool alignedW = (region.width % blockInfo->blockWidth) == 0u || (region.x + region.width == mipW);
+            const bool alignedH = (region.height % blockInfo->blockHeight) == 0u || (region.y + region.height == mipH);
+            if (!alignedW || !alignedH) {
+                return fail(ErrorCode::InvalidArgument, "Compressed texture copy region extent must be block-aligned or reach the subresource edge");
+            }
         }
         if (footprint->size > UINT64_MAX / region.depth) {
             return fail(ErrorCode::InvalidArgument, "Texture copy region byte size overflow");
@@ -1276,8 +1314,8 @@ struct VulkanCommands final : CommandList {
             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &b, 1, &i);
         VkBufferImageCopy copy{};
         copy.bufferOffset = region.bufferOffset;
-        copy.bufferRowLength = footprint->rowPitch / texelBytes(desc.format);
-        copy.bufferImageHeight = region.height;
+        copy.bufferRowLength = (footprint->rowPitch / blockInfo->bytesPerBlock) * blockInfo->blockWidth;
+        copy.bufferImageHeight = footprint->height * blockInfo->blockHeight;
         copy.imageSubresource = {imageAspect(*image), region.mipLevel, region.arrayLayer, 1};
         copy.imageOffset = {static_cast<std::int32_t>(region.x), static_cast<std::int32_t>(region.y), static_cast<std::int32_t>(region.z)};
         copy.imageExtent = {region.width, region.height, region.depth};
@@ -2390,26 +2428,32 @@ struct VulkanDevice final : Device {
     const DeviceCaps& caps() const override { return capabilities; }
     Result<FormatSupport> queryFormatSupport(Format format) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        const auto blockInfo = queryFormatBlockInfo(format);
         const VkFormat vkFormat = textureFormat(format);
-        if (vkFormat == VK_FORMAT_UNDEFINED) {
+        if (!blockInfo || vkFormat == VK_FORMAT_UNDEFINED) {
             return fail(ErrorCode::InvalidArgument, "Unknown texture format");
+        }
+        FormatSupport result{};
+        result.format = format;
+        if (blockInfo->compressed && !owner->compressionFeatureEnabled(format)) {
+            result.sampleCounts = 0u;
+            return result;
         }
         VkFormatProperties props{};
         owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, vkFormat, &props);
         const auto features = props.optimalTilingFeatures;
         const bool isDepth = format == Format::D32Float;
-        FormatSupport result{};
-        result.format = format;
+        const bool isCompressed = blockInfo->compressed;
         result.copySource = (features & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT) != 0;
         result.copyDestination = (features & VK_FORMAT_FEATURE_TRANSFER_DST_BIT) != 0;
-        result.renderTarget = !isDepth && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) != 0;
+        result.renderTarget = !isDepth && !isCompressed && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) != 0;
         result.blendable = result.renderTarget && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT) != 0;
         result.depthStencil = isDepth && (features & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0 && capabilities.depthAttachment;
         result.sampled = !isDepth && (features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
         result.linearFilter = result.sampled && (features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) != 0;
         result.texture2D = result.copySource && result.copyDestination && (isDepth ? result.depthStencil : result.sampled);
         result.partialRegionCopy = result.texture2D && !isDepth;
-        result.storage = !isDepth && (features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
+        result.storage = !isDepth && !isCompressed && (features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
         result.sampleCounts = result.texture2D ? 1u : 0u;
         if (result.texture2D && (isDepth ? result.depthStencil : result.renderTarget)) {
             const VkImageUsageFlags msaaUsage = isDepth
@@ -2518,6 +2562,9 @@ struct VulkanDevice final : Device {
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (!owner->compressionFeatureEnabled(desc.format)) {
+            return fail(ErrorCode::Unsupported, "Vulkan adapter does not support requested compressed texture format family");
+        }
         if ((desc.renderTarget || desc.depthStencil) && (desc.width > owner->maxFramebufferWidth || desc.height > owner->maxFramebufferHeight))
             return fail(ErrorCode::Unsupported, "Color attachment exceeds adapter framebuffer extent limits");
         const auto format = textureFormat(desc.format);
@@ -2553,9 +2600,9 @@ struct VulkanDevice final : Device {
             return fail(ErrorCode::Unsupported, "Vulkan image exceeds adapter format, dimension, mip, array, or MSAA limits");
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->textureDesc = desc;
         if (desc.sampleCount == 1u) {
-            const auto rowBytes = desc.width * texelBytes(desc.format);
-            const auto rowPitch = (rowBytes + 255u) & ~255u;
-            a->footprint = {std::uint64_t(rowPitch) * sliceHeight * imageDepth, rowPitch, rowBytes, sliceHeight};
+            const auto fp = computeTextureRegionFootprint(desc.format, desc.width, sliceHeight);
+            if (!fp) return std::unexpected(fp.error());
+            a->footprint = {fp->size * imageDepth, fp->rowPitch, fp->rowBytes, fp->height};
         } else {
             a->footprint = {};
         }
@@ -3095,7 +3142,12 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     info.enabledExtensionCount = static_cast<std::uint32_t>(enabledDeviceExtensions.size());
     info.ppEnabledExtensionNames = enabledDeviceExtensions.empty() ? nullptr : enabledDeviceExtensions.data();
     info.pNext = featureChain;
-    VkPhysicalDeviceFeatures enabled{}; enabled.fullDrawIndexUint32 = selected->features.fullDrawIndexUint32; info.pEnabledFeatures = &enabled;
+    VkPhysicalDeviceFeatures enabled{};
+    enabled.fullDrawIndexUint32 = selected->features.fullDrawIndexUint32;
+    enabled.textureCompressionBC = selected->features.textureCompressionBC;
+    enabled.textureCompressionETC2 = selected->features.textureCompressionETC2;
+    enabled.textureCompressionASTC_LDR = selected->features.textureCompressionASTC_LDR;
+    info.pEnabledFeatures = &enabled;
     if (auto r = vulkan::acquireOutput(native->handle, (*instance)->CreateDevice, selected->physical, &info, nullptr); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
 #define LOAD(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); \
     if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan device entry point missing: vk" #name);
@@ -3134,7 +3186,11 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     }
     owner->maxColorAttachments = selected->maxColorAttachments;
     owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
-    owner->limits = selected->limits; owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
+    owner->limits = selected->limits;
+    owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
+    owner->textureCompressionBC = enabled.textureCompressionBC != 0;
+    owner->textureCompressionETC2 = enabled.textureCompressionETC2 != 0;
+    owner->textureCompressionASTC_LDR = enabled.textureCompressionASTC_LDR != 0;
     auto device = std::make_unique<VulkanDevice>();
     device->attachOwner(owner);
     const std::array<QueueType, 3> queueTypes{QueueType::Graphics, QueueType::Compute, QueueType::Copy};

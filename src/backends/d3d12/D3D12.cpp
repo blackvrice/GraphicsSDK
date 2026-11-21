@@ -50,8 +50,20 @@ Result<AdapterInfo> adapterInfo(IDXGIAdapter1& adapter) {
                        info.VendorId,info.DeviceId,info.DedicatedVideoMemory,info.SharedSystemMemory};
 }
 DXGI_FORMAT native(Format format) {
-    switch(format){case Format::RGBA8UNorm:return DXGI_FORMAT_R8G8B8A8_UNORM;case Format::RGBA16Float:return DXGI_FORMAT_R16G16B16A16_FLOAT;case Format::D32Float:return DXGI_FORMAT_D32_FLOAT;case Format::BGRA8UNorm:return DXGI_FORMAT_B8G8R8A8_UNORM;}
-    return DXGI_FORMAT_UNKNOWN;
+    switch (format) {
+    case Format::RGBA8UNorm: return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case Format::RGBA16Float: return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case Format::D32Float: return DXGI_FORMAT_D32_FLOAT;
+    case Format::BGRA8UNorm: return DXGI_FORMAT_B8G8R8A8_UNORM;
+    case Format::BC1UNorm: return DXGI_FORMAT_BC1_UNORM;
+    case Format::BC2UNorm: return DXGI_FORMAT_BC2_UNORM;
+    case Format::BC3UNorm: return DXGI_FORMAT_BC3_UNORM;
+    case Format::BC4UNorm: return DXGI_FORMAT_BC4_UNORM;
+    case Format::BC5UNorm: return DXGI_FORMAT_BC5_UNORM;
+    case Format::BC6HUFloat: return DXGI_FORMAT_BC6H_UF16;
+    case Format::BC7UNorm: return DXGI_FORMAT_BC7_UNORM;
+    default: return DXGI_FORMAT_UNKNOWN;
+    }
 }
 DXGI_FORMAT native(VertexFormat format) {
     switch(format) {
@@ -856,12 +868,24 @@ struct DXCommands final : CommandList {
         const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
         const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
         const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
+        auto blockInfo = queryFormatBlockInfo(desc.format);
+        if (!blockInfo) return std::unexpected(blockInfo.error());
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > mipW || region.width > mipW - region.x ||
             region.y > mipH || region.height > mipH - region.y ||
             region.z > mipD || region.depth > mipD - region.z) {
             return invalid("Texture copy region exceeds subresource dimensions", ErrorCode::InvalidArgument);
+        }
+        if (blockInfo->compressed) {
+            if ((region.x % blockInfo->blockWidth) != 0u || (region.y % blockInfo->blockHeight) != 0u) {
+                return invalid("Compressed texture copy region origin must be block-aligned", ErrorCode::InvalidArgument);
+            }
+            const bool alignedW = (region.width % blockInfo->blockWidth) == 0u || (region.x + region.width == mipW);
+            const bool alignedH = (region.height % blockInfo->blockHeight) == 0u || (region.y + region.height == mipH);
+            if (!alignedW || !alignedH) {
+                return invalid("Compressed texture copy region extent must be block-aligned or reach the subresource edge", ErrorCode::InvalidArgument);
+            }
         }
         if (footprint->size > UINT64_MAX / region.depth) {
             return invalid("Texture copy region byte size overflow", ErrorCode::InvalidArgument);
@@ -889,13 +913,19 @@ struct DXCommands final : CommandList {
             if (imgUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
                 imgUse.nativeState = upload ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_COPY_SOURCE;
         }
+        const UINT copyW = blockInfo->compressed
+            ? ((region.width + blockInfo->blockWidth - 1u) / blockInfo->blockWidth) * blockInfo->blockWidth
+            : region.width;
+        const UINT copyH = blockInfo->compressed
+            ? ((region.height + blockInfo->blockHeight - 1u) / blockInfo->blockHeight) * blockInfo->blockHeight
+            : region.height;
         D3D12_TEXTURE_COPY_LOCATION bufferLocation{};
         bufferLocation.pResource = buffer->resource.Get();
         bufferLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
         bufferLocation.PlacedFootprint.Offset = region.bufferOffset;
         bufferLocation.PlacedFootprint.Footprint.Format = native(desc.format);
-        bufferLocation.PlacedFootprint.Footprint.Width = region.width;
-        bufferLocation.PlacedFootprint.Footprint.Height = region.height;
+        bufferLocation.PlacedFootprint.Footprint.Width = copyW;
+        bufferLocation.PlacedFootprint.Footprint.Height = copyH;
         bufferLocation.PlacedFootprint.Footprint.Depth = region.depth;
         bufferLocation.PlacedFootprint.Footprint.RowPitch = footprint->rowPitch;
         D3D12_TEXTURE_COPY_LOCATION textureLocation{};
@@ -905,7 +935,7 @@ struct DXCommands final : CommandList {
         if (upload) {
             list->CopyTextureRegion(&textureLocation, region.x, region.y, region.z, &bufferLocation, nullptr);
         } else {
-            D3D12_BOX sourceBox{region.x, region.y, region.z, region.x + region.width, region.y + region.height, region.z + region.depth};
+            D3D12_BOX sourceBox{region.x, region.y, region.z, region.x + copyW, region.y + copyH, region.z + region.depth};
             list->CopyTextureRegion(&bufferLocation, 0, 0, 0, &textureLocation, fullExtent ? nullptr : &sourceBox);
         }
         if (owner->profiler) owner->profiler->recordCopy();
@@ -1878,9 +1908,16 @@ public:
     Result<FormatSupport> queryFormatSupport(Format format) override {
         auto status = state->check();
         if (!status) return std::unexpected(status.error());
-        const DXGI_FORMAT dxgiFormat = native(format);
-        if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
+        const auto blockInfo = queryFormatBlockInfo(format);
+        if (!blockInfo) {
             return invalid("Unknown texture format", ErrorCode::InvalidArgument);
+        }
+        const DXGI_FORMAT dxgiFormat = native(format);
+        FormatSupport result{};
+        result.format = format;
+        if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
+            result.sampleCounts = 0u;
+            return result;
         }
         D3D12_FEATURE_DATA_FORMAT_SUPPORT nativeSupport{};
         nativeSupport.Format = dxgiFormat;
@@ -1889,10 +1926,9 @@ public:
         if (FAILED(hr)) return state->failure(hr, "Query D3D12 format support failed");
         const auto s1 = nativeSupport.Support1;
         const bool isDepth = format == Format::D32Float;
-        FormatSupport result{};
-        result.format = format;
+        const bool isCompressed = blockInfo->compressed;
         result.texture2D = (s1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D) != 0;
-        result.renderTarget = !isDepth && (s1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET) != 0;
+        result.renderTarget = !isDepth && !isCompressed && (s1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET) != 0;
         result.depthStencil = isDepth && (s1 & D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL) != 0;
         result.sampled = !isDepth && (s1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE) != 0;
         result.linearFilter = result.sampled;
@@ -1900,7 +1936,7 @@ public:
         result.copySource = result.texture2D;
         result.copyDestination = result.texture2D;
         result.partialRegionCopy = result.texture2D && !isDepth;
-        result.storage = !isDepth && (s1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW) != 0;
+        result.storage = !isDepth && !isCompressed && (s1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW) != 0;
         result.sampleCounts = result.texture2D ? 1u : 0u;
         const bool msaaEligible = isDepth
             ? result.depthStencil
@@ -2003,6 +2039,18 @@ public:
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         status=validateTextureDescription(desc);if(!status)return std::unexpected(status.error());
+        const DXGI_FORMAT dxgiFormat = native(desc.format);
+        if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
+            return invalid("D3D12 adapter does not support this compressed texture format", ErrorCode::Unsupported);
+        }
+        const auto blockInfo = queryFormatBlockInfo(desc.format);
+        if (blockInfo && blockInfo->compressed) {
+            auto support = queryFormatSupport(desc.format);
+            if (!support) return std::unexpected(support.error());
+            if (!support->texture2D || !support->sampled) {
+                return invalid("D3D12 adapter does not support requested compressed texture format", ErrorCode::Unsupported);
+            }
+        }
         if (desc.sampleCount > 1u) {
             auto support = queryFormatSupport(desc.format);
             if (!support) return std::unexpected(support.error());

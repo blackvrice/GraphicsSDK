@@ -427,9 +427,36 @@ MTLTextureType metalTextureType(TextureDimension dim, std::uint32_t sampleCount)
     }
 }
 MTLPixelFormat pixelFormat(Format f) {
-    switch(f) { case Format::RGBA8UNorm:return MTLPixelFormatRGBA8Unorm;case Format::BGRA8UNorm:return MTLPixelFormatBGRA8Unorm;
-    case Format::RGBA16Float:return MTLPixelFormatRGBA16Float;case Format::D32Float:return MTLPixelFormatDepth32Float; }
+    switch (f) {
+    case Format::RGBA8UNorm: return MTLPixelFormatRGBA8Unorm;
+    case Format::BGRA8UNorm: return MTLPixelFormatBGRA8Unorm;
+    case Format::RGBA16Float: return MTLPixelFormatRGBA16Float;
+    case Format::D32Float: return MTLPixelFormatDepth32Float;
+    case Format::BC1UNorm: return MTLPixelFormatBC1_RGBA;
+    case Format::BC2UNorm: return MTLPixelFormatBC2_RGBA;
+    case Format::BC3UNorm: return MTLPixelFormatBC3_RGBA;
+    case Format::BC4UNorm: return MTLPixelFormatBC4_RUnorm;
+    case Format::BC5UNorm: return MTLPixelFormatBC5_RGUnorm;
+    case Format::BC6HUFloat: return MTLPixelFormatBC6H_RGBUfloat;
+    case Format::BC7UNorm: return MTLPixelFormatBC7_RGBAUnorm;
+    case Format::ETC2RGB8UNorm: return MTLPixelFormatETC2_RGB8;
+    case Format::ETC2RGBA8UNorm: return MTLPixelFormatEAC_RGBA8;
+    case Format::EACR11UNorm: return MTLPixelFormatEAC_R11Unorm;
+    case Format::EACRG11UNorm: return MTLPixelFormatEAC_RG11Unorm;
+    case Format::ASTC4x4UNorm: return MTLPixelFormatASTC_4x4_LDR;
+    case Format::ASTC6x6UNorm: return MTLPixelFormatASTC_6x6_LDR;
+    case Format::ASTC8x8UNorm: return MTLPixelFormatASTC_8x8_LDR;
+    }
     return MTLPixelFormatInvalid;
+}
+bool metalSupportsCompressedFormat(id<MTLDevice> dev, Format f) {
+    if (f >= Format::BC1UNorm && f <= Format::BC7UNorm) {
+        return [dev supportsBCTextureCompression] != NO;
+    }
+    if (f >= Format::ETC2RGB8UNorm && f <= Format::ASTC8x8UNorm) {
+        return [dev supportsFamily:MTLGPUFamilyApple2] != NO;
+    }
+    return true;
 }
 #include "MetalGraphics.hpp"
 struct MetalCommands;
@@ -915,12 +942,22 @@ struct MetalCommands final : CommandList {
         const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
         const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
         const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
+        const auto blockInfo = queryFormatBlockInfo(desc.format);
+        if (!blockInfo) return std::unexpected(blockInfo.error());
         auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > mipW || region.width > mipW - region.x ||
             region.y > mipH || region.height > mipH - region.y ||
             region.z > mipD || region.depth > mipD - region.z)
             return fail(ErrorCode::InvalidArgument, "Metal texture copy region exceeds subresource dimensions");
+        if (blockInfo->compressed) {
+            if ((region.x % blockInfo->blockWidth) != 0u || (region.y % blockInfo->blockHeight) != 0u)
+                return fail(ErrorCode::InvalidArgument, "Metal compressed texture copy origin must be block-aligned");
+            const bool alignedW = (region.width % blockInfo->blockWidth) == 0u || (region.x + region.width == mipW);
+            const bool alignedH = (region.height % blockInfo->blockHeight) == 0u || (region.y + region.height == mipH);
+            if (!alignedW || !alignedH)
+                return fail(ErrorCode::InvalidArgument, "Metal compressed texture copy extent must be block-aligned or reach the subresource edge");
+        }
         if (footprint->size > UINT64_MAX / region.depth)
             return fail(ErrorCode::InvalidArgument, "Metal texture copy region byte size overflow");
         const std::uint64_t totalBytes = footprint->size * region.depth;
@@ -1596,27 +1633,34 @@ struct MetalDevice final : Device {
     const DeviceCaps& caps() const override { return capabilities; }
     Result<FormatSupport> queryFormatSupport(Format format) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        if (format != Format::RGBA8UNorm && format != Format::BGRA8UNorm &&
-            format != Format::RGBA16Float && format != Format::D32Float) {
+        const auto blockInfo = queryFormatBlockInfo(format);
+        if (!blockInfo) {
             return fail(ErrorCode::InvalidArgument, "Unknown texture format");
         }
-        const bool isDepth = format == Format::D32Float;
         FormatSupport result{};
         result.format = format;
+        if (blockInfo->compressed && !metalSupportsCompressedFormat(owner->device, format)) {
+            result.sampleCounts = 0u;
+            return result;
+        }
+        const bool isDepth = format == Format::D32Float;
+        const bool isCompressed = blockInfo->compressed;
         result.texture2D = true;
-        result.renderTarget = !isDepth;
+        result.renderTarget = !isDepth && !isCompressed;
         result.depthStencil = isDepth;
         result.sampled = !isDepth;
         result.linearFilter = !isDepth;
-        result.blendable = !isDepth;
+        result.blendable = !isDepth && !isCompressed;
         result.copySource = true;
         result.copyDestination = true;
         result.partialRegionCopy = !isDepth;
-        result.storage = !isDepth;
+        result.storage = !isDepth && !isCompressed;
         result.sampleCounts = 1u;
-        for (const std::uint32_t count : {2u, 4u, 8u}) {
-            if ([owner->device supportsTextureSampleCount:count]) {
-                result.sampleCounts |= count;
+        if (!isCompressed) {
+            for (const std::uint32_t count : {2u, 4u, 8u}) {
+                if ([owner->device supportsTextureSampleCount:count]) {
+                    result.sampleCounts |= count;
+                }
             }
         }
         return result;
@@ -1668,13 +1712,17 @@ struct MetalDevice final : Device {
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
         if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (!metalSupportsCompressedFormat(owner->device, desc.format)) {
+            return fail(ErrorCode::Unsupported, "Metal device does not support requested compressed texture format");
+        }
         if (desc.sampleCount > 1u && ![owner->device supportsTextureSampleCount:desc.sampleCount]) {
             return fail(ErrorCode::Unsupported, "Metal device does not support requested MSAA sample count");
         }
         @autoreleasepool {
-            const auto format = desc.format == Format::RGBA8UNorm ? MTLPixelFormatRGBA8Unorm :
-                desc.format == Format::BGRA8UNorm ? MTLPixelFormatBGRA8Unorm :
-                desc.format == Format::RGBA16Float ? MTLPixelFormatRGBA16Float : MTLPixelFormatDepth32Float;
+            const auto format = pixelFormat(desc.format);
+            if (format == MTLPixelFormatInvalid) {
+                return fail(ErrorCode::Unsupported, "Metal pixel format unavailable");
+            }
             const std::uint32_t sliceH = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
             const std::uint32_t texDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
             MTLTextureDescriptor* descriptor = [[MTLTextureDescriptor alloc] init];
@@ -1704,9 +1752,9 @@ struct MetalDevice final : Device {
                 a->texture.pixelFormat != format || a->texture.width != desc.width || a->texture.height != sliceH || a->texture.depth != texDepth)
                 return fail(ErrorCode::BackendFailure, "Metal texture descriptor/storage mismatch");
             if (desc.sampleCount == 1u) {
-                const auto rowBytes = desc.width * (desc.format == Format::RGBA16Float ? 8u : 4u);
-                const auto rowPitch = (rowBytes+255u)&~255u;
-                a->footprint = {std::uint64_t(rowPitch)*sliceH*texDepth,rowPitch,rowBytes,sliceH};
+                const auto fp = computeTextureRegionFootprint(desc.format, desc.width, sliceH);
+                if (!fp) return std::unexpected(fp.error());
+                a->footprint = {fp->size * texDepth, fp->rowPitch, fp->rowBytes, fp->height};
             } else {
                 a->footprint = {};
             }

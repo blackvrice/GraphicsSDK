@@ -23,6 +23,7 @@ struct ColorAttachment { TexturePtr texture; LoadOp load{LoadOp::Clear}; Color c
 struct DepthAttachment { TexturePtr texture; LoadOp load{LoadOp::Clear}; float clear{1}; bool readOnly{}; TextureViewPtr view; };
 // All attachments are stored. Load requires previously initialized contents.
 struct RenderPassDesc { std::vector<ColorAttachment> colors; DepthAttachment depth; };
+[[nodiscard]] Result<FormatBlockInfo> queryFormatBlockInfo(Format format);
 [[nodiscard]] Result<void> validateTextureDescription(TextureDesc);
 [[nodiscard]] Result<TextureViewDesc> validateTextureView(TextureDesc, TextureViewDesc);
 [[nodiscard]] Result<TextureFootprint> computeTextureRegionFootprint(
