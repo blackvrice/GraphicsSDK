@@ -108,6 +108,9 @@ public:
     [[nodiscard]] virtual Result<SparseTextureProperties> querySparseTextureProperties(TextureDesc desc) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createComputePipeline(const ComputePipelineDesc&) = 0;
+    // Capability-gated Mesh/Task shader pipeline entry point. Validates descriptor and returns
+    // ErrorCode::Unsupported when hardware or SDK mesh shader pipeline support is unavailable.
+    [[nodiscard]] virtual Result<PipelinePtr> createMeshPipeline(const MeshPipelineDesc&) = 0;
     // Creating thread only. Exact descriptor match within this device generation.
     // The cache retains up to eight pipelines. Oversized keys are created uncached.
     [[nodiscard]] Result<CachedGraphicsPipeline> createCachedGraphicsPipeline(const GraphicsPipelineDesc&);

@@ -217,7 +217,7 @@ std::size_t queueIndex(QueueType t) { return static_cast<std::size_t>(t); }
 VkPipelineStageFlags stageScope(QueueType t, bool includeHost = false) {
     const VkPipelineStageFlags host = includeHost ? VK_PIPELINE_STAGE_HOST_BIT : 0u;
     if (t == QueueType::Copy) return VK_PIPELINE_STAGE_TRANSFER_BIT | host;
-    if (t == QueueType::Compute) return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | host;
+    if (t == QueueType::Compute) return VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | host;
     return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT | host;
 }
 struct Candidate {
@@ -319,7 +319,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CreateSampler) X(DestroySampler) X(CreateDescriptorSetLayout) X(DestroyDescriptorSetLayout) \
     X(CreateDescriptorPool) X(DestroyDescriptorPool) X(AllocateDescriptorSets) X(UpdateDescriptorSets) X(CmdBindDescriptorSets) \
     X(CreateQueryPool) X(DestroyQueryPool) X(CmdResetQueryPool) X(CmdWriteTimestamp) X(GetQueryPoolResults) \
-    X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) X(CmdDispatch) \
+    X(CmdBindPipeline) X(CmdSetViewport) X(CmdSetScissor) X(CmdDraw) X(CmdBindVertexBuffers) X(CmdBindIndexBuffer) X(CmdDrawIndexed) X(CmdDrawIndirect) X(CmdDrawIndexedIndirect) X(CmdDispatch) X(CmdDispatchIndirect) \
     X(MapMemory) X(UnmapMemory) X(FlushMappedMemoryRanges) X(InvalidateMappedMemoryRanges) \
     X(CreateCommandPool) X(DestroyCommandPool) X(ResetCommandPool) X(AllocateCommandBuffers) X(FreeCommandBuffers) X(BeginCommandBuffer) X(EndCommandBuffer) \
     X(CmdCopyBuffer) X(CmdPipelineBarrier) X(CreateFence) X(DestroyFence) X(GetFenceStatus) X(WaitForFences) X(CreateSemaphore) X(DestroySemaphore)
@@ -647,6 +647,8 @@ struct State {
     std::uint32_t maxFramebufferWidth{}, maxFramebufferHeight{};
     VkPhysicalDeviceLimits limits{};
     bool fullDrawIndexUint32{};
+    bool multiDrawIndirect{};
+    std::uint32_t maxDrawIndirectCount{1};
     bool textureCompressionBC{};
     bool textureCompressionETC2{};
     bool textureCompressionASTC_LDR{};
@@ -916,6 +918,7 @@ VkAccessFlags access(ResourceState state) {
     if (state == ResourceState::IndexBuffer) return VK_ACCESS_INDEX_READ_BIT;
     if (state == ResourceState::VertexAndIndexBuffer) return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
     if (state == ResourceState::UnorderedAccess) return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    if (state == ResourceState::IndirectArgument) return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
     return VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 }
 VkFormat textureFormat(Format f) {
@@ -1121,11 +1124,11 @@ struct VulkanCommands final : CommandList {
         if (qType == QueueType::Compute && (vertexState(target) || indexState(target)))
             return fail(ErrorCode::InvalidArgument, "Compute command list does not support vertex/index buffer states");
         const auto a = buffer(value); if (!a) return std::unexpected(a.error());
-        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess)
+        if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess && target != ResourceState::IndirectArgument)
             return fail(ErrorCode::Unsupported, "Vulkan transfer state unsupported");
         if (target == ResourceState::UnorderedAccess && !(*a)->desc.storage)
             return fail(ErrorCode::InvalidArgument, "UnorderedAccess state requires a storage buffer");
-        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer) ||
+        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::IndirectArgument) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Host buffer state is fixed");
         const auto before = shadow(*a);
@@ -1187,6 +1190,8 @@ struct VulkanCommands final : CommandList {
             return fail(ErrorCode::InvalidArgument, "Compute command list does not support graphics/present/resolve texture states");
         auto a = texture(value); if (!a) return std::unexpected(a.error());
         const bool multisampled = (*a)->textureDesc.sampleCount > 1u;
+        if (target == ResourceState::IndirectArgument)
+            return fail(ErrorCode::InvalidArgument, "IndirectArgument state is only valid for buffers");
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination && target != ResourceState::RenderTarget && target != ResourceState::ShaderRead && target != ResourceState::DepthWrite && target != ResourceState::DepthRead && target != ResourceState::Present && target != ResourceState::UnorderedAccess && target != ResourceState::ResolveSource && target != ResourceState::ResolveDestination)
             return fail(ErrorCode::Unsupported, "Vulkan texture transfer state unsupported");
         if (target == ResourceState::Present && !(*a)->swapchain) return fail(ErrorCode::InvalidArgument, "Present requires a swapchain backbuffer");
@@ -1824,6 +1829,71 @@ struct VulkanCommands final : CommandList {
         if (owner->profiler) owner->profiler->recordDraw(true, instances);
         return {};
     }
+    Result<void> indirectInputReady() {
+        for (const auto& input : record->selectedPipeline->inputs) {
+            const auto& view = record->vertices[input.slot];
+            if (!view.allocation || view.stride != input.stride || !vertexState(shadow(view.allocation)))
+                return fail(ErrorCode::InvalidState, "Missing/mismatched/stale vertex binding");
+            if (view.offset % input.alignment || view.bytes < input.extent)
+                return fail(ErrorCode::InvalidArgument, "Vertex view alignment/extent mismatch");
+        }
+        return {};
+    }
+    Result<void> drawIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset, std::uint32_t drawCount, std::uint32_t stride) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "drawIndirect requires a Graphics command list");
+        if (!record->inPass || !record->selectedPipeline) return fail(ErrorCode::InvalidState, "drawIndirect requires active pass and pipeline");
+        if (!drawCount || drawCount > owner->maxDrawIndirectCount)
+            return fail(ErrorCode::InvalidArgument, "drawIndirect drawCount out of supported range");
+        if (drawCount > 1u && !owner->multiDrawIndirect)
+            return fail(ErrorCode::Unsupported, "Multi-Draw Indirect is unsupported on this adapter");
+        if (stride < sizeof(DrawIndirectCommand) || (stride % 4u) != 0u || (argsOffset % 4u) != 0u)
+            return fail(ErrorCode::InvalidArgument, "drawIndirect offset and stride must be 4-byte aligned and >= 16 bytes");
+        auto argBuf = buffer(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return fail(ErrorCode::InvalidArgument, "Readback buffer cannot be used as an indirect argument buffer");
+        if (shadow(*argBuf) != ResourceState::IndirectArgument)
+            return fail(ErrorCode::InvalidState, "drawIndirect requires ResourceState::IndirectArgument");
+        const std::uint64_t spanBytes = static_cast<std::uint64_t>(drawCount - 1u) * stride + sizeof(DrawIndirectCommand);
+        if (argsOffset > (*argBuf)->desc.size || spanBytes > (*argBuf)->desc.size - argsOffset)
+            return fail(ErrorCode::InvalidArgument, "drawIndirect argument range exceeds buffer size");
+        if (auto ok = indirectInputReady(); !ok) return ok;
+        if (auto ok = bindingsReady(); !ok) return ok;
+        record->uses.reserve(record->uses.size() + 1);
+        retain(*argBuf);
+        owner->native->CmdDrawIndirect(record->command, (*argBuf)->buffer, argsOffset, drawCount, stride);
+        if (owner->profiler) owner->profiler->recordDraw(false, drawCount);
+        return {};
+    }
+    Result<void> drawIndexedIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset, std::uint32_t drawCount, std::uint32_t stride) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "drawIndexedIndirect requires a Graphics command list");
+        if (!record->inPass || !record->selectedPipeline) return fail(ErrorCode::InvalidState, "drawIndexedIndirect requires active pass and pipeline");
+        if (!drawCount || drawCount > owner->maxDrawIndirectCount)
+            return fail(ErrorCode::InvalidArgument, "drawIndexedIndirect drawCount out of supported range");
+        if (drawCount > 1u && !owner->multiDrawIndirect)
+            return fail(ErrorCode::Unsupported, "Multi-Draw Indirect is unsupported on this adapter");
+        if (stride < sizeof(DrawIndexedIndirectCommand) || (stride % 4u) != 0u || (argsOffset % 4u) != 0u)
+            return fail(ErrorCode::InvalidArgument, "drawIndexedIndirect offset and stride must be 4-byte aligned and >= 20 bytes");
+        const auto& view = record->indices;
+        if (!view.allocation || !indexState(shadow(view.allocation)))
+            return fail(ErrorCode::InvalidState, "Missing/stale index binding");
+        auto argBuf = buffer(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return fail(ErrorCode::InvalidArgument, "Readback buffer cannot be used as an indirect argument buffer");
+        if (shadow(*argBuf) != ResourceState::IndirectArgument)
+            return fail(ErrorCode::InvalidState, "drawIndexedIndirect requires ResourceState::IndirectArgument");
+        const std::uint64_t spanBytes = static_cast<std::uint64_t>(drawCount - 1u) * stride + sizeof(DrawIndexedIndirectCommand);
+        if (argsOffset > (*argBuf)->desc.size || spanBytes > (*argBuf)->desc.size - argsOffset)
+            return fail(ErrorCode::InvalidArgument, "drawIndexedIndirect argument range exceeds buffer size");
+        if (auto ok = indirectInputReady(); !ok) return ok;
+        if (auto ok = bindingsReady(); !ok) return ok;
+        record->uses.reserve(record->uses.size() + 1);
+        retain(*argBuf);
+        owner->native->CmdDrawIndexedIndirect(record->command, (*argBuf)->buffer, argsOffset, drawCount, stride);
+        if (owner->profiler) owner->profiler->recordDraw(true, drawCount);
+        return {};
+    }
     Result<void> setComputePipeline(const PipelinePtr& pipeline) override {
         if (auto ok = outsidePass(); !ok) return ok;
         if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Compute operations are not supported on a Copy command list");
@@ -2041,6 +2111,33 @@ struct VulkanCommands final : CommandList {
             }
         }
         owner->native->CmdDispatch(record->command, groupCountX, groupCountY, groupCountZ);
+        if (owner->profiler) owner->profiler->recordDispatch();
+        return {};
+    }
+    Result<void> dispatchIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Compute operations are not supported on a Copy command list");
+        const auto p = record->selectedComputePipeline;
+        if (!p) return fail(ErrorCode::InvalidState, "dispatchIndirect requires an active compute pipeline");
+        if ((argsOffset % 4u) != 0u) return fail(ErrorCode::InvalidArgument, "dispatchIndirect offset must be 4-byte aligned");
+        if (p->setLayout) {
+            if (!record->selectedComputeBindings) return fail(ErrorCode::InvalidState, "dispatchIndirect requires complete bindComputeResources snapshot");
+            for (std::size_t i = 0; i < record->selectedComputeBindings->resources.size(); ++i) {
+                if (shadow(record->selectedComputeBindings->resources[i]) != record->selectedComputeBindings->expectedStates[i]) {
+                    return fail(ErrorCode::InvalidState, "Bound compute resource left its required state");
+                }
+            }
+        }
+        auto argBuf = buffer(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return fail(ErrorCode::InvalidArgument, "Readback buffer cannot be used as an indirect argument buffer");
+        if (shadow(*argBuf) != ResourceState::IndirectArgument)
+            return fail(ErrorCode::InvalidState, "dispatchIndirect requires ResourceState::IndirectArgument");
+        if (argsOffset > (*argBuf)->desc.size || sizeof(DispatchIndirectCommand) > (*argBuf)->desc.size - argsOffset)
+            return fail(ErrorCode::InvalidArgument, "dispatchIndirect argument range exceeds buffer size");
+        record->uses.reserve(record->uses.size() + 1);
+        retain(*argBuf);
+        owner->native->CmdDispatchIndirect(record->command, (*argBuf)->buffer, argsOffset);
         if (owner->profiler) owner->profiler->recordDispatch();
         return {};
     }
@@ -2628,7 +2725,7 @@ struct VulkanDevice final : Device {
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->desc = desc;
         a->state = desc.memory == Memory::Upload ? ResourceState::CopySource : desc.memory == Memory::Readback ? ResourceState::CopyDestination : ResourceState::Common;
         VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; info.size = desc.size;
-        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT |
             (desc.storage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0u);
         if (owner->uniqueFamilies.size() > 1) {
             info.sharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -2749,7 +2846,7 @@ struct VulkanDevice final : Device {
         info.size = desc.size;
         info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT |
                      (desc.storage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0u);
         if (owner->uniqueFamilies.size() > 1) {
             info.sharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -3403,6 +3500,25 @@ struct VulkanDevice final : Device {
         owner->objects.push_back(value->token);
         return PipelinePtr(value);
     }
+    Result<PipelinePtr> createMeshPipeline(const MeshPipelineDesc& desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        const auto targets = desc.renderTargets.value_or(RenderTargetLayout{{desc.colorFormat}, {}});
+        if (auto ok = validateRenderTargets(targets, desc.depthState); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateBindingLayout(desc.bindingLayout); !ok) return std::unexpected(ok.error());
+        if (desc.mesh.stage != ShaderStage::Mesh || desc.mesh.bytes.empty()) {
+            return fail(ErrorCode::InvalidArgument, "MeshPipelineDesc requires a non-empty Mesh shader");
+        }
+        if (desc.task && (desc.task->stage != ShaderStage::Task || desc.task->bytes.empty())) {
+            return fail(ErrorCode::InvalidArgument, "MeshPipelineDesc task shader must have Task stage and non-empty bytes");
+        }
+        if (!desc.fragment.bytes.empty() && desc.fragment.stage != ShaderStage::Fragment) {
+            return fail(ErrorCode::InvalidArgument, "MeshPipelineDesc fragment shader must have Fragment stage");
+        }
+        if (!capabilities.meshShaders) {
+            return fail(ErrorCode::Unsupported, "Vulkan adapter does not support VK_EXT_mesh_shader");
+        }
+        return fail(ErrorCode::Unsupported, "Mesh/Task shader pipeline execution is not yet implemented in this SDK snapshot");
+    }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         return createCommandList(QueueType::Graphics);
     }
@@ -3563,11 +3679,32 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
             featureChain = &timelineFeatures;
         }
     }
+    bool descriptorIndexingSupported = false;
+    std::uint32_t maxBindless = 0u;
+    if (hasExtension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)) {
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT indexingFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT};
+        VkPhysicalDeviceFeatures2 features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+        features.pNext = &indexingFeatures;
+        (*instance)->GetPhysicalDeviceFeatures2(selected->physical, &features);
+        if (indexingFeatures.shaderSampledImageArrayNonUniformIndexing == VK_TRUE &&
+            indexingFeatures.descriptorBindingPartiallyBound == VK_TRUE &&
+            indexingFeatures.runtimeDescriptorArray == VK_TRUE) {
+            descriptorIndexingSupported = true;
+            VkPhysicalDeviceDescriptorIndexingPropertiesEXT indexingProps{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT};
+            VkPhysicalDeviceProperties2 props{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+            props.pNext = &indexingProps;
+            (*instance)->GetPhysicalDeviceProperties2(selected->physical, &props);
+            maxBindless = std::min<std::uint32_t>(1000000u, indexingProps.maxPerStageDescriptorUpdateAfterBindSampledImages);
+            if (!maxBindless) maxBindless = std::min<std::uint32_t>(1000000u, selected->limits.maxPerStageDescriptorSampledImages);
+        }
+    }
+    const bool meshShaderSupported = hasExtension("VK_EXT_mesh_shader");
     info.enabledExtensionCount = static_cast<std::uint32_t>(enabledDeviceExtensions.size());
     info.ppEnabledExtensionNames = enabledDeviceExtensions.empty() ? nullptr : enabledDeviceExtensions.data();
     info.pNext = featureChain;
     VkPhysicalDeviceFeatures enabled{};
     enabled.fullDrawIndexUint32 = selected->features.fullDrawIndexUint32;
+    enabled.multiDrawIndirect = selected->features.multiDrawIndirect;
     enabled.textureCompressionBC = selected->features.textureCompressionBC;
     enabled.textureCompressionETC2 = selected->features.textureCompressionETC2;
     enabled.textureCompressionASTC_LDR = selected->features.textureCompressionASTC_LDR;
@@ -3614,6 +3751,10 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
     owner->limits = selected->limits;
     owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
+    owner->multiDrawIndirect = enabled.multiDrawIndirect != 0;
+    owner->maxDrawIndirectCount = owner->multiDrawIndirect
+        ? std::min<std::uint32_t>(65536u, std::max<std::uint32_t>(1u, owner->limits.maxDrawIndirectCount))
+        : 1u;
     owner->textureCompressionBC = enabled.textureCompressionBC != 0;
     owner->textureCompressionETC2 = enabled.textureCompressionETC2 != 0;
     owner->textureCompressionASTC_LDR = enabled.textureCompressionASTC_LDR != 0;
@@ -3643,6 +3784,12 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.residencyControl = false;
     device->capabilities.sparseBinding = enabled.sparseBinding != 0;
     device->capabilities.sparseResidencyTexture2D = enabled.sparseResidencyImage2D != 0;
+    device->capabilities.indirectDraw = true;
+    device->capabilities.multiDrawIndirect = owner->multiDrawIndirect;
+    device->capabilities.descriptorIndexing = descriptorIndexingSupported;
+    device->capabilities.meshShaders = meshShaderSupported;
+    device->capabilities.maxDrawIndirectCount = owner->maxDrawIndirectCount;
+    device->capabilities.maxBindlessDescriptors = maxBindless;
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &depthProperties) == VK_SUCCESS && (depthProperties.sampleCounts & VK_SAMPLE_COUNT_1_BIT);

@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace gfx {
-enum class ShaderStage { Vertex, Fragment, Compute };
+enum class ShaderStage { Vertex, Fragment, Compute, Task, Mesh };
 // MSL is reviewed UTF-8 source; Metal uses gfx_vertex / gfx_fragment / gfx_compute entry names.
 // It is not HLSL translation or a portable metallib binary format.
 enum class ShaderFormat { DXBC, SPIRV, MSL, DXIL };

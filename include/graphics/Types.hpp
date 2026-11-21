@@ -58,7 +58,30 @@ struct MemoryBudget {
     MemorySegment segment{MemorySegment::Local};
     std::uint64_t budgetBytes{}, usageBytes{}, availableForReservationBytes{}, reservationBytes{};
 };
-enum class ResourceState { Common, CopySource, CopyDestination, ShaderRead, RenderTarget, Present, VertexBuffer, IndexBuffer, VertexAndIndexBuffer, ConstantBuffer, DepthWrite, DepthRead, UnorderedAccess, ResolveSource, ResolveDestination };
+enum class ResourceState { Common, CopySource, CopyDestination, ShaderRead, RenderTarget, Present, VertexBuffer, IndexBuffer, VertexAndIndexBuffer, ConstantBuffer, DepthWrite, DepthRead, UnorderedAccess, ResolveSource, ResolveDestination, IndirectArgument };
+
+// Standard GPU indirect command layouts shared across D3D12, Vulkan, and Metal.
+struct DrawIndirectCommand {
+    std::uint32_t vertexCount{};
+    std::uint32_t instanceCount{};
+    std::uint32_t firstVertex{};
+    std::uint32_t firstInstance{};
+};
+struct DrawIndexedIndirectCommand {
+    std::uint32_t indexCount{};
+    std::uint32_t instanceCount{};
+    std::uint32_t firstIndex{};
+    std::int32_t baseVertex{};
+    std::uint32_t firstInstance{};
+};
+struct DispatchIndirectCommand {
+    std::uint32_t groupCountX{};
+    std::uint32_t groupCountY{};
+    std::uint32_t groupCountZ{};
+};
+static_assert(sizeof(DrawIndirectCommand) == 16);
+static_assert(sizeof(DrawIndexedIndirectCommand) == 20);
+static_assert(sizeof(DispatchIndirectCommand) == 12);
 enum class IndexFormat { UInt16, UInt32 };
 struct Color { float r{}, g{}, b{}, a{1}; };
 // Active render-pass viewport in top-left pixel coordinates with depth bounds in [0, 1].
@@ -159,6 +182,12 @@ struct DeviceCaps {
     bool residencyControl{};
     bool sparseBinding{};
     bool sparseResidencyTexture2D{};
+    bool indirectDraw{};
+    bool multiDrawIndirect{};
+    bool descriptorIndexing{};
+    bool meshShaders{};
+    std::uint32_t maxDrawIndirectCount{};
+    std::uint32_t maxBindlessDescriptors{};
 };
 
 enum class MemoryHeapType { Buffers, Textures, RenderTargets };

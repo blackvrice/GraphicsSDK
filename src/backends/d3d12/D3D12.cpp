@@ -94,10 +94,11 @@ D3D12_RESOURCE_STATES native(ResourceState state) {
     case ResourceState::UnorderedAccess:return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
     case ResourceState::ResolveSource:return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
     case ResourceState::ResolveDestination:return D3D12_RESOURCE_STATE_RESOLVE_DEST;
+    case ResourceState::IndirectArgument:return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
     }
     return D3D12_RESOURCE_STATE_COMMON;
 }
-bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::ResolveDestination; }
+bool validState(ResourceState state) { return state >= ResourceState::Common && state <= ResourceState::IndirectArgument; }
 D3D12_SHADER_VISIBILITY native(ShaderVisibility visibility) {
     return visibility==ShaderVisibility::Vertex?D3D12_SHADER_VISIBILITY_VERTEX:visibility==ShaderVisibility::Fragment?D3D12_SHADER_VISIBILITY_PIXEL:D3D12_SHADER_VISIBILITY_ALL;
 }
@@ -231,6 +232,26 @@ struct State {
     bool recoverySucceeded{};
     std::vector<std::weak_ptr<Retirable>> children;
     unsigned registrations{};
+    std::mutex indirectSigMutex;
+    std::unordered_map<std::uint64_t, ComPtr<ID3D12CommandSignature>> indirectSignatures;
+    Result<ComPtr<ID3D12CommandSignature>> indirectSignature(std::uint32_t kind, UINT stride) {
+        const std::uint64_t key = (static_cast<std::uint64_t>(kind) << 32) | stride;
+        std::scoped_lock lock(indirectSigMutex);
+        if (auto it = indirectSignatures.find(key); it != indirectSignatures.end()) return it->second;
+        D3D12_INDIRECT_ARGUMENT_DESC arg{};
+        arg.Type = kind == 0u ? D3D12_INDIRECT_ARGUMENT_TYPE_DRAW
+                 : kind == 1u ? D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED
+                 : D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
+        D3D12_COMMAND_SIGNATURE_DESC sigDesc{};
+        sigDesc.ByteStride = stride;
+        sigDesc.NumArgumentDescs = 1;
+        sigDesc.pArgumentDescs = &arg;
+        ComPtr<ID3D12CommandSignature> sig;
+        const HRESULT hr = device->CreateCommandSignature(&sigDesc, nullptr, IID_PPV_ARGS(&sig));
+        if (FAILED(hr)) return failure(hr, "CreateCommandSignature failed");
+        indirectSignatures.emplace(key, sig);
+        return sig;
+    }
     std::thread::id thread{std::this_thread::get_id()};
     std::uint64_t id{};
     auto loss() const {return std::unexpected(Error{ErrorCode::DeviceLost,"Device generation is lost; recreate resources on the recovered device",lostReason.load(std::memory_order_acquire)});}
@@ -258,6 +279,7 @@ struct State {
         retired.store(true, std::memory_order_release);
         detachMessages();
         for(auto& child:live)child->releaseNative();
+        { std::scoped_lock lock(indirectSigMutex); indirectSignatures.clear(); }
         for(auto& q:queues){q.pending.clear();q.queue.Reset();q.fence.Reset();q.waiter.reset();}
         children.clear();info.Reset();device.Reset();factory.Reset();
     }
@@ -822,7 +844,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> transition(const BufferPtr& ptr, ResourceState next) override {
         auto status = ready(true); if (!status) return status;
-        if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination && !vertexState(next) && !indexState(next) && next!=ResourceState::ConstantBuffer && next!=ResourceState::UnorderedAccess) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
+        if (next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination && !vertexState(next) && !indexState(next) && next!=ResourceState::ConstantBuffer && next!=ResourceState::UnorderedAccess && next!=ResourceState::IndirectArgument) return invalid("Unsupported buffer state", ErrorCode::InvalidArgument);
         if (qType == QueueType::Copy && next != ResourceState::Common && next != ResourceState::CopySource && next != ResourceState::CopyDestination)
             return invalid("Copy command list only supports Common, CopySource, and CopyDestination buffer states", ErrorCode::InvalidArgument);
         if (qType == QueueType::Compute && (vertexState(next) || indexState(next)))
@@ -831,7 +853,7 @@ struct DXCommands final : CommandList {
         // Validate before use() captures ownership and the observed version.
         if (next == ResourceState::UnorderedAccess && !(*object)->desc.storage)
             return invalid("UnorderedAccess state requires a storage buffer", ErrorCode::InvalidArgument);
-        if ((*object)->desc.memory == Memory::Upload && next != ResourceState::CopySource && !vertexState(next) && !indexState(next) && next != ResourceState::ConstantBuffer)
+        if ((*object)->desc.memory == Memory::Upload && next != ResourceState::CopySource && !vertexState(next) && !indexState(next) && next != ResourceState::ConstantBuffer && next != ResourceState::IndirectArgument)
             return invalid("Upload memory stays in GENERIC_READ", ErrorCode::InvalidArgument);
         if ((*object)->desc.memory == Memory::Readback && next != ResourceState::CopyDestination)
             return invalid("Readback memory stays in COPY_DEST", ErrorCode::InvalidArgument);
@@ -860,7 +882,7 @@ struct DXCommands final : CommandList {
             return invalid("Multisampled texture cannot be a resolve destination", ErrorCode::InvalidArgument);
         if ((next == ResourceState::CopySource || next == ResourceState::CopyDestination) && multisampled)
             return invalid("Multisampled texture does not support direct copy states; use ResolveSource", ErrorCode::InvalidArgument);
-        if (!validState(next) || vertexState(next) || indexState(next) || next==ResourceState::ConstantBuffer || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
+        if (!validState(next) || vertexState(next) || indexState(next) || next==ResourceState::ConstantBuffer || next==ResourceState::IndirectArgument || (next == ResourceState::RenderTarget && !(*object)->desc.renderTarget) ||
             (next == ResourceState::UnorderedAccess && !(*object)->desc.storage) ||
             (next == ResourceState::Present && !(*object)->backbuffer) || (next == ResourceState::ShaderRead && ((*object)->backbuffer || depth)) ||
             ((next==ResourceState::DepthWrite || next==ResourceState::DepthRead) && !depth))
@@ -1389,6 +1411,66 @@ struct DXCommands final : CommandList {
         if (owner->profiler) owner->profiler->recordDraw(true, instances);
         return {};
     }
+    Result<void> indirectInputReady() {
+        for (const auto& input : pipeline->vertexInputs) {
+            const auto& binding = vertexBuffers[input.slot];
+            if (!binding.buffer || binding.stride != input.stride || !vertexState(current(*binding.buffer)))
+                return invalid("Missing, mismatched or stale vertex buffer binding");
+            if (binding.offset % input.alignment || binding.size < input.extent)
+                return invalid("Vertex view alignment/extent does not fit layout", ErrorCode::InvalidArgument);
+        }
+        return {};
+    }
+    Result<void> drawIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset, UINT drawCount, UINT stride) override {
+        auto status = drawReady(); if (!status) return status;
+        if (!drawCount || drawCount > owner->caps.maxDrawIndirectCount)
+            return invalid("drawIndirect drawCount out of supported range", ErrorCode::InvalidArgument);
+        if (drawCount > 1u && !owner->caps.multiDrawIndirect)
+            return invalid("Multi-Draw Indirect is unsupported on this device", ErrorCode::Unsupported);
+        if (stride < sizeof(DrawIndirectCommand) || (stride % 4u) != 0u || (argsOffset % 4u) != 0u)
+            return invalid("drawIndirect offset and stride must be 4-byte aligned and >= 16 bytes", ErrorCode::InvalidArgument);
+        auto argBuf = owned<DXBuffer>(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return invalid("Readback buffer cannot be used as an indirect argument buffer", ErrorCode::InvalidArgument);
+        if (current(**argBuf) != ResourceState::IndirectArgument)
+            return invalid("drawIndirect requires ResourceState::IndirectArgument");
+        const std::uint64_t spanBytes = static_cast<std::uint64_t>(drawCount - 1u) * stride + sizeof(DrawIndirectCommand);
+        if (argsOffset > (*argBuf)->desc.size || spanBytes > (*argBuf)->desc.size - argsOffset)
+            return invalid("drawIndirect argument range exceeds buffer size", ErrorCode::InvalidArgument);
+        status = indirectInputReady(); if (!status) return status;
+        auto sig = owner->indirectSignature(0u, stride); if (!sig) return std::unexpected(sig.error());
+        use((*argBuf)->tracker, (*argBuf)->resource, (*argBuf)->desc.memory);
+        retain(*sig);
+        list->ExecuteIndirect(sig->Get(), drawCount, (*argBuf)->resource.Get(), argsOffset, nullptr, 0);
+        if (owner->profiler) owner->profiler->recordDraw(false, drawCount);
+        return {};
+    }
+    Result<void> drawIndexedIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset, UINT drawCount, UINT stride) override {
+        auto status = drawReady(); if (!status) return status;
+        if (!drawCount || drawCount > owner->caps.maxDrawIndirectCount)
+            return invalid("drawIndexedIndirect drawCount out of supported range", ErrorCode::InvalidArgument);
+        if (drawCount > 1u && !owner->caps.multiDrawIndirect)
+            return invalid("Multi-Draw Indirect is unsupported on this device", ErrorCode::Unsupported);
+        if (stride < sizeof(DrawIndexedIndirectCommand) || (stride % 4u) != 0u || (argsOffset % 4u) != 0u)
+            return invalid("drawIndexedIndirect offset and stride must be 4-byte aligned and >= 20 bytes", ErrorCode::InvalidArgument);
+        if (!indexBuffer || !indexState(current(*indexBuffer)))
+            return invalid("Missing or stale index buffer binding");
+        auto argBuf = owned<DXBuffer>(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return invalid("Readback buffer cannot be used as an indirect argument buffer", ErrorCode::InvalidArgument);
+        if (current(**argBuf) != ResourceState::IndirectArgument)
+            return invalid("drawIndexedIndirect requires ResourceState::IndirectArgument");
+        const std::uint64_t spanBytes = static_cast<std::uint64_t>(drawCount - 1u) * stride + sizeof(DrawIndexedIndirectCommand);
+        if (argsOffset > (*argBuf)->desc.size || spanBytes > (*argBuf)->desc.size - argsOffset)
+            return invalid("drawIndexedIndirect argument range exceeds buffer size", ErrorCode::InvalidArgument);
+        status = indirectInputReady(); if (!status) return status;
+        auto sig = owner->indirectSignature(1u, stride); if (!sig) return std::unexpected(sig.error());
+        use((*argBuf)->tracker, (*argBuf)->resource, (*argBuf)->desc.memory);
+        retain(*sig);
+        list->ExecuteIndirect(sig->Get(), drawCount, (*argBuf)->resource.Get(), argsOffset, nullptr, 0);
+        if (owner->profiler) owner->profiler->recordDraw(true, drawCount);
+        return {};
+    }
     Result<void> setComputePipeline(const PipelinePtr& ptr) override {
         auto status = ready(true); if (!status) return status;
         if (qType == QueueType::Copy) return invalid("Compute operations are not supported on a Copy command list", ErrorCode::InvalidArgument);
@@ -1574,6 +1656,38 @@ struct DXCommands final : CommandList {
             }
         }
         list->Dispatch(groupCountX, groupCountY, groupCountZ);
+        if (owner->profiler) owner->profiler->recordDispatch();
+        return {};
+    }
+    Result<void> dispatchIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset) override {
+        auto status = ready(true); if (!status) return status;
+        if (qType == QueueType::Copy) return invalid("Compute operations are not supported on a Copy command list", ErrorCode::InvalidArgument);
+        if (!computePipeline) return invalid("dispatchIndirect requires an active compute pipeline");
+        if ((argsOffset % 4u) != 0u) return invalid("dispatchIndirect offset must be 4-byte aligned", ErrorCode::InvalidArgument);
+        if (computePipeline->descriptorSize && !computeBound) {
+            return invalid("Compute pipeline requires complete bindComputeResources snapshot");
+        }
+        for (const auto& resource : boundComputeResources) {
+            if (resource.texture) {
+                const auto expected = resource.isStorage ? ResourceState::UnorderedAccess : ResourceState::ShaderRead;
+                if (current(*resource.texture) != expected) return invalid("Bound compute texture left its required state");
+            } else if (resource.buffer) {
+                const auto expected = resource.isStorage ? ResourceState::UnorderedAccess : ResourceState::ConstantBuffer;
+                if (current(*resource.buffer) != expected) return invalid("Bound compute buffer left its required state");
+            }
+        }
+        auto argBuf = owned<DXBuffer>(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return invalid("Readback buffer cannot be used as an indirect argument buffer", ErrorCode::InvalidArgument);
+        if (current(**argBuf) != ResourceState::IndirectArgument)
+            return invalid("dispatchIndirect requires ResourceState::IndirectArgument");
+        if (argsOffset > (*argBuf)->desc.size || sizeof(DispatchIndirectCommand) > (*argBuf)->desc.size - argsOffset)
+            return invalid("dispatchIndirect argument range exceeds buffer size", ErrorCode::InvalidArgument);
+        auto sig = owner->indirectSignature(2u, sizeof(DispatchIndirectCommand));
+        if (!sig) return std::unexpected(sig.error());
+        use((*argBuf)->tracker, (*argBuf)->resource, (*argBuf)->desc.memory);
+        retain(*sig);
+        list->ExecuteIndirect(sig->Get(), 1u, (*argBuf)->resource.Get(), argsOffset, nullptr, 0);
         if (owner->profiler) owner->profiler->recordDispatch();
         return {};
     }
@@ -2743,6 +2857,25 @@ public:
         state->track(pipeline);
         return pipeline;
     }
+    Result<PipelinePtr> createMeshPipeline(const MeshPipelineDesc& desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        const auto targets = desc.renderTargets.value_or(RenderTargetLayout{{desc.colorFormat}, {}});
+        status = validateRenderTargets(targets, desc.depthState); if (!status) return std::unexpected(status.error());
+        status = validateBindingLayout(desc.bindingLayout); if (!status) return std::unexpected(status.error());
+        if (desc.mesh.stage != ShaderStage::Mesh || desc.mesh.bytes.empty()) {
+            return invalid("MeshPipelineDesc requires a non-empty Mesh shader", ErrorCode::InvalidArgument);
+        }
+        if (desc.task && (desc.task->stage != ShaderStage::Task || desc.task->bytes.empty())) {
+            return invalid("MeshPipelineDesc task shader must have Task stage and non-empty bytes", ErrorCode::InvalidArgument);
+        }
+        if (!desc.fragment.bytes.empty() && desc.fragment.stage != ShaderStage::Fragment) {
+            return invalid("MeshPipelineDesc fragment shader must have Fragment stage", ErrorCode::InvalidArgument);
+        }
+        if (!state->caps.meshShaders) {
+            return invalid("Adapter does not support Mesh/Task shaders", ErrorCode::Unsupported);
+        }
+        return invalid("Mesh/Task shader pipeline execution is not yet implemented in this SDK snapshot", ErrorCode::Unsupported);
+    }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         return createCommandList(QueueType::Graphics);
     }
@@ -2910,11 +3043,25 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     state->caps.timelineFences = true;
     state->caps.resourceAliasing = true;
     state->caps.residencyControl = true;
+    state->caps.indirectDraw = true;
+    state->caps.multiDrawIndirect = true;
+    state->caps.maxDrawIndirectCount = 65536u;
     D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12Options{};
     if (SUCCEEDED(state->device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12Options, sizeof(d3d12Options)))) {
         const bool tiledSupported = d3d12Options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
         state->caps.sparseBinding = tiledSupported;
         state->caps.sparseResidencyTexture2D = tiledSupported;
+        D3D12_FEATURE_DATA_SHADER_MODEL sm{D3D_SHADER_MODEL_6_0};
+        const bool sm6 = SUCCEEDED(state->device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &sm, sizeof(sm))) &&
+                         sm.HighestShaderModel >= D3D_SHADER_MODEL_6_0;
+        if (d3d12Options.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_3 && sm6) {
+            state->caps.descriptorIndexing = true;
+            state->caps.maxBindlessDescriptors = 1000000u;
+        }
+    }
+    D3D12_FEATURE_DATA_D3D12_OPTIONS7 d3d12Options7{};
+    if (SUCCEEDED(state->device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &d3d12Options7, sizeof(d3d12Options7)))) {
+        state->caps.meshShaders = d3d12Options7.MeshShaderTier >= D3D12_MESH_SHADER_TIER_1;
     }
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
     if (desc.validation) {

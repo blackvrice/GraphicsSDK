@@ -3830,16 +3830,47 @@
       "id": "P9-CMP-02",
       "phase": 9,
       "group": "P9-CMP",
-      "title": "Async Compute·Indirect/MDI·Bindless·GPU Culling·Mesh/Task Shader",
-      "status": "todo",
+      "title": "Async Compute·Indirect/MDI·Bindless·GPU Culling·Mesh/Task Shader 기반 (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P9-CMP-01",
         "P9-CMD-03"
       ],
-      "work": "Capability 기반으로 Indirect Draw, Multi-Draw Indirect, Descriptor Indexing/Bindless, GPU Culling, Mesh/Task Shader를 지원 플랫폼에서 단계적으로 제공한다.",
+      "work": "ResourceState::IndirectArgument, 표준 DrawIndirectCommand(16B)/DrawIndexedIndirectCommand(20B)/DispatchIndirectCommand(12B), CommandList::{drawIndirect,drawIndexedIndirect,dispatchIndirect}, DeviceCaps::{indirectDraw,multiDrawIndirect,descriptorIndexing,meshShaders,maxDrawIndirectCount,maxBindlessDescriptors}, ShaderStage::{Task,Mesh}/MeshPipelineDesc/Device::createMeshPipeline(명시적 Unsupported 계약)을 D3D12(ID3D12CommandSignature 캐시·ExecuteIndirect·OPTIONS/OPTIONS7), Vulkan(vkCmdDrawIndirect/vkCmdDrawIndexedIndirect/vkCmdDispatchIndirect·multiDrawIndirect·VK_EXT_descriptor_indexing·VK_EXT_mesh_shader·Compute DRAW_INDIRECT stage), Metal(indirect draw/dispatch 루프)에 구현했다. Windows D3D12(GTX 1660 SUPER mesh=yes·Intel UHD 770 mesh=no·Debug+GBV·WARP 손실/복구)·Vulkan(GTX 1660 SUPER mesh=yes·Intel UHD 770 mesh=no·고정 VVL 1.3.290 core+sync) 5모드, 독립 설치 소비자 9/9 및 전체 CTest 157/157(169.55s)에서 GPU-generated dispatchIndirect(192원소 전 바이트), Async Compute GPU Culling->TimelineFence->MDI 4-draw(4사분면 전 픽셀), 비인덱스 MDI 2-draw, 프로파일링 카운터, 거부 42건, validation 오류 0을 확인했다.",
       "done_when": "각 기능별 Capability 조회, 지원 GPU 전체 참조 및 미지원 장치 명시적 Unsupported 반환.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/Shader.hpp",
+        "include/graphics/Pipeline.hpp",
+        "include/graphics/CommandList.hpp",
+        "include/graphics/Device.hpp",
+        "src/shader/Shader.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/metal/Metal.cpp",
+        "tests/IndirectGpuDrivenTests.cpp",
+        "docs/PHASE9_INDIRECT_GPU_DRIVEN_REPORT.md"
+      ]
+    },
+    {
+      "id": "P9-CMP-04",
+      "phase": 9,
+      "group": "P9-CMP",
+      "title": "Async Compute·Indirect/MDI·GPU Culling·Capability macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P9-CMP-02"
+      ],
+      "work": "Metal.cpp와 Vulkan.cpp의 drawIndirect/drawIndexedIndirect/dispatchIndirect, Async Compute GPU Culling, DeviceCaps::{indirectDraw,multiDrawIndirect,descriptorIndexing,meshShaders} 및 createMeshPipeline Unsupported 계약을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·전 픽셀/바이트 참조로 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 Indirect/MDI/DispatchIndirect, GPU Culling, Capability 조회, 미지원 거부 및 자원 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "docs/PHASE9_INDIRECT_GPU_DRIVEN_REPORT.md"
+      ]
     },
     {
       "id": "P9-RG-01",

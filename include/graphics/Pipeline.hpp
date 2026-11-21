@@ -45,6 +45,17 @@ struct ComputePipelineDesc {
     std::uint32_t threadgroupSizeX{1}, threadgroupSizeY{1}, threadgroupSizeZ{1};
     bool operator==(const ComputePipelineDesc&) const = default;
 };
+struct MeshPipelineDesc {
+    std::optional<ShaderBinary> task;
+    ShaderBinary mesh;
+    ShaderBinary fragment;
+    Format colorFormat{Format::RGBA8UNorm};
+    bool alphaBlend{};
+    BindingLayout bindingLayout;
+    std::optional<RenderTargetLayout> renderTargets;
+    DepthState depthState;
+    bool operator==(const MeshPipelineDesc&) const = default;
+};
 class Pipeline { public: virtual ~Pipeline() = default; };
 using PipelinePtr = std::shared_ptr<Pipeline>;
 struct CachedGraphicsPipeline { PipelinePtr pipeline; bool hit{}; };

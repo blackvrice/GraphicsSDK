@@ -529,3 +529,32 @@
   - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
   - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
   - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).
+
+
+---
+
+## 2026-11-21 — `P9-CMP-02` Async Compute·Indirect/MDI·GPU Culling·Bindless·Mesh/Task 기반 구현·실기 검증
+
+- **기준 커밋**: `bdf45e29` (`Add memory fragmentation analysis, residency control, resource aliasing, and sparse texture queries (P8-MEM-02)`)
+- **작업 목적**:
+  - `P9-CMP-02` 완료: 기존 13개 공개 헤더·5개 `CORE` 번역 단위·11개 CPU CTest 계약을 유지하면서 `ResourceState::IndirectArgument`, 표준 `DrawIndirectCommand`(16B)/`DrawIndexedIndirectCommand`(20B)/`DispatchIndirectCommand`(12B), `CommandList::{drawIndirect, drawIndexedIndirect, dispatchIndirect}`, `DeviceCaps::{indirectDraw, multiDrawIndirect, descriptorIndexing, meshShaders, maxDrawIndirectCount, maxBindlessDescriptors}`, `ShaderStage::{Task, Mesh}`, `MeshPipelineDesc`, `Device::createMeshPipeline`(명시적 `Unsupported` 계약)을 D3D12/Vulkan/Metal에 구현하고 Windows 실기 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P9-CMP-04`로 정직하게 분리.
+- **수정 파일 (19개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/Shader.hpp`, `include/graphics/Pipeline.hpp`, `include/graphics/CommandList.hpp`, `include/graphics/Device.hpp`
+  - `src/shader/Shader.cpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/IndirectGpuDrivenTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE9_INDIRECT_GPU_DRIVEN_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 검증 결과** (격리 빌드 `out/p9-indirect-gpu-driven`, 설치 `out/p9-indirect-gpu-driven-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `611E3089BF5C1CD53B9F0F3EB52BE4B780DD7B354420E459FCE7CB2394125A37`):
+  - `gfx_indirect_gpu_driven_tests` 5/5 모드 통과:
+    - D3D12(GTX 1660 SUPER `mesh=yes` + Intel UHD 770 `mesh=no`, `assertions=1668, rejections=42`), Debug+GBV(`val_errors=0, assertions=1672`), WARP(+손실/복구, `assertions=839, rejections=22`).
+    - Vulkan(GTX 1660 SUPER `mesh=yes` + Intel UHD 770 `mesh=no`, `assertions=1662, rejections=42`), 고정 VVL 1.3.290(`val_errors=0, assertions=1666`).
+    - GPU 검증: GPU-generated `dispatchIndirect` 3그룹(192원소 전 바이트 일치), Async Compute 큐 GPU Culling -> `TimelineFence` GPU-to-GPU 핸드오프 -> Graphics 큐 `drawIndexedIndirect` MDI 4-draw(4사분면 전 픽셀 일치), Upload 버퍼 비인덱스 `drawIndirect` MDI 2-draw 전 픽셀 일치, 프로파일링 카운터 연동 및 누수 0.
+  - 독립 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)`): D3D12·Vulkan 전체 어댑터 비검증·검증 **9/9 통과 (`val_errors=0`)**.
+  - 전체 CTest 회귀: **157/157 (100%) 통과 (`169.55s`)**.
+  - `tools/roadmap.py --check`: PASS (208 task IDs: 126 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P10-PRES-01`: Frame Pacing·Present Mode·VRR·최대 지연·저지연/처리량 모드.
+  - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
+  - `P11-INT-01`: Native GPU Interoperability (External Memory·Fence·Semaphore·Handle).
+  - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).

@@ -60,6 +60,12 @@ SPIR-V 1.3 `GLCompute`, Metal MSL `gfx_compute`) 파이프라인을 생성하며
 `setComputePipeline`, `bindComputeResources`, `dispatch`, `uavBarrier`는 렌더 패스 밖에서 기록하며
 `ResourceState::UnorderedAccess`와 `ShaderRead`/`CopySource` 간 명시적 `transition`으로 Graphics-Compute
 동기화를 보장한다. [Compute 파이프라인 보고서](PHASE9_COMPUTE_REPORT.md)를 따른다.
+`ResourceState::IndirectArgument`와 표준 인자 구조체 `DrawIndirectCommand`(16B), `DrawIndexedIndirectCommand`(20B),
+`DispatchIndirectCommand`(12B) 및 `CommandList::{drawIndirect, drawIndexedIndirect, dispatchIndirect}`는
+Async Compute GPU Culling·Multi-Draw Indirect·GPU-Driven Dispatch를 지원하며(`DeviceCaps::{indirectDraw, multiDrawIndirect, maxDrawIndirectCount}`),
+`DeviceCaps::{descriptorIndexing, maxBindlessDescriptors, meshShaders}`와 `ShaderStage::{Task, Mesh}`·`MeshPipelineDesc`·`Device::createMeshPipeline`으로
+Bindless/Mesh Shader 지원 여부를 조회하고 미지원·미구현 경로는 명시적 `Unsupported`로 거부한다.
+[Async Compute·Indirect/MDI·GPU Culling 보고서](PHASE9_INDIRECT_GPU_DRIVEN_REPORT.md)를 따른다.
 `Device::createCommandPool()`은 네이티브 command allocator/pool을 명시적으로 소유·재사용하는
 `CommandPool`을 생성한다. 같은 풀에서는 한 번에 하나의 `CommandList`만 기록할 수 있으며,
 같은 epoch에서 이미 기록한 풀 소속 리스트의 재기록은 `CommandPool::reset()` 이후에만 허용된다.

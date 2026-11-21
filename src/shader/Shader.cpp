@@ -61,6 +61,8 @@ Result<Microsoft::WRL::ComPtr<Interface>> createDxc(REFCLSID clsid) {
 }
 
 Result<ShaderBinary> compileHlsl(std::string_view source, std::string_view entry, ShaderStage stage) {
+    if (stage == ShaderStage::Task || stage == ShaderStage::Mesh)
+        return std::unexpected(Error{ErrorCode::Unsupported, "SM5.1 DXBC does not support Task/Mesh shaders"});
     if (source.empty() || entry.empty() || entry.find('\0') != std::string_view::npos || !validStage(stage))
         return std::unexpected(Error{ErrorCode::InvalidArgument, "Invalid HLSL input"});
 #ifdef GFX_HAS_D3D12

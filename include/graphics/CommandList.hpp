@@ -53,10 +53,19 @@ public:
     [[nodiscard]] virtual Result<void> draw(std::uint32_t vertices, std::uint32_t instances=1, std::uint32_t firstVertex=0, std::uint32_t firstInstance=0) = 0;
     // Caller guarantees that index values + baseVertex address valid vertex data.
     [[nodiscard]] virtual Result<void> drawIndexed(std::uint32_t indices, std::uint32_t instances=1, std::uint32_t firstIndex=0, std::int32_t baseVertex=0, std::uint32_t firstInstance=0) = 0;
+    // Indirect and Multi-Draw Indirect (drawCount > 1 requires DeviceCaps::multiDrawIndirect).
+    // argsBuffer must be in ResourceState::IndirectArgument with 4-byte aligned offset and stride.
+    [[nodiscard]] virtual Result<void> drawIndirect(
+        const BufferPtr& argsBuffer, std::uint64_t argsOffset = 0,
+        std::uint32_t drawCount = 1, std::uint32_t stride = sizeof(DrawIndirectCommand)) = 0;
+    [[nodiscard]] virtual Result<void> drawIndexedIndirect(
+        const BufferPtr& argsBuffer, std::uint64_t argsOffset = 0,
+        std::uint32_t drawCount = 1, std::uint32_t stride = sizeof(DrawIndexedIndirectCommand)) = 0;
     // Compute commands run outside an active render pass.
     [[nodiscard]] virtual Result<void> setComputePipeline(const PipelinePtr&) = 0;
     [[nodiscard]] virtual Result<void> bindComputeResources(const ResourceBindings&) = 0;
     [[nodiscard]] virtual Result<void> dispatch(std::uint32_t groupCountX, std::uint32_t groupCountY=1, std::uint32_t groupCountZ=1) = 0;
+    [[nodiscard]] virtual Result<void> dispatchIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset = 0) = 0;
     // Explicit UAV barrier ordering prior UAV writes before subsequent UAV reads/writes.
     [[nodiscard]] virtual Result<void> uavBarrier(const BufferPtr&) = 0;
     [[nodiscard]] virtual Result<void> uavBarrier(const TexturePtr&) = 0;

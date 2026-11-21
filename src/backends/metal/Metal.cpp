@@ -123,6 +123,9 @@ struct ComputeDispatchOp {
     std::shared_ptr<NativePipeline> pipeline;
     std::shared_ptr<const std::vector<ResourceView>> bindings;
     std::uint32_t groupX{}, groupY{}, groupZ{};
+    bool indirect{};
+    std::shared_ptr<Allocation> indirectBuffer;
+    std::uint64_t indirectOffset{};
 };
 struct Draw {
     std::shared_ptr<NativePipeline> pipeline;
@@ -134,6 +137,10 @@ struct Draw {
     bool indexed{};
     MTLViewport viewport{};
     MTLScissorRect scissor{};
+    bool indirect{};
+    BufferView indirectArgs;
+    std::uint32_t indirectDrawCount{};
+    std::uint32_t indirectStride{};
 };
 struct Attachment {
     std::shared_ptr<Allocation> allocation;
@@ -646,8 +653,14 @@ struct MetalCommands final : CommandList {
                     for (std::size_t i = 0; i < p.bindings.samplers.size(); ++i) {
                         [encoder setSamplerState:p.samplers[i] atIndex:p.bindings.samplers[i].slot];
                     }
-                    [encoder dispatchThreadgroups:MTLSizeMake(c.groupX, c.groupY, c.groupZ)
-                            threadsPerThreadgroup:MTLSizeMake(p.threadgroupSizeX, p.threadgroupSizeY, p.threadgroupSizeZ)];
+                    if (c.indirect) {
+                        [encoder dispatchThreadgroupsWithIndirectBuffer:c.indirectBuffer->buffer
+                                                   indirectBufferOffset:static_cast<NSUInteger>(c.indirectOffset)
+                                                  threadsPerThreadgroup:MTLSizeMake(p.threadgroupSizeX, p.threadgroupSizeY, p.threadgroupSizeZ)];
+                    } else {
+                        [encoder dispatchThreadgroups:MTLSizeMake(c.groupX, c.groupY, c.groupZ)
+                                threadsPerThreadgroup:MTLSizeMake(p.threadgroupSizeX, p.threadgroupSizeY, p.threadgroupSizeZ)];
+                    }
                     [encoder endEncoding];
                     continue;
                 }
@@ -725,7 +738,23 @@ struct MetalCommands final : CommandList {
                             if (visible(sampler.visibility,0)) [encoder setVertexSamplerState:p.samplers[i] atIndex:sampler.slot];
                             if (visible(sampler.visibility,1)) [encoder setFragmentSamplerState:p.samplers[i] atIndex:sampler.slot];
                         }
-                        if (draw.indexed) [encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle indexCount:draw.count
+                        if (draw.indirect) {
+                            for (std::uint32_t d = 0; d < draw.indirectDrawCount; ++d) {
+                                const NSUInteger argOff = static_cast<NSUInteger>(draw.indirectArgs.offset + std::uint64_t(d) * draw.indirectStride);
+                                if (draw.indexed) {
+                                    [encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                                                         indexType:draw.indices.stride == 2 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32
+                                                       indexBuffer:draw.indices.allocation->buffer
+                                                 indexBufferOffset:static_cast<NSUInteger>(draw.indices.offset)
+                                                    indirectBuffer:draw.indirectArgs.allocation->buffer
+                                              indirectBufferOffset:argOff];
+                                } else {
+                                    [encoder drawPrimitives:MTLPrimitiveTypeTriangle
+                                             indirectBuffer:draw.indirectArgs.allocation->buffer
+                                       indirectBufferOffset:argOff];
+                                }
+                            }
+                        } else if (draw.indexed) [encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle indexCount:draw.count
                             indexType:draw.indices.stride==2?MTLIndexTypeUInt16:MTLIndexTypeUInt32 indexBuffer:draw.indices.allocation->buffer
                             indexBufferOffset:draw.indices.offset+std::uint64_t(draw.first)*draw.indices.stride instanceCount:draw.instances
                             baseVertex:draw.baseVertex baseInstance:draw.firstInstance];
@@ -865,11 +894,11 @@ struct MetalCommands final : CommandList {
             return fail(ErrorCode::InvalidArgument, "Metal Compute command list does not support vertex/index buffer states");
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         if (target != ResourceState::Common && target != ResourceState::CopySource && target != ResourceState::CopyDestination &&
-            !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess)
+            !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::UnorderedAccess && target != ResourceState::IndirectArgument)
             return fail(ErrorCode::Unsupported, "Metal buffer state is outside the transfer/compute slice");
         if (target == ResourceState::UnorderedAccess && !(*a)->desc.storage)
             return fail(ErrorCode::InvalidArgument, "Metal UnorderedAccess requires a storage buffer");
-        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer) ||
+        if (((*a)->desc.memory == Memory::Upload && target != ResourceState::CopySource && !vertexState(target) && !indexState(target) && target != ResourceState::ConstantBuffer && target != ResourceState::IndirectArgument) ||
             ((*a)->desc.memory == Memory::Readback && target != ResourceState::CopyDestination))
             return fail(ErrorCode::InvalidArgument, "Metal host buffer state is fixed");
         const auto before = shadow(*a);
@@ -893,6 +922,8 @@ struct MetalCommands final : CommandList {
             return fail(ErrorCode::InvalidArgument, "Metal Compute command list does not support graphics/present/resolve texture states");
         auto a = allocation(value); if (!a) return std::unexpected(a.error());
         const bool multisampled = (*a)->textureDesc.sampleCount > 1u;
+        if (target == ResourceState::IndirectArgument)
+            return fail(ErrorCode::InvalidArgument, "IndirectArgument state is only valid for buffers");
         if ((*a)->backbuffer) {
             if (target != ResourceState::RenderTarget && target != ResourceState::CopySource && target != ResourceState::Present)
                 return fail(ErrorCode::Unsupported, "Metal drawable supports RenderTarget, CopySource and Present");
@@ -1299,6 +1330,62 @@ struct MetalCommands final : CommandList {
     }
     Result<void> draw(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,0,firstInstance,false); }
     Result<void> drawIndexed(std::uint32_t n,std::uint32_t instances,std::uint32_t first,std::int32_t base,std::uint32_t firstInstance) override { return recordDraw(n,instances,first,base,firstInstance,true); }
+    Result<void> recordIndirectDraw(const BufferPtr& argsBuffer, std::uint64_t argsOffset, std::uint32_t drawCount, std::uint32_t stride, bool indexed) {
+        if (auto ok = ready(); !ok) return ok;
+        if (qType != QueueType::Graphics) return fail(ErrorCode::InvalidArgument, "Metal drawIndirect requires a Graphics command list");
+        if (!inPass || !selected) return fail(ErrorCode::InvalidState, "Metal drawIndirect requires an active render pass and pipeline");
+        const std::uint32_t minStride = indexed ? static_cast<std::uint32_t>(sizeof(DrawIndexedIndirectCommand)) : static_cast<std::uint32_t>(sizeof(DrawIndirectCommand));
+        if (!drawCount || drawCount > 65536u) return fail(ErrorCode::InvalidArgument, "Metal drawIndirect drawCount out of range");
+        if (stride < minStride || (stride % 4u) != 0u || (argsOffset % 4u) != 0u)
+            return fail(ErrorCode::InvalidArgument, "Metal drawIndirect offset/stride must be 4-byte aligned");
+        if (indexed && (!indices.allocation || !indexState(shadow(indices.allocation))))
+            return fail(ErrorCode::InvalidState, "Metal drawIndexedIndirect requires a valid index buffer");
+        auto argBuf = allocation(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return fail(ErrorCode::InvalidArgument, "Readback buffer cannot be used as an indirect argument buffer");
+        if (shadow(*argBuf) != ResourceState::IndirectArgument)
+            return fail(ErrorCode::InvalidState, "Metal drawIndirect requires ResourceState::IndirectArgument");
+        const std::uint64_t spanBytes = static_cast<std::uint64_t>(drawCount - 1u) * stride + minStride;
+        if (argsOffset > (*argBuf)->desc.size || spanBytes > (*argBuf)->desc.size - argsOffset)
+            return fail(ErrorCode::InvalidArgument, "Metal drawIndirect argument range exceeds buffer size");
+        for (const auto& input : selected->vertices.buffers) {
+            const auto& view = vertices[input.slot];
+            if (!view.allocation || view.stride != input.stride || !vertexState(shadow(view.allocation)))
+                return fail(ErrorCode::InvalidState, "Missing/mismatched/stale Metal vertex binding");
+        }
+        if (!selected->bindings.entries.empty() && !bindings) return fail(ErrorCode::InvalidState, "Metal drawIndirect requires complete bindings");
+        if (bindings) for (const auto& view : *bindings) if (shadow(view.allocation) != (view.allocation->texture ? ResourceState::ShaderRead : ResourceState::ConstantBuffer))
+            return fail(ErrorCode::InvalidState, "Metal binding read state changed");
+        for (const auto& a : operations[passOperation].attachments) if (a.readOnly && selected->depthState.writeEnabled)
+            return fail(ErrorCode::InvalidState, "Read-only Metal depth rejects writing pipeline");
+        uses.reserve(uses.size() + 1);
+        retain(*argBuf);
+        auto& op = operations[passOperation];
+        op.draws.reserve(op.draws.size() + 1);
+        op.order.reserve(op.order.size() + 1);
+        Draw draw{};
+        draw.pipeline = selected;
+        draw.bindings = bindings;
+        draw.vertices = vertices;
+        draw.indices = indices;
+        draw.indexed = indexed;
+        draw.viewport = viewport;
+        draw.scissor = scissor;
+        draw.indirect = true;
+        draw.indirectArgs = BufferView{*argBuf, argsOffset, spanBytes, stride};
+        draw.indirectDrawCount = drawCount;
+        draw.indirectStride = stride;
+        op.draws.push_back(std::move(draw));
+        op.order.emplace_back(true, op.draws.size() - 1);
+        if (owner->profiler) owner->profiler->recordDraw(indexed, drawCount);
+        return {};
+    }
+    Result<void> drawIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset, std::uint32_t drawCount, std::uint32_t stride) override {
+        return recordIndirectDraw(argsBuffer, argsOffset, drawCount, stride, false);
+    }
+    Result<void> drawIndexedIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset, std::uint32_t drawCount, std::uint32_t stride) override {
+        return recordIndirectDraw(argsBuffer, argsOffset, drawCount, stride, true);
+    }
     Result<void> setComputePipeline(const PipelinePtr& value) override {
         if (auto ok = outsidePass(); !ok) return ok;
         if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Metal compute operations are not supported on a Copy command list");
@@ -1408,6 +1495,34 @@ struct MetalCommands final : CommandList {
         Operation op;
         op.kind = OperationKind::Compute;
         op.compute = ComputeDispatchOp{selectedCompute, computeBindings, groupCountX, groupCountY, groupCountZ};
+        operations.push_back(std::move(op));
+        if (owner->profiler) owner->profiler->recordDispatch();
+        return {};
+    }
+    Result<void> dispatchIndirect(const BufferPtr& argsBuffer, std::uint64_t argsOffset) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::InvalidArgument, "Metal compute operations are not supported on a Copy command list");
+        if (!selectedCompute) return fail(ErrorCode::InvalidState, "Metal dispatchIndirect requires an active compute pipeline");
+        if ((argsOffset % 4u) != 0u) return fail(ErrorCode::InvalidArgument, "Metal dispatchIndirect offset must be 4-byte aligned");
+        if (!selectedCompute->bindings.entries.empty() && !computeBindings) return fail(ErrorCode::InvalidState, "Metal dispatchIndirect requires complete compute bindings");
+        if (computeBindings) {
+            for (const auto& view : *computeBindings) {
+                if (shadow(view.allocation) != view.expectedState) return fail(ErrorCode::InvalidState, "Metal bound compute resource left required state");
+            }
+        }
+        auto argBuf = allocation(argsBuffer); if (!argBuf) return std::unexpected(argBuf.error());
+        if ((*argBuf)->desc.memory == Memory::Readback)
+            return fail(ErrorCode::InvalidArgument, "Readback buffer cannot be used as an indirect argument buffer");
+        if (shadow(*argBuf) != ResourceState::IndirectArgument)
+            return fail(ErrorCode::InvalidState, "Metal dispatchIndirect requires ResourceState::IndirectArgument");
+        if (argsOffset > (*argBuf)->desc.size || sizeof(DispatchIndirectCommand) > (*argBuf)->desc.size - argsOffset)
+            return fail(ErrorCode::InvalidArgument, "Metal dispatchIndirect argument range exceeds buffer size");
+        uses.reserve(uses.size() + 1);
+        retain(*argBuf);
+        operations.reserve(operations.size() + 1);
+        Operation op;
+        op.kind = OperationKind::Compute;
+        op.compute = ComputeDispatchOp{selectedCompute, computeBindings, 0, 0, 0, true, *argBuf, argsOffset};
         operations.push_back(std::move(op));
         if (owner->profiler) owner->profiler->recordDispatch();
         return {};
@@ -2174,6 +2289,25 @@ struct MetalDevice final : Device {
             return PipelinePtr(wrapper);
         }
     }
+    Result<PipelinePtr> createMeshPipeline(const MeshPipelineDesc& desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        const auto targets = desc.renderTargets.value_or(RenderTargetLayout{{desc.colorFormat}, {}});
+        if (auto ok = validateRenderTargets(targets, desc.depthState); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateBindingLayout(desc.bindingLayout); !ok) return std::unexpected(ok.error());
+        if (desc.mesh.stage != ShaderStage::Mesh || desc.mesh.bytes.empty()) {
+            return fail(ErrorCode::InvalidArgument, "MeshPipelineDesc requires a non-empty Mesh shader");
+        }
+        if (desc.task && (desc.task->stage != ShaderStage::Task || desc.task->bytes.empty())) {
+            return fail(ErrorCode::InvalidArgument, "MeshPipelineDesc task shader must have Task stage and non-empty bytes");
+        }
+        if (!desc.fragment.bytes.empty() && desc.fragment.stage != ShaderStage::Fragment) {
+            return fail(ErrorCode::InvalidArgument, "MeshPipelineDesc fragment shader must have Fragment stage");
+        }
+        if (!capabilities.meshShaders) {
+            return fail(ErrorCode::Unsupported, "Metal device does not support Mesh/Object shaders");
+        }
+        return fail(ErrorCode::Unsupported, "Mesh/Task shader pipeline execution is not yet implemented in this SDK snapshot");
+    }
     Result<std::unique_ptr<CommandList>> createCommandList() override {
         return createCommandList(QueueType::Graphics);
     }
@@ -2293,6 +2427,12 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         const bool sparseSupported = [selected supportsFamily:MTLGPUFamilyApple6];
         caps.sparseBinding = sparseSupported;
         caps.sparseResidencyTexture2D = sparseSupported;
+        caps.indirectDraw = true;
+        caps.multiDrawIndirect = true;
+        caps.maxDrawIndirectCount = 65536u;
+        caps.descriptorIndexing = selected.argumentBuffersSupport >= MTLArgumentBuffersTier2;
+        caps.maxBindlessDescriptors = caps.descriptorIndexing ? 500000u : 0u;
+        caps.meshShaders = [selected supportsFamily:MTLGPUFamilyApple7] || [selected supportsFamily:MTLGPUFamilyMac2];
         caps.maxTextureDimension2D = 16384u;
         caps.maxColorAttachments = 8u;
         caps.constantBufferAlignment = 256u;
