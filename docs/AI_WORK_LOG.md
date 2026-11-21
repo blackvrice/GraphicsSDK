@@ -586,3 +586,22 @@
   - `P10-SURF-01`: Multi-Window / Multi-Surface·다중 스왑체인 동기화·DPI/리사이즈 고도화.
   - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
   - `P11-INT-01`: Native GPU Interoperability (External Memory·Fence·Semaphore·Handle).
+
+---
+
+## 2026-11-21 — `P10-HDR-01`: HDR 및 Color Space (sRGB·Linear·Display P3·Rec.2020·HDR10·scRGB·10-bit) 구현 및 Windows D3D12/Vulkan 실기 검증
+
+- **기준 HEAD**: `3dcbc014`
+- **완료 ID / 분리 ID**: `P10-HDR-01` 완료, `P10-HDR-02`(Linux Vulkan / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - `include/graphics/{Types,Surface,SwapChain,Device}.hpp`: 13개 공개 헤더 및 `SwapChainDesc` 하위 호환 계약을 유지하며 `Format::{RGBA8SRGB,BGRA8SRGB,RGB10A2UNorm}`, `ColorSpace`, `HdrMetadata`, `SurfaceColorCapabilities`, `Device::querySurfaceColorCapabilities`, `SwapChain::{format,colorSpace,setHdrMetadata,hdrMetadata}` 추가.
+  - `src/foundation/{RenderPass.cpp,DeviceGeneration.hpp}`: 신규 포맷 블록/컬러 메타데이터 및 `validColorSpace`/`validateHdrMetadata` 공통 검증 추가.
+  - `src/backends/d3d12/D3D12.cpp`: `IDXGIOutput6` 디스플레이 HDR 조회, `SetColorSpace1`, `IDXGISwapChain4::SetHDRMetaData`, flip-model `_SRGB` RTV, `DisplayP3Nonlinear`/`Rec2020Linear` `Unsupported` 거부, `resize()` 시 포맷·색공간·메타데이터 보존 구현.
+  - `src/backends/vulkan/{Vulkan.cpp,Presentation.hpp}`: `VK_EXT_swapchain_colorspace` 및 `VK_EXT_hdr_metadata` 선택 활성화, 드라이버 지원 쌍 조회/선택/미지원 거부 및 `vkSetHdrMetadataEXT` 구현.
+  - `src/backends/metal/{Metal.cpp,MetalPresentation.hpp}`: sRGB/10-bit 포맷 매핑(`storage=false` for sRGB), `CAMetalLayer` 색 공간/EDR 설정 및 정적 메타데이터 `Unsupported` 구현.
+  - `tests/HdrColorSpaceTests.cpp`, `CMakeLists.txt`, `docs/PHASE10_HDR_COLORSPACE_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (격리 빌드 `out/p10-hdr-colorspace`, 설치 `out/p10-hdr-colorspace-install`, `GraphicsSDKCore.lib` SHA-256 `C0ED7321FA8F09C1046611EE2A2AA42FF01F391CA56E2DB6A97AD110C03BD50A`):
+  - `gfx_hdr_colorspace_tests` 5/5 모드 PASS: D3D12 2GPU (`4,774 assertions / 26 rejections`, 8/8 쌍), D3D12 Validation (`val_errors=0`, `4,776 assertions`), WARP 손실/복구 (`4,774 assertions`), Vulkan 2GPU (`4,503 assertions / 17 rejections`, GTX 8/8 쌍 + `VK_EXT_hdr_metadata`, Intel 오프스크린 통과/스왑체인 거부), Vulkan Validation (고정 VVL 1.3.290, `val_errors=0`, `4,505 assertions`).
+  - 독립 설치 소비자(`tests/consumer`): 빌드·실행 PASS (`GraphicsSDK 0.0.1`).
+  - 전체 CTest 회귀: `133/135 PASS` (`147.17s`, `hdr_colorspace_*` 5종 및 `frame_pacing_*`/`swapchain_guards_*`/`vulkan_presentation` 전체 통과; 기존 로컬 예외 `fence_wait_gpu`/`fence_wait_validation` 2건).
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

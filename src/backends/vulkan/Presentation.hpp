@@ -41,6 +41,33 @@ Result<std::shared_ptr<NativeSurface>> makeSurface(const std::shared_ptr<State>&
 #endif
 }
 
+std::optional<VkColorSpaceKHR> vkColorSpaceFor(ColorSpace cs, bool extColorSpace) {
+    switch (cs) {
+    case ColorSpace::SrgbNonlinear: return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    case ColorSpace::DisplayP3Nonlinear:
+        return extColorSpace ? std::optional<VkColorSpaceKHR>{VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT} : std::nullopt;
+    case ColorSpace::Rec2020Linear:
+        return extColorSpace ? std::optional<VkColorSpaceKHR>{VK_COLOR_SPACE_BT2020_LINEAR_EXT} : std::nullopt;
+    case ColorSpace::Hdr10St2084:
+        return extColorSpace ? std::optional<VkColorSpaceKHR>{VK_COLOR_SPACE_HDR10_ST2084_EXT} : std::nullopt;
+    case ColorSpace::LinearSrgb:
+    case ColorSpace::ExtendedLinearScRgb:
+        return extColorSpace ? std::optional<VkColorSpaceKHR>{VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT} : std::nullopt;
+    }
+    return std::nullopt;
+}
+std::optional<Format> fromVkSwapFormat(VkFormat f) {
+    switch (f) {
+    case VK_FORMAT_R8G8B8A8_UNORM: return Format::RGBA8UNorm;
+    case VK_FORMAT_B8G8R8A8_UNORM: return Format::BGRA8UNorm;
+    case VK_FORMAT_R8G8B8A8_SRGB: return Format::RGBA8SRGB;
+    case VK_FORMAT_B8G8R8A8_SRGB: return Format::BGRA8SRGB;
+    case VK_FORMAT_A2B10G10R10_UNORM_PACK32: return Format::RGB10A2UNorm;
+    case VK_FORMAT_R16G16B16A16_SFLOAT: return Format::RGBA16Float;
+    default: return std::nullopt;
+    }
+}
+
 struct VulkanSwapchain final : SwapChain {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeSurface> surface;
@@ -48,9 +75,32 @@ struct VulkanSwapchain final : SwapChain {
     std::shared_ptr<int> token;
     SwapChainDesc desc;
     PresentMode activeMode{PresentMode::Fifo};
+    Format activeFormat{Format::RGBA8UNorm};
+    ColorSpace activeColorSpace{ColorSpace::SrgbNonlinear};
+    std::optional<HdrMetadata> activeMetadata;
     std::uint32_t effectiveLatency{1};
     mutable detail::FramePacingTracker pacing;
     std::vector<std::shared_ptr<VulkanTexture>> buffers;
+    Result<void> applyMetadataNative(const HdrMetadata& metadata) {
+        if (!owner->native->hdrMetadata || !owner->native->SetHdrMetadataEXT) {
+            return fail(ErrorCode::Unsupported, "VK_EXT_hdr_metadata is unavailable on this Vulkan device");
+        }
+        if (!native || !native->handle) {
+            return fail(ErrorCode::InvalidState, "Swapchain handle unavailable for HDR metadata");
+        }
+        VkHdrMetadataEXT hdr{VK_STRUCTURE_TYPE_HDR_METADATA_EXT};
+        hdr.displayPrimaryRed = {metadata.redPrimaryX, metadata.redPrimaryY};
+        hdr.displayPrimaryGreen = {metadata.greenPrimaryX, metadata.greenPrimaryY};
+        hdr.displayPrimaryBlue = {metadata.bluePrimaryX, metadata.bluePrimaryY};
+        hdr.whitePoint = {metadata.whitePointX, metadata.whitePointY};
+        hdr.maxLuminance = metadata.maxMasteringLuminance;
+        hdr.minLuminance = metadata.minMasteringLuminance;
+        hdr.maxContentLightLevel = metadata.maxContentLightLevel;
+        hdr.maxFrameAverageLightLevel = metadata.maxFrameAverageLightLevel;
+        owner->native->SetHdrMetadataEXT(owner->native->handle, 1u, &native->handle, &hdr);
+        activeMetadata = metadata;
+        return {};
+    }
     Result<void> surfaceResult(VkResult result, const char* operation) {
         if (result == VK_ERROR_SURFACE_LOST_KHR) {
             surface->lost = true;
@@ -95,15 +145,51 @@ struct VulkanSwapchain final : SwapChain {
         r = in.GetPhysicalDeviceSurfaceFormatsKHR(owner->physical, surface->handle, &count, formats.data());
         if (auto ok = surfaceResult(r, "Query surface formats"); !ok) return std::unexpected(ok.error());
         formats.resize(count);
-        auto imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
-        auto supports = [&](VkFormat format) { return std::any_of(formats.begin(), formats.end(), [&](auto f) { return (f.format == format || f.format == VK_FORMAT_UNDEFINED) && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; }); };
-        if (!supports(imageFormat)) {
-#ifdef GFX_HAS_VULKAN_XCB
-            imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
-            if (!supports(imageFormat))
-#endif
-                return fail(ErrorCode::Unsupported, "Surface requires supported UNORM with SRGB nonlinear color space");
+        const auto targetVkColorSpace = vkColorSpaceFor(desc.colorSpace, in.swapchainColorSpace);
+        if (!targetVkColorSpace) {
+            return fail(ErrorCode::Unsupported, "Requested swapchain color space requires VK_EXT_swapchain_colorspace");
         }
+        auto supports = [&](VkFormat format, VkColorSpaceKHR cs) {
+            return std::any_of(formats.begin(), formats.end(), [&](auto f) {
+                return (f.format == format || f.format == VK_FORMAT_UNDEFINED) && f.colorSpace == cs;
+            });
+        };
+        Format selectedFormat = Format::RGBA8UNorm;
+        VkFormat imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+        if (desc.format) {
+            selectedFormat = *desc.format;
+            imageFormat = textureFormat(selectedFormat);
+            if (!fromVkSwapFormat(imageFormat) || !supports(imageFormat, *targetVkColorSpace)) {
+                return fail(ErrorCode::Unsupported, "Requested swapchain format and color space pair is unsupported by this surface");
+            }
+        } else if (desc.colorSpace == ColorSpace::Hdr10St2084) {
+            selectedFormat = Format::RGB10A2UNorm;
+            imageFormat = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+            if (!supports(imageFormat, *targetVkColorSpace)) {
+                return fail(ErrorCode::Unsupported, "Surface does not support 10-bit HDR10 ST2084 swapchain format");
+            }
+        } else if (desc.colorSpace == ColorSpace::ExtendedLinearScRgb || desc.colorSpace == ColorSpace::LinearSrgb) {
+            selectedFormat = Format::RGBA16Float;
+            imageFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+            if (!supports(imageFormat, *targetVkColorSpace)) {
+                return fail(ErrorCode::Unsupported, "Surface does not support RGBA16Float linear/scRGB swapchain format");
+            }
+        } else {
+            selectedFormat = Format::RGBA8UNorm;
+            imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+            if (!supports(imageFormat, *targetVkColorSpace)) {
+                selectedFormat = Format::BGRA8UNorm;
+                imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
+                if (!supports(imageFormat, *targetVkColorSpace)) {
+                    return fail(ErrorCode::Unsupported, "Surface does not support requested color space with 8-bit UNORM format");
+                }
+            }
+        }
+        if (width > (UINT32_MAX - 255u) / texelBytes(selectedFormat)) {
+            return fail(ErrorCode::InvalidArgument, "Requested swapchain width overflows row pitch");
+        }
+        activeFormat = selectedFormat;
+        activeColorSpace = desc.colorSpace;
         r = in.GetPhysicalDeviceSurfacePresentModesKHR(owner->physical, surface->handle, &count, nullptr);
         if (auto ok = surfaceResult(r, "Query present modes"); !ok) return std::unexpected(ok.error());
         std::vector<VkPresentModeKHR> modes(count);
@@ -147,7 +233,7 @@ struct VulkanSwapchain final : SwapChain {
         VkSwapchainCreateInfoKHR info{VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR};
         info.surface = surface->handle; info.minImageCount = std::max(desc.buffers, caps.minImageCount);
         if (caps.maxImageCount && info.minImageCount > caps.maxImageCount) return fail(ErrorCode::Unsupported, "Requested image count exceeds surface maximum");
-        info.imageFormat = imageFormat; info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        info.imageFormat = imageFormat; info.imageColorSpace = *targetVkColorSpace;
         info.imageExtent = {width, height}; info.imageArrayLayers = 1; info.imageUsage = usage;
         info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; info.preTransform = caps.currentTransform;
         for (auto a : {VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR, VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR, VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR})
@@ -179,8 +265,8 @@ struct VulkanSwapchain final : SwapChain {
         std::erase_if(owner->swapchains, [](auto& w) { return w.expired(); }); owner->swapchains.push_back(next);
         for (std::uint32_t i = 0; i < count; ++i) {
             auto a = std::make_shared<Allocation>(); a->native = owner->native; a->swapchain = next; a->imageIndex = i; a->image = images[i];
-            a->textureDesc = {info.imageExtent.width, info.imageExtent.height, info.imageFormat == VK_FORMAT_B8G8R8A8_UNORM ? Format::BGRA8UNorm : Format::RGBA8UNorm, true}; a->state = ResourceState::Present;
-            const auto row = info.imageExtent.width * 4, pitch = (row + 255u) & ~255u;
+            a->textureDesc = {info.imageExtent.width, info.imageExtent.height, activeFormat, true}; a->state = ResourceState::Present;
+            const auto row = info.imageExtent.width * texelBytes(activeFormat), pitch = (row + 255u) & ~255u;
             a->footprint = {std::uint64_t(pitch) * info.imageExtent.height, pitch, row, info.imageExtent.height};
             VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO}; view.image = a->image; view.viewType = VK_IMAGE_VIEW_TYPE_2D;
             view.format = info.imageFormat; view.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
@@ -191,6 +277,7 @@ struct VulkanSwapchain final : SwapChain {
             owner->allocations.push_back(a); owner->objects.push_back(t->token); created.push_back(std::move(t));
         }
         native = std::move(next); buffers = std::move(created); desc.width = info.imageExtent.width; desc.height = info.imageExtent.height;
+        if (activeMetadata) { (void)applyMetadataNative(*activeMetadata); }
         return {};
     }
     Result<TexturePtr> acquire() override {
@@ -318,6 +405,14 @@ struct VulkanSwapchain final : SwapChain {
         pacing.reset();
         return {};
     }
+    Format format() const override { return activeFormat; }
+    ColorSpace colorSpace() const override { return activeColorSpace; }
+    Result<void> setHdrMetadata(const HdrMetadata& metadata) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        if (auto ok = detail::validateHdrMetadata(metadata); !ok) return ok;
+        return applyMetadataNative(metadata);
+    }
+    std::optional<HdrMetadata> hdrMetadata() const override { return activeMetadata; }
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {
         if (auto ok = owner->poll(); !ok) return ok;
         auto info = configuration(width, height); if (!info) return std::unexpected(info.error());
@@ -364,6 +459,62 @@ Result<SurfacePresentCapabilities> queryVulkanSurfacePresentCapabilities(const s
     return fail(ErrorCode::Unsupported, "Vulkan presentation currently requires Win32 or XCB");
 #endif
 }
+Result<SurfaceColorCapabilities> queryVulkanSurfaceColorCapabilities(const std::shared_ptr<State>& owner, Surface surface) {
+#if defined(_WIN32) || defined(GFX_HAS_VULKAN_XCB)
+    if (!owner->native->presentation) return fail(ErrorCode::Unsupported, "Vulkan presentation requires surface support and swapchainMaintenance1");
+    auto prepared = makeSurface(owner, surface); if (!prepared) return std::unexpected(prepared.error());
+    auto& in = *owner->native->instance;
+    std::uint32_t count{};
+    if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceFormatsKHR(owner->physical, (*prepared)->handle, &count, nullptr), "Query surface formats"); !ok)
+        return std::unexpected(ok.error());
+    std::vector<VkSurfaceFormatKHR> formats(count);
+    if (count > 0u) {
+        if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceFormatsKHR(owner->physical, (*prepared)->handle, &count, formats.data()), "Query surface formats"); !ok)
+            return std::unexpected(ok.error());
+        formats.resize(count);
+    }
+    SurfaceColorCapabilities out{};
+    out.srgbNonlinear = false;
+    out.hdrMetadata = owner->native->hdrMetadata && owner->native->SetHdrMetadataEXT != nullptr;
+    auto pushUnique = [&](Format f, ColorSpace cs) {
+        SurfaceColorFormatCapability entry{f, cs};
+        if (std::find(out.supportedFormats.begin(), out.supportedFormats.end(), entry) == out.supportedFormats.end()) {
+            out.supportedFormats.push_back(entry);
+        }
+        if (cs == ColorSpace::SrgbNonlinear) out.srgbNonlinear = true;
+        if (cs == ColorSpace::LinearSrgb) out.linearSrgb = true;
+        if (cs == ColorSpace::DisplayP3Nonlinear) out.displayP3 = true;
+        if (cs == ColorSpace::Rec2020Linear) out.rec2020Linear = true;
+        if (cs == ColorSpace::Hdr10St2084) out.hdr10St2084 = true;
+        if (cs == ColorSpace::ExtendedLinearScRgb) out.extendedLinearScRgb = true;
+        if (f == Format::RGB10A2UNorm) out.tenBitOutput = true;
+    };
+    for (const auto& sf : formats) {
+        const auto mappedFmt = fromVkSwapFormat(sf.format);
+        if (!mappedFmt) continue;
+        if (sf.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            pushUnique(*mappedFmt, ColorSpace::SrgbNonlinear);
+        } else if (in.swapchainColorSpace) {
+            if (sf.colorSpace == VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT) {
+                pushUnique(*mappedFmt, ColorSpace::DisplayP3Nonlinear);
+            } else if (sf.colorSpace == VK_COLOR_SPACE_BT2020_LINEAR_EXT) {
+                pushUnique(*mappedFmt, ColorSpace::Rec2020Linear);
+            } else if (sf.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT) {
+                pushUnique(*mappedFmt, ColorSpace::Hdr10St2084);
+            } else if (sf.colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT) {
+                pushUnique(*mappedFmt, ColorSpace::LinearSrgb);
+                pushUnique(*mappedFmt, ColorSpace::ExtendedLinearScRgb);
+            }
+        }
+    }
+    out.activeDisplayColorSpace = ColorSpace::SrgbNonlinear;
+    out.displayHdrEnabled = false;
+    return out;
+#else
+    (void)owner; (void)surface;
+    return fail(ErrorCode::Unsupported, "Vulkan presentation currently requires Win32 or XCB");
+#endif
+}
 Result<std::unique_ptr<SwapChain>> makeSwapchain(const std::shared_ptr<State>& owner, Surface surface, SwapChainDesc desc) {
 #if defined(_WIN32) || defined(GFX_HAS_VULKAN_XCB)
     if (!owner->native->presentation) return fail(ErrorCode::Unsupported, "Vulkan presentation requires surface support and swapchainMaintenance1 completion fences");
@@ -375,6 +526,9 @@ Result<std::unique_ptr<SwapChain>> makeSwapchain(const std::shared_ptr<State>& o
     auto config = value->configuration(desc.width, desc.height); if (!config) return std::unexpected(config.error());
     value->pacing.configure(value->activeMode, desc.pacingMode, *latency, desc.stallThresholdMilliseconds);
     if (auto ok = value->rebuild(*config); !ok) return std::unexpected(ok.error());
+    if (desc.hdrMetadata) {
+        if (auto ok = value->setHdrMetadata(*desc.hdrMetadata); !ok) return std::unexpected(ok.error());
+    }
     owner->objects.push_back(value->token); return std::unique_ptr<SwapChain>(std::move(value));
 #else
     (void)owner; (void)surface; (void)desc;

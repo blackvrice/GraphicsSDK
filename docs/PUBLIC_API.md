@@ -17,6 +17,12 @@ Device는 장치 정보/기능, 자원/파이프라인/명령 목록/스왑체�
 `stallThresholdMilliseconds`를 지원한다. `SwapChain::{waitForNextFrame, framePacingStats, resetFramePacingStats}`는
 실제 프레임 시간·표준편차·큐 지연·GPU Stall 통계를 보고하고 미지원 `PresentMode`(예: D3D12/Metal `Mailbox`)는
 명시적 `ErrorCode::Unsupported`로 거부한다. [Frame Pacing·Present Mode 보고서](PHASE10_FRAME_PACING_REPORT.md)를 따른다.
+`Format`은 `RGBA8SRGB`, `BGRA8SRGB`, `RGB10A2UNorm`(10-bit)을 추가로 지원하며(`RGBA16Float`와 함께 sRGB/10-bit/HDR 오프스크린 렌더 타깃 및 스왑체인 지원; sRGB `storage`는 `Unsupported`),
+`Device::querySurfaceColorCapabilities(Surface)`는 지원 `(Format, ColorSpace)` 쌍(`SrgbNonlinear`, `LinearSrgb`, `DisplayP3Nonlinear`, `Rec2020Linear`, `Hdr10St2084`, `ExtendedLinearScRgb`),
+10-bit 출력·HDR 메타데이터 지원 여부 및 디스플레이 HDR 상태(`IDXGIOutput6` 최대/최소 휘도 등)를 조회한다.
+`SwapChainDesc`는 하위 호환 후행 필드로 `format`, `colorSpace`, `hdrMetadata`를 지원하며,
+`SwapChain::{format, colorSpace, setHdrMetadata, hdrMetadata}`는 색 공간·포맷 보존(`resize` 포함)과 정적 HDR10 메타데이터(D3D12 `IDXGISwapChain4::SetHDRMetaData`, Vulkan `VK_EXT_hdr_metadata`, Metal `Unsupported`)를 제공한다.
+미지원 색 공간·포맷 조합은 `ErrorCode::Unsupported`, 범위 외 색도·휘도 메타데이터는 `ErrorCode::InvalidArgument`로 거부한다. [HDR 및 Color Space 보고서](PHASE10_HDR_COLORSPACE_REPORT.md)를 따른다.
 queue는 submit 결과로 Fence를 반환하고 wait/waitIdle/completedValue를 제공한다.
 GPU 비동기 완료를 명시적으로 기다린 뒤 readback을 읽는다.
 

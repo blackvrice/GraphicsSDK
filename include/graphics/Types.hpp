@@ -40,7 +40,10 @@ enum class Format {
     EACRG11UNorm,
     ASTC4x4UNorm,
     ASTC6x6UNorm,
-    ASTC8x8UNorm
+    ASTC8x8UNorm,
+    RGBA8SRGB,
+    BGRA8SRGB,
+    RGB10A2UNorm
 };
 struct FormatBlockInfo {
     std::uint32_t blockWidth{1};

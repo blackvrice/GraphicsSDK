@@ -21,5 +21,10 @@ public:
     // Returns real wall-clock frame pacing, queue-latency, and GPU stall statistics.
     [[nodiscard]] virtual Result<FramePacingStats> framePacingStats() const = 0;
     [[nodiscard]] virtual Result<void> resetFramePacingStats() = 0;
+    [[nodiscard]] virtual Format format() const = 0;
+    [[nodiscard]] virtual ColorSpace colorSpace() const = 0;
+    // Sets static HDR10 mastering metadata when supported by the backend/surface.
+    [[nodiscard]] virtual Result<void> setHdrMetadata(const HdrMetadata& metadata) = 0;
+    [[nodiscard]] virtual std::optional<HdrMetadata> hdrMetadata() const = 0;
 };
 }

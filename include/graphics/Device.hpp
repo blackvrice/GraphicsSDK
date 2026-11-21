@@ -134,6 +134,8 @@ public:
     [[nodiscard]] virtual Result<void> checkSurfaceSupport(Surface) = 0;
     // Queries supported present modes, frame-latency pacing support, and image count limits for a surface.
     [[nodiscard]] virtual Result<SurfacePresentCapabilities> querySurfacePresentCapabilities(Surface) = 0;
+    // Queries supported swapchain formats, color spaces, 10-bit/HDR output, and display HDR state.
+    [[nodiscard]] virtual Result<SurfaceColorCapabilities> querySurfaceColorCapabilities(Surface) = 0;
     [[nodiscard]] virtual Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) = 0;
     [[nodiscard]] virtual CommandQueue& queue() = 0;
     [[nodiscard]] virtual Result<CommandQueue*> queue(QueueType type) = 0;

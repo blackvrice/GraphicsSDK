@@ -3964,15 +3964,48 @@
       "id": "P10-HDR-01",
       "phase": 10,
       "group": "P10-HDR",
-      "title": "HDR 및 Color Space (sRGB·Linear·Display P3·Rec.2020·HDR10·scRGB·10-bit)",
-      "status": "todo",
+      "title": "HDR 및 Color Space (sRGB·Linear·Display P3·Rec.2020·HDR10·scRGB·10-bit) (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P10-PRES-01"
       ],
-      "work": "스왑체인 색 공간·10-bit 출력 Capability 조회, HDR Render Target, HDR10/scRGB/P3 메타데이터 설정 및 플랫폼별 지원 경계를 구현한다.",
+      "work": "13개 공개 헤더/5개 CORE 유닛/SwapChainDesc 하위 호환을 유지하며 Format::{RGBA8SRGB,BGRA8SRGB,RGB10A2UNorm}, ColorSpace(SrgbNonlinear/LinearSrgb/DisplayP3Nonlinear/Rec2020Linear/Hdr10St2084/ExtendedLinearScRgb), HdrMetadata, SurfaceColorCapabilities, Device::querySurfaceColorCapabilities(Surface), SwapChain::{format,colorSpace,setHdrMetadata,hdrMetadata}를 D3D12(IDXGIOutput6 디스플레이 조회·SetColorSpace1·IDXGISwapChain4::SetHDRMetaData·flip-model sRGB RTV·DisplayP3/Rec2020 Unsupported), Vulkan(VK_EXT_swapchain_colorspace·VK_EXT_hdr_metadata 선택 활성화·드라이버 지원 쌍 매핑 및 미지원 거부), Metal(CAMetalLayer 색 공간/EDR·정적 메타데이터 Unsupported)에 구현했다. Windows D3D12(GTX 1660 SUPER·Intel UHD 770·Debug+GBV·WARP 손실/복구, 8/8 쌍)·Vulkan(GTX 1660 SUPER 8/8 쌍 + VK_EXT_hdr_metadata·Intel UHD 770 오프스크린/스왑체인 거부·고정 VVL 1.3.290) 5모드에서 오프스크린 sRGB 감마·10-bit·FP16 HDR(>1.0) 전 픽셀 검증, 스왑체인 렌더/프레젠트/리사이즈/HDR 메타데이터 보존, 미지원/잘못된 입력 거부, validation 오류 0 및 CTest 133/135(hdr_colorspace 5/5 포함 전체 통과; 기존 로컬 예외 fence_wait 2건)을 확인했다.",
       "done_when": "플랫폼별 색 공간 지원 매트릭스, HDR/sRGB 오프스크린·스왑체인 검증 및 미지원 거부 통과.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/Surface.hpp",
+        "include/graphics/SwapChain.hpp",
+        "include/graphics/Device.hpp",
+        "src/foundation/RenderPass.cpp",
+        "src/foundation/DeviceGeneration.hpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/vulkan/Presentation.hpp",
+        "src/backends/metal/Metal.cpp",
+        "src/backends/metal/MetalPresentation.hpp",
+        "tests/HdrColorSpaceTests.cpp",
+        "docs/PHASE10_HDR_COLORSPACE_REPORT.md"
+      ]
+    },
+    {
+      "id": "P10-HDR-02",
+      "phase": 10,
+      "group": "P10-HDR",
+      "title": "HDR 및 Color Space·10-bit·sRGB macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P10-HDR-01"
+      ],
+      "work": "Metal(CAMetalLayer 색 공간/EDR·RGBA8SRGB/BGRA8SRGB/RGB10A2UNorm·메타데이터 Unsupported)과 Linux Vulkan(XCB·VK_EXT_swapchain_colorspace·VK_EXT_hdr_metadata) 구현을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·전 픽셀 참조로 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 sRGB/10-bit/HDR 오프스크린·스왑체인 색 공간 조회·선택·미지원 거부 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/MetalPresentation.hpp",
+        "src/backends/vulkan/Presentation.hpp",
+        "docs/PHASE10_HDR_COLORSPACE_REPORT.md"
+      ]
     },
     {
       "id": "P10-SURF-01",

@@ -492,6 +492,9 @@ MTLPixelFormat pixelFormat(Format f) {
     case Format::ASTC4x4UNorm: return MTLPixelFormatASTC_4x4_LDR;
     case Format::ASTC6x6UNorm: return MTLPixelFormatASTC_6x6_LDR;
     case Format::ASTC8x8UNorm: return MTLPixelFormatASTC_8x8_LDR;
+    case Format::RGBA8SRGB: return MTLPixelFormatRGBA8Unorm_sRGB;
+    case Format::BGRA8SRGB: return MTLPixelFormatBGRA8Unorm_sRGB;
+    case Format::RGB10A2UNorm: return MTLPixelFormatRGB10A2Unorm;
     }
     return MTLPixelFormatInvalid;
 }
@@ -1837,6 +1840,7 @@ struct MetalDevice final : Device {
         }
         const bool isDepth = format == Format::D32Float;
         const bool isCompressed = blockInfo->compressed;
+        const bool isSrgb = format == Format::RGBA8SRGB || format == Format::BGRA8SRGB;
         result.texture2D = true;
         result.renderTarget = !isDepth && !isCompressed;
         result.depthStencil = isDepth;
@@ -1846,7 +1850,7 @@ struct MetalDevice final : Device {
         result.copySource = true;
         result.copyDestination = true;
         result.partialRegionCopy = !isDepth;
-        result.storage = !isDepth && !isCompressed;
+        result.storage = !isDepth && !isCompressed && !isSrgb;
         result.sampleCounts = 1u;
         if (!isCompressed) {
             for (const std::uint32_t count : {2u, 4u, 8u}) {
@@ -2360,6 +2364,9 @@ struct MetalDevice final : Device {
     }
     Result<SurfacePresentCapabilities> querySurfacePresentCapabilities(Surface surface) override {
         return queryMetalSurfacePresentCapabilities(*owner, surface);
+    }
+    Result<SurfaceColorCapabilities> querySurfaceColorCapabilities(Surface surface) override {
+        return queryMetalSurfaceColorCapabilities(*owner, surface);
     }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         return makeMetalSwapChain(owner, surface, desc);

@@ -7,7 +7,7 @@ namespace gfx {
 namespace {
 auto bad(const char* message){return std::unexpected(Error{ErrorCode::InvalidArgument,message});}
 auto unsupported(const char* message){return std::unexpected(Error{ErrorCode::Unsupported,message});}
-bool uncompressedColorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float || f==Format::BGRA8UNorm;}
+bool uncompressedColorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float || f==Format::BGRA8UNorm || f==Format::RGBA8SRGB || f==Format::BGRA8SRGB || f==Format::RGB10A2UNorm;}
 bool compressedFormat(Format f) {
     return f >= Format::BC1UNorm && f <= Format::ASTC8x8UNorm;
 }
@@ -40,6 +40,9 @@ Result<FormatBlockInfo> queryFormatBlockInfo(Format format) {
     switch (format) {
     case Format::RGBA8UNorm:
     case Format::BGRA8UNorm:
+    case Format::RGBA8SRGB:
+    case Format::BGRA8SRGB:
+    case Format::RGB10A2UNorm:
     case Format::D32Float:
         return FormatBlockInfo{1u, 1u, 4u, false};
     case Format::RGBA16Float:

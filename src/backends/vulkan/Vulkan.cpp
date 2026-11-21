@@ -86,6 +86,7 @@ struct Instance {
     PFN_vkDestroyDebugUtilsMessengerEXT destroyMessenger{};
     vulkan::ValidationCounter validation;
     bool presentation{};
+    bool swapchainColorSpace{};
     bool debugUtils{};
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR{};
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR{};
@@ -142,6 +143,10 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
         if (instance->presentation) enabledExtensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_EXTENSION_NAME,
             VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME};
 #endif
+        if (instance->presentation && has(VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME)) {
+            instance->swapchainColorSpace = true;
+            enabledExtensions.push_back(VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
+        }
     }
     if (instance->debugUtils) enabledExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     if (validation) {
@@ -329,6 +334,7 @@ struct NativeDevice {
     VkQueue queue{};
     std::array<VkQueue, 3> queues{};
     bool presentation{};
+    bool hdrMetadata{};
     bool timelineSemaphores{};
     PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT{};
     PFN_vkCreateSwapchainKHR CreateSwapchainKHR{};
@@ -336,6 +342,7 @@ struct NativeDevice {
     PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR{};
     PFN_vkAcquireNextImageKHR AcquireNextImageKHR{};
     PFN_vkQueuePresentKHR QueuePresentKHR{};
+    PFN_vkSetHdrMetadataEXT SetHdrMetadataEXT{};
     PFN_vkGetSemaphoreCounterValueKHR GetSemaphoreCounterValueKHR{};
     PFN_vkWaitSemaphoresKHR WaitSemaphoresKHR{};
     PFN_vkSignalSemaphoreKHR SignalSemaphoreKHR{};
@@ -941,6 +948,9 @@ VkFormat textureFormat(Format f) {
     case Format::ASTC4x4UNorm: return VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
     case Format::ASTC6x6UNorm: return VK_FORMAT_ASTC_6x6_UNORM_BLOCK;
     case Format::ASTC8x8UNorm: return VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
+    case Format::RGBA8SRGB: return VK_FORMAT_R8G8B8A8_SRGB;
+    case Format::BGRA8SRGB: return VK_FORMAT_B8G8R8A8_SRGB;
+    case Format::RGB10A2UNorm: return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
     }
     return VK_FORMAT_UNDEFINED;
 }
@@ -3597,6 +3607,10 @@ struct VulkanDevice final : Device {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         return queryVulkanSurfacePresentCapabilities(owner, surface);
     }
+    Result<SurfaceColorCapabilities> querySurfaceColorCapabilities(Surface surface) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return queryVulkanSurfaceColorCapabilities(owner, surface);
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         return makeSwapchain(owner, surface, desc);
@@ -3670,6 +3684,10 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
             enabledDeviceExtensions.push_back(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
             maintenance.pNext = featureChain;
             featureChain = &maintenance;
+            if (hasExtension(VK_EXT_HDR_METADATA_EXTENSION_NAME)) {
+                native->hdrMetadata = true;
+                enabledDeviceExtensions.push_back(VK_EXT_HDR_METADATA_EXTENSION_NAME);
+            }
         }
     }
     VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR};
@@ -3726,6 +3744,10 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
 #define LOAD_WSI(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); if (!native->name) return fail(ErrorCode::Unsupported, "Vulkan swapchain entry point missing: vk" #name);
         LOAD_WSI(CreateSwapchainKHR) LOAD_WSI(DestroySwapchainKHR) LOAD_WSI(GetSwapchainImagesKHR) LOAD_WSI(AcquireNextImageKHR) LOAD_WSI(QueuePresentKHR)
 #undef LOAD_WSI
+        if (native->hdrMetadata) {
+            native->SetHdrMetadataEXT = reinterpret_cast<PFN_vkSetHdrMetadataEXT>((*instance)->GetDeviceProcAddr(native->handle, "vkSetHdrMetadataEXT"));
+            if (!native->SetHdrMetadataEXT) native->hdrMetadata = false;
+        }
     }
     if (native->timelineSemaphores) {
         native->GetSemaphoreCounterValueKHR = reinterpret_cast<PFN_vkGetSemaphoreCounterValueKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkGetSemaphoreCounterValueKHR"));

@@ -62,8 +62,74 @@ DXGI_FORMAT native(Format format) {
     case Format::BC5UNorm: return DXGI_FORMAT_BC5_UNORM;
     case Format::BC6HUFloat: return DXGI_FORMAT_BC6H_UF16;
     case Format::BC7UNorm: return DXGI_FORMAT_BC7_UNORM;
+    case Format::RGBA8SRGB: return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    case Format::BGRA8SRGB: return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+    case Format::RGB10A2UNorm: return DXGI_FORMAT_R10G10B10A2_UNORM;
     default: return DXGI_FORMAT_UNKNOWN;
     }
+}
+DXGI_FORMAT dxgiSwapChainStorageFormat(Format format) {
+    switch (format) {
+    case Format::RGBA8UNorm:
+    case Format::RGBA8SRGB: return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case Format::BGRA8UNorm:
+    case Format::BGRA8SRGB: return DXGI_FORMAT_B8G8R8A8_UNORM;
+    case Format::RGB10A2UNorm: return DXGI_FORMAT_R10G10B10A2_UNORM;
+    case Format::RGBA16Float: return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    default: return DXGI_FORMAT_UNKNOWN;
+    }
+}
+std::optional<DXGI_COLOR_SPACE_TYPE> dxgiColorSpaceFor(ColorSpace cs) {
+    switch (cs) {
+    case ColorSpace::SrgbNonlinear: return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+    case ColorSpace::LinearSrgb:
+    case ColorSpace::ExtendedLinearScRgb: return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+    case ColorSpace::Hdr10St2084: return DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+    case ColorSpace::DisplayP3Nonlinear:
+    case ColorSpace::Rec2020Linear:
+        return std::nullopt;
+    }
+    return std::nullopt;
+}
+bool validD3D12SwapPair(Format format, ColorSpace cs) {
+    switch (cs) {
+    case ColorSpace::SrgbNonlinear:
+        return format == Format::RGBA8UNorm || format == Format::BGRA8UNorm ||
+               format == Format::RGBA8SRGB || format == Format::BGRA8SRGB ||
+               format == Format::RGB10A2UNorm;
+    case ColorSpace::LinearSrgb:
+    case ColorSpace::ExtendedLinearScRgb:
+        return format == Format::RGBA16Float;
+    case ColorSpace::Hdr10St2084:
+        return format == Format::RGB10A2UNorm;
+    case ColorSpace::DisplayP3Nonlinear:
+    case ColorSpace::Rec2020Linear:
+        return false;
+    }
+    return false;
+}
+DXGI_HDR_METADATA_HDR10 makeDxgiHdr10Metadata(const HdrMetadata& m) {
+    auto chromaticity = [](float v) -> UINT16 {
+        const float scaled = std::clamp(v, 0.0f, 1.0f) * 50000.0f;
+        return static_cast<UINT16>(std::lround(scaled));
+    };
+    auto clampU16 = [](float v) -> UINT16 {
+        return static_cast<UINT16>(std::clamp<double>(std::round(static_cast<double>(v)), 0.0, 65535.0));
+    };
+    DXGI_HDR_METADATA_HDR10 out{};
+    out.RedPrimary[0] = chromaticity(m.redPrimaryX);
+    out.RedPrimary[1] = chromaticity(m.redPrimaryY);
+    out.GreenPrimary[0] = chromaticity(m.greenPrimaryX);
+    out.GreenPrimary[1] = chromaticity(m.greenPrimaryY);
+    out.BluePrimary[0] = chromaticity(m.bluePrimaryX);
+    out.BluePrimary[1] = chromaticity(m.bluePrimaryY);
+    out.WhitePoint[0] = chromaticity(m.whitePointX);
+    out.WhitePoint[1] = chromaticity(m.whitePointY);
+    out.MaxMasteringLuminance = static_cast<UINT>(std::clamp<double>(std::round(static_cast<double>(m.maxMasteringLuminance)), 0.0, 100000.0));
+    out.MinMasteringLuminance = static_cast<UINT>(std::clamp<double>(std::round(static_cast<double>(m.minMasteringLuminance) * 10000.0), 0.0, 100000000.0));
+    out.MaxContentLightLevel = clampU16(m.maxContentLightLevel);
+    out.MaxFrameAverageLightLevel = clampU16(m.maxFrameAverageLightLevel);
+    return out;
 }
 DXGI_FORMAT native(VertexFormat format) {
     switch(format) {
@@ -1948,14 +2014,33 @@ struct DXSwapChain final : SwapChain {
     ComPtr<IDXGISwapChain3>& chain{objects->chain};
     SwapChainDesc desc;
     PresentMode activeMode{PresentMode::Fifo};
+    Format activeFormat{Format::RGBA8UNorm};
+    DXGI_FORMAT nativeStorageFormat{DXGI_FORMAT_R8G8B8A8_UNORM};
+    ColorSpace activeColorSpace{ColorSpace::SrgbNonlinear};
+    DXGI_COLOR_SPACE_TYPE dxgiColorSpace{DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709};
+    std::optional<HdrMetadata> activeMetadata;
     UINT swapFlags{};
     std::uint32_t effectiveLatency{1};
     mutable detail::FramePacingTracker pacing;
     std::vector<std::shared_ptr<DXTexture>> buffers;
+    Result<void> applyMetadataNative(const HdrMetadata& metadata) {
+        ComPtr<IDXGISwapChain4> chain4;
+        if (FAILED(chain.As(&chain4))) {
+            return invalid("IDXGISwapChain4 HDR metadata interface unavailable", ErrorCode::Unsupported);
+        }
+        DXGI_HDR_METADATA_HDR10 hdr10 = makeDxgiHdr10Metadata(metadata);
+        const HRESULT hr = chain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(hdr10), &hdr10);
+        if (hr == DXGI_ERROR_UNSUPPORTED || hr == E_NOINTERFACE) {
+            return invalid("Swapchain does not support HDR10 static metadata", ErrorCode::Unsupported);
+        }
+        if (FAILED(hr)) return owner->failure(hr, "SetHDRMetaData failed");
+        activeMetadata = metadata;
+        return {};
+    }
     Result<void> rebuild() {
         for (UINT i = 0; i < desc.buffers; ++i) {
             auto texture = std::make_shared<DXTexture>(); texture->owner = owner;
-            texture->desc = {desc.width, desc.height, Format::RGBA8UNorm, true}; texture->backbuffer = true;
+            texture->desc = {desc.width, desc.height, activeFormat, true}; texture->backbuffer = true;
             texture->tracker->state = ResourceState::Present;
             texture->tracker->backbuffer=true;texture->tracker->bufferIndex=i;texture->tracker->swapchain=objects->scope;
             HRESULT result = chain->GetBuffer(i, IID_PPV_ARGS(&texture->resource));
@@ -1998,18 +2083,28 @@ struct DXSwapChain final : SwapChain {
         for (const auto& buffer : buffers) if (buffer.use_count() != 1 || buffer->tracker.use_count() != 1) return invalid("Release acquired backbuffers and command references before resizing");
         status = owner->idle(); if (!status) return status;
         buffers.clear();
-        HRESULT result = chain->ResizeBuffers(desc.buffers, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, swapFlags);
+        HRESULT result = chain->ResizeBuffers(desc.buffers, width, height, nativeStorageFormat, swapFlags);
         if (FAILED(result)) {
             auto error=owner->failure(result,"ResizeBuffers failed");
             if(error.error().code==ErrorCode::DeviceLost)return error;
             auto restored=rebuild();if(!restored && restored.error().code==ErrorCode::DeviceLost)return restored;
             return error;
         }
+        (void)chain->SetColorSpace1(dxgiColorSpace);
+        if (activeMetadata) { (void)applyMetadataNative(*activeMetadata); }
         desc.width = width; desc.height = height; return rebuild();
     }
     PresentMode presentMode() const override { return activeMode; }
     FramePacingMode pacingMode() const override { return desc.pacingMode; }
     std::uint32_t maxFrameLatency() const override { return effectiveLatency; }
+    Format format() const override { return activeFormat; }
+    ColorSpace colorSpace() const override { return activeColorSpace; }
+    Result<void> setHdrMetadata(const HdrMetadata& metadata) override {
+        auto status = owner->check(); if (!status) return status;
+        if (auto ok = detail::validateHdrMetadata(metadata); !ok) return ok;
+        return applyMetadataNative(metadata);
+    }
+    std::optional<HdrMetadata> hdrMetadata() const override { return activeMetadata; }
     Result<void> waitForNextFrame(std::chrono::milliseconds timeout) override {
         auto status = owner->check(); if (!status) return status;
         if (timeout.count() < 0 || timeout.count() > 4294967294ll)
@@ -2997,6 +3092,60 @@ public:
         caps.maxImageCount = 4u;
         return caps;
     }
+    Result<SurfaceColorCapabilities> querySurfaceColorCapabilities(Surface surface) override {
+        auto status = checkSurfaceSupport(surface);
+        if (!status) return std::unexpected(status.error());
+        SurfaceColorCapabilities out{};
+        out.supportedFormats = {
+            {Format::RGBA8UNorm, ColorSpace::SrgbNonlinear},
+            {Format::BGRA8UNorm, ColorSpace::SrgbNonlinear},
+            {Format::RGBA8SRGB, ColorSpace::SrgbNonlinear},
+            {Format::BGRA8SRGB, ColorSpace::SrgbNonlinear},
+            {Format::RGB10A2UNorm, ColorSpace::SrgbNonlinear},
+            {Format::RGB10A2UNorm, ColorSpace::Hdr10St2084},
+            {Format::RGBA16Float, ColorSpace::LinearSrgb},
+            {Format::RGBA16Float, ColorSpace::ExtendedLinearScRgb},
+        };
+        out.srgbNonlinear = true;
+        out.linearSrgb = true;
+        out.displayP3 = false;
+        out.rec2020Linear = false;
+        out.hdr10St2084 = true;
+        out.extendedLinearScRgb = true;
+        out.tenBitOutput = true;
+        out.hdrMetadata = true;
+        out.activeDisplayColorSpace = ColorSpace::SrgbNonlinear;
+        out.displayHdrEnabled = false;
+        const HMONITOR targetMonitor = MonitorFromWindow(static_cast<HWND>(surface.window), MONITOR_DEFAULTTOPRIMARY);
+        ComPtr<IDXGIAdapter1> adapter;
+        if (SUCCEEDED(state->factory->EnumAdapterByLuid(state->device->GetAdapterLuid(), IID_PPV_ARGS(&adapter)))) {
+            for (UINT idx = 0;; ++idx) {
+                ComPtr<IDXGIOutput> output;
+                if (adapter->EnumOutputs(idx, &output) == DXGI_ERROR_NOT_FOUND) break;
+                ComPtr<IDXGIOutput6> output6;
+                if (SUCCEEDED(output.As(&output6))) {
+                    DXGI_OUTPUT_DESC1 desc1{};
+                    if (SUCCEEDED(output6->GetDesc1(&desc1)) &&
+                        (targetMonitor == nullptr || desc1.Monitor == targetMonitor)) {
+                        out.displayMaxLuminanceNits = desc1.MaxLuminance;
+                        out.displayMinLuminanceNits = desc1.MinLuminance;
+                        if (desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
+                            out.activeDisplayColorSpace = ColorSpace::Hdr10St2084;
+                            out.displayHdrEnabled = true;
+                        } else if (desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709) {
+                            out.activeDisplayColorSpace = ColorSpace::ExtendedLinearScRgb;
+                            out.displayHdrEnabled = true;
+                        } else {
+                            out.activeDisplayColorSpace = ColorSpace::SrgbNonlinear;
+                            out.displayHdrEnabled = false;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return out;
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (surface.kind == SurfaceKind::Xcb) return invalid("XCB surfaces require Linux", ErrorCode::Unsupported);
@@ -3008,6 +3157,21 @@ public:
         const PresentMode mode = desc.presentMode.value_or(desc.vsync ? PresentMode::Fifo : PresentMode::Immediate);
         if (mode == PresentMode::Mailbox) {
             return invalid("D3D12 DXGI flip-discard does not expose Vulkan-style Mailbox present mode", ErrorCode::Unsupported);
+        }
+        const auto dxgiCs = dxgiColorSpaceFor(desc.colorSpace);
+        if (!dxgiCs) {
+            return invalid("Requested swapchain color space is unsupported on D3D12 DXGI", ErrorCode::Unsupported);
+        }
+        const Format targetFormat = desc.format.value_or(
+            desc.colorSpace == ColorSpace::Hdr10St2084 ? Format::RGB10A2UNorm
+            : (desc.colorSpace == ColorSpace::ExtendedLinearScRgb || desc.colorSpace == ColorSpace::LinearSrgb) ? Format::RGBA16Float
+            : Format::RGBA8UNorm);
+        if (!validD3D12SwapPair(targetFormat, desc.colorSpace)) {
+            return invalid("Requested swapchain format and color space combination is unsupported on D3D12 DXGI", ErrorCode::Unsupported);
+        }
+        const DXGI_FORMAT storageFormat = dxgiSwapChainStorageFormat(targetFormat);
+        if (storageFormat == DXGI_FORMAT_UNKNOWN) {
+            return invalid("Requested swapchain backbuffer format is unsupported on D3D12 DXGI", ErrorCode::Unsupported);
         }
         BOOL allowTearing = FALSE;
         if (mode == PresentMode::Tearing) {
@@ -3024,11 +3188,15 @@ public:
         swap->owner = state;
         swap->desc = desc;
         swap->activeMode = mode;
+        swap->activeFormat = targetFormat;
+        swap->nativeStorageFormat = storageFormat;
+        swap->activeColorSpace = desc.colorSpace;
+        swap->dxgiColorSpace = *dxgiCs;
         swap->swapFlags = swapFlags;
         swap->effectiveLatency = *latency;
         swap->pacing.configure(mode, desc.pacingMode, *latency, desc.stallThresholdMilliseconds);
         DXGI_SWAP_CHAIN_DESC1 nativeDesc{}; nativeDesc.Width = desc.width; nativeDesc.Height = desc.height;
-        nativeDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; nativeDesc.SampleDesc.Count = 1;
+        nativeDesc.Format = storageFormat; nativeDesc.SampleDesc.Count = 1;
         nativeDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; nativeDesc.BufferCount = desc.buffers;
         nativeDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         nativeDesc.Flags = swapFlags;
@@ -3036,6 +3204,17 @@ public:
         HRESULT result = state->factory->CreateSwapChainForHwnd(state->queues[0].queue.Get(), static_cast<HWND>(surface.window), &nativeDesc, nullptr, nullptr, &chain);
         if (FAILED(result)) return state->failure(result, "Create swapchain failed");
         result = chain.As(&swap->chain); if (FAILED(result)) return state->failure(result, "Swapchain3 interface unavailable");
+        UINT csSupport = 0;
+        result = swap->chain->CheckColorSpaceSupport(*dxgiCs, &csSupport);
+        if (FAILED(result) || (csSupport & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) == 0u) {
+            return invalid("Requested DXGI swapchain color space is not supported for this format", ErrorCode::Unsupported);
+        }
+        result = swap->chain->SetColorSpace1(*dxgiCs);
+        if (FAILED(result)) return state->failure(result, "SetColorSpace1 failed");
+        if (desc.hdrMetadata) {
+            auto metaOk = swap->applyMetadataNative(*desc.hdrMetadata);
+            if (!metaOk) return std::unexpected(metaOk.error());
+        }
         result = swap->chain->SetMaximumFrameLatency(*latency);
         if (FAILED(result)) return state->failure(result, "SetMaximumFrameLatency failed");
         swap->objects->waitableObject = swap->chain->GetFrameLatencyWaitableObject();

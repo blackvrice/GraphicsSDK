@@ -163,7 +163,40 @@ struct ProfilingTracker {
     }
 };
 
+inline bool validColorSpace(ColorSpace cs) noexcept {
+    return cs == ColorSpace::SrgbNonlinear || cs == ColorSpace::LinearSrgb ||
+           cs == ColorSpace::DisplayP3Nonlinear || cs == ColorSpace::Rec2020Linear ||
+           cs == ColorSpace::Hdr10St2084 || cs == ColorSpace::ExtendedLinearScRgb;
+}
+
+inline Result<void> validateHdrMetadata(const HdrMetadata& m) {
+    auto unit = [](float v) { return std::isfinite(v) && v >= 0.0f && v <= 1.0f; };
+    if (!unit(m.redPrimaryX) || !unit(m.redPrimaryY) ||
+        !unit(m.greenPrimaryX) || !unit(m.greenPrimaryY) ||
+        !unit(m.bluePrimaryX) || !unit(m.bluePrimaryY) ||
+        !unit(m.whitePointX) || !unit(m.whitePointY)) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "HDR chromaticity coordinates must be finite and within [0, 1]"});
+    }
+    if (!std::isfinite(m.maxMasteringLuminance) || !std::isfinite(m.minMasteringLuminance) ||
+        !std::isfinite(m.maxContentLightLevel) || !std::isfinite(m.maxFrameAverageLightLevel) ||
+        m.minMasteringLuminance < 0.0f || m.maxMasteringLuminance <= 0.0f ||
+        m.maxMasteringLuminance < m.minMasteringLuminance ||
+        m.maxContentLightLevel < 0.0f || m.maxFrameAverageLightLevel < 0.0f) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "HDR luminance values must be finite and non-negative with max >= min > 0"});
+    }
+    if (m.maxContentLightLevel > 0.0f && m.maxFrameAverageLightLevel > m.maxContentLightLevel) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "HDR maxFrameAverageLightLevel cannot exceed maxContentLightLevel"});
+    }
+    return {};
+}
+
 inline Result<std::uint32_t> resolveFrameLatency(const SwapChainDesc& desc) {
+    if (!validColorSpace(desc.colorSpace)) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "Unknown ColorSpace"});
+    }
+    if (desc.hdrMetadata) {
+        if (auto ok = validateHdrMetadata(*desc.hdrMetadata); !ok) return std::unexpected(ok.error());
+    }
     if (desc.pacingMode != FramePacingMode::Balanced &&
         desc.pacingMode != FramePacingMode::LowLatency &&
         desc.pacingMode != FramePacingMode::Throughput) {

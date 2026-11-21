@@ -22,11 +22,42 @@ bool validDrawableExtent(std::uint32_t width, std::uint32_t height) {
     return width && height && width <= 16384 && height <= 16384;
 }
 
+bool validMetalSwapPair(Format format, ColorSpace cs) {
+    switch (cs) {
+    case ColorSpace::SrgbNonlinear:
+        return format == Format::BGRA8UNorm || format == Format::BGRA8SRGB || format == Format::RGB10A2UNorm;
+    case ColorSpace::DisplayP3Nonlinear:
+        return format == Format::BGRA8UNorm || format == Format::BGRA8SRGB || format == Format::RGB10A2UNorm;
+    case ColorSpace::Hdr10St2084:
+        return format == Format::RGB10A2UNorm;
+    case ColorSpace::LinearSrgb:
+    case ColorSpace::ExtendedLinearScRgb:
+    case ColorSpace::Rec2020Linear:
+        return format == Format::RGBA16Float;
+    }
+    return false;
+}
+
+CFStringRef metalColorSpaceName(ColorSpace cs) {
+    switch (cs) {
+    case ColorSpace::SrgbNonlinear: return kCGColorSpaceSRGB;
+    case ColorSpace::LinearSrgb: return kCGColorSpaceLinearSRGB;
+    case ColorSpace::DisplayP3Nonlinear: return kCGColorSpaceDisplayP3;
+    case ColorSpace::Rec2020Linear: return kCGColorSpaceExtendedLinearITUR_2020;
+    case ColorSpace::Hdr10St2084: return kCGColorSpaceITUR_2100_PQ;
+    case ColorSpace::ExtendedLinearScRgb: return kCGColorSpaceExtendedLinearSRGB;
+    }
+    return kCGColorSpaceSRGB;
+}
+
 struct MetalSwapChain final : SwapChain {
     std::shared_ptr<State> owner;
     std::shared_ptr<DrawableScope> scope = std::make_shared<DrawableScope>();
     SwapChainDesc desc;
     PresentMode activeMode{PresentMode::Fifo};
+    Format activeFormat{Format::BGRA8UNorm};
+    MTLPixelFormat nativeFormat{MTLPixelFormatBGRA8Unorm};
+    ColorSpace activeColorSpace{ColorSpace::SrgbNonlinear};
     std::uint32_t effectiveLatency{1};
     mutable detail::FramePacingTracker pacing;
     std::shared_ptr<MetalTexture> current;
@@ -43,7 +74,7 @@ struct MetalSwapChain final : SwapChain {
         CAMetalLayer* layer = scope->layer;
         const CGSize size = layer.drawableSize;
         const bool expectedSync = activeMode == PresentMode::Fifo;
-        if (!layer || layer.device != owner->device || layer.pixelFormat != MTLPixelFormatBGRA8Unorm ||
+        if (!layer || layer.device != owner->device || layer.pixelFormat != nativeFormat ||
             layer.framebufferOnly || layer.presentsWithTransaction || !layer.allowsNextDrawableTimeout ||
             layer.maximumDrawableCount != desc.buffers || bool(layer.displaySyncEnabled) != expectedSync ||
             size.width != desc.width || size.height != desc.height)
@@ -62,13 +93,14 @@ struct MetalSwapChain final : SwapChain {
             pacing.recordAcquireWait(std::chrono::duration<double, std::milli>(t1 - t0).count(), t0);
             id<MTLTexture> texture = drawable.texture;
             if (!texture || texture.width != desc.width || texture.height != desc.height ||
-                texture.pixelFormat != MTLPixelFormatBGRA8Unorm || texture.device != owner->device)
+                texture.pixelFormat != nativeFormat || texture.device != owner->device)
                 return fail(ErrorCode::BackendFailure, "CAMetalLayer returned a drawable with unexpected device, extent or format");
 
             auto allocation = std::make_shared<Allocation>();
             allocation->texture = texture;
-            allocation->textureDesc = {desc.width, desc.height, Format::BGRA8UNorm, true};
-            const auto rowBytes = desc.width * 4;
+            allocation->textureDesc = {desc.width, desc.height, activeFormat, true};
+            const std::uint32_t bpp = activeFormat == Format::RGBA16Float ? 8u : 4u;
+            const auto rowBytes = desc.width * bpp;
             const auto rowPitch = (rowBytes + 255u) & ~255u;
             allocation->footprint = {std::uint64_t(rowPitch) * desc.height, rowPitch, rowBytes, desc.height};
             allocation->bytes = texture.allocatedSize;
@@ -148,6 +180,14 @@ struct MetalSwapChain final : SwapChain {
         pacing.reset();
         return {};
     }
+    Format format() const override { return activeFormat; }
+    ColorSpace colorSpace() const override { return activeColorSpace; }
+    Result<void> setHdrMetadata(const HdrMetadata& metadata) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        if (auto ok = detail::validateHdrMetadata(metadata); !ok) return ok;
+        return fail(ErrorCode::Unsupported, "Static HDR10 metadata is unsupported on Metal CAMetalLayer");
+    }
+    std::optional<HdrMetadata> hdrMetadata() const override { return std::nullopt; }
 
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {
         if (auto ok = check(); !ok) return ok;
@@ -181,6 +221,35 @@ Result<SurfacePresentCapabilities> queryMetalSurfacePresentCapabilities(State& o
     return caps;
 }
 
+Result<SurfaceColorCapabilities> queryMetalSurfaceColorCapabilities(State& owner, Surface surface) {
+    auto layer = checkedLayer(owner, surface);
+    if (!layer) return std::unexpected(layer.error());
+    SurfaceColorCapabilities out{};
+    out.supportedFormats = {
+        {Format::BGRA8UNorm, ColorSpace::SrgbNonlinear},
+        {Format::BGRA8SRGB, ColorSpace::SrgbNonlinear},
+        {Format::RGB10A2UNorm, ColorSpace::SrgbNonlinear},
+        {Format::BGRA8UNorm, ColorSpace::DisplayP3Nonlinear},
+        {Format::BGRA8SRGB, ColorSpace::DisplayP3Nonlinear},
+        {Format::RGB10A2UNorm, ColorSpace::DisplayP3Nonlinear},
+        {Format::RGB10A2UNorm, ColorSpace::Hdr10St2084},
+        {Format::RGBA16Float, ColorSpace::LinearSrgb},
+        {Format::RGBA16Float, ColorSpace::ExtendedLinearScRgb},
+        {Format::RGBA16Float, ColorSpace::Rec2020Linear},
+    };
+    out.srgbNonlinear = true;
+    out.linearSrgb = true;
+    out.displayP3 = true;
+    out.rec2020Linear = true;
+    out.hdr10St2084 = true;
+    out.extendedLinearScRgb = true;
+    out.tenBitOutput = true;
+    out.hdrMetadata = false;
+    out.activeDisplayColorSpace = ColorSpace::SrgbNonlinear;
+    out.displayHdrEnabled = false;
+    return out;
+}
+
 Result<std::unique_ptr<SwapChain>> makeMetalSwapChain(const std::shared_ptr<State>& owner,
                                                      Surface surface, SwapChainDesc desc) {
     auto layer = checkedLayer(*owner, surface);
@@ -192,12 +261,27 @@ Result<std::unique_ptr<SwapChain>> makeMetalSwapChain(const std::shared_ptr<Stat
     const PresentMode mode = desc.presentMode.value_or(desc.vsync ? PresentMode::Fifo : PresentMode::Immediate);
     if (mode == PresentMode::Mailbox || mode == PresentMode::Tearing)
         return fail(ErrorCode::Unsupported, "Metal CAMetalLayer supports Fifo and Immediate present modes only");
+    if (desc.hdrMetadata)
+        return fail(ErrorCode::Unsupported, "Static HDR10 metadata is unsupported on Metal CAMetalLayer");
+    const Format targetFormat = desc.format.value_or(
+        desc.colorSpace == ColorSpace::Hdr10St2084 ? Format::RGB10A2UNorm
+        : (desc.colorSpace == ColorSpace::ExtendedLinearScRgb || desc.colorSpace == ColorSpace::LinearSrgb ||
+           desc.colorSpace == ColorSpace::Rec2020Linear) ? Format::RGBA16Float
+        : Format::BGRA8UNorm);
+    if (!validMetalSwapPair(targetFormat, desc.colorSpace))
+        return fail(ErrorCode::Unsupported, "Requested Metal swapchain format and color space pair is unsupported");
+    const MTLPixelFormat mtlFmt = pixelFormat(targetFormat);
+    if (mtlFmt == MTLPixelFormatInvalid)
+        return fail(ErrorCode::Unsupported, "Requested Metal swapchain pixel format is unsupported");
     if (objc_getAssociatedObject(*layer, &layerLeaseKey))
         return fail(ErrorCode::InvalidState, "CAMetalLayer already belongs to a live Metal swapchain");
     auto chain = std::make_unique<MetalSwapChain>();
     chain->owner = owner;
     chain->desc = desc;
     chain->activeMode = mode;
+    chain->activeFormat = targetFormat;
+    chain->nativeFormat = mtlFmt;
+    chain->activeColorSpace = desc.colorSpace;
     chain->effectiveLatency = *latency;
     chain->pacing.configure(mode, desc.pacingMode, *latency, desc.stallThresholdMilliseconds);
     std::erase_if(owner->surfaces, [](const auto& item) { return item.expired(); });
@@ -206,13 +290,22 @@ Result<std::unique_ptr<SwapChain>> makeMetalSwapChain(const std::shared_ptr<Stat
         chain->scope->layer = *layer;
         objc_setAssociatedObject(*layer, &layerLeaseKey, @YES, OBJC_ASSOCIATION_RETAIN);
         (*layer).device = owner->device;
-        (*layer).pixelFormat = MTLPixelFormatBGRA8Unorm;
+        (*layer).pixelFormat = mtlFmt;
         (*layer).framebufferOnly = NO;
         (*layer).presentsWithTransaction = NO;
         (*layer).allowsNextDrawableTimeout = YES;
         (*layer).maximumDrawableCount = desc.buffers;
         (*layer).displaySyncEnabled = (mode == PresentMode::Fifo);
         (*layer).drawableSize = CGSizeMake(desc.width, desc.height);
+        const bool edr = desc.colorSpace == ColorSpace::Hdr10St2084 ||
+                         desc.colorSpace == ColorSpace::ExtendedLinearScRgb ||
+                         desc.colorSpace == ColorSpace::Rec2020Linear;
+        (*layer).wantsExtendedDynamicRangeContent = edr ? YES : NO;
+        CGColorSpaceRef csRef = CGColorSpaceCreateWithName(metalColorSpaceName(desc.colorSpace));
+        if (csRef) {
+            (*layer).colorspace = csRef;
+            CGColorSpaceRelease(csRef);
+        }
     }
     return std::unique_ptr<SwapChain>(std::move(chain));
 }
