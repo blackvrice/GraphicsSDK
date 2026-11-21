@@ -3919,15 +3919,46 @@
       "id": "P10-PRES-01",
       "phase": 10,
       "group": "P10-PRES",
-      "title": "Frame Pacing·Present Mode·VRR·최대 지연·저지연/처리량 모드",
-      "status": "todo",
+      "title": "Frame Pacing·Present Mode·VRR·최대 지연·저지연/처리량 모드 (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P8-CAP-01"
       ],
-      "work": "VSync/Immediate/Mailbox/VRR(Tearing) Capability 조회 및 선택, Maximum Frame Latency, CPU-GPU 큐 지연과 GPU Stall 감지, 저지연·처리량 우선 모드를 구현한다.",
+      "work": "PresentMode(Fifo/Immediate/Mailbox/Tearing), FramePacingMode(Balanced/LowLatency/Throughput), SurfacePresentCapabilities, FramePacingStats, Device::querySurfacePresentCapabilities(Surface), SwapChain::{presentMode,pacingMode,maxFrameLatency,waitForNextFrame,framePacingStats,resetFramePacingStats}를 기존 SwapChainDesc 하위 호환과 13개 공개 헤더/5개 CORE 유닛 계약을 유지하며 D3D12(DXGI_FEATURE_PRESENT_ALLOW_TEARING·DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT·SetMaximumFrameLatency·Mailbox Unsupported), Vulkan(vkGetPhysicalDeviceSurfacePresentModesKHR·Fifo/Immediate/Mailbox/Tearing·미지원 거부), Metal(CAMetalLayer Fifo/Immediate·Mailbox/Tearing Unsupported)에 구현했다. Windows D3D12(GTX 1660 SUPER·Intel UHD 770·Debug+GBV·WARP 손실/복구)·Vulkan(GTX 1660 SUPER 4모드 전체·Intel UHD 770 swapchain Unsupported·고정 VVL 1.3.290) 5모드, 독립 설치 소비자 9/9 및 CTest 160/162(frame_pacing 5/5 포함 스왑체인 전체 통과; 기존 로컬 예외 fence_wait 2건 관찰)에서 모드별 프레임 시간·표준편차·큐 지연 실측, GPU Stall 감지, Resize 플래그 보존 및 validation 오류 0을 확인했다.",
       "done_when": "모드별 프레임 시간 편차·큐 지연 실측 기록과 미지원 Present Mode 거부 검증 통과.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Surface.hpp",
+        "include/graphics/SwapChain.hpp",
+        "include/graphics/Device.hpp",
+        "src/foundation/DeviceGeneration.hpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Presentation.hpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/metal/MetalPresentation.hpp",
+        "src/backends/metal/Metal.cpp",
+        "tests/FramePacingTests.cpp",
+        "docs/PHASE10_FRAME_PACING_REPORT.md"
+      ]
+    },
+    {
+      "id": "P10-PRES-02",
+      "phase": 10,
+      "group": "P10-PRES",
+      "title": "Frame Pacing·Present Mode·최대 지연 macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P10-PRES-01"
+      ],
+      "work": "MetalPresentation.hpp(CAMetalLayer)와 Vulkan Presentation.hpp(XCB)의 querySurfacePresentCapabilities, PresentMode 선택/거부, waitForNextFrame 및 FramePacingStats 구현을 Linux Vulkan(XCB/lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 Present Mode 조회/선택/거부, 최대 프레임 지연 및 페이싱 통계 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/MetalPresentation.hpp",
+        "src/backends/vulkan/Presentation.hpp",
+        "docs/PHASE10_FRAME_PACING_REPORT.md"
+      ]
     },
     {
       "id": "P10-HDR-01",

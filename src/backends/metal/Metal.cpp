@@ -2358,6 +2358,9 @@ struct MetalDevice final : Device {
         if (!layer) return std::unexpected(layer.error());
         return {};
     }
+    Result<SurfacePresentCapabilities> querySurfacePresentCapabilities(Surface surface) override {
+        return queryMetalSurfacePresentCapabilities(*owner, surface);
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         return makeMetalSwapChain(owner, surface, desc);
     }

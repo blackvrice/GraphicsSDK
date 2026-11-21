@@ -3593,6 +3593,10 @@ struct VulkanDevice final : Device {
         if (!checked) return std::unexpected(checked.error());
         return {};
     }
+    Result<SurfacePresentCapabilities> querySurfacePresentCapabilities(Surface surface) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return queryVulkanSurfacePresentCapabilities(owner, surface);
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         return makeSwapchain(owner, surface, desc);

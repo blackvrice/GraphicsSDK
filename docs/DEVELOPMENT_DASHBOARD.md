@@ -25,10 +25,10 @@
 | Phase 7 | 독립 SDK 배포 | 15 | 9 | 6 | 0 | 0 | 6프로필 후보·공통 감사·Windows GPU smoke 완료 · CI/최종 수용 잔여 |
 | Phase 8 | GPU 자원·전송·Capability·Texture·Memory Pool 확장 | 20 | 11 | 0 | 0 | 9 | `copyBufferRegion`·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(`P8-TEX-01`)·1D/3D/2DArray/Cubemap/Mipmap(`P8-TEX-02`)·MSAA/Resolve(`P8-TEX-03`)·압축 텍스처 BC/ETC2/ASTC(`P8-TEX-04`)·`UploadRing`/Pools(`P8-MEM-01`)·Fragmentation/Residency/Aliasing/Sparse(`P8-MEM-02`) **Phase 8 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 9건 잔여 |
 | Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 15 | 7 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·병렬 기록/일괄 제출(`P9-CMD-02`)·다중 큐/Timeline Fence(`P9-CMD-03`)·Compute/UAV(`P9-CMP-01`)·Async Compute/Indirect/MDI/GPU Culling/Capability(`P9-CMP-02`)·선택적 Render Graph(`P9-RG-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 영속 Shader Cache(`P9-SHD-01`) 잔여 |
-| Phase 10 | Frame Pacing·HDR·Multi-Surface·Dirty Region | 4 | 0 | 0 | 0 | 4 | 계획 등록 완료 · 순차 구현 대기 |
+| Phase 10 | Frame Pacing·HDR·Multi-Surface·Dirty Region | 5 | 1 | 0 | 0 | 4 | Frame Pacing·Present Mode(`Fifo`/`Immediate`/`Mailbox`/`Tearing`)·최대 지연·GPU Stall 감지(`P10-PRES-01`) Win D3D12/Vulkan 완료 · Linux/Metal 검증(`P10-PRES-02`) 및 HDR/Multi-Surface/Dirty Region 대기 |
 | Phase 11 | Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 6 | 1 | 0 | 0 | 5 | GPU Profiling 확장(`P11-PROF-01`: 다중 32-Scope GPU Timestamp·ON/OFF 분리·카운터/Stall/VRAM null 계약) D3D12/Win Vulkan 완료 · Linux/Metal 검증(`P11-PROF-02`) 및 Interop/Video/Debugging 대기 |
 | Phase 12 | GraphicsUI·Sandbox RHI 호환성 | 3 | 1 | 0 | 0 | 2 | Sandbox RHI 1:1 매핑 및 비침투 독립 어댑터(`P12-SBX-01`) Win D3D12/Vulkan 완료 · Linux/Metal 검증(`P12-SBX-02`) 및 GraphicsUI 통합(`P12-UI-01`) 대기 |
-| **합계** | **전체 13 Phases** | **208** | **126** | **38** | **8** | **36** | **진행 중** |
+| **합계** | **전체 13 Phases** | **209** | **127** | **38** | **8** | **36** | **진행 중** |
 
 ---
 
@@ -46,7 +46,7 @@
 | `v0.0.6` | 공개 Upload Ring·Staging/Readback/Transient Pool·VRAM Budget·Fragmentation/Residency/Aliasing/Sparse | `P8-MEM-01`~`04`, `P6-OPT-*` | `01, 02` 완료 (**Phase 8 Win D3D12/Vulkan 완료**) · `03, 04`(Linux/Metal) 잔여 |
 | `v0.0.7` | 동적 Viewport·Command Pool·병렬 명령 기록·다중 큐·Timeline Fence | `P9-CMD-01`~`08` | `01, 02, 03, 04` 완료 · `05, 06, 07, 08`(Linux/Metal) 잔여 |
 | `v0.0.8` | Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch·Async Compute GPU Culling·Indirect/MDI·Bindless/Mesh Cap | `P9-CMP-01`~`04` | `01, 02` 완료 · `03, 04`(Linux/Metal) 잔여 |
-| `v0.0.9` | Frame Pacing·HDR/Color Space·Multi-Surface·Dirty Region 기반 | `P10-PRES-01`~`P10-DIRTY-01` | 미완료 |
+| `v0.0.9` | Frame Pacing·HDR/Color Space·Multi-Surface·Dirty Region 기반 | `P10-PRES-01`~`P10-DIRTY-01` | `P10-PRES-01` 완료 · `P10-PRES-02`(Linux/Metal) 및 HDR/Multi-Surface/Dirty Region 잔여 |
 | `v0.0.10` | 선택적 Render Graph·Native Interop·Zero-Copy Video·GPU Profiling/Diagnostics·Sandbox 비침투 어댑터 | `P9-RG-01/02`, `P11-*`, `P12-*` | `P9-RG-01`·`P11-PROF-01`·`P12-SBX-01` 완료 · Linux/Metal 검증 및 나머지 `P11~12` 잔여 |
 
 ---
@@ -87,7 +87,8 @@
 | Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch | **물리 GPU + GBV + WARP** | **물리 GPU + 고정 VVL** | 구현(Linux CI 대기, `P9-CMP-03`) | 구현(macOS CI 대기, `P9-CMP-03`) |
 | 선택적 Render Graph (`RenderGraph`·DAG·자동 배리어·Aliasing·Culling·진단) | **물리 GPU + GBV + WARP (`-3.08%`)** | **물리 GPU + 고정 VVL (`-2.02%`)** | 구현(Linux CI 대기, `P9-RG-02`) | 구현(macOS CI 대기, `P9-RG-02`) |
 | Async Compute GPU Culling·Indirect/MDI/`dispatchIndirect`·Bindless/Mesh Cap | **물리 GPU + GBV + WARP (GTX `mesh=yes`/Intel `no`, `P9-CMP-02`)** | **물리 GPU + 고정 VVL (GTX `mesh=yes`/Intel `no`, `P9-CMP-02`)** | 구현(Linux CI 대기, `P9-CMP-04`) | 구현(macOS CI 대기, `P9-CMP-04`) |
-| Frame Pacing / HDR / Multi-Surface / Interop | 미구현 (`P10`~`P11`) | 미구현 (`P10`~`P11`) | 미구현 (`P10`~`P11`) | 미구현 (`P10`~`P11`) |
+| Frame Pacing·Present Mode(Fifo/Immediate/Mailbox/Tearing)·최대 지연·GPU Stall | **물리 GPU + GBV + WARP (Fifo/Imm/Tearing·Waitable, `P10-PRES-01`)** | **물리 GPU + 고정 VVL (GTX 4모드·Intel 거부, `P10-PRES-01`)** | 구현(Linux CI 대기, `P10-PRES-02`) | 구현(macOS CI 대기, `P10-PRES-02`) |
+| HDR / Multi-Surface / Dirty Region / Interop | 미구현 (`P10`~`P11`) | 미구현 (`P10`~`P11`) | 미구현 (`P10`~`P11`) | 미구현 (`P10`~`P11`) |
 
 ---
 
@@ -105,7 +106,7 @@ Sandbox 참고 기준: 읽기 전용 스냅샷 `.deps/references/sandbox` (`afe5
 | Upload Ring / Frame Context | `UploadRing`, `beginFrame`/`endFrame` | 저오버헤드 프레임 업로드 | **공개 `UploadRing`·`ReadbackPool`·`TransientResourcePool`(`P8-MEM-01`) Win D3D12/Vulkan 완료** | `P8-MEM-01/03`, `P6-OPT-08` |
 | GPU Timestamp (다중 구간) | `kMaxTimestampsPerFrame = 32` | GPU 프로파일링 | **2-slot + 다중 32-Scope·ON/OFF 프로파일링(`P11-PROF-01`) Win D3D12/Vulkan 완료** | `P11-PROF-01/02` |
 | 포맷 확장 (`R8`, `RG8`, `sRGB`, `R16Uint`, `D24S8`) | `Format` 16종 + `formatInfo` | 폰트 마스크(R8)·sRGB | 4종(RGBA8/BGRA8/RGBA16F/D32F) | `P8-CAP-01`, `P8-TEX-01` |
-| Multi-Surface / Low Latency | `ISwapChain` + `tearing` | 다중 독립 창·저지연 | 단일/다중 스왑체인 기반 · VRR/Frame Latency 미구현 | `P10-PRES-01`, `P10-SURF-01` |
+| Multi-Surface / Low Latency | `ISwapChain` + `tearing` | 다중 독립 창·저지연 | **Present Mode(Fifo/Immediate/Mailbox/Tearing)·Frame Pacing·Waitable Latency(`P10-PRES-01`) Win D3D12/Vulkan 완료** · Multi-Surface(`P10-SURF-01`) 대기 | `P10-PRES-01/02`, `P10-SURF-01` |
 
 ---
 

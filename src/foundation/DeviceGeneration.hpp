@@ -1,6 +1,10 @@
 #pragma once
+#include <graphics/Surface.hpp>
 #include <graphics/Types.hpp>
+#include <algorithm>
 #include <atomic>
+#include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <mutex>
 #include <vector>
@@ -155,6 +159,127 @@ struct ProfilingTracker {
         out.cpuStallMilliseconds = static_cast<double>(cpuStallNanoseconds.load(std::memory_order_relaxed)) / 1000000.0;
         std::lock_guard lock(scopesMutex);
         out.gpuTimestampScopes = gpuScopes;
+        return out;
+    }
+};
+
+inline Result<std::uint32_t> resolveFrameLatency(const SwapChainDesc& desc) {
+    if (desc.pacingMode != FramePacingMode::Balanced &&
+        desc.pacingMode != FramePacingMode::LowLatency &&
+        desc.pacingMode != FramePacingMode::Throughput) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "Unknown FramePacingMode"});
+    }
+    if (desc.presentMode) {
+        const auto m = *desc.presentMode;
+        if (m != PresentMode::Fifo && m != PresentMode::Immediate &&
+            m != PresentMode::Mailbox && m != PresentMode::Tearing) {
+            return std::unexpected(Error{ErrorCode::InvalidArgument, "Unknown PresentMode"});
+        }
+    }
+    if (!std::isfinite(desc.stallThresholdMilliseconds) || desc.stallThresholdMilliseconds <= 0.0) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "stallThresholdMilliseconds must be positive and finite"});
+    }
+    if (desc.maxFrameLatency > 4u) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "maxFrameLatency must be 0 (default) or 1..4"});
+    }
+    if (desc.maxFrameLatency != 0u) return desc.maxFrameLatency;
+    if (desc.pacingMode == FramePacingMode::LowLatency) return 1u;
+    if (desc.pacingMode == FramePacingMode::Throughput) return std::min<std::uint32_t>(3u, std::max<std::uint32_t>(1u, desc.buffers));
+    return std::min<std::uint32_t>(2u, std::max<std::uint32_t>(1u, desc.buffers));
+}
+
+struct FramePacingTracker {
+    using Clock = std::chrono::steady_clock;
+    PresentMode activeMode{PresentMode::Fifo};
+    FramePacingMode pacingMode{FramePacingMode::Balanced};
+    std::uint32_t maxLatency{1};
+    double stallThresholdMs{50.0};
+
+    std::uint64_t presentedFrames{};
+    std::uint64_t intervalSamples{};
+    double meanFrameMs{};
+    double m2FrameMs{};
+    double lastFrameMs{};
+    double lastAcquireWaitMs{};
+    double lastPresentWaitMs{};
+    double lastQueueLatencyMs{};
+    std::uint64_t gpuStallCount{};
+    bool hasAcquireStart{};
+    bool hasLastPresent{};
+    Clock::time_point acquireStart{};
+    Clock::time_point lastPresentAt{};
+
+    void configure(PresentMode mode, FramePacingMode pacing, std::uint32_t latency, double stallMs) noexcept {
+        activeMode = mode;
+        pacingMode = pacing;
+        maxLatency = latency;
+        stallThresholdMs = stallMs;
+    }
+
+    void reset() noexcept {
+        presentedFrames = 0;
+        intervalSamples = 0;
+        meanFrameMs = 0.0;
+        m2FrameMs = 0.0;
+        lastFrameMs = 0.0;
+        lastAcquireWaitMs = 0.0;
+        lastPresentWaitMs = 0.0;
+        lastQueueLatencyMs = 0.0;
+        gpuStallCount = 0;
+        hasAcquireStart = false;
+        hasLastPresent = false;
+    }
+
+    void recordAcquireWait(double waitMs, Clock::time_point startedAt) noexcept {
+        lastAcquireWaitMs = waitMs >= 0.0 ? waitMs : 0.0;
+        if (!hasAcquireStart) {
+            acquireStart = startedAt;
+            hasAcquireStart = true;
+        }
+    }
+
+    void recordStall() noexcept { ++gpuStallCount; }
+
+    void recordPresent(double presentWaitMs, Clock::time_point finishedAt) noexcept {
+        lastPresentWaitMs = presentWaitMs >= 0.0 ? presentWaitMs : 0.0;
+        ++presentedFrames;
+        if (hasAcquireStart) {
+            lastQueueLatencyMs = std::chrono::duration<double, std::milli>(finishedAt - acquireStart).count();
+            if (lastQueueLatencyMs < 0.0) lastQueueLatencyMs = 0.0;
+            hasAcquireStart = false;
+        } else {
+            lastQueueLatencyMs = lastPresentWaitMs;
+        }
+        if (hasLastPresent) {
+            const double frameMs = std::chrono::duration<double, std::milli>(finishedAt - lastPresentAt).count();
+            lastFrameMs = frameMs >= 0.0 ? frameMs : 0.0;
+            ++intervalSamples;
+            const double delta = lastFrameMs - meanFrameMs;
+            meanFrameMs += delta / static_cast<double>(intervalSamples);
+            const double delta2 = lastFrameMs - meanFrameMs;
+            m2FrameMs += delta * delta2;
+            if (lastFrameMs > stallThresholdMs) ++gpuStallCount;
+        } else {
+            lastFrameMs = lastQueueLatencyMs;
+            if (lastFrameMs > stallThresholdMs) ++gpuStallCount;
+        }
+        lastPresentAt = finishedAt;
+        hasLastPresent = true;
+    }
+
+    FramePacingStats snapshot() const noexcept {
+        FramePacingStats out{};
+        out.presentedFrames = presentedFrames;
+        out.lastFrameMilliseconds = lastFrameMs;
+        out.averageFrameMilliseconds = intervalSamples > 0u ? meanFrameMs : lastFrameMs;
+        out.frameTimeStdDevMilliseconds = intervalSamples > 1u ? std::sqrt(m2FrameMs / static_cast<double>(intervalSamples)) : 0.0;
+        out.lastAcquireWaitMilliseconds = lastAcquireWaitMs;
+        out.lastPresentWaitMilliseconds = lastPresentWaitMs;
+        out.lastQueueLatencyMilliseconds = lastQueueLatencyMs;
+        out.gpuStallCount = gpuStallCount;
+        out.activePresentMode = activeMode;
+        out.activePacingMode = pacingMode;
+        out.maxFrameLatency = maxLatency;
         return out;
     }
 };

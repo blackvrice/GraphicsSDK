@@ -47,6 +47,9 @@ struct VulkanSwapchain final : SwapChain {
     std::shared_ptr<NativeSwapchain> native;
     std::shared_ptr<int> token;
     SwapChainDesc desc;
+    PresentMode activeMode{PresentMode::Fifo};
+    std::uint32_t effectiveLatency{1};
+    mutable detail::FramePacingTracker pacing;
     std::vector<std::shared_ptr<VulkanTexture>> buffers;
     Result<void> surfaceResult(VkResult result, const char* operation) {
         if (result == VK_ERROR_SURFACE_LOST_KHR) {
@@ -107,11 +110,31 @@ struct VulkanSwapchain final : SwapChain {
         r = in.GetPhysicalDeviceSurfacePresentModesKHR(owner->physical, surface->handle, &count, modes.data());
         if (auto ok = surfaceResult(r, "Query present modes"); !ok) return std::unexpected(ok.error());
         modes.resize(count);
-        auto mode = VK_PRESENT_MODE_FIFO_KHR;
-        if (!desc.vsync) {
-            if (std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR) != modes.end()) mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-            else if (std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != modes.end()) mode = VK_PRESENT_MODE_MAILBOX_KHR;
+        auto hasMode = [&](VkPresentModeKHR m) { return std::find(modes.begin(), modes.end(), m) != modes.end(); };
+        VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
+        if (desc.presentMode) {
+            const PresentMode requested = *desc.presentMode;
+            if (requested == PresentMode::Fifo) {
+                if (!hasMode(VK_PRESENT_MODE_FIFO_KHR)) return fail(ErrorCode::Unsupported, "Surface does not support FIFO present mode");
+                mode = VK_PRESENT_MODE_FIFO_KHR;
+                activeMode = PresentMode::Fifo;
+            } else if (requested == PresentMode::Immediate || requested == PresentMode::Tearing) {
+                if (!hasMode(VK_PRESENT_MODE_IMMEDIATE_KHR)) return fail(ErrorCode::Unsupported, "Surface does not support Immediate/Tearing present mode");
+                mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+                activeMode = requested;
+            } else if (requested == PresentMode::Mailbox) {
+                if (!hasMode(VK_PRESENT_MODE_MAILBOX_KHR)) return fail(ErrorCode::Unsupported, "Surface does not support Mailbox present mode");
+                mode = VK_PRESENT_MODE_MAILBOX_KHR;
+                activeMode = PresentMode::Mailbox;
+            } else {
+                return fail(ErrorCode::InvalidArgument, "Unknown PresentMode");
+            }
+        } else if (!desc.vsync) {
+            if (hasMode(VK_PRESENT_MODE_IMMEDIATE_KHR)) { mode = VK_PRESENT_MODE_IMMEDIATE_KHR; activeMode = PresentMode::Immediate; }
+            else if (hasMode(VK_PRESENT_MODE_MAILBOX_KHR)) { mode = VK_PRESENT_MODE_MAILBOX_KHR; activeMode = PresentMode::Mailbox; }
             else return fail(ErrorCode::Unsupported, "Surface has no unthrottled present mode");
+        } else {
+            activeMode = PresentMode::Fifo;
         }
         // Maintenance1 image-count limits can depend on the selected present mode.
         VkSurfacePresentModeEXT selectedMode{VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_EXT}; selectedMode.presentMode = mode;
@@ -176,6 +199,7 @@ struct VulkanSwapchain final : SwapChain {
         if (!surfaceWindowReady(*surface)) return fail(ErrorCode::InvalidState, "Swapchain window expired; create a new swapchain");
         if (!native || !native->alive || native->invalid) return fail(ErrorCode::InvalidState, "Swapchain requires resize");
         if (!native->acquired) {
+            const auto acqT0 = detail::FramePacingTracker::Clock::now();
             auto& n = *owner->native; VkFence fence{}; VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
             if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Acquire fence"); !ok) return std::unexpected(ok.error());
             auto r = n.AcquireNextImageKHR(n.handle, native->handle, 1000000000ull, {}, fence, &native->current);
@@ -190,9 +214,11 @@ struct VulkanSwapchain final : SwapChain {
             if (r != VK_SUCCESS) {
                 if (surface->lost) return std::unexpected(surfaceResult(r, "Acquire surface lost").error());
                 if (native->invalid) return fail(ErrorCode::InvalidState, "Surface out of date; resize required", r);
-                if (r == VK_NOT_READY) return fail(ErrorCode::Timeout, "Acquire image not ready", r);
+                if (r == VK_NOT_READY) { pacing.recordStall(); return fail(ErrorCode::Timeout, "Acquire image not ready", r); }
                 return std::unexpected(owner->accept(r, "vkAcquireNextImageKHR / acquire wait").error());
             }
+            const auto acqT1 = detail::FramePacingTracker::Clock::now();
+            pacing.recordAcquireWait(std::chrono::duration<double, std::milli>(acqT1 - acqT0).count(), acqT0);
             auto& a = *buffers[native->current]->allocation;
             if (!a.imageInitialized) {
                 native->invalid = true; // Partial initialization requires explicit recreation.
@@ -234,6 +260,7 @@ struct VulkanSwapchain final : SwapChain {
         info.swapchainCount = 1; info.pSwapchains = &native->handle; info.pImageIndices = &native->current;
         VkSwapchainPresentFenceInfoEXT completion{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT}; completion.swapchainCount = 1; completion.pFences = &fence;
         info.pNext = &completion;
+        const auto presT0 = detail::FramePacingTracker::Clock::now();
         auto r = n.QueuePresentKHR(n.queue, &info); ++a.version; native->acquired = false;
         if (r == VK_ERROR_SURFACE_LOST_KHR) { surface->lost = true; native->invalid = true; }
         // Completion here permits safe semaphore/swapchain destruction even without
@@ -241,13 +268,55 @@ struct VulkanSwapchain final : SwapChain {
         auto waited = VK_SUCCESS;
         if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR || r == VK_ERROR_OUT_OF_DATE_KHR || r == VK_ERROR_SURFACE_LOST_KHR)
             waited = n.WaitForFences(n.handle, 1, &fence, VK_TRUE, UINT64_MAX);
+        const auto presT1 = detail::FramePacingTracker::Clock::now();
         n.DestroyFence(n.handle, fence, nullptr);
         if (auto ok = owner->accept(waited, "Wait presentation resource completion"); !ok) { native->invalid = true; return ok; }
-        if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR) return {};
+        if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR) {
+            pacing.recordPresent(std::chrono::duration<double, std::milli>(presT1 - presT0).count(), presT1);
+            return {};
+        }
         native->invalid = true;
         if (r == VK_ERROR_SURFACE_LOST_KHR) return surfaceResult(r, "Present surface lost");
         if (r == VK_ERROR_OUT_OF_DATE_KHR) return fail(ErrorCode::InvalidState, "Surface out of date; resize required", r);
         return owner->accept(r, "vkQueuePresentKHR");
+    }
+    PresentMode presentMode() const override { return activeMode; }
+    FramePacingMode pacingMode() const override { return desc.pacingMode; }
+    std::uint32_t maxFrameLatency() const override { return effectiveLatency; }
+    Result<void> waitForNextFrame(std::chrono::milliseconds timeout) override {
+        if (auto ok = owner->poll(); !ok) return ok;
+        if (timeout.count() < 0 || timeout.count() > 4294967294ll)
+            return fail(ErrorCode::InvalidArgument, "SwapChain wait timeout outside finite range");
+        if (surface->lost) return fail(ErrorCode::InvalidState, "Surface lost; create a new swapchain with a new native surface", VK_ERROR_SURFACE_LOST_KHR);
+        if (!surfaceWindowReady(*surface)) return fail(ErrorCode::InvalidState, "Swapchain window expired; create a new swapchain");
+        if (!native || !native->alive || native->invalid) return fail(ErrorCode::InvalidState, "Swapchain requires resize");
+        // Host-fenced acquisition bounds queue depth; drain pending graphics work when
+        // in-flight submissions reach effectiveLatency.
+        const auto t0 = detail::FramePacingTracker::Clock::now();
+        auto& q = owner->queues[0];
+        while (q.pending.size() >= effectiveLatency) {
+            const auto r = owner->native->WaitForFences(
+                owner->native->handle, 1, &q.pending.front().fence, VK_TRUE,
+                static_cast<std::uint64_t>(timeout.count()) * 1000000ull);
+            if (r == VK_TIMEOUT) {
+                pacing.recordStall();
+                return fail(ErrorCode::Timeout, "SwapChain frame latency wait timed out", r);
+            }
+            if (auto ok = owner->accept(r, "SwapChain frame latency wait"); !ok) return ok;
+            if (auto ok = owner->pollQueue(QueueType::Graphics); !ok) return ok;
+        }
+        const auto t1 = detail::FramePacingTracker::Clock::now();
+        pacing.recordAcquireWait(std::chrono::duration<double, std::milli>(t1 - t0).count(), t0);
+        return {};
+    }
+    Result<FramePacingStats> framePacingStats() const override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return pacing.snapshot();
+    }
+    Result<void> resetFramePacingStats() override {
+        if (auto ok = owner->check(); !ok) return ok;
+        pacing.reset();
+        return {};
     }
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {
         if (auto ok = owner->poll(); !ok) return ok;
@@ -263,13 +332,48 @@ struct VulkanSwapchain final : SwapChain {
         return rebuild(*info);
     }
 };
+Result<SurfacePresentCapabilities> queryVulkanSurfacePresentCapabilities(const std::shared_ptr<State>& owner, Surface surface) {
+#if defined(_WIN32) || defined(GFX_HAS_VULKAN_XCB)
+    if (!owner->native->presentation) return fail(ErrorCode::Unsupported, "Vulkan presentation requires surface support and swapchainMaintenance1");
+    auto prepared = makeSurface(owner, surface); if (!prepared) return std::unexpected(prepared.error());
+    auto& in = *owner->native->instance;
+    VkSurfaceCapabilitiesKHR caps{};
+    if (auto ok = owner->accept(in.GetPhysicalDeviceSurfaceCapabilitiesKHR(owner->physical, (*prepared)->handle, &caps), "Query surface capabilities"); !ok)
+        return std::unexpected(ok.error());
+    std::uint32_t count{};
+    if (auto ok = owner->accept(in.GetPhysicalDeviceSurfacePresentModesKHR(owner->physical, (*prepared)->handle, &count, nullptr), "Query present modes"); !ok)
+        return std::unexpected(ok.error());
+    std::vector<VkPresentModeKHR> modes(count);
+    if (count > 0u) {
+        if (auto ok = owner->accept(in.GetPhysicalDeviceSurfacePresentModesKHR(owner->physical, (*prepared)->handle, &count, modes.data()), "Query present modes"); !ok)
+            return std::unexpected(ok.error());
+        modes.resize(count);
+    }
+    auto hasMode = [&](VkPresentModeKHR m) { return std::find(modes.begin(), modes.end(), m) != modes.end(); };
+    SurfacePresentCapabilities out{};
+    out.fifo = hasMode(VK_PRESENT_MODE_FIFO_KHR);
+    out.immediate = hasMode(VK_PRESENT_MODE_IMMEDIATE_KHR);
+    out.mailbox = hasMode(VK_PRESENT_MODE_MAILBOX_KHR);
+    out.tearing = out.immediate;
+    out.frameLatencyWaitable = true;
+    out.minImageCount = caps.minImageCount;
+    out.maxImageCount = caps.maxImageCount ? caps.maxImageCount : 4u;
+    return out;
+#else
+    (void)owner; (void)surface;
+    return fail(ErrorCode::Unsupported, "Vulkan presentation currently requires Win32 or XCB");
+#endif
+}
 Result<std::unique_ptr<SwapChain>> makeSwapchain(const std::shared_ptr<State>& owner, Surface surface, SwapChainDesc desc) {
 #if defined(_WIN32) || defined(GFX_HAS_VULKAN_XCB)
     if (!owner->native->presentation) return fail(ErrorCode::Unsupported, "Vulkan presentation requires surface support and swapchainMaintenance1 completion fences");
+    auto latency = detail::resolveFrameLatency(desc);
+    if (!latency) return std::unexpected(latency.error());
     auto prepared = makeSurface(owner, surface); if (!prepared) return std::unexpected(prepared.error());
-    auto value = std::make_unique<VulkanSwapchain>(); value->owner = owner; value->desc = desc; value->token = std::make_shared<int>();
+    auto value = std::make_unique<VulkanSwapchain>(); value->owner = owner; value->desc = desc; value->effectiveLatency = *latency; value->token = std::make_shared<int>();
     value->surface = std::move(*prepared);
     auto config = value->configuration(desc.width, desc.height); if (!config) return std::unexpected(config.error());
+    value->pacing.configure(value->activeMode, desc.pacingMode, *latency, desc.stallThresholdMilliseconds);
     if (auto ok = value->rebuild(*config); !ok) return std::unexpected(ok.error());
     owner->objects.push_back(value->token); return std::unique_ptr<SwapChain>(std::move(value));
 #else

@@ -26,6 +26,9 @@ struct MetalSwapChain final : SwapChain {
     std::shared_ptr<State> owner;
     std::shared_ptr<DrawableScope> scope = std::make_shared<DrawableScope>();
     SwapChainDesc desc;
+    PresentMode activeMode{PresentMode::Fifo};
+    std::uint32_t effectiveLatency{1};
+    mutable detail::FramePacingTracker pacing;
     std::shared_ptr<MetalTexture> current;
 
     ~MetalSwapChain() override {
@@ -39,9 +42,10 @@ struct MetalSwapChain final : SwapChain {
         if (auto ok = owner->poll(); !ok) return ok;
         CAMetalLayer* layer = scope->layer;
         const CGSize size = layer.drawableSize;
+        const bool expectedSync = activeMode == PresentMode::Fifo;
         if (!layer || layer.device != owner->device || layer.pixelFormat != MTLPixelFormatBGRA8Unorm ||
             layer.framebufferOnly || layer.presentsWithTransaction || !layer.allowsNextDrawableTimeout ||
-            layer.maximumDrawableCount != desc.buffers || bool(layer.displaySyncEnabled) != desc.vsync ||
+            layer.maximumDrawableCount != desc.buffers || bool(layer.displaySyncEnabled) != expectedSync ||
             size.width != desc.width || size.height != desc.height)
             return fail(ErrorCode::InvalidState, "CAMetalLayer presentation configuration changed outside the SDK");
         return {};
@@ -51,8 +55,11 @@ struct MetalSwapChain final : SwapChain {
         if (auto ok = check(); !ok) return std::unexpected(ok.error());
         if (current) return TexturePtr(current);
         @autoreleasepool {
+            const auto t0 = detail::FramePacingTracker::Clock::now();
             id<CAMetalDrawable> drawable = [scope->layer nextDrawable];
-            if (!drawable) return fail(ErrorCode::Timeout, "CAMetalLayer did not provide a drawable");
+            const auto t1 = detail::FramePacingTracker::Clock::now();
+            if (!drawable) { pacing.recordStall(); return fail(ErrorCode::Timeout, "CAMetalLayer did not provide a drawable"); }
+            pacing.recordAcquireWait(std::chrono::duration<double, std::milli>(t1 - t0).count(), t0);
             id<MTLTexture> texture = drawable.texture;
             if (!texture || texture.width != desc.width || texture.height != desc.height ||
                 texture.pixelFormat != MTLPixelFormatBGRA8Unorm || texture.device != owner->device)
@@ -90,6 +97,7 @@ struct MetalSwapChain final : SwapChain {
         if (owner->last == UINT64_MAX)
             return fail(ErrorCode::InvalidState, "Metal fence sequence exhausted");
         @autoreleasepool {
+            const auto t0 = detail::FramePacingTracker::Clock::now();
             // The public API submits rendering before present. The same native queue
             // orders this command after rendering, and waitIdle includes both.
             id<MTLCommandBuffer> command = [owner->queue commandBuffer];
@@ -97,10 +105,47 @@ struct MetalSwapChain final : SwapChain {
             owner->pending.push_back({owner->last + 1, command, {}, {}, scope->drawable});
             [command presentDrawable:scope->drawable];
             [command commit];
+            const auto t1 = detail::FramePacingTracker::Clock::now();
+            pacing.recordPresent(std::chrono::duration<double, std::milli>(t1 - t0).count(), t1);
             ++owner->last;
             scope->discard();
             current.reset();
         }
+        return {};
+    }
+
+    PresentMode presentMode() const override { return activeMode; }
+    FramePacingMode pacingMode() const override { return desc.pacingMode; }
+    std::uint32_t maxFrameLatency() const override { return effectiveLatency; }
+
+    Result<void> waitForNextFrame(std::chrono::milliseconds timeout) override {
+        if (auto ok = check(); !ok) return ok;
+        if (timeout.count() < 0 || timeout.count() > 4294967294ll)
+            return fail(ErrorCode::InvalidArgument, "SwapChain wait timeout outside finite range");
+        const auto t0 = detail::FramePacingTracker::Clock::now();
+        const auto deadline = t0 + timeout;
+        while (owner->pending.size() >= effectiveLatency) {
+            if (auto ok = owner->pollQueue(QueueType::Graphics); !ok) return ok;
+            if (owner->pending.size() < effectiveLatency) break;
+            if (detail::FramePacingTracker::Clock::now() >= deadline) {
+                pacing.recordStall();
+                return fail(ErrorCode::Timeout, "Metal swapchain frame latency wait timed out");
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        const auto t1 = detail::FramePacingTracker::Clock::now();
+        pacing.recordAcquireWait(std::chrono::duration<double, std::milli>(t1 - t0).count(), t0);
+        return {};
+    }
+
+    Result<FramePacingStats> framePacingStats() const override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return pacing.snapshot();
+    }
+
+    Result<void> resetFramePacingStats() override {
+        if (auto ok = owner->check(); !ok) return ok;
+        pacing.reset();
         return {};
     }
 
@@ -122,17 +167,39 @@ struct MetalSwapChain final : SwapChain {
     }
 };
 
+Result<SurfacePresentCapabilities> queryMetalSurfacePresentCapabilities(State& owner, Surface surface) {
+    auto layer = checkedLayer(owner, surface);
+    if (!layer) return std::unexpected(layer.error());
+    SurfacePresentCapabilities caps{};
+    caps.fifo = true;
+    caps.immediate = true;
+    caps.mailbox = false;
+    caps.tearing = false;
+    caps.frameLatencyWaitable = true;
+    caps.minImageCount = 2u;
+    caps.maxImageCount = 3u;
+    return caps;
+}
+
 Result<std::unique_ptr<SwapChain>> makeMetalSwapChain(const std::shared_ptr<State>& owner,
                                                      Surface surface, SwapChainDesc desc) {
     auto layer = checkedLayer(*owner, surface);
     if (!layer) return std::unexpected(layer.error());
     if (!validDrawableExtent(desc.width, desc.height) || (desc.buffers != 2 && desc.buffers != 3))
         return fail(ErrorCode::InvalidArgument, "Metal swapchain requires a positive extent and two or three drawables");
+    auto latency = detail::resolveFrameLatency(desc);
+    if (!latency) return std::unexpected(latency.error());
+    const PresentMode mode = desc.presentMode.value_or(desc.vsync ? PresentMode::Fifo : PresentMode::Immediate);
+    if (mode == PresentMode::Mailbox || mode == PresentMode::Tearing)
+        return fail(ErrorCode::Unsupported, "Metal CAMetalLayer supports Fifo and Immediate present modes only");
     if (objc_getAssociatedObject(*layer, &layerLeaseKey))
         return fail(ErrorCode::InvalidState, "CAMetalLayer already belongs to a live Metal swapchain");
     auto chain = std::make_unique<MetalSwapChain>();
     chain->owner = owner;
     chain->desc = desc;
+    chain->activeMode = mode;
+    chain->effectiveLatency = *latency;
+    chain->pacing.configure(mode, desc.pacingMode, *latency, desc.stallThresholdMilliseconds);
     std::erase_if(owner->surfaces, [](const auto& item) { return item.expired(); });
     owner->surfaces.push_back(chain->scope);
     @autoreleasepool {
@@ -144,7 +211,7 @@ Result<std::unique_ptr<SwapChain>> makeMetalSwapChain(const std::shared_ptr<Stat
         (*layer).presentsWithTransaction = NO;
         (*layer).allowsNextDrawableTimeout = YES;
         (*layer).maximumDrawableCount = desc.buffers;
-        (*layer).displaySyncEnabled = desc.vsync;
+        (*layer).displaySyncEnabled = (mode == PresentMode::Fifo);
         (*layer).drawableSize = CGSizeMake(desc.width, desc.height);
     }
     return std::unique_ptr<SwapChain>(std::move(chain));

@@ -558,3 +558,31 @@
   - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
   - `P11-INT-01`: Native GPU Interoperability (External Memory·Fence·Semaphore·Handle).
   - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).
+
+
+---
+
+## 2026-11-21 — `P10-PRES-01` Frame Pacing·Present Mode·VRR·최대 지연·저지연/처리량 모드 구현·실기 검증
+
+- **기준 커밋**: `41fc47b4` (`Add Indirect/MDI, DispatchIndirect, Async Compute GPU Culling, and Bindless/Mesh capabilities (P9-CMP-02)`)
+- **작업 목적**:
+  - Phase 10 선행 관문 `P10-PRES-01` 완료: 기존 `SwapChainDesc` 하위 호환과 13개 공개 헤더·5개 `CORE` 번역 단위 계약을 유지하면서 `PresentMode`(`Fifo`/`Immediate`/`Mailbox`/`Tearing`), `FramePacingMode`(`Balanced`/`LowLatency`/`Throughput`), `SurfacePresentCapabilities`, `FramePacingStats`, `Device::querySurfacePresentCapabilities`, `SwapChain::{presentMode, pacingMode, maxFrameLatency, waitForNextFrame, framePacingStats, resetFramePacingStats}`를 D3D12/Vulkan/Metal에 구현하고 Windows 실기 검증.
+  - Linux Vulkan (XCB) 및 macOS Metal (`CAMetalLayer`) 실행 검증은 `P10-PRES-02`로 정직하게 분리.
+- **수정 파일 (19개)**:
+  - `include/graphics/Surface.hpp`, `include/graphics/SwapChain.hpp`, `include/graphics/Device.hpp`
+  - `src/foundation/DeviceGeneration.hpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Presentation.hpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/MetalPresentation.hpp`, `src/backends/metal/Metal.cpp`
+  - `tests/FramePacingTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE10_FRAME_PACING_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 검증 결과** (격리 빌드 `out/p10-frame-pacing`, 설치 `out/p10-frame-pacing-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `D1DFDF0B95AABD6F6B0CB77C53207FED856691CAF42E4E73E1AFB523AF473E29`):
+  - `gfx_frame_pacing_tests` 5/5 모드 통과:
+    - D3D12(GTX 1660 SUPER + Intel UHD 770: `Fifo`/`Immediate`/`Tearing` 지원·`Mailbox` `Unsupported` 거부·`waitable=yes`, `assertions=1372, rejections=16`), Debug+GBV(`val_errors=0, assertions=1376`), WARP(+손실/복구, `assertions=719, rejections=11`).
+    - Vulkan(GTX 1660 SUPER `Fifo`/`Immediate`/`Mailbox`/`Tearing` 4모드 전체 실측 + Intel UHD 770 `swapchain=unsupported`, `assertions=813, rejections=10`), 고정 VVL 1.3.290(`val_errors=0, assertions=817`).
+  - 독립 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)`): D3D12·Vulkan 전체 어댑터 비검증·검증 **9/9 통과 (`val_errors=0`)**.
+  - 전체 CTest 회귀: **160/162 통과 (`184.73s`)** — `frame_pacing_*` 5/5 및 모든 스왑체인/프레젠테이션 회귀 통과; 미통과 2건은 기존 문서에 알려진 로컬 드라이버 예외 `fence_wait_gpu`, `fence_wait_validation`(본 변경과 무관).
+  - `tools/roadmap.py --check`: PASS (209 task IDs: 127 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P10-HDR-01`: HDR 및 Color Space (sRGB·Linear·Display P3·Rec.2020·HDR10·scRGB·10-bit).
+  - `P10-SURF-01`: Multi-Window / Multi-Surface·다중 스왑체인 동기화·DPI/리사이즈 고도화.
+  - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
+  - `P11-INT-01`: Native GPU Interoperability (External Memory·Fence·Semaphore·Handle).

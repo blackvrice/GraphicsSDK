@@ -1935,14 +1935,22 @@ struct DXCommandPool final : CommandPool {
 struct NativeSwapChain final : Retirable {
     std::shared_ptr<SwapChainScope> scope{std::make_shared<SwapChainScope>()};
     ComPtr<IDXGISwapChain3> chain;
-    void releaseNative() override {scope->chain=nullptr;chain.Reset();}
-    ~NativeSwapChain() override {scope->chain=nullptr;}
+    HANDLE waitableObject{};
+    void closeWaitable() {
+        if (waitableObject) { CloseHandle(waitableObject); waitableObject = nullptr; }
+    }
+    void releaseNative() override { scope->chain = nullptr; closeWaitable(); chain.Reset(); }
+    ~NativeSwapChain() override { scope->chain = nullptr; closeWaitable(); }
 };
 struct DXSwapChain final : SwapChain {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeSwapChain> objects{std::make_shared<NativeSwapChain>()};
     ComPtr<IDXGISwapChain3>& chain{objects->chain};
     SwapChainDesc desc;
+    PresentMode activeMode{PresentMode::Fifo};
+    UINT swapFlags{};
+    std::uint32_t effectiveLatency{1};
+    mutable detail::FramePacingTracker pacing;
     std::vector<std::shared_ptr<DXTexture>> buffers;
     Result<void> rebuild() {
         for (UINT i = 0; i < desc.buffers; ++i) {
@@ -1961,6 +1969,9 @@ struct DXSwapChain final : SwapChain {
     Result<TexturePtr> acquire() override {
         auto status = owner->check(); if (!status) return std::unexpected(status.error());
         if (buffers.size() != desc.buffers) return invalid("Swapchain buffers unavailable");
+        if (!pacing.hasAcquireStart) {
+            pacing.recordAcquireWait(0.0, detail::FramePacingTracker::Clock::now());
+        }
         return buffers[chain->GetCurrentBackBufferIndex()];
     }
     Result<void> present() override {
@@ -1969,8 +1980,14 @@ struct DXSwapChain final : SwapChain {
         auto texture = buffers[chain->GetCurrentBackBufferIndex()];
         if (texture->tracker->state != ResourceState::Present) return invalid("Backbuffer must be submitted in Present state");
         if (texture->tracker->version == UINT64_MAX) return invalid("Backbuffer version exhausted");
-        HRESULT result = chain->Present(desc.vsync ? 1 : 0, 0);
+        const UINT syncInterval = activeMode == PresentMode::Fifo ? 1u : 0u;
+        const UINT flags = activeMode == PresentMode::Tearing ? DXGI_PRESENT_ALLOW_TEARING : 0u;
+        const auto t0 = detail::FramePacingTracker::Clock::now();
+        HRESULT result = chain->Present(syncInterval, flags);
+        const auto t1 = detail::FramePacingTracker::Clock::now();
         if (FAILED(result)) return owner->failure(result, "Present failed");
+        const double presentMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        pacing.recordPresent(presentMs, t1);
         // Invalidate recordings from before presentation, even after the ring
         // rotates back to this same buffer without another application submit.
         ++texture->tracker->version;return {};
@@ -1981,7 +1998,7 @@ struct DXSwapChain final : SwapChain {
         for (const auto& buffer : buffers) if (buffer.use_count() != 1 || buffer->tracker.use_count() != 1) return invalid("Release acquired backbuffers and command references before resizing");
         status = owner->idle(); if (!status) return status;
         buffers.clear();
-        HRESULT result = chain->ResizeBuffers(desc.buffers, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+        HRESULT result = chain->ResizeBuffers(desc.buffers, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, swapFlags);
         if (FAILED(result)) {
             auto error=owner->failure(result,"ResizeBuffers failed");
             if(error.error().code==ErrorCode::DeviceLost)return error;
@@ -1989,6 +2006,37 @@ struct DXSwapChain final : SwapChain {
             return error;
         }
         desc.width = width; desc.height = height; return rebuild();
+    }
+    PresentMode presentMode() const override { return activeMode; }
+    FramePacingMode pacingMode() const override { return desc.pacingMode; }
+    std::uint32_t maxFrameLatency() const override { return effectiveLatency; }
+    Result<void> waitForNextFrame(std::chrono::milliseconds timeout) override {
+        auto status = owner->check(); if (!status) return status;
+        if (timeout.count() < 0 || timeout.count() > 4294967294ll)
+            return invalid("SwapChain wait timeout outside finite range", ErrorCode::InvalidArgument);
+        if (!objects->waitableObject) return {};
+        const auto t0 = detail::FramePacingTracker::Clock::now();
+        const DWORD waitResult = WaitForSingleObjectEx(objects->waitableObject, static_cast<DWORD>(timeout.count()), FALSE);
+        const auto t1 = detail::FramePacingTracker::Clock::now();
+        if (waitResult == WAIT_TIMEOUT) {
+            pacing.recordStall();
+            return invalid("SwapChain frame latency wait timed out", ErrorCode::Timeout);
+        }
+        if (waitResult != WAIT_OBJECT_0) {
+            return invalid("SwapChain frame latency wait failed", ErrorCode::BackendFailure);
+        }
+        const double waitMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        pacing.recordAcquireWait(waitMs, t0);
+        return {};
+    }
+    Result<FramePacingStats> framePacingStats() const override {
+        auto status = owner->check(); if (!status) return std::unexpected(status.error());
+        return pacing.snapshot();
+    }
+    Result<void> resetFramePacingStats() override {
+        auto status = owner->check(); if (!status) return status;
+        pacing.reset();
+        return {};
     }
     ~DXSwapChain() override {
         if (owner) { auto waited = owner->idle(); (void)waited; }
@@ -2929,20 +2977,68 @@ public:
             return invalid("Surface requires a live Win32 window on the creating thread", ErrorCode::InvalidArgument);
         return {};
     }
+    Result<SurfacePresentCapabilities> querySurfacePresentCapabilities(Surface surface) override {
+        auto status = checkSurfaceSupport(surface);
+        if (!status) return std::unexpected(status.error());
+        BOOL allowTearing = FALSE;
+        ComPtr<IDXGIFactory5> factory5;
+        if (SUCCEEDED(state->factory.As(&factory5))) {
+            if (FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing)))) {
+                allowTearing = FALSE;
+            }
+        }
+        SurfacePresentCapabilities caps{};
+        caps.fifo = true;
+        caps.immediate = true;
+        caps.mailbox = false;
+        caps.tearing = allowTearing == TRUE;
+        caps.frameLatencyWaitable = true;
+        caps.minImageCount = 2u;
+        caps.maxImageCount = 4u;
+        return caps;
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (surface.kind == SurfaceKind::Xcb) return invalid("XCB surfaces require Linux", ErrorCode::Unsupported);
         if (surface.kind == SurfaceKind::MetalLayer) return invalid("CAMetalLayer surfaces require Metal", ErrorCode::Unsupported);
         if (surface.kind != SurfaceKind::Win32 || !IsWindow(static_cast<HWND>(surface.window)) || !desc.width || !desc.height || desc.width > 16384 || desc.height > 16384 || desc.buffers < 2 || desc.buffers > 4)
             return invalid("Invalid Win32 surface or swapchain description", ErrorCode::InvalidArgument);
-        auto swap = std::make_unique<DXSwapChain>(); swap->owner = state; swap->desc = desc;
+        auto latency = detail::resolveFrameLatency(desc);
+        if (!latency) return std::unexpected(latency.error());
+        const PresentMode mode = desc.presentMode.value_or(desc.vsync ? PresentMode::Fifo : PresentMode::Immediate);
+        if (mode == PresentMode::Mailbox) {
+            return invalid("D3D12 DXGI flip-discard does not expose Vulkan-style Mailbox present mode", ErrorCode::Unsupported);
+        }
+        BOOL allowTearing = FALSE;
+        if (mode == PresentMode::Tearing) {
+            ComPtr<IDXGIFactory5> factory5;
+            if (FAILED(state->factory.As(&factory5)) ||
+                FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))) ||
+                allowTearing != TRUE) {
+                return invalid("Adapter or OS does not support DXGI_FEATURE_PRESENT_ALLOW_TEARING", ErrorCode::Unsupported);
+            }
+        }
+        const UINT swapFlags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT |
+            (mode == PresentMode::Tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u);
+        auto swap = std::make_unique<DXSwapChain>();
+        swap->owner = state;
+        swap->desc = desc;
+        swap->activeMode = mode;
+        swap->swapFlags = swapFlags;
+        swap->effectiveLatency = *latency;
+        swap->pacing.configure(mode, desc.pacingMode, *latency, desc.stallThresholdMilliseconds);
         DXGI_SWAP_CHAIN_DESC1 nativeDesc{}; nativeDesc.Width = desc.width; nativeDesc.Height = desc.height;
         nativeDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; nativeDesc.SampleDesc.Count = 1;
         nativeDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; nativeDesc.BufferCount = desc.buffers;
         nativeDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        nativeDesc.Flags = swapFlags;
         ComPtr<IDXGISwapChain1> chain;
         HRESULT result = state->factory->CreateSwapChainForHwnd(state->queues[0].queue.Get(), static_cast<HWND>(surface.window), &nativeDesc, nullptr, nullptr, &chain);
         if (FAILED(result)) return state->failure(result, "Create swapchain failed");
         result = chain.As(&swap->chain); if (FAILED(result)) return state->failure(result, "Swapchain3 interface unavailable");
+        result = swap->chain->SetMaximumFrameLatency(*latency);
+        if (FAILED(result)) return state->failure(result, "SetMaximumFrameLatency failed");
+        swap->objects->waitableObject = swap->chain->GetFrameLatencyWaitableObject();
         swap->objects->scope->chain=swap->chain.Get();
         result = state->factory->MakeWindowAssociation(static_cast<HWND>(surface.window), DXGI_MWA_NO_ALT_ENTER);
         if (FAILED(result)) return state->failure(result, "Window association failed");

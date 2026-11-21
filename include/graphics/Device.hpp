@@ -132,6 +132,8 @@ public:
     // Creating thread only. Validate a live native surface and selected queue;
     // does not create a swapchain or guarantee format/present support.
     [[nodiscard]] virtual Result<void> checkSurfaceSupport(Surface) = 0;
+    // Queries supported present modes, frame-latency pacing support, and image count limits for a surface.
+    [[nodiscard]] virtual Result<SurfacePresentCapabilities> querySurfacePresentCapabilities(Surface) = 0;
     [[nodiscard]] virtual Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) = 0;
     [[nodiscard]] virtual CommandQueue& queue() = 0;
     [[nodiscard]] virtual Result<CommandQueue*> queue(QueueType type) = 0;

@@ -11,6 +11,12 @@ auto texture = device->createTexture({1920,1080,gfx::Format::RGBA8UNorm});
 ```
 
 Device는 장치 정보/기능, 자원/파이프라인/명령 목록/스왑체인 생성과 queue 접근을 제공한다.
+`Device::querySurfacePresentCapabilities(Surface)`는 `PresentMode`(`Fifo`, `Immediate`, `Mailbox`, `Tearing`),
+`frameLatencyWaitable`, 최소/최대 이미지 수를 조회하며, `SwapChainDesc`는 기존 `vsync` 하위 호환을 유지하면서
+명시적 `presentMode`, `FramePacingMode`(`Balanced`/`LowLatency`/`Throughput`), `maxFrameLatency`(0=기본값, 1..4),
+`stallThresholdMilliseconds`를 지원한다. `SwapChain::{waitForNextFrame, framePacingStats, resetFramePacingStats}`는
+실제 프레임 시간·표준편차·큐 지연·GPU Stall 통계를 보고하고 미지원 `PresentMode`(예: D3D12/Metal `Mailbox`)는
+명시적 `ErrorCode::Unsupported`로 거부한다. [Frame Pacing·Present Mode 보고서](PHASE10_FRAME_PACING_REPORT.md)를 따른다.
 queue는 submit 결과로 Fence를 반환하고 wait/waitIdle/completedValue를 제공한다.
 GPU 비동기 완료를 명시적으로 기다린 뒤 readback을 읽는다.
 
