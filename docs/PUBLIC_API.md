@@ -23,6 +23,11 @@ Device는 장치 정보/기능, 자원/파이프라인/명령 목록/스왑체�
 `SwapChainDesc`는 하위 호환 후행 필드로 `format`, `colorSpace`, `hdrMetadata`를 지원하며,
 `SwapChain::{format, colorSpace, setHdrMetadata, hdrMetadata}`는 색 공간·포맷 보존(`resize` 포함)과 정적 HDR10 메타데이터(D3D12 `IDXGISwapChain4::SetHDRMetaData`, Vulkan `VK_EXT_hdr_metadata`, Metal `Unsupported`)를 제공한다.
 미지원 색 공간·포맷 조합은 `ErrorCode::Unsupported`, 범위 외 색도·휘도 메타데이터는 `ErrorCode::InvalidArgument`로 거부한다. [HDR 및 Color Space 보고서](PHASE10_HDR_COLORSPACE_REPORT.md)를 따른다.
+`Device::querySurfaceMetrics(Surface)`와 `SwapChain::{width, height, surfaceMetrics, syncExtent}`는
+네이티브 창의 실시간 클라이언트 크기, DPI/배율(`dpi`, `dpiScale`), 최소화(`minimized`) 및 가림(`occluded`, D3D12 `DXGI_STATUS_OCCLUDED`) 상태를 조회하며,
+`syncExtent()`는 크기 변경 시에만 스왑체인을 리사이즈하고 최소화(`0x0`) 상태는 기존 스왑체인을 손상시키지 않고 `ErrorCode::InvalidState`로 거부한다.
+`Device::presentSwapChains(std::span<SwapChain* const>, bool skipMinimized)`는 단일 장치의 다중 스왑체인을 결정적 순서로 일괄 프레젠트하며
+빈 목록·null·중복 포인터는 실행 전 원자적으로 `ErrorCode::InvalidArgument` 거부, 최소화 창은 `skipMinimized=true`일 때 안전하게 건너뛴다. [Multi-Surface·다중 스왑체인 보고서](PHASE10_MULTI_SURFACE_REPORT.md)를 따른다.
 queue는 submit 결과로 Fence를 반환하고 wait/waitIdle/completedValue를 제공한다.
 GPU 비동기 완료를 명시적으로 기다린 뒤 readback을 읽는다.
 

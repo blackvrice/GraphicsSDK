@@ -68,6 +68,53 @@ std::optional<Format> fromVkSwapFormat(VkFormat f) {
     }
 }
 
+Result<SurfaceMetrics> queryNativeSurfaceMetrics(const NativeSurface& s) {
+#ifdef _WIN32
+    HWND hwnd = static_cast<HWND>(s.window);
+    if (!hwnd || !IsWindow(hwnd)) {
+        return fail(ErrorCode::InvalidState, "Swapchain window expired; create a new swapchain");
+    }
+    RECT rc{};
+    if (!GetClientRect(hwnd, &rc)) {
+        return fail(ErrorCode::BackendFailure, "GetClientRect failed");
+    }
+    const std::uint32_t w = rc.right > rc.left ? static_cast<std::uint32_t>(rc.right - rc.left) : 0u;
+    const std::uint32_t h = rc.bottom > rc.top ? static_cast<std::uint32_t>(rc.bottom - rc.top) : 0u;
+    UINT dpi = 96u;
+    using GetDpiForWindowFn = UINT (WINAPI*)(HWND);
+    static const auto getDpiForWindow = []() -> GetDpiForWindowFn {
+        HMODULE user32 = GetModuleHandleW(L"user32.dll");
+        return user32 ? reinterpret_cast<GetDpiForWindowFn>(GetProcAddress(user32, "GetDpiForWindow")) : nullptr;
+    }();
+    if (getDpiForWindow) {
+        const UINT queried = getDpiForWindow(hwnd);
+        if (queried > 0u) dpi = queried;
+    }
+    SurfaceMetrics out{};
+    out.clientWidth = w;
+    out.clientHeight = h;
+    out.dpi = dpi;
+    out.dpiScale = static_cast<float>(dpi) / 96.0f;
+    out.minimized = (IsIconic(hwnd) != FALSE) || w == 0u || h == 0u;
+    out.occluded = false;
+    return out;
+#elif defined(GFX_HAS_VULKAN_XCB)
+    auto window = xcbWindow(s.connection, s.windowId);
+    if (!window) return std::unexpected(window.error());
+    SurfaceMetrics out{};
+    out.clientWidth = window->width;
+    out.clientHeight = window->height;
+    out.dpi = 96u;
+    out.dpiScale = 1.0f;
+    out.minimized = (out.clientWidth == 0u || out.clientHeight == 0u);
+    out.occluded = false;
+    return out;
+#else
+    (void)s;
+    return fail(ErrorCode::Unsupported, "Native surface metrics require Win32 or GFX_VULKAN_XCB");
+#endif
+}
+
 struct VulkanSwapchain final : SwapChain {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeSurface> surface;
@@ -413,6 +460,20 @@ struct VulkanSwapchain final : SwapChain {
         return applyMetadataNative(metadata);
     }
     std::optional<HdrMetadata> hdrMetadata() const override { return activeMetadata; }
+    std::uint32_t width() const override { return desc.width; }
+    std::uint32_t height() const override { return desc.height; }
+    Result<SurfaceMetrics> surfaceMetrics() const override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!surface || surface->lost) return fail(ErrorCode::InvalidState, "Surface lost; create a new swapchain with a new native surface");
+        return queryNativeSurfaceMetrics(*surface);
+    }
+    Result<bool> syncExtent() override {
+        auto m = surfaceMetrics(); if (!m) return std::unexpected(m.error());
+        if (m->minimized) return fail(ErrorCode::InvalidState, "Surface is minimized; defer rendering until restored");
+        if (m->clientWidth == desc.width && m->clientHeight == desc.height) return false;
+        if (auto ok = resize(m->clientWidth, m->clientHeight); !ok) return std::unexpected(ok.error());
+        return true;
+    }
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {
         if (auto ok = owner->poll(); !ok) return ok;
         auto info = configuration(width, height); if (!info) return std::unexpected(info.error());
@@ -510,6 +571,16 @@ Result<SurfaceColorCapabilities> queryVulkanSurfaceColorCapabilities(const std::
     out.activeDisplayColorSpace = ColorSpace::SrgbNonlinear;
     out.displayHdrEnabled = false;
     return out;
+#else
+    (void)owner; (void)surface;
+    return fail(ErrorCode::Unsupported, "Vulkan presentation currently requires Win32 or XCB");
+#endif
+}
+Result<SurfaceMetrics> queryVulkanSurfaceMetrics(const std::shared_ptr<State>& owner, Surface surface) {
+#if defined(_WIN32) || defined(GFX_HAS_VULKAN_XCB)
+    if (!owner->native->presentation) return fail(ErrorCode::Unsupported, "Vulkan presentation requires surface support and swapchainMaintenance1");
+    auto prepared = makeSurface(owner, surface); if (!prepared) return std::unexpected(prepared.error());
+    return queryNativeSurfaceMetrics(**prepared);
 #else
     (void)owner; (void)surface;
     return fail(ErrorCode::Unsupported, "Vulkan presentation currently requires Win32 or XCB");

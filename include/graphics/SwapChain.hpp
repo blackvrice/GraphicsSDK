@@ -26,5 +26,12 @@ public:
     // Sets static HDR10 mastering metadata when supported by the backend/surface.
     [[nodiscard]] virtual Result<void> setHdrMetadata(const HdrMetadata& metadata) = 0;
     [[nodiscard]] virtual std::optional<HdrMetadata> hdrMetadata() const = 0;
+    [[nodiscard]] virtual std::uint32_t width() const = 0;
+    [[nodiscard]] virtual std::uint32_t height() const = 0;
+    // Queries live native surface metrics (extent, DPI scale, minimized/occluded state).
+    [[nodiscard]] virtual Result<SurfaceMetrics> surfaceMetrics() const = 0;
+    // Resizes the swapchain to match the native surface when changed; returns true if resized,
+    // false if already matching, or InvalidState when the surface is minimized (0x0).
+    [[nodiscard]] virtual Result<bool> syncExtent() = 0;
 };
 }

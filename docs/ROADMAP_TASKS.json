@@ -4011,15 +4011,46 @@
       "id": "P10-SURF-01",
       "phase": 10,
       "group": "P10-SURF",
-      "title": "Multi-Window / Multi-Surface·다중 스왑체인 동기화·DPI/리사이즈 고도화",
-      "status": "todo",
+      "title": "Multi-Window / Multi-Surface·다중 스왑체인 동기화·DPI/리사이즈 고도화 (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P10-PRES-01"
       ],
-      "work": "단일 Device에서 다중 창·다중 스왑체인 공유 리소스 렌더링, 다중 모니터 DPI 변화, 최소화/복원 및 Present 동기화를 Windows/Linux/macOS에서 고도화한다.",
+      "work": "13개 공개 헤더/5개 CORE 유닛/하위 호환을 유지하며 SurfaceMetrics(clientWidth/clientHeight/dpiScale/dpi/minimized/occluded), MultiPresentResult, Device::querySurfaceMetrics(Surface), Device::presentSwapChains(span, skipMinimized), SwapChain::{width,height,surfaceMetrics,syncExtent}를 D3D12(GetClientRect/IsIconic/GetDpiForWindow·DXGI_STATUS_OCCLUDED), Vulkan(Win32/XCB 지오메트리·DPI), Metal(CAMetalLayer bounds/contentsScale)에 구현했다. Windows D3D12(GTX 1660 SUPER·Intel UHD 770·Debug+GBV·WARP 손실/복구)·Vulkan(GTX 1660 SUPER·Intel UHD 770 Unsupported 거부·고정 VVL 1.3.290) 5모드에서 단일 장치 3중 스왑체인 동시 생성·공유 텍스처 배치 제출·원자적 거부·독립 리사이즈(syncExtent)·최소화(0x0) 건너뛰기/복원·부분 창 파괴 후 잔여 창 지속 렌더링·자원 누수 0·validation 오류 0, 독립 설치 소비자 및 전체 CTest 140/140(100% PASS)을 검증했다.",
       "done_when": "다중 창 동시 렌더링·독립 리사이즈·수명 회수 자동/수동 검증 통과.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Surface.hpp",
+        "include/graphics/SwapChain.hpp",
+        "include/graphics/Device.hpp",
+        "src/foundation/Backend.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/vulkan/Presentation.hpp",
+        "src/backends/metal/Metal.cpp",
+        "src/backends/metal/MetalPresentation.hpp",
+        "tests/MultiSurfaceTests.cpp",
+        "docs/PHASE10_MULTI_SURFACE_REPORT.md"
+      ]
+    },
+    {
+      "id": "P10-SURF-02",
+      "phase": 10,
+      "group": "P10-SURF",
+      "title": "Multi-Window / Multi-Surface·다중 스왑체인 macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P10-SURF-01"
+      ],
+      "work": "Metal(CAMetalLayer 다중 레이어·contentsScale DPI·syncExtent)과 Linux Vulkan(XCB 다중 창·syncExtent·presentSwapChains) 구현을 Linux Vulkan(Xvfb/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 다중 스왑체인 동시 렌더링·독립 리사이즈·수명 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/MetalPresentation.hpp",
+        "src/backends/vulkan/Presentation.hpp",
+        "docs/PHASE10_MULTI_SURFACE_REPORT.md"
+      ]
     },
     {
       "id": "P10-DIRTY-01",

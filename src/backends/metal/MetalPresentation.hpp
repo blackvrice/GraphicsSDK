@@ -188,6 +188,35 @@ struct MetalSwapChain final : SwapChain {
         return fail(ErrorCode::Unsupported, "Static HDR10 metadata is unsupported on Metal CAMetalLayer");
     }
     std::optional<HdrMetadata> hdrMetadata() const override { return std::nullopt; }
+    std::uint32_t width() const override { return desc.width; }
+    std::uint32_t height() const override { return desc.height; }
+    Result<SurfaceMetrics> surfaceMetrics() const override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        CAMetalLayer* layer = scope->layer;
+        if (!layer) return fail(ErrorCode::InvalidState, "CAMetalLayer is no longer valid");
+        const double scale = layer.contentsScale > 0.0 ? static_cast<double>(layer.contentsScale) : 1.0;
+        const CGSize bounds = layer.bounds.size;
+        const CGSize drawable = layer.drawableSize;
+        const std::uint32_t w = drawable.width > 0.0 ? static_cast<std::uint32_t>(std::llround(drawable.width))
+                                                     : static_cast<std::uint32_t>(std::llround(bounds.width * scale));
+        const std::uint32_t h = drawable.height > 0.0 ? static_cast<std::uint32_t>(std::llround(drawable.height))
+                                                      : static_cast<std::uint32_t>(std::llround(bounds.height * scale));
+        SurfaceMetrics out{};
+        out.clientWidth = w;
+        out.clientHeight = h;
+        out.dpiScale = static_cast<float>(scale);
+        out.dpi = static_cast<std::uint32_t>(std::llround(96.0 * scale));
+        out.minimized = (w == 0u || h == 0u);
+        out.occluded = false;
+        return out;
+    }
+    Result<bool> syncExtent() override {
+        auto m = surfaceMetrics(); if (!m) return std::unexpected(m.error());
+        if (m->minimized) return fail(ErrorCode::InvalidState, "Surface is minimized; defer rendering until restored");
+        if (m->clientWidth == desc.width && m->clientHeight == desc.height) return false;
+        if (auto ok = resize(m->clientWidth, m->clientHeight); !ok) return std::unexpected(ok.error());
+        return true;
+    }
 
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {
         if (auto ok = check(); !ok) return ok;
@@ -247,6 +276,26 @@ Result<SurfaceColorCapabilities> queryMetalSurfaceColorCapabilities(State& owner
     out.hdrMetadata = false;
     out.activeDisplayColorSpace = ColorSpace::SrgbNonlinear;
     out.displayHdrEnabled = false;
+    return out;
+}
+
+Result<SurfaceMetrics> queryMetalSurfaceMetrics(State& owner, Surface surface) {
+    auto layer = checkedLayer(owner, surface);
+    if (!layer) return std::unexpected(layer.error());
+    const double scale = (*layer).contentsScale > 0.0 ? static_cast<double>((*layer).contentsScale) : 1.0;
+    const CGSize bounds = (*layer).bounds.size;
+    const CGSize drawable = (*layer).drawableSize;
+    const std::uint32_t w = drawable.width > 0.0 ? static_cast<std::uint32_t>(std::llround(drawable.width))
+                                                 : static_cast<std::uint32_t>(std::llround(bounds.width * scale));
+    const std::uint32_t h = drawable.height > 0.0 ? static_cast<std::uint32_t>(std::llround(drawable.height))
+                                                  : static_cast<std::uint32_t>(std::llround(bounds.height * scale));
+    SurfaceMetrics out{};
+    out.clientWidth = w;
+    out.clientHeight = h;
+    out.dpiScale = static_cast<float>(scale);
+    out.dpi = static_cast<std::uint32_t>(std::llround(96.0 * scale));
+    out.minimized = (w == 0u || h == 0u);
+    out.occluded = false;
     return out;
 }
 

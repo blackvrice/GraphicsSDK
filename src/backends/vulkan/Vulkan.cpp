@@ -3611,6 +3611,10 @@ struct VulkanDevice final : Device {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         return queryVulkanSurfaceColorCapabilities(owner, surface);
     }
+    Result<SurfaceMetrics> querySurfaceMetrics(Surface surface) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return queryVulkanSurfaceMetrics(owner, surface);
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         return makeSwapchain(owner, surface, desc);

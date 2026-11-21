@@ -990,6 +990,37 @@ Result<void> Device::resetProfilingStatistics() {
     return {};
 }
 
+Result<MultiPresentResult> Device::presentSwapChains(std::span<SwapChain* const> swapChains, bool skipMinimized) {
+    if (auto status = checkStatus(); !status) return std::unexpected(status.error());
+    if (swapChains.empty()) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "presentSwapChains requires at least one swapchain"});
+    }
+    for (std::size_t i = 0; i < swapChains.size(); ++i) {
+        if (!swapChains[i]) {
+            return std::unexpected(Error{ErrorCode::InvalidArgument, "Null swapchain pointer in presentSwapChains"});
+        }
+        for (std::size_t j = i + 1; j < swapChains.size(); ++j) {
+            if (swapChains[i] == swapChains[j]) {
+                return std::unexpected(Error{ErrorCode::InvalidArgument, "Duplicate swapchain pointer in presentSwapChains"});
+            }
+        }
+    }
+    MultiPresentResult out{};
+    for (SwapChain* sc : swapChains) {
+        if (skipMinimized) {
+            auto metrics = sc->surfaceMetrics();
+            if (!metrics) return std::unexpected(metrics.error());
+            if (metrics->minimized) {
+                ++out.skippedMinimizedCount;
+                continue;
+            }
+        }
+        if (auto ok = sc->present(); !ok) return std::unexpected(ok.error());
+        ++out.presentedCount;
+    }
+    return out;
+}
+
 Result<std::unique_ptr<UploadRing>> Device::createUploadRing(UploadRingDesc desc) {
     if (auto status = checkStatus(); !status) return std::unexpected(status.error());
     if (auto valid = validateUploadRingDesc(desc); !valid) return std::unexpected(valid.error());

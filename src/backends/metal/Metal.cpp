@@ -2368,6 +2368,9 @@ struct MetalDevice final : Device {
     Result<SurfaceColorCapabilities> querySurfaceColorCapabilities(Surface surface) override {
         return queryMetalSurfaceColorCapabilities(*owner, surface);
     }
+    Result<SurfaceMetrics> querySurfaceMetrics(Surface surface) override {
+        return queryMetalSurfaceMetrics(*owner, surface);
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         return makeMetalSwapChain(owner, surface, desc);
     }

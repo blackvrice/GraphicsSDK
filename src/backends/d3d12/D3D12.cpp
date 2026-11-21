@@ -131,6 +131,35 @@ DXGI_HDR_METADATA_HDR10 makeDxgiHdr10Metadata(const HdrMetadata& m) {
     out.MaxFrameAverageLightLevel = clampU16(m.maxFrameAverageLightLevel);
     return out;
 }
+Result<SurfaceMetrics> queryWin32Metrics(HWND hwnd, bool occluded) {
+    if (!hwnd || !IsWindow(hwnd)) {
+        return invalid("Win32 window is no longer valid", ErrorCode::InvalidState);
+    }
+    RECT rc{};
+    if (!GetClientRect(hwnd, &rc)) {
+        return failed(HRESULT_FROM_WIN32(GetLastError()), "GetClientRect failed");
+    }
+    const std::uint32_t w = rc.right > rc.left ? static_cast<std::uint32_t>(rc.right - rc.left) : 0u;
+    const std::uint32_t h = rc.bottom > rc.top ? static_cast<std::uint32_t>(rc.bottom - rc.top) : 0u;
+    UINT dpi = 96u;
+    using GetDpiForWindowFn = UINT (WINAPI*)(HWND);
+    static const auto getDpiForWindow = []() -> GetDpiForWindowFn {
+        HMODULE user32 = GetModuleHandleW(L"user32.dll");
+        return user32 ? reinterpret_cast<GetDpiForWindowFn>(GetProcAddress(user32, "GetDpiForWindow")) : nullptr;
+    }();
+    if (getDpiForWindow) {
+        const UINT queried = getDpiForWindow(hwnd);
+        if (queried > 0u) dpi = queried;
+    }
+    SurfaceMetrics out{};
+    out.clientWidth = w;
+    out.clientHeight = h;
+    out.dpi = dpi;
+    out.dpiScale = static_cast<float>(dpi) / 96.0f;
+    out.minimized = (IsIconic(hwnd) != FALSE) || w == 0u || h == 0u;
+    out.occluded = occluded;
+    return out;
+}
 DXGI_FORMAT native(VertexFormat format) {
     switch(format) {
     case VertexFormat::Float:return DXGI_FORMAT_R32_FLOAT;
@@ -2012,6 +2041,8 @@ struct DXSwapChain final : SwapChain {
     std::shared_ptr<State> owner;
     std::shared_ptr<NativeSwapChain> objects{std::make_shared<NativeSwapChain>()};
     ComPtr<IDXGISwapChain3>& chain{objects->chain};
+    HWND window{};
+    bool lastOccluded{};
     SwapChainDesc desc;
     PresentMode activeMode{PresentMode::Fifo};
     Format activeFormat{Format::RGBA8UNorm};
@@ -2071,6 +2102,7 @@ struct DXSwapChain final : SwapChain {
         HRESULT result = chain->Present(syncInterval, flags);
         const auto t1 = detail::FramePacingTracker::Clock::now();
         if (FAILED(result)) return owner->failure(result, "Present failed");
+        lastOccluded = (result == DXGI_STATUS_OCCLUDED);
         const double presentMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
         pacing.recordPresent(presentMs, t1);
         // Invalidate recordings from before presentation, even after the ring
@@ -2105,6 +2137,19 @@ struct DXSwapChain final : SwapChain {
         return applyMetadataNative(metadata);
     }
     std::optional<HdrMetadata> hdrMetadata() const override { return activeMetadata; }
+    std::uint32_t width() const override { return desc.width; }
+    std::uint32_t height() const override { return desc.height; }
+    Result<SurfaceMetrics> surfaceMetrics() const override {
+        auto status = owner->check(); if (!status) return std::unexpected(status.error());
+        return queryWin32Metrics(window, lastOccluded);
+    }
+    Result<bool> syncExtent() override {
+        auto m = surfaceMetrics(); if (!m) return std::unexpected(m.error());
+        if (m->minimized) return invalid("Surface is minimized; defer rendering until restored", ErrorCode::InvalidState);
+        if (m->clientWidth == desc.width && m->clientHeight == desc.height) return false;
+        if (auto ok = resize(m->clientWidth, m->clientHeight); !ok) return std::unexpected(ok.error());
+        return true;
+    }
     Result<void> waitForNextFrame(std::chrono::milliseconds timeout) override {
         auto status = owner->check(); if (!status) return status;
         if (timeout.count() < 0 || timeout.count() > 4294967294ll)
@@ -3146,6 +3191,11 @@ public:
         }
         return out;
     }
+    Result<SurfaceMetrics> querySurfaceMetrics(Surface surface) override {
+        auto status = checkSurfaceSupport(surface);
+        if (!status) return std::unexpected(status.error());
+        return queryWin32Metrics(static_cast<HWND>(surface.window), false);
+    }
     Result<std::unique_ptr<SwapChain>> createSwapChain(Surface surface, SwapChainDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (surface.kind == SurfaceKind::Xcb) return invalid("XCB surfaces require Linux", ErrorCode::Unsupported);
@@ -3186,6 +3236,7 @@ public:
             (mode == PresentMode::Tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0u);
         auto swap = std::make_unique<DXSwapChain>();
         swap->owner = state;
+        swap->window = static_cast<HWND>(surface.window);
         swap->desc = desc;
         swap->activeMode = mode;
         swap->activeFormat = targetFormat;

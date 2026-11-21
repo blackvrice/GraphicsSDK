@@ -605,3 +605,21 @@
   - 독립 설치 소비자(`tests/consumer`): 빌드·실행 PASS (`GraphicsSDK 0.0.1`).
   - 전체 CTest 회귀: `133/135 PASS` (`147.17s`, `hdr_colorspace_*` 5종 및 `frame_pacing_*`/`swapchain_guards_*`/`vulkan_presentation` 전체 통과; 기존 로컬 예외 `fence_wait_gpu`/`fence_wait_validation` 2건).
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-21 — `P10-SURF-01`: Multi-Window / Multi-Surface·다중 스왑체인 동기화·DPI/리사이즈 고도화 구현 및 Windows D3D12/Vulkan 실기 검증
+
+- **기준 HEAD**: `cf89f1a9`
+- **완료 ID / 분리 ID**: `P10-SURF-01` 완료, `P10-SURF-02`(Linux Vulkan / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - `include/graphics/{Surface,SwapChain,Device}.hpp`, `src/foundation/Backend.cpp`: 13개 공개 헤더·5개 `CORE` 유닛 계약을 유지하며 `SurfaceMetrics`, `MultiPresentResult`, `Device::querySurfaceMetrics`, `Device::presentSwapChains`(원자적 null/중복 거부·최소화 창 건너뛰기), `SwapChain::{width,height,surfaceMetrics,syncExtent}` 구현.
+  - `src/backends/d3d12/D3D12.cpp`: `GetClientRect`/`IsIconic`/`GetDpiForWindow` 조회 및 `DXGI_STATUS_OCCLUDED` 추적 구현.
+  - `src/backends/vulkan/{Vulkan.cpp,Presentation.hpp}`: Win32/XCB `SurfaceMetrics` 및 `syncExtent` 구현.
+  - `src/backends/metal/{Metal.cpp,MetalPresentation.hpp}`: `CAMetalLayer` `bounds`/`drawableSize`/`contentsScale` DPI 및 `syncExtent` 구현.
+  - `tests/MultiSurfaceTests.cpp`, `CMakeLists.txt`, `docs/PHASE10_MULTI_SURFACE_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (격리 빌드 `out/p10-multi-surface`, 설치 `out/p10-multi-surface-install`, `GraphicsSDKCore.lib` SHA-256 `C1B0CA2F9F28D7C0DA5FFA427C8AAF57D345148376C692899175AF72D545C2F6`):
+  - `gfx_multi_surface_tests` 5/5 모드 PASS: D3D12 2GPU (`484 assertions / 12 rejections`), D3D12 Validation (`val_errors=0`, `486 assertions`), WARP 손실/복구 (`484 assertions`), Vulkan 2GPU (`248 assertions / 9 rejections`, GTX 3중 창 통과 + Intel `Unsupported`), Vulkan Validation (고정 VVL 1.3.290, `val_errors=0`, `250 assertions`).
+  - 독립 설치 소비자(`tests/consumer`): 빌드·실행 PASS (`GraphicsSDK 0.0.1`).
+  - 전체 CTest 회귀: **140/140 (100% PASS, `162.08s`)**.
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

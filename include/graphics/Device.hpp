@@ -136,7 +136,12 @@ public:
     [[nodiscard]] virtual Result<SurfacePresentCapabilities> querySurfacePresentCapabilities(Surface) = 0;
     // Queries supported swapchain formats, color spaces, 10-bit/HDR output, and display HDR state.
     [[nodiscard]] virtual Result<SurfaceColorCapabilities> querySurfaceColorCapabilities(Surface) = 0;
+    // Queries live native surface client extent, DPI scale, and minimized state.
+    [[nodiscard]] virtual Result<SurfaceMetrics> querySurfaceMetrics(Surface) = 0;
     [[nodiscard]] virtual Result<std::unique_ptr<SwapChain>> createSwapChain(Surface, SwapChainDesc) = 0;
+    // Presents multiple swapchains in deterministic order; rejects null or duplicate pointers atomically.
+    // When skipMinimized is true, minimized (0x0) swapchains are skipped cleanly without failing.
+    [[nodiscard]] Result<MultiPresentResult> presentSwapChains(std::span<SwapChain* const> swapChains, bool skipMinimized = true);
     [[nodiscard]] virtual CommandQueue& queue() = 0;
     [[nodiscard]] virtual Result<CommandQueue*> queue(QueueType type) = 0;
     // Cumulative ERROR/CORRUPTION count since callback registration, independent of

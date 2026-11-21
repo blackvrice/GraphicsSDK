@@ -14,6 +14,21 @@ struct Surface {
     SurfaceKind kind{SurfaceKind::Win32}; void* window{};
     void* connection{}; std::uint32_t windowId{};
 };
+// Live native surface geometry, DPI scale, and minimized/occluded state.
+struct SurfaceMetrics {
+    std::uint32_t clientWidth{};
+    std::uint32_t clientHeight{};
+    float dpiScale{1.0f};
+    std::uint32_t dpi{96};
+    bool minimized{};
+    bool occluded{};
+    bool operator==(const SurfaceMetrics&) const = default;
+};
+struct MultiPresentResult {
+    std::uint32_t presentedCount{};
+    std::uint32_t skippedMinimizedCount{};
+    bool operator==(const MultiPresentResult&) const = default;
+};
 enum class PresentMode { Fifo, Immediate, Mailbox, Tearing };
 enum class FramePacingMode { Balanced, LowLatency, Throughput };
 enum class ColorSpace {
