@@ -28,6 +28,34 @@ public:
 };
 using TextureViewPtr = std::shared_ptr<TextureView>;
 
+struct HeapAllocationRange {
+    std::uint64_t offset{};
+    std::uint64_t size{};
+    bool operator==(const HeapAllocationRange&) const = default;
+};
+[[nodiscard]] Result<void> validateMemoryHeapDesc(MemoryHeapDesc desc);
+[[nodiscard]] Result<HeapFragmentationStats> computeHeapFragmentationStats(
+    std::uint64_t totalBytes,
+    std::span<const HeapAllocationRange> liveAllocations,
+    bool resident = true);
+
+class MemoryHeap {
+public:
+    virtual ~MemoryHeap() = default;
+    MemoryHeap(const MemoryHeap&) = delete;
+    MemoryHeap& operator=(const MemoryHeap&) = delete;
+    [[nodiscard]] virtual MemoryHeapDesc description() const = 0;
+    // Creating thread only. Computes merged-interval fragmentation and aliasing savings over live placed resources.
+    [[nodiscard]] virtual Result<HeapFragmentationStats> fragmentationStats() const = 0;
+    // Creating thread only. Requests residency transition (D3D12 MakeResident/Evict).
+    // Fails with InvalidState while any placed resource on this heap is in flight; returns Unsupported where unavailable.
+    [[nodiscard]] virtual Result<void> setResident(bool resident) = 0;
+    [[nodiscard]] virtual Result<bool> isResident() const = 0;
+protected:
+    MemoryHeap() = default;
+};
+using MemoryHeapPtr = std::shared_ptr<MemoryHeap>;
+
 struct UploadRingDesc {
     std::uint64_t capacity{4u * 1024u * 1024u};
     std::uint64_t alignment{256u};

@@ -3563,15 +3563,45 @@
       "id": "P8-MEM-02",
       "phase": 8,
       "group": "P8-MEM",
-      "title": "Fragmentation 분석·Residency·Resource Aliasing·Sparse 기반",
-      "status": "todo",
+      "title": "Fragmentation 분석·Residency·Resource Aliasing·Sparse 기반 (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P8-MEM-01"
       ],
-      "work": "메모리 단편화 진단 지표, Residency 제어, 비겹침 수명 기반 Resource Aliasing, Sparse/Virtual Texture 기반 API와 Capability를 단계적으로 추가한다.",
+      "work": "DeviceCaps::{resourceAliasing,residencyControl,sparseBinding,sparseResidencyTexture2D}, MemoryHeapType/MemoryHeapDesc/ResourceMemoryRequirements/HeapFragmentationStats/SparseTextureProperties, validateMemoryHeapDesc/computeHeapFragmentationStats, MemoryHeap(fragmentationStats/setResident/isResident), Device::{queryBufferMemoryRequirements,queryTextureMemoryRequirements,createMemoryHeap,createPlacedBuffer,createPlacedTexture,querySparseTextureProperties}, CommandList::aliasingBarrier(Buffer/Texture)를 D3D12(CreateHeap/CreatePlacedResource/Evict·MakeResident/CreateReservedResource+GetResourceTiling), Vulkan(VK_IMAGE_CREATE_ALIAS_BIT/VkDeviceMemory/VkMemoryBarrier+UNDEFINED 재초기화/vkGetImageSparseMemoryRequirements), Metal(MTLHeapTypePlacement/sparseTileSizeWithTextureType:)에 구현했다. Windows D3D12(GTX 1660 SUPER·Intel UHD 770·Debug+GBV·WARP 손실/복구)·Vulkan(GTX 1660 SUPER·Intel UHD 770·고정 VVL 1.3.290 core+sync) 5모드, 독립 설치 소비자 9/9, 전체 CTest 152/152(188.18s)에서 체크보드 단편화 0.50->0.00, 버퍼/RT Aliasing 50% 메모리 절감, 전 픽셀/바이트 일치, Sparse 2D 128x128x1(64 KiB) 조회 및 validation 오류 0을 확인했다.",
       "done_when": "Capability 조회, Aliasing 배리어/validation 오류 0, 단편화·메모리 절감 실측 기록.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/Resources.hpp",
+        "include/graphics/CommandList.hpp",
+        "include/graphics/Device.hpp",
+        "src/foundation/Backend.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/metal/Metal.cpp",
+        "tests/MemoryAliasingTests.cpp",
+        "docs/PHASE8_MEMORY_ALIASING_REPORT.md"
+      ]
+    },
+    {
+      "id": "P8-MEM-04",
+      "phase": 8,
+      "group": "P8-MEM",
+      "title": "Fragmentation·Resource Aliasing·Sparse 기반 macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P8-MEM-02"
+      ],
+      "work": "Metal.cpp(MTLHeapTypePlacement)와 Vulkan.cpp(VK_IMAGE_CREATE_ALIAS_BIT/vkGetImageSparseMemoryRequirements)의 MemoryHeap·placed aliasing·fragmentationStats·Sparse 2D 조회 구현을 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·바이트/픽셀 및 회수 검증으로 확인한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 placed 버퍼/RT aliasing, 단편화 지표, Sparse 조회 및 자원 회수 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/metal/Metal.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "docs/PHASE8_MEMORY_ALIASING_REPORT.md"
+      ]
     },
     {
       "id": "P9-CMD-01",

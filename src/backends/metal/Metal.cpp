@@ -47,7 +47,21 @@ struct NativeTextureView {
     void release() { texture = nil; allocation.reset(); }
     ~NativeTextureView() { release(); }
 };
+struct Allocation;
+struct NativeMemoryHeap {
+    struct PlacedEntry {
+        std::weak_ptr<Allocation> allocation;
+        std::uint64_t offset{};
+        std::uint64_t size{};
+    };
+    id<MTLHeap> heap;
+    MemoryHeapDesc desc{};
+    mutable std::vector<PlacedEntry> entries;
+    void release() { heap = nil; }
+    ~NativeMemoryHeap() { release(); }
+};
 struct Allocation {
+    std::shared_ptr<NativeMemoryHeap> heap;
     id<MTLBuffer> buffer;
     id<MTLTexture> texture;
     BufferDesc desc;
@@ -168,6 +182,7 @@ struct State {
     std::mutex recordingsMutex;
     std::mutex tailMutex;
     std::vector<std::weak_ptr<Allocation>> allocations;
+    std::vector<std::weak_ptr<NativeMemoryHeap>> memoryHeaps;
     std::vector<std::weak_ptr<NativeTextureView>> imageViews;
     std::vector<std::weak_ptr<int>> objects;
     id<MTLComputePipelineState> tailPipeline;
@@ -192,7 +207,9 @@ struct State {
             }
             for (auto& w : surfaces) if (auto surface = w.lock()) surface->release();
             for (auto& w : imageViews) if (auto v = w.lock()) v->release();
-            for (auto& w : allocations) if (auto a = w.lock()) { a->buffer = nil; a->texture = nil; }
+            for (auto& w : allocations) if (auto a = w.lock()) { a->buffer = nil; a->texture = nil; a->heap.reset(); }
+            for (auto& w : memoryHeaps) if (auto h = w.lock()) h->release();
+            memoryHeaps.clear();
             for (auto& w : pipelines) if (auto p = w.lock()) p->release();
             for (auto& w : timelineEvents) if (auto e = w.lock()) e->release();
             timelineEvents.clear();
@@ -337,6 +354,28 @@ struct MetalTimelineFence final : TimelineFence {
             }
         }
         return owner->poll();
+    }
+};
+struct MetalMemoryHeap final : MemoryHeap {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativeMemoryHeap> heap;
+    std::shared_ptr<int> token;
+    MemoryHeapDesc description() const override { return heap->desc; }
+    Result<HeapFragmentationStats> fragmentationStats() const override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        std::erase_if(heap->entries, [](const NativeMemoryHeap::PlacedEntry& e) { return e.allocation.expired(); });
+        std::vector<HeapAllocationRange> ranges;
+        ranges.reserve(heap->entries.size());
+        for (const auto& e : heap->entries) ranges.push_back({e.offset, e.size});
+        return computeHeapFragmentationStats(heap->desc.size, ranges, true);
+    }
+    Result<void> setResident(bool) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        return fail(ErrorCode::Unsupported, "Metal backend does not provide explicit per-heap residency eviction");
+    }
+    Result<bool> isResident() const override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return true;
     }
 };
 struct MetalBuffer final : Buffer {
@@ -888,6 +927,44 @@ struct MetalCommands final : CommandList {
         auto& u = retain(*a);
         if (u.shadow != target) u.mutated = true;
         u.shadow = target;
+        return {};
+    }
+    Result<void> aliasingBarrier(const BufferPtr& before, const BufferPtr& after) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (!after) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires a non-null destination buffer");
+        auto dst = allocation(after); if (!dst) return std::unexpected(dst.error());
+        if (!(*dst)->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+        std::shared_ptr<Allocation> src;
+        if (before) {
+            auto checked = allocation(before); if (!checked) return std::unexpected(checked.error());
+            src = std::move(*checked);
+            if (!src->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+            if (src == *dst) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires distinct before and after resources");
+        }
+        uses.reserve(uses.size() + 2);
+        if (src) retain(src);
+        retain(*dst, true);
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
+    }
+    Result<void> aliasingBarrier(const TexturePtr& before, const TexturePtr& after) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (!after) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires a non-null destination texture");
+        auto dst = allocation(after); if (!dst) return std::unexpected(dst.error());
+        if (!(*dst)->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+        std::shared_ptr<Allocation> src;
+        if (before) {
+            auto checked = allocation(before); if (!checked) return std::unexpected(checked.error());
+            src = std::move(*checked);
+            if (!src->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+            if (src == *dst) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires distinct before and after resources");
+        }
+        uses.reserve(uses.size() + 2);
+        if (src) retain(src);
+        auto& dstUse = retain(*dst, true);
+        dstUse.initialized = false;
+        dstUse.shadow = ResourceState::Common;
+        if (owner->profiler) owner->profiler->recordBarrier();
         return {};
     }
     Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) override {
@@ -1671,8 +1748,10 @@ struct MetalDevice final : Device {
         ResourceStatistics result;
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->memoryHeaps, [](auto& w) { return w.expired(); });
         result.trackedObjects = owner->objects.size();
-        for (const auto& weak : owner->allocations) if (auto a = weak.lock(); a && (a->buffer || a->texture)) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
+        for (const auto& weak : owner->allocations) if (auto a = weak.lock(); a && !a->heap && (a->buffer || a->texture)) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
+        for (const auto& weak : owner->memoryHeaps) if (auto h = weak.lock(); h && h->heap) { ++result.uniqueResources; result.resourceAllocationBytes += h->desc.size; }
         for (const auto& q : owner->queues) {
             result.pendingSubmissions += q.pending.size();
             for (const auto& p : q.pending) result.pendingObjectReferences += p.allocations.size() + p.timelineEvents.size();
@@ -1763,6 +1842,240 @@ struct MetalDevice final : Device {
             std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
             owner->allocations.push_back(a); owner->objects.push_back(value->token);
             return TexturePtr(value);
+        }
+    }
+    Result<ResourceMemoryRequirements> queryBufferMemoryRequirements(BufferDesc desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (!desc.size || desc.size > NSUIntegerMax || desc.memory != Memory::Device) {
+            return fail(ErrorCode::InvalidArgument, "Placed Metal buffer requires non-empty Device memory");
+        }
+        if (desc.size > owner->device.maxBufferLength) return fail(ErrorCode::Unsupported, "Metal buffer exceeds device limit");
+        @autoreleasepool {
+            const MTLResourceOptions options = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
+            const MTLSizeAndAlign sa = [owner->device heapBufferSizeAndAlignWithLength:desc.size options:options];
+            if (!sa.size) return fail(ErrorCode::BackendFailure, "Metal heap buffer size query failed");
+            return ResourceMemoryRequirements{
+                static_cast<std::uint64_t>(sa.size),
+                std::max<std::uint64_t>(1u, static_cast<std::uint64_t>(sa.align)),
+                MemoryHeapType::Buffers
+            };
+        }
+    }
+    Result<ResourceMemoryRequirements> queryTextureMemoryRequirements(TextureDesc desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (!metalSupportsCompressedFormat(owner->device, desc.format)) {
+            return fail(ErrorCode::Unsupported, "Metal device does not support requested compressed texture format");
+        }
+        if (desc.sampleCount > 1u && ![owner->device supportsTextureSampleCount:desc.sampleCount]) {
+            return fail(ErrorCode::Unsupported, "Metal device does not support requested MSAA sample count");
+        }
+        @autoreleasepool {
+            const auto format = pixelFormat(desc.format);
+            if (format == MTLPixelFormatInvalid) return fail(ErrorCode::Unsupported, "Metal pixel format unavailable");
+            const std::uint32_t sliceH = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+            const std::uint32_t texDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
+            MTLTextureDescriptor* descriptor = [[MTLTextureDescriptor alloc] init];
+            descriptor.textureType = metalTextureType(desc.dimension, desc.sampleCount);
+            descriptor.pixelFormat = format;
+            descriptor.width = desc.width;
+            descriptor.height = sliceH;
+            descriptor.depth = texDepth;
+            descriptor.mipmapLevelCount = desc.mipLevels;
+            descriptor.arrayLength = desc.dimension == TextureDimension::Texture2DArray ? desc.arrayLayers : 1u;
+            descriptor.resourceOptions = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
+            if (desc.sampleCount > 1u) {
+                descriptor.sampleCount = desc.sampleCount;
+                descriptor.usage = MTLTextureUsageRenderTarget;
+            } else {
+                MTLTextureUsage usage = desc.depthStencil ? MTLTextureUsageRenderTarget : MTLTextureUsageShaderRead;
+                if (desc.renderTarget) usage |= MTLTextureUsageRenderTarget;
+                if (desc.storage) usage |= MTLTextureUsageShaderWrite;
+                descriptor.usage = usage;
+            }
+            const MTLSizeAndAlign sa = [owner->device heapTextureSizeAndAlignWithDescriptor:descriptor];
+            if (!sa.size) return fail(ErrorCode::BackendFailure, "Metal heap texture size query failed");
+            const MemoryHeapType heapType = (desc.renderTarget || desc.depthStencil)
+                ? MemoryHeapType::RenderTargets
+                : MemoryHeapType::Textures;
+            return ResourceMemoryRequirements{
+                static_cast<std::uint64_t>(sa.size),
+                std::max<std::uint64_t>(1u, static_cast<std::uint64_t>(sa.align)),
+                heapType
+            };
+        }
+    }
+    Result<MemoryHeapPtr> createMemoryHeap(MemoryHeapDesc desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateMemoryHeapDesc(desc); !ok) return std::unexpected(ok.error());
+        @autoreleasepool {
+            MTLHeapDescriptor* hd = [[MTLHeapDescriptor alloc] init];
+            hd.size = static_cast<NSUInteger>(desc.size);
+            hd.storageMode = MTLStorageModePrivate;
+            hd.hazardTrackingMode = MTLHazardTrackingModeTracked;
+            hd.type = MTLHeapTypePlacement;
+            id<MTLHeap> nativeHeap = [owner->device newHeapWithDescriptor:hd];
+            if (!nativeHeap) return fail(ErrorCode::OutOfMemory, "Metal heap allocation failed");
+            auto h = std::make_shared<NativeMemoryHeap>();
+            h->heap = nativeHeap;
+            h->desc = desc;
+            auto wrapper = std::make_shared<MetalMemoryHeap>();
+            wrapper->owner = owner;
+            wrapper->heap = h;
+            wrapper->token = std::make_shared<int>();
+            std::erase_if(owner->memoryHeaps, [](auto& w) { return w.expired(); });
+            std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+            owner->memoryHeaps.push_back(h);
+            owner->objects.push_back(wrapper->token);
+            return MemoryHeapPtr(std::move(wrapper));
+        }
+    }
+    Result<BufferPtr> createPlacedBuffer(const MemoryHeapPtr& heap, std::uint64_t heapOffset, BufferDesc desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (!heap) return fail(ErrorCode::InvalidArgument, "Null MemoryHeap");
+        auto mtlHeap = std::dynamic_pointer_cast<MetalMemoryHeap>(heap);
+        if (!mtlHeap || mtlHeap->owner != owner) return fail(ErrorCode::WrongDevice, "MemoryHeap belongs to another generation");
+        auto req = queryBufferMemoryRequirements(desc);
+        if (!req) return std::unexpected(req.error());
+        if (mtlHeap->heap->desc.type != req->heapType) {
+            return fail(ErrorCode::InvalidArgument, "MemoryHeapType mismatch for placed buffer");
+        }
+        if (heapOffset % req->alignment != 0u) {
+            return fail(ErrorCode::InvalidArgument, "Placed buffer heapOffset is not aligned");
+        }
+        if (heapOffset > mtlHeap->heap->desc.size || req->size > mtlHeap->heap->desc.size - heapOffset) {
+            return fail(ErrorCode::InvalidArgument, "Placed buffer exceeds MemoryHeap size");
+        }
+        @autoreleasepool {
+            const MTLResourceOptions options = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
+            id<MTLBuffer> buf = [mtlHeap->heap->heap newBufferWithLength:desc.size options:options offset:static_cast<NSUInteger>(heapOffset)];
+            if (!buf) return fail(ErrorCode::OutOfMemory, "Metal placed buffer allocation failed");
+            auto a = std::make_shared<Allocation>();
+            a->heap = mtlHeap->heap;
+            a->buffer = buf;
+            a->desc = desc;
+            a->state = ResourceState::Common;
+            a->bytes = 0;
+            mtlHeap->heap->entries.push_back({a, heapOffset, req->size});
+            auto value = std::make_shared<MetalBuffer>();
+            value->owner = owner;
+            value->allocation = a;
+            value->token = std::make_shared<int>();
+            std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+            std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+            owner->allocations.push_back(a);
+            owner->objects.push_back(value->token);
+            return BufferPtr(std::move(value));
+        }
+    }
+    Result<TexturePtr> createPlacedTexture(const MemoryHeapPtr& heap, std::uint64_t heapOffset, TextureDesc desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (!heap) return fail(ErrorCode::InvalidArgument, "Null MemoryHeap");
+        auto mtlHeap = std::dynamic_pointer_cast<MetalMemoryHeap>(heap);
+        if (!mtlHeap || mtlHeap->owner != owner) return fail(ErrorCode::WrongDevice, "MemoryHeap belongs to another generation");
+        auto req = queryTextureMemoryRequirements(desc);
+        if (!req) return std::unexpected(req.error());
+        if (mtlHeap->heap->desc.type != req->heapType) {
+            return fail(ErrorCode::InvalidArgument, "MemoryHeapType mismatch for placed texture");
+        }
+        if (heapOffset % req->alignment != 0u) {
+            return fail(ErrorCode::InvalidArgument, "Placed texture heapOffset is not aligned");
+        }
+        if (heapOffset > mtlHeap->heap->desc.size || req->size > mtlHeap->heap->desc.size - heapOffset) {
+            return fail(ErrorCode::InvalidArgument, "Placed texture exceeds MemoryHeap size");
+        }
+        @autoreleasepool {
+            const auto format = pixelFormat(desc.format);
+            const std::uint32_t sliceH = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+            const std::uint32_t texDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
+            MTLTextureDescriptor* descriptor = [[MTLTextureDescriptor alloc] init];
+            descriptor.textureType = metalTextureType(desc.dimension, desc.sampleCount);
+            descriptor.pixelFormat = format;
+            descriptor.width = desc.width;
+            descriptor.height = sliceH;
+            descriptor.depth = texDepth;
+            descriptor.mipmapLevelCount = desc.mipLevels;
+            descriptor.arrayLength = desc.dimension == TextureDimension::Texture2DArray ? desc.arrayLayers : 1u;
+            descriptor.resourceOptions = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeTracked;
+            if (desc.sampleCount > 1u) {
+                descriptor.sampleCount = desc.sampleCount;
+                descriptor.usage = MTLTextureUsageRenderTarget;
+            } else {
+                MTLTextureUsage usage = desc.depthStencil ? MTLTextureUsageRenderTarget : MTLTextureUsageShaderRead;
+                if (desc.renderTarget) usage |= MTLTextureUsageRenderTarget;
+                if (desc.storage) usage |= MTLTextureUsageShaderWrite;
+                descriptor.usage = usage;
+            }
+            id<MTLTexture> tex = [mtlHeap->heap->heap newTextureWithDescriptor:descriptor offset:static_cast<NSUInteger>(heapOffset)];
+            if (!tex) return fail(ErrorCode::OutOfMemory, "Metal placed texture allocation failed");
+            auto a = std::make_shared<Allocation>();
+            a->heap = mtlHeap->heap;
+            a->texture = tex;
+            a->textureDesc = desc;
+            a->bytes = 0;
+            if (desc.sampleCount == 1u) {
+                const auto fp = computeTextureRegionFootprint(desc.format, desc.width, sliceH);
+                if (!fp) return std::unexpected(fp.error());
+                a->footprint = {fp->size * texDepth, fp->rowPitch, fp->rowBytes, fp->height};
+            }
+            mtlHeap->heap->entries.push_back({a, heapOffset, req->size});
+            auto value = std::make_shared<MetalTexture>();
+            value->owner = owner;
+            value->allocation = a;
+            value->token = std::make_shared<int>();
+            std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+            std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+            owner->allocations.push_back(a);
+            owner->objects.push_back(value->token);
+            return TexturePtr(std::move(value));
+        }
+    }
+    Result<SparseTextureProperties> querySparseTextureProperties(TextureDesc desc) override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (!metalSupportsCompressedFormat(owner->device, desc.format)) {
+            return fail(ErrorCode::Unsupported, "Metal device does not support requested compressed texture format");
+        }
+        SparseTextureProperties result{};
+        if (!capabilities.sparseResidencyTexture2D || desc.sampleCount > 1u ||
+            (desc.dimension != TextureDimension::Texture2D &&
+             desc.dimension != TextureDimension::Texture2DArray &&
+             desc.dimension != TextureDimension::TextureCube)) {
+            return result;
+        }
+        @autoreleasepool {
+            const auto format = pixelFormat(desc.format);
+            if (format == MTLPixelFormatInvalid) return result;
+            const MTLSize tileSize = [owner->device sparseTileSizeWithTextureType:metalTextureType(desc.dimension, 1u)
+                                                                     pixelFormat:format
+                                                                     sampleCount:1];
+            if (tileSize.width == 0 || tileSize.height == 0) return result;
+            const std::uint64_t tileBytes = static_cast<std::uint64_t>(owner->device.sparseTileSizeInBytes);
+            if (tileBytes == 0u) return result;
+            result.supported = true;
+            result.tileWidth = static_cast<std::uint32_t>(tileSize.width);
+            result.tileHeight = static_cast<std::uint32_t>(tileSize.height);
+            result.tileDepth = static_cast<std::uint32_t>(tileSize.depth ? tileSize.depth : 1);
+            result.standardTileBytes = static_cast<std::uint32_t>(tileBytes);
+            std::uint32_t totalTiles = 0;
+            std::uint32_t packedStart = desc.mipLevels;
+            const std::uint32_t layers = std::max(1u, desc.arrayLayers);
+            for (std::uint32_t mip = 0; mip < desc.mipLevels; ++mip) {
+                const std::uint32_t mw = std::max(1u, desc.width >> mip);
+                const std::uint32_t mh = std::max(1u, desc.height >> mip);
+                if (mw < result.tileWidth || mh < result.tileHeight) {
+                    if (packedStart == desc.mipLevels) packedStart = mip;
+                } else {
+                    const std::uint32_t tx = (mw + result.tileWidth - 1u) / result.tileWidth;
+                    const std::uint32_t ty = (mh + result.tileHeight - 1u) / result.tileHeight;
+                    totalTiles += tx * ty * layers;
+                }
+            }
+            result.packedMipStart = packedStart;
+            result.packedMipCount = packedStart < desc.mipLevels ? (desc.mipLevels - packedStart) : 0u;
+            result.packedMipTiles = result.packedMipCount > 0u ? layers : 0u;
+            result.totalTiles = totalTiles + result.packedMipTiles;
+            return result;
         }
     }
     Result<TextureViewPtr> createTextureView(const TexturePtr& ptr, TextureViewDesc viewDesc) override {
@@ -1975,6 +2288,11 @@ Result<std::unique_ptr<Device>> createMetalDevice(DeviceDesc desc) {
         caps.dedicatedComputeQueue = true;
         caps.dedicatedCopyQueue = true;
         caps.timelineFences = true;
+        caps.resourceAliasing = true;
+        caps.residencyControl = false;
+        const bool sparseSupported = [selected supportsFamily:MTLGPUFamilyApple6];
+        caps.sparseBinding = sparseSupported;
+        caps.sparseResidencyTexture2D = sparseSupported;
         caps.maxTextureDimension2D = 16384u;
         caps.maxColorAttachments = 8u;
         caps.constantBufferAlignment = 256u;

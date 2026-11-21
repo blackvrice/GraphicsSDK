@@ -155,6 +155,46 @@ struct DeviceCaps {
     bool dedicatedComputeQueue{};
     bool dedicatedCopyQueue{};
     bool timelineFences{};
+    bool resourceAliasing{};
+    bool residencyControl{};
+    bool sparseBinding{};
+    bool sparseResidencyTexture2D{};
+};
+
+enum class MemoryHeapType { Buffers, Textures, RenderTargets };
+struct MemoryHeapDesc {
+    std::uint64_t size{};
+    MemoryHeapType type{MemoryHeapType::Buffers};
+    bool operator==(const MemoryHeapDesc&) const = default;
+};
+struct ResourceMemoryRequirements {
+    std::uint64_t size{};
+    std::uint64_t alignment{};
+    MemoryHeapType heapType{MemoryHeapType::Buffers};
+    bool operator==(const ResourceMemoryRequirements&) const = default;
+};
+struct HeapFragmentationStats {
+    std::uint64_t totalBytes{};
+    std::uint64_t allocatedBytes{};
+    std::uint64_t virtualRequestedBytes{};
+    std::uint64_t aliasedSavedBytes{};
+    std::uint64_t freeBytes{};
+    std::uint64_t largestFreeBlockBytes{};
+    std::uint32_t liveAllocations{};
+    std::uint32_t freeRegionCount{};
+    double externalFragmentationRatio{};
+    bool resident{true};
+};
+struct SparseTextureProperties {
+    bool supported{};
+    std::uint32_t tileWidth{};
+    std::uint32_t tileHeight{};
+    std::uint32_t tileDepth{};
+    std::uint32_t standardTileBytes{};
+    std::uint32_t totalTiles{};
+    std::uint32_t packedMipStart{};
+    std::uint32_t packedMipCount{};
+    std::uint32_t packedMipTiles{};
 };
 
 inline constexpr std::uint32_t kMaxTimestampScopesPerCommandList = 32;

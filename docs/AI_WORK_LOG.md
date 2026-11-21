@@ -500,3 +500,32 @@
   - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
   - `P8-MEM-02`: Fragmentation 분석·Residency·Resource Aliasing.
   - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).
+
+
+---
+
+## 2026-11-21 — `P8-MEM-02` Fragmentation 분석·Residency·Resource Aliasing·Sparse 2D 기반 구현·실기 검증
+
+- **기준 커밋**: `0a16913b` (`Add block-compressed texture formats BC1-BC7, ETC2/EAC, and ASTC (P8-TEX-04)`)
+- **작업 목적**:
+  - Phase 8의 마지막 Windows D3D12/Vulkan 항목인 `P8-MEM-02` 완료: 기존 13개 공개 헤더·5개 `CORE` 번역 단위·11개 CPU CTest 및 기본 전용 할당(`createBuffer`/`createTexture`) 계약을 유지하면서 `MemoryHeap`, placed resource aliasing(`createPlacedBuffer`/`createPlacedTexture`/`aliasingBarrier`), 단편화 지표(`computeHeapFragmentationStats`/`HeapFragmentationStats`), Residency 제어(D3D12 `Evict`/`MakeResident`, Vulkan/Metal `Unsupported`), Sparse 2D 타일 속성 조회(`querySparseTextureProperties`)와 `DeviceCaps` 4개 플래그를 구현하고 Windows 실기 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P8-MEM-04`로 정직하게 분리.
+- **수정 파일 (18개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/Resources.hpp`, `include/graphics/CommandList.hpp`, `include/graphics/Device.hpp`
+  - `src/foundation/Backend.cpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/MemoryAliasingTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE8_MEMORY_ALIASING_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 검증 결과** (격리 빌드 `out/p8-memory-aliasing`, 설치 `out/p8-memory-aliasing-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `1EBA9A211F835D4E48B1FD8AEA65734A2BE348746972B7C8CB4975D0F737D37C`):
+  - `gfx_memory_aliasing_tests` 5/5 모드 통과:
+    - D3D12(GTX 1660 SUPER + Intel UHD 770, `assertions=382, rejections=51`), Debug+GBV(`val_errors=0, assertions=386`), WARP(+손실/복구, `assertions=216, rejections=35`).
+    - Vulkan(GTX 1660 SUPER + Intel UHD 770, `assertions=338, rejections=49`), 고정 VVL 1.3.290(`val_errors=0, assertions=342`).
+    - 실측 지표: 체크보드 단편화 `0.50 -> 0.00`, 2×128 KiB 버퍼 Aliasing 50.0% 절감(`131,072 B`), 2×256² RGBA8 RT Aliasing 50.0% 가상 중복 제거(GTX `524,288 -> 262,144 B`, Intel D3D12 `655,360 -> 327,680 B`, Intel Vulkan `532,736 -> 327,680 B`), Sparse 2D `128×128×1` 64 KiB(`86`/`96`/`92` tiles), probe 누수 0.
+  - 독립 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)`): D3D12·Vulkan 전체 어댑터 비검증·검증 **9/9 통과 (`val_errors=0`)**.
+  - 전체 CTest 회귀: **152/152 (100%) 통과 (`188.18s`)**.
+  - `tools/roadmap.py --check`: PASS (207 task IDs: 125 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
+  - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).

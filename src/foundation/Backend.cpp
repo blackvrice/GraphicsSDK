@@ -851,6 +851,82 @@ Result<void> validateReadbackPoolDesc(const ReadbackPoolDesc& desc) {
     return {};
 }
 
+Result<void> validateMemoryHeapDesc(MemoryHeapDesc desc) {
+    if (desc.type != MemoryHeapType::Buffers &&
+        desc.type != MemoryHeapType::Textures &&
+        desc.type != MemoryHeapType::RenderTargets) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "Unknown MemoryHeapType"});
+    }
+    constexpr std::uint64_t kGranularity = 65536u;
+    constexpr std::uint64_t kMaxHeapBytes = 4ull * 1024ull * 1024ull * 1024ull;
+    if (!desc.size || (desc.size % kGranularity) != 0 || desc.size > kMaxHeapBytes) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "MemoryHeap size must be a positive 64KiB multiple up to 4GiB"});
+    }
+    return {};
+}
+
+Result<HeapFragmentationStats> computeHeapFragmentationStats(
+    std::uint64_t totalBytes,
+    std::span<const HeapAllocationRange> liveAllocations,
+    bool resident) {
+    if (!totalBytes) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "Heap totalBytes must be positive"});
+    }
+    HeapFragmentationStats stats{};
+    stats.totalBytes = totalBytes;
+    stats.liveAllocations = static_cast<std::uint32_t>(liveAllocations.size());
+    stats.resident = resident;
+    std::vector<std::pair<std::uint64_t, std::uint64_t>> intervals;
+    intervals.reserve(liveAllocations.size());
+    for (const auto& range : liveAllocations) {
+        if (!range.size || range.offset > totalBytes || range.size > totalBytes - range.offset) {
+            return std::unexpected(Error{ErrorCode::InvalidArgument, "Heap allocation range outside heap bounds"});
+        }
+        stats.virtualRequestedBytes += range.size;
+        intervals.emplace_back(range.offset, range.offset + range.size);
+    }
+    if (intervals.empty()) {
+        stats.freeBytes = totalBytes;
+        stats.largestFreeBlockBytes = totalBytes;
+        stats.freeRegionCount = 1u;
+        stats.externalFragmentationRatio = 0.0;
+        return stats;
+    }
+    std::sort(intervals.begin(), intervals.end());
+    std::vector<std::pair<std::uint64_t, std::uint64_t>> merged;
+    merged.reserve(intervals.size());
+    for (const auto& iv : intervals) {
+        if (merged.empty() || iv.first > merged.back().second) {
+            merged.push_back(iv);
+        } else {
+            merged.back().second = std::max(merged.back().second, iv.second);
+        }
+    }
+    std::uint64_t allocated = 0;
+    std::uint64_t cursor = 0;
+    for (const auto& iv : merged) {
+        if (iv.first > cursor) {
+            const std::uint64_t gap = iv.first - cursor;
+            ++stats.freeRegionCount;
+            stats.largestFreeBlockBytes = std::max(stats.largestFreeBlockBytes, gap);
+        }
+        allocated += (iv.second - iv.first);
+        cursor = iv.second;
+    }
+    if (totalBytes > cursor) {
+        const std::uint64_t tailGap = totalBytes - cursor;
+        ++stats.freeRegionCount;
+        stats.largestFreeBlockBytes = std::max(stats.largestFreeBlockBytes, tailGap);
+    }
+    stats.allocatedBytes = allocated;
+    stats.aliasedSavedBytes = stats.virtualRequestedBytes - allocated;
+    stats.freeBytes = totalBytes - allocated;
+    stats.externalFragmentationRatio = stats.freeBytes == 0
+        ? 0.0
+        : (1.0 - static_cast<double>(stats.largestFreeBlockBytes) / static_cast<double>(stats.freeBytes));
+    return stats;
+}
+
 Result<void> validateTransientPoolDesc(const TransientPoolDesc& desc) {
     if (!validQueueType(desc.queue)) {
         return std::unexpected(Error{ErrorCode::InvalidArgument, "Unknown TransientResourcePool queue type"});

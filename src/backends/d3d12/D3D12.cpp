@@ -180,17 +180,20 @@ struct Tracker {
     std::uint64_t version{};
     std::array<std::uint64_t, 3> lastUse{};
     bool backbuffer{}; UINT bufferIndex{}; std::weak_ptr<SwapChainScope> swapchain;
+    ComPtr<ID3D12Heap> placedHeap;
+    std::shared_ptr<std::atomic<bool>> heapResident;
     bool available() const {
         if(!backbuffer)return true;
         const auto scope=swapchain.lock();
         return scope&&scope->chain&&scope->chain->GetCurrentBackBufferIndex()==bufferIndex;
     }
 };
-struct Batch { std::uint64_t fence{}; std::vector<ComPtr<IUnknown>> objects; };
+struct Batch { std::uint64_t fence{}; std::vector<ComPtr<IUnknown>> objects; std::unordered_set<ID3D12Resource*> placedResources; };
 struct Retirable {
     virtual ~Retirable()=default;
     virtual void releaseNative()=0;
     virtual void appendResources(std::vector<ComPtr<ID3D12Resource>>&) const {}
+    virtual void appendHeaps(std::vector<ComPtr<ID3D12Heap>>&) const {}
 };
 struct QueueState {
     detail::FenceWaiter waiter;
@@ -341,6 +344,80 @@ D3D12_RESOURCE_DESC bufferDescription(std::uint64_t size) {
     desc.DepthOrArraySize = 1; desc.MipLevels = 1; desc.SampleDesc.Count = 1; desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     return desc;
 }
+D3D12_RESOURCE_DESC textureNativeDesc(const TextureDesc& desc) {
+    D3D12_RESOURCE_DESC nativeDesc{};
+    nativeDesc.Dimension = desc.dimension == TextureDimension::Texture1D ? D3D12_RESOURCE_DIMENSION_TEXTURE1D
+                         : desc.dimension == TextureDimension::Texture3D ? D3D12_RESOURCE_DIMENSION_TEXTURE3D
+                         : D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    nativeDesc.Width = desc.width;
+    nativeDesc.Height = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+    nativeDesc.DepthOrArraySize = static_cast<UINT16>(desc.dimension == TextureDimension::Texture3D ? desc.depth : desc.arrayLayers);
+    nativeDesc.MipLevels = static_cast<UINT16>(desc.mipLevels);
+    nativeDesc.Format = native(desc.format);
+    nativeDesc.SampleDesc.Count = desc.sampleCount;
+    nativeDesc.SampleDesc.Quality = 0;
+    if (desc.renderTarget) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    if (desc.storage) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    if (desc.depthStencil) nativeDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL | D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+    return nativeDesc;
+}
+struct DXMemoryHeap final : MemoryHeap, Retirable {
+    struct PlacedEntry {
+        std::weak_ptr<Tracker> tracker;
+        std::uint64_t offset{};
+        std::uint64_t size{};
+    };
+    std::shared_ptr<State> owner;
+    ComPtr<ID3D12Heap> heap;
+    MemoryHeapDesc desc{};
+    std::uint64_t heapAlignment{D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT};
+    std::shared_ptr<std::atomic<bool>> residentFlag{std::make_shared<std::atomic<bool>>(true)};
+    mutable std::vector<PlacedEntry> entries;
+    void releaseNative() override { heap.Reset(); }
+    void appendHeaps(std::vector<ComPtr<ID3D12Heap>>& out) const override {
+        if (heap) out.push_back(heap);
+    }
+    MemoryHeapDesc description() const override { return desc; }
+    Result<HeapFragmentationStats> fragmentationStats() const override {
+        auto status = owner->check(); if (!status) return std::unexpected(status.error());
+        std::erase_if(entries, [](const PlacedEntry& e) { return e.tracker.expired(); });
+        std::vector<HeapAllocationRange> ranges;
+        ranges.reserve(entries.size());
+        for (const auto& e : entries) ranges.push_back({e.offset, e.size});
+        return computeHeapFragmentationStats(desc.size, ranges, residentFlag->load(std::memory_order_acquire));
+    }
+    Result<void> setResident(bool resident) override {
+        auto completed = owner->completedAll(); if (!completed) return std::unexpected(completed.error());
+        std::erase_if(entries, [](const PlacedEntry& e) { return e.tracker.expired(); });
+        const bool cur = residentFlag->load(std::memory_order_acquire);
+        if (cur == resident) return {};
+        if (!resident) {
+            for (const auto& e : entries) {
+                if (auto tr = e.tracker.lock()) {
+                    for (std::size_t q = 0; q < 3; ++q) {
+                        if ((*completed)[q] < tr->lastUse[q]) {
+                            return invalid("Cannot evict MemoryHeap while placed resources are in flight");
+                        }
+                    }
+                }
+            }
+            ID3D12Pageable* pageable = heap.Get();
+            const HRESULT hr = owner->device->Evict(1, &pageable);
+            if (FAILED(hr)) return owner->failure(hr, "ID3D12Device::Evict failed");
+            residentFlag->store(false, std::memory_order_release);
+            return {};
+        }
+        ID3D12Pageable* pageable = heap.Get();
+        const HRESULT hr = owner->device->MakeResident(1, &pageable);
+        if (FAILED(hr)) return owner->failure(hr, "ID3D12Device::MakeResident failed");
+        residentFlag->store(true, std::memory_order_release);
+        return {};
+    }
+    Result<bool> isResident() const override {
+        auto status = owner->check(); if (!status) return std::unexpected(status.error());
+        return residentFlag->load(std::memory_order_acquire);
+    }
+};
 Result<ComPtr<ID3D12Resource>> makeBuffer(State& state, std::uint64_t size, Memory memory, bool storage = false) {
     auto desc = bufferDescription(size);
     if (storage) desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -356,9 +433,11 @@ struct DXBuffer final : Buffer, Retirable {
     std::shared_ptr<State> owner;
     std::shared_ptr<Tracker> tracker{std::make_shared<Tracker>()};
     ComPtr<ID3D12Resource> resource;
+    std::shared_ptr<DXMemoryHeap> placedHeap;
     BufferDesc desc;
-    void releaseNative() override {resource.Reset();}
-    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {if(resource)out.push_back(resource);}
+    void releaseNative() override {resource.Reset();if(tracker)tracker->placedHeap.Reset();}
+    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {if(resource && !placedHeap)out.push_back(resource);}
+    void appendHeaps(std::vector<ComPtr<ID3D12Heap>>& out) const override {if(placedHeap && placedHeap->heap)out.push_back(placedHeap->heap);}
     BufferDesc description() const override { return desc; }
     Result<void> write(std::uint64_t offset, std::span<const std::byte> bytes) override {
         auto status = owner->completedAll(); if (!status) return std::unexpected(status.error());
@@ -390,14 +469,16 @@ struct DXTexture final : Texture, Retirable {
     std::shared_ptr<State> owner;
     std::shared_ptr<Tracker> tracker{std::make_shared<Tracker>()};
     ComPtr<ID3D12Resource> resource;
+    std::shared_ptr<DXMemoryHeap> placedHeap;
     ComPtr<ID3D12DescriptorHeap> rtv;
     ComPtr<ID3D12DescriptorHeap> dsv;
     TextureDesc desc;
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT placed{};
     TextureFootprint layout;
     bool backbuffer{};
-    void releaseNative() override {resource.Reset();rtv.Reset();dsv.Reset();}
-    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {if(resource)out.push_back(resource);}
+    void releaseNative() override {resource.Reset();rtv.Reset();dsv.Reset();if(tracker)tracker->placedHeap.Reset();}
+    void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {if(resource && !placedHeap)out.push_back(resource);}
+    void appendHeaps(std::vector<ComPtr<ID3D12Heap>>& out) const override {if(placedHeap && placedHeap->heap)out.push_back(placedHeap->heap);}
     TextureDesc description() const override { return desc; }
     TextureFootprint footprint() const override { return layout; }
     Result<void> initViews() {
@@ -449,7 +530,10 @@ struct DXTextureView final : TextureView, Retirable {
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
     void releaseNative() override { rtv.Reset(); dsv.Reset(); }
     void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {
-        if (parent && parent->resource) out.push_back(parent->resource);
+        if (parent && parent->resource && !parent->placedHeap) out.push_back(parent->resource);
+    }
+    void appendHeaps(std::vector<ComPtr<ID3D12Heap>>& out) const override {
+        if (parent && parent->placedHeap && parent->placedHeap->heap) out.push_back(parent->placedHeap->heap);
     }
     TextureViewDesc description() const override { return desc; }
     TexturePtr texture() const override { return parent; }
@@ -483,7 +567,10 @@ struct NativeCommands final : Retirable {
     void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {
         if(queryReadback)out.push_back(queryReadback);
         if(scopeReadback)out.push_back(scopeReadback);
-        for(const auto& use:uses)if(use.resource)out.push_back(use.resource);
+        for(const auto& use:uses)if(use.resource && (!use.tracker || !use.tracker->placedHeap))out.push_back(use.resource);
+    }
+    void appendHeaps(std::vector<ComPtr<ID3D12Heap>>& out) const override {
+        for(const auto& use:uses)if(use.tracker && use.tracker->placedHeap)out.push_back(use.tracker->placedHeap);
     }
 };
 struct DXTimelineFence final : TimelineFence, Retirable {
@@ -635,7 +722,10 @@ struct DXCommands final : CommandList {
             if (markMutated) found->mutated = true;
             return *found;
         }
-        uses.push_back({tracker, resource, tracker->version, tracker->state, tracker->nativeState, memory, markMutated}); retain(resource); return uses.back();
+        uses.push_back({tracker, resource, tracker->version, tracker->state, tracker->nativeState, memory, markMutated});
+        retain(resource);
+        if (tracker->placedHeap) retain(tracker->placedHeap);
+        return uses.back();
     }
     template<class T> Result<std::shared_ptr<T>> owned(const std::shared_ptr<typename std::conditional_t<std::is_same_v<T, DXBuffer>, Buffer, Texture>>& ptr) {
         auto object = std::dynamic_pointer_cast<T>(ptr);
@@ -784,6 +874,52 @@ struct DXCommands final : CommandList {
              before == ResourceState::Present || before == ResourceState::ResolveSource || before == ResourceState::ResolveDestination))
             return invalid("Compute command list cannot transition texture from a graphics/present/resolve state");
         return change(use((*object)->tracker, (*object)->resource), next);
+    }
+    Result<void> aliasingBarrier(const BufferPtr& before, const BufferPtr& after) override {
+        auto status = ready(true); if (!status) return status;
+        if (!after) return invalid("Aliasing barrier requires a non-null destination buffer", ErrorCode::InvalidArgument);
+        auto dst = owned<DXBuffer>(after); if (!dst) return std::unexpected(dst.error());
+        if (!(*dst)->placedHeap) return invalid("Aliasing barrier requires placed resources", ErrorCode::InvalidArgument);
+        std::shared_ptr<DXBuffer> src;
+        if (before) {
+            auto checked = owned<DXBuffer>(before); if (!checked) return std::unexpected(checked.error());
+            src = std::move(*checked);
+            if (!src->placedHeap) return invalid("Aliasing barrier requires placed resources", ErrorCode::InvalidArgument);
+            if (src == *dst) return invalid("Aliasing barrier requires distinct before and after resources", ErrorCode::InvalidArgument);
+        }
+        if (src) use(src->tracker, src->resource, src->desc.memory);
+        use((*dst)->tracker, (*dst)->resource, (*dst)->desc.memory, true);
+        D3D12_RESOURCE_BARRIER barrier{};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
+        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrier.Aliasing.pResourceBefore = src ? src->resource.Get() : nullptr;
+        barrier.Aliasing.pResourceAfter = (*dst)->resource.Get();
+        list->ResourceBarrier(1, &barrier);
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
+    }
+    Result<void> aliasingBarrier(const TexturePtr& before, const TexturePtr& after) override {
+        auto status = ready(true); if (!status) return status;
+        if (!after) return invalid("Aliasing barrier requires a non-null destination texture", ErrorCode::InvalidArgument);
+        auto dst = owned<DXTexture>(after); if (!dst) return std::unexpected(dst.error());
+        if (!(*dst)->placedHeap) return invalid("Aliasing barrier requires placed resources", ErrorCode::InvalidArgument);
+        std::shared_ptr<DXTexture> src;
+        if (before) {
+            auto checked = owned<DXTexture>(before); if (!checked) return std::unexpected(checked.error());
+            src = std::move(*checked);
+            if (!src->placedHeap) return invalid("Aliasing barrier requires placed resources", ErrorCode::InvalidArgument);
+            if (src == *dst) return invalid("Aliasing barrier requires distinct before and after resources", ErrorCode::InvalidArgument);
+        }
+        if (src) use(src->tracker, src->resource);
+        use((*dst)->tracker, (*dst)->resource, Memory::Device, true);
+        D3D12_RESOURCE_BARRIER barrier{};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
+        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrier.Aliasing.pResourceBefore = src ? src->resource.Get() : nullptr;
+        barrier.Aliasing.pResourceAfter = (*dst)->resource.Get();
+        list->ResourceBarrier(1, &barrier);
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
     }
     Result<void> copyBuffer(const BufferPtr& src, const BufferPtr& dst, std::uint64_t bytes) override {
         return copyBufferRegion(src, 0, dst, 0, bytes);
@@ -1782,6 +1918,8 @@ struct DXQueue final : CommandQueue {
             if (!cmd->ended || cmd->recording || cmd->submitted) return invalid("Command list is not executable or was already submitted");
             for (const auto& usage : cmd->uses) {
                 if (!usage.tracker->available()) return invalid("Recorded backbuffer is not current or its swapchain has been destroyed");
+                if (usage.tracker->heapResident && !usage.tracker->heapResident->load(std::memory_order_acquire))
+                    return invalid("Cannot submit command list referencing an evicted MemoryHeap");
                 if (usage.observedVersion != usage.tracker->version || usage.tracker->version == UINT64_MAX)
                     return invalid("Resource changed after recording; re-record the command list");
                 Tracker* key = usage.tracker.get();
@@ -1837,6 +1975,10 @@ struct DXQueue final : CommandQueue {
         nativeLists.reserve(validated.size());
         for (DXCommands* cmd : validated) {
             for (const auto& ref : cmd->references) addUnique(ref);
+            for (const auto& usage : cmd->uses) {
+                if (usage.resource && usage.tracker && usage.tracker->placedHeap)
+                    batch.placedResources.insert(usage.resource.Get());
+            }
             addCom(cmd->pool ? cmd->pool->allocator : cmd->allocator);
             addCom(cmd->list); addCom(cmd->descriptors); addCom(cmd->query); addCom(cmd->queryReadback); addCom(cmd->scopeReadback);
             nativeLists.push_back(cmd->list.Get());
@@ -1978,22 +2120,42 @@ public:
         auto done = state->completedAll(); if (!done) return std::unexpected(done.error());
         ResourceStatistics result;
         std::vector<ComPtr<ID3D12Resource>> resources;
+        std::vector<ComPtr<ID3D12Heap>> heaps;
         for (const auto& child : state->children) if (auto live = child.lock()) {
-            ++result.trackedObjects; live->appendResources(resources);
+            ++result.trackedObjects; live->appendResources(resources); live->appendHeaps(heaps);
         }
+        std::unordered_set<ID3D12Resource*> placedSet;
         for (const auto& q : state->queues) {
             result.pendingSubmissions += q.pending.size();
-            for (const auto& batch : q.pending) for (const auto& object : batch.objects) {
-                ++result.pendingObjectReferences;
-                ComPtr<ID3D12Resource> resource;
-                if (object && SUCCEEDED(object.As(&resource))) resources.push_back(std::move(resource));
+            for (const auto& batch : q.pending) {
+                placedSet.insert(batch.placedResources.begin(), batch.placedResources.end());
+                for (const auto& object : batch.objects) {
+                    ++result.pendingObjectReferences;
+                    ComPtr<ID3D12Resource> resource;
+                    if (object && SUCCEEDED(object.As(&resource))) {
+                        resources.push_back(std::move(resource));
+                        continue;
+                    }
+                    ComPtr<ID3D12Heap> heap;
+                    if (object && SUCCEEDED(object.As(&heap))) heaps.push_back(std::move(heap));
+                }
             }
         }
         std::unordered_set<ID3D12Resource*> unique;
-        for (const auto& resource : resources) if (unique.insert(resource.Get()).second) {
-            const auto desc = resource->GetDesc();
-            const auto bytes = state->device->GetResourceAllocationInfo(0, 1, &desc).SizeInBytes;
-            if (bytes == UINT64_MAX || bytes > UINT64_MAX - result.resourceAllocationBytes)
+        for (const auto& resource : resources) {
+            if (placedSet.contains(resource.Get())) continue;
+            if (unique.insert(resource.Get()).second) {
+                const auto desc = resource->GetDesc();
+                const auto bytes = state->device->GetResourceAllocationInfo(0, 1, &desc).SizeInBytes;
+                if (bytes == UINT64_MAX || bytes > UINT64_MAX - result.resourceAllocationBytes)
+                    return invalid("Resource allocation statistics overflow", ErrorCode::BackendFailure);
+                ++result.uniqueResources; result.resourceAllocationBytes += bytes;
+            }
+        }
+        std::unordered_set<ID3D12Heap*> uniqueHeaps;
+        for (const auto& heap : heaps) if (uniqueHeaps.insert(heap.Get()).second) {
+            const auto bytes = heap->GetDesc().SizeInBytes;
+            if (bytes > UINT64_MAX - result.resourceAllocationBytes)
                 return invalid("Resource allocation statistics overflow", ErrorCode::BackendFailure);
             ++result.uniqueResources; result.resourceAllocationBytes += bytes;
         }
@@ -2036,9 +2198,9 @@ public:
         state->track(buffer);
         return buffer;
     }
-    Result<TexturePtr> createTexture(TextureDesc desc) override {
-        auto status = state->check(); if (!status) return std::unexpected(status.error());
-        status=validateTextureDescription(desc);if(!status)return std::unexpected(status.error());
+    Result<void> validateTextureForDevice(const TextureDesc& desc) {
+        auto status = validateTextureDescription(desc);
+        if (!status) return status;
         const DXGI_FORMAT dxgiFormat = native(desc.format);
         if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
             return invalid("D3D12 adapter does not support this compressed texture format", ErrorCode::Unsupported);
@@ -2060,33 +2222,201 @@ public:
         }
         if (desc.storage) {
             D3D12_FEATURE_DATA_FORMAT_SUPPORT support{};
-            support.Format = native(desc.format);
+            support.Format = dxgiFormat;
             const HRESULT hr = state->device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support));
             if (FAILED(hr)) return state->failure(hr, "Query D3D12 storage format support failed");
             if ((support.Support1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW) == 0) {
                 return invalid("Adapter does not support typed UAV storage for this texture format", ErrorCode::Unsupported);
             }
         }
+        return {};
+    }
+    Result<TexturePtr> createTexture(TextureDesc desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        status = validateTextureForDevice(desc); if (!status) return std::unexpected(status.error());
         auto texture = std::make_shared<DXTexture>(); texture->owner = state; texture->desc = desc;
-        D3D12_RESOURCE_DESC nativeDesc{};
-        nativeDesc.Dimension = desc.dimension == TextureDimension::Texture1D ? D3D12_RESOURCE_DIMENSION_TEXTURE1D
-                             : desc.dimension == TextureDimension::Texture3D ? D3D12_RESOURCE_DIMENSION_TEXTURE3D
-                             : D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        nativeDesc.Width = desc.width;
-        nativeDesc.Height = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
-        nativeDesc.DepthOrArraySize = static_cast<UINT16>(desc.dimension == TextureDimension::Texture3D ? desc.depth : desc.arrayLayers);
-        nativeDesc.MipLevels = static_cast<UINT16>(desc.mipLevels);
-        nativeDesc.Format = native(desc.format);
-        nativeDesc.SampleDesc.Count = desc.sampleCount; nativeDesc.SampleDesc.Quality = 0;
-        if (desc.renderTarget) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-        if (desc.storage) nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-        if(desc.depthStencil)nativeDesc.Flags=D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL|D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+        const auto nativeDesc = textureNativeDesc(desc);
         D3D12_HEAP_PROPERTIES heap{}; heap.Type = D3D12_HEAP_TYPE_DEFAULT;
         HRESULT result = state->device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&texture->resource));
         if (FAILED(result)) return state->failure(result, "Create texture failed");
         status = texture->initViews(); if (!status) return std::unexpected(status.error());
         state->track(texture);
         return texture;
+    }
+    Result<ResourceMemoryRequirements> queryBufferMemoryRequirements(BufferDesc desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (!desc.size || desc.size > SIZE_MAX || desc.memory != Memory::Device) {
+            return invalid("Placed buffer requires non-empty Device memory", ErrorCode::InvalidArgument);
+        }
+        auto nativeDesc = bufferDescription(desc.size);
+        if (desc.storage) nativeDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        const auto info = state->device->GetResourceAllocationInfo(0, 1, &nativeDesc);
+        if (info.SizeInBytes == UINT64_MAX) {
+            return invalid("Failed to query D3D12 buffer allocation info", ErrorCode::BackendFailure);
+        }
+        return ResourceMemoryRequirements{
+            info.SizeInBytes,
+            info.Alignment ? info.Alignment : static_cast<std::uint64_t>(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT),
+            MemoryHeapType::Buffers
+        };
+    }
+    Result<ResourceMemoryRequirements> queryTextureMemoryRequirements(TextureDesc desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        status = validateTextureForDevice(desc); if (!status) return std::unexpected(status.error());
+        const auto nativeDesc = textureNativeDesc(desc);
+        const auto info = state->device->GetResourceAllocationInfo(0, 1, &nativeDesc);
+        if (info.SizeInBytes == UINT64_MAX) {
+            return invalid("Failed to query D3D12 texture allocation info", ErrorCode::BackendFailure);
+        }
+        const MemoryHeapType heapType = (desc.renderTarget || desc.depthStencil)
+            ? MemoryHeapType::RenderTargets
+            : MemoryHeapType::Textures;
+        return ResourceMemoryRequirements{
+            info.SizeInBytes,
+            info.Alignment ? info.Alignment : static_cast<std::uint64_t>(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT),
+            heapType
+        };
+    }
+    Result<MemoryHeapPtr> createMemoryHeap(MemoryHeapDesc desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        status = validateMemoryHeapDesc(desc); if (!status) return std::unexpected(status.error());
+        D3D12_HEAP_DESC nativeDesc{};
+        nativeDesc.SizeInBytes = desc.size;
+        nativeDesc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+        if (desc.type == MemoryHeapType::RenderTargets &&
+            desc.size >= D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT &&
+            (desc.size % D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT) == 0u) {
+            nativeDesc.Alignment = D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT;
+        } else {
+            nativeDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+        }
+        nativeDesc.Flags = desc.type == MemoryHeapType::Buffers
+            ? D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS
+            : desc.type == MemoryHeapType::Textures
+                ? D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES
+                : D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES;
+        auto heap = std::make_shared<DXMemoryHeap>();
+        heap->owner = state;
+        heap->desc = desc;
+        heap->heapAlignment = nativeDesc.Alignment;
+        const HRESULT hr = state->device->CreateHeap(&nativeDesc, IID_PPV_ARGS(&heap->heap));
+        if (FAILED(hr)) return state->failure(hr, "CreateHeap failed");
+        state->track(heap);
+        return MemoryHeapPtr(std::move(heap));
+    }
+    Result<BufferPtr> createPlacedBuffer(const MemoryHeapPtr& heap, std::uint64_t heapOffset, BufferDesc desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (!heap) return invalid("Null MemoryHeap", ErrorCode::InvalidArgument);
+        auto dxHeap = std::dynamic_pointer_cast<DXMemoryHeap>(heap);
+        if (!dxHeap || dxHeap->owner != state) return invalid("MemoryHeap belongs to another device", ErrorCode::WrongDevice);
+        if (!dxHeap->residentFlag->load(std::memory_order_acquire)) {
+            return invalid("Cannot create placed buffer on an evicted MemoryHeap");
+        }
+        auto req = queryBufferMemoryRequirements(desc); if (!req) return std::unexpected(req.error());
+        if (dxHeap->desc.type != req->heapType) {
+            return invalid("MemoryHeapType mismatch for placed buffer", ErrorCode::InvalidArgument);
+        }
+        if (heapOffset % req->alignment != 0u) {
+            return invalid("Placed buffer heapOffset is not aligned", ErrorCode::InvalidArgument);
+        }
+        if (heapOffset > dxHeap->desc.size || req->size > dxHeap->desc.size - heapOffset) {
+            return invalid("Placed buffer exceeds MemoryHeap size", ErrorCode::InvalidArgument);
+        }
+        auto nativeDesc = bufferDescription(desc.size);
+        if (desc.storage) nativeDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        auto buffer = std::make_shared<DXBuffer>();
+        buffer->owner = state;
+        buffer->desc = desc;
+        const HRESULT hr = state->device->CreatePlacedResource(
+            dxHeap->heap.Get(), heapOffset, &nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&buffer->resource));
+        if (FAILED(hr)) return state->failure(hr, "CreatePlacedResource(buffer) failed");
+        buffer->placedHeap = dxHeap;
+        buffer->tracker->placedHeap = dxHeap->heap;
+        buffer->tracker->heapResident = dxHeap->residentFlag;
+        dxHeap->entries.push_back({buffer->tracker, heapOffset, req->size});
+        state->track(buffer);
+        return BufferPtr(std::move(buffer));
+    }
+    Result<TexturePtr> createPlacedTexture(const MemoryHeapPtr& heap, std::uint64_t heapOffset, TextureDesc desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (!heap) return invalid("Null MemoryHeap", ErrorCode::InvalidArgument);
+        auto dxHeap = std::dynamic_pointer_cast<DXMemoryHeap>(heap);
+        if (!dxHeap || dxHeap->owner != state) return invalid("MemoryHeap belongs to another device", ErrorCode::WrongDevice);
+        if (!dxHeap->residentFlag->load(std::memory_order_acquire)) {
+            return invalid("Cannot create placed texture on an evicted MemoryHeap");
+        }
+        auto req = queryTextureMemoryRequirements(desc); if (!req) return std::unexpected(req.error());
+        if (dxHeap->desc.type != req->heapType) {
+            return invalid("MemoryHeapType mismatch for placed texture", ErrorCode::InvalidArgument);
+        }
+        if (req->alignment > dxHeap->heapAlignment) {
+            return invalid("MemoryHeap alignment is smaller than placed texture requirement", ErrorCode::InvalidArgument);
+        }
+        if (heapOffset % req->alignment != 0u) {
+            return invalid("Placed texture heapOffset is not aligned", ErrorCode::InvalidArgument);
+        }
+        if (heapOffset > dxHeap->desc.size || req->size > dxHeap->desc.size - heapOffset) {
+            return invalid("Placed texture exceeds MemoryHeap size", ErrorCode::InvalidArgument);
+        }
+        const auto nativeDesc = textureNativeDesc(desc);
+        auto texture = std::make_shared<DXTexture>();
+        texture->owner = state;
+        texture->desc = desc;
+        const HRESULT hr = state->device->CreatePlacedResource(
+            dxHeap->heap.Get(), heapOffset, &nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&texture->resource));
+        if (FAILED(hr)) return state->failure(hr, "CreatePlacedResource(texture) failed");
+        texture->placedHeap = dxHeap;
+        texture->tracker->placedHeap = dxHeap->heap;
+        texture->tracker->heapResident = dxHeap->residentFlag;
+        status = texture->initViews(); if (!status) return std::unexpected(status.error());
+        dxHeap->entries.push_back({texture->tracker, heapOffset, req->size});
+        state->track(texture);
+        return TexturePtr(std::move(texture));
+    }
+    Result<SparseTextureProperties> querySparseTextureProperties(TextureDesc desc) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        status = validateTextureForDevice(desc); if (!status) return std::unexpected(status.error());
+        SparseTextureProperties result{};
+        if (!state->caps.sparseResidencyTexture2D || desc.sampleCount > 1u ||
+            (desc.dimension != TextureDimension::Texture2D &&
+             desc.dimension != TextureDimension::Texture2DArray &&
+             desc.dimension != TextureDimension::TextureCube)) {
+            return result;
+        }
+        D3D12_FEATURE_DATA_FORMAT_SUPPORT formatSupport{};
+        formatSupport.Format = native(desc.format);
+        HRESULT hr = state->device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport));
+        if (FAILED(hr)) return state->failure(hr, "Query D3D12 tiled format support failed");
+        if ((formatSupport.Support2 & D3D12_FORMAT_SUPPORT2_TILED) == 0) {
+            return result;
+        }
+        auto nativeDesc = textureNativeDesc(desc);
+        nativeDesc.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
+        ComPtr<ID3D12Resource> reserved;
+        hr = state->device->CreateReservedResource(&nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&reserved));
+        if (FAILED(hr)) {
+            if (FAILED(state->device->GetDeviceRemovedReason())) {
+                return state->failure(hr, "CreateReservedResource failed");
+            }
+            return result;
+        }
+        UINT totalTiles{};
+        D3D12_PACKED_MIP_INFO packedMip{};
+        D3D12_TILE_SHAPE tileShape{};
+        UINT numSubresourceTilings = 0;
+        state->device->GetResourceTiling(reserved.Get(), &totalTiles, &packedMip, &tileShape, &numSubresourceTilings, 0, nullptr);
+        result.supported = totalTiles > 0u && tileShape.WidthInTexels > 0u && tileShape.HeightInTexels > 0u;
+        if (result.supported) {
+            result.tileWidth = tileShape.WidthInTexels;
+            result.tileHeight = tileShape.HeightInTexels;
+            result.tileDepth = tileShape.DepthInTexels ? tileShape.DepthInTexels : 1u;
+            result.standardTileBytes = 65536u;
+            result.packedMipStart = packedMip.NumStandardMips;
+            result.packedMipCount = packedMip.NumPackedMips;
+            result.packedMipTiles = packedMip.NumTilesForPackedMips;
+            result.totalTiles = totalTiles;
+        }
+        return result;
     }
     Result<TextureViewPtr> createTextureView(const TexturePtr& ptr, TextureViewDesc viewDesc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
@@ -2578,6 +2908,14 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     state->caps.dedicatedComputeQueue = true;
     state->caps.dedicatedCopyQueue = true;
     state->caps.timelineFences = true;
+    state->caps.resourceAliasing = true;
+    state->caps.residencyControl = true;
+    D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12Options{};
+    if (SUCCEEDED(state->device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12Options, sizeof(d3d12Options)))) {
+        const bool tiledSupported = d3d12Options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
+        state->caps.sparseBinding = tiledSupported;
+        state->caps.sparseResidencyTexture2D = tiledSupported;
+    }
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
     if (desc.validation) {
         result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable");

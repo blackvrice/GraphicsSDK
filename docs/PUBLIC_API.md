@@ -91,6 +91,13 @@ power-of-two 정렬 패킹·wrap·Fence 회수·`discardPending()`·포화 시 `
 `ReadbackPool`과 `TransientResourcePool`은 Fence 완료 기반 회수, 중복/외부 반환 거부, LRU 상한 축출 및
 `BudgetPressurePolicy`(D3D12 실측 OS VRAM 예산 조회 / Vulkan `Unavailable` 정직 반환 및 결정적 `Soft`/`Hard`
 축출)를 지원한다. [공개 Upload Ring · Resource Pool 보고서](PHASE8_MEMORY_POOL_REPORT.md)를 따른다.
+`Device::createMemoryHeap(MemoryHeapDesc)`(`MemoryHeapType::{Buffers, Textures, RenderTargets}`, 64 KiB 배수·최대 4 GiB),
+`queryBufferMemoryRequirements`, `queryTextureMemoryRequirements`, `createPlacedBuffer`, `createPlacedTexture`,
+`CommandList::aliasingBarrier(before, after)`, `MemoryHeap::{fragmentationStats, setResident, isResident}`,
+`Device::querySparseTextureProperties(TextureDesc)`는 기본 전용 할당을 유지하면서 명시적 opt-in placed resource aliasing,
+단편화 분석(`computeHeapFragmentationStats`, 외부 단편화 비율 및 중복 배치 절감량), D3D12 `Evict`/`MakeResident` residency 제어
+(Vulkan/Metal은 `caps().residencyControl == false` 및 `Unsupported`), Sparse 2D 타일 속성 조회를 제공한다.
+[단편화·Residency·Aliasing·Sparse 보고서](PHASE8_MEMORY_ALIASING_REPORT.md)를 따른다.
 
 `RenderGraph`는 직접 `CommandList`/`CommandQueue` API를 대체하지 않는 상위 선택 모듈로,
 `createBuffer`/`createTexture`/`importBuffer`/`importTexture`와 `addPass(RGPassDesc)`로 패스 간

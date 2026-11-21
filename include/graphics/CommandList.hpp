@@ -60,6 +60,11 @@ public:
     // Explicit UAV barrier ordering prior UAV writes before subsequent UAV reads/writes.
     [[nodiscard]] virtual Result<void> uavBarrier(const BufferPtr&) = 0;
     [[nodiscard]] virtual Result<void> uavBarrier(const TexturePtr&) = 0;
+    // Explicit aliasing barrier ordering prior access to 'before' (may be null) before activating
+    // an aliased placed resource 'after' sharing overlapping MemoryHeap storage.
+    // On Vulkan, resets 'after' image layout tracking so the next transition discards prior layout.
+    [[nodiscard]] virtual Result<void> aliasingBarrier(const BufferPtr& before, const BufferPtr& after) = 0;
+    [[nodiscard]] virtual Result<void> aliasingBarrier(const TexturePtr& before, const TexturePtr& after) = 0;
     [[nodiscard]] virtual Result<void> writeTimestamp(std::uint32_t index) = 0;
     [[nodiscard]] virtual Result<void> resolveTimestamps() = 0;
     [[nodiscard]] virtual Result<double> elapsedGpuMilliseconds() = 0;

@@ -96,6 +96,16 @@ public:
     [[nodiscard]] virtual Result<TexturePtr> createTexture(TextureDesc) = 0;
     // Creating thread only. Creates a validated subresource view over a texture from this device.
     [[nodiscard]] virtual Result<TextureViewPtr> createTextureView(const TexturePtr&, TextureViewDesc = {}) = 0;
+    // Creating thread only. Queries native size and alignment for placed buffer/texture allocation on a MemoryHeap.
+    [[nodiscard]] virtual Result<ResourceMemoryRequirements> queryBufferMemoryRequirements(BufferDesc desc) = 0;
+    [[nodiscard]] virtual Result<ResourceMemoryRequirements> queryTextureMemoryRequirements(TextureDesc desc) = 0;
+    // Creating thread only. Allocates an explicit device-local MemoryHeap for placed/aliased resources.
+    // Default createBuffer()/createTexture() retain dedicated-per-resource allocation unchanged.
+    [[nodiscard]] virtual Result<MemoryHeapPtr> createMemoryHeap(MemoryHeapDesc desc) = 0;
+    [[nodiscard]] virtual Result<BufferPtr> createPlacedBuffer(const MemoryHeapPtr& heap, std::uint64_t heapOffset, BufferDesc desc) = 0;
+    [[nodiscard]] virtual Result<TexturePtr> createPlacedTexture(const MemoryHeapPtr& heap, std::uint64_t heapOffset, TextureDesc desc) = 0;
+    // Creating thread only. Queries native sparse/tiled 2D texture tile geometry and packed mip tail properties.
+    [[nodiscard]] virtual Result<SparseTextureProperties> querySparseTextureProperties(TextureDesc desc) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createGraphicsPipeline(const GraphicsPipelineDesc&) = 0;
     [[nodiscard]] virtual Result<PipelinePtr> createComputePipeline(const ComputePipelineDesc&) = 0;
     // Creating thread only. Exact descriptor match within this device generation.

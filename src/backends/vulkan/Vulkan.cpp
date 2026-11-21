@@ -313,7 +313,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
 #define DEVICE_FUNCTIONS(X) \
     X(DestroyDevice) X(GetDeviceQueue) X(DeviceWaitIdle) X(QueueWaitIdle) X(QueueSubmit) \
     X(CreateBuffer) X(DestroyBuffer) X(GetBufferMemoryRequirements) X(AllocateMemory) X(FreeMemory) X(BindBufferMemory) \
-    X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) X(CmdResolveImage) \
+    X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(GetImageSparseMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) X(CmdResolveImage) \
     X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
     X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(CreateComputePipelines) X(DestroyPipeline) \
     X(CreateSampler) X(DestroySampler) X(CreateDescriptorSetLayout) X(DestroyDescriptorSetLayout) \
@@ -379,8 +379,27 @@ struct NativeSwapchain {
     }
     ~NativeSwapchain() { release(); }
 };
+struct Allocation;
+struct NativeMemoryHeap {
+    struct PlacedEntry {
+        std::weak_ptr<Allocation> allocation;
+        std::uint64_t offset{};
+        std::uint64_t size{};
+    };
+    std::shared_ptr<NativeDevice> native;
+    VkDeviceMemory memory{};
+    MemoryHeapDesc desc{};
+    std::uint32_t memoryTypeIndex{};
+    mutable std::vector<PlacedEntry> entries;
+    void release() {
+        if (memory) native->FreeMemory(native->handle, memory, nullptr);
+        memory = {};
+    }
+    ~NativeMemoryHeap() { release(); }
+};
 struct Allocation {
     std::shared_ptr<NativeDevice> native;
+    std::shared_ptr<NativeMemoryHeap> heap;
     VkBuffer buffer{};
     VkImage image{};
     VkImageView view{};
@@ -403,8 +422,9 @@ struct Allocation {
         if (attachmentView && attachmentView != view) native->DestroyImageView(native->handle, attachmentView, nullptr);
         if (view) native->DestroyImageView(native->handle, view, nullptr);
         if (image && !swapchain) native->DestroyImage(native->handle, image, nullptr);
-        if (memory) native->FreeMemory(native->handle, memory, nullptr);
+        if (memory && !heap) native->FreeMemory(native->handle, memory, nullptr);
         buffer = {}; view = {}; attachmentView = {}; image = {}; memory = {};
+        heap.reset();
     }
     ~Allocation() { release(); }
 };
@@ -447,7 +467,7 @@ bool currentBackbuffer(const Allocation& a) {
     return s.alive && !s.invalid && s.acquired && s.current == a.imageIndex &&
         !s.surface->lost && surfaceWindowReady(*s.surface);
 }
-struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized, contentsInitialized, mutated{}; };
+struct Use { std::shared_ptr<Allocation> allocation; std::uint64_t version; ResourceState shadow; bool imageInitialized, contentsInitialized, mutated{}, aliasedPending{}; };
 struct NativePass {
     std::shared_ptr<NativeDevice> native;
     VkRenderPass pass{};
@@ -642,6 +662,7 @@ struct State {
     std::atomic<bool> retired{false}, lost{false};
     std::mutex recordingsMutex;
     std::vector<std::weak_ptr<Allocation>> allocations;
+    std::vector<std::weak_ptr<NativeMemoryHeap>> memoryHeaps;
     std::vector<std::weak_ptr<NativeTextureView>> imageViews;
     std::vector<std::weak_ptr<Recording>> recordings;
     std::vector<std::weak_ptr<NativeCommandPool>> commandPools;
@@ -701,11 +722,12 @@ struct State {
         for (auto& weak : pipelines) if (auto value = weak.lock()) value->release();
         for (auto& weak : imageViews) if (auto value = weak.lock()) value->release();
         for (auto& weak : allocations) if (auto value = weak.lock()) value->release();
+        for (auto& weak : memoryHeaps) if (auto value = weak.lock()) value->release();
         for (auto& weak : swapchains) if (auto value = weak.lock()) value->release();
         for (auto& weak : timelineSemaphores) if (auto value = weak.lock()) value->release();
         swapchains.clear();
         timelineSemaphores.clear();
-        commandPools.clear(); queryPools.clear(); pipelines.clear(); imageViews.clear(); allocations.clear(); objects.clear();
+        commandPools.clear(); queryPools.clear(); pipelines.clear(); imageViews.clear(); allocations.clear(); memoryHeaps.clear(); objects.clear();
         native->release(); retired.store(true, std::memory_order_release);
     }
     ~State() { retire(); }
@@ -768,6 +790,28 @@ struct VulkanTimelineFence final : TimelineFence {
             owner->profiler->recordTimelineWait(ns > 0 ? static_cast<std::uint64_t>(ns) : 0u);
         }
         return polled;
+    }
+};
+struct VulkanMemoryHeap final : MemoryHeap {
+    std::shared_ptr<State> owner;
+    std::shared_ptr<NativeMemoryHeap> heap;
+    std::shared_ptr<int> token;
+    MemoryHeapDesc description() const override { return heap->desc; }
+    Result<HeapFragmentationStats> fragmentationStats() const override {
+        if (auto ok = owner->poll(); !ok) return std::unexpected(ok.error());
+        std::erase_if(heap->entries, [](const NativeMemoryHeap::PlacedEntry& e) { return e.allocation.expired(); });
+        std::vector<HeapAllocationRange> ranges;
+        ranges.reserve(heap->entries.size());
+        for (const auto& e : heap->entries) ranges.push_back({e.offset, e.size});
+        return computeHeapFragmentationStats(heap->desc.size, ranges, true);
+    }
+    Result<void> setResident(bool) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        return fail(ErrorCode::Unsupported, "Vulkan backend does not provide explicit per-heap residency eviction");
+    }
+    Result<bool> isResident() const override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return true;
     }
 };
 struct VulkanBuffer final : Buffer {
@@ -1173,16 +1217,68 @@ struct VulkanCommands final : CommandList {
         VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
         barrier.oldLayout = use.imageInitialized ? imageLayout(use.shadow) : VK_IMAGE_LAYOUT_UNDEFINED;
         barrier.newLayout = imageLayout(target);
-        barrier.srcAccessMask = use.imageInitialized ? access(use.shadow) : 0;
+        barrier.srcAccessMask = use.imageInitialized ? access(use.shadow) : (use.aliasedPending ? VK_ACCESS_MEMORY_WRITE_BIT : 0u);
         barrier.dstAccessMask = access(target);
         barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = (*a)->image;
         barrier.subresourceRange = {imageAspect(**a), 0, std::max(1u, (*a)->textureDesc.mipLevels), 0, std::max(1u, (*a)->textureDesc.arrayLayers)};
-        const VkPipelineStageFlags srcStage = use.imageInitialized ? stageScope(qType, false) : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        const VkPipelineStageFlags srcStage = (use.imageInitialized || use.aliasedPending) ? stageScope(qType, false) : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         const VkPipelineStageFlags dstStage = stageScope(qType, false);
         owner->native->CmdPipelineBarrier(record->command, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         if (!use.imageInitialized || use.shadow != target) use.mutated = true;
-        use.shadow = target; use.imageInitialized = true;
+        use.shadow = target; use.imageInitialized = true; use.aliasedPending = false;
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
+    }
+    Result<void> aliasingBarrier(const BufferPtr& before, const BufferPtr& after) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (!after) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires a non-null destination buffer");
+        auto dst = buffer(after); if (!dst) return std::unexpected(dst.error());
+        if (!(*dst)->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+        std::shared_ptr<Allocation> src;
+        if (before) {
+            auto checked = buffer(before); if (!checked) return std::unexpected(checked.error());
+            src = std::move(*checked);
+            if (!src->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+            if (src == *dst) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires distinct before and after resources");
+        }
+        record->uses.reserve(record->uses.size() + 2);
+        if (src) retain(src);
+        retain(*dst, true);
+        VkMemoryBarrier barrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+        barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+        const VkPipelineStageFlags scope = stageScope(qType, false);
+        owner->native->CmdPipelineBarrier(record->command, scope, scope, 0, 1, &barrier, 0, nullptr, 0, nullptr);
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
+    }
+    Result<void> aliasingBarrier(const TexturePtr& before, const TexturePtr& after) override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (!after) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires a non-null destination texture");
+        auto dst = texture(after); if (!dst) return std::unexpected(dst.error());
+        if (!(*dst)->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+        std::shared_ptr<Allocation> src;
+        if (before) {
+            auto checked = texture(before); if (!checked) return std::unexpected(checked.error());
+            src = std::move(*checked);
+            if (!src->heap) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires placed resources");
+            if (src == *dst) return fail(ErrorCode::InvalidArgument, "Aliasing barrier requires distinct before and after resources");
+        }
+        record->uses.reserve(record->uses.size() + 2);
+        if (src) retain(src);
+        auto& dstUse = retain(*dst, true);
+        VkMemoryBarrier barrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+        barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+        const VkPipelineStageFlags scope = stageScope(qType, false);
+        owner->native->CmdPipelineBarrier(record->command, scope, scope, 0, 1, &barrier, 0, nullptr, 0, nullptr);
+        // After aliasing, the destination image layout is undefined and must transition from UNDEFINED.
+        dstUse.imageInitialized = false;
+        dstUse.contentsInitialized = false;
+        dstUse.shadow = ResourceState::Common;
+        dstUse.aliasedPending = true;
+        dstUse.mutated = true;
         if (owner->profiler) owner->profiler->recordBarrier();
         return {};
     }
@@ -2481,13 +2577,15 @@ struct VulkanDevice final : Device {
         ResourceStatistics result;
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->memoryHeaps, [](auto& w) { return w.expired(); });
         {
             std::scoped_lock recLock(owner->recordingsMutex);
             std::erase_if(owner->recordings, [](auto& w) { return w.expired(); });
         }
         std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
         result.trackedObjects = owner->objects.size();
-        for (auto& w : owner->allocations) if (auto a = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
+        for (auto& w : owner->allocations) if (auto a = w.lock(); a && !a->heap) { ++result.uniqueResources; result.resourceAllocationBytes += a->bytes; }
+        for (auto& w : owner->memoryHeaps) if (auto h = w.lock()) { ++result.uniqueResources; result.resourceAllocationBytes += h->desc.size; }
         for (const auto& q : owner->queues) {
             result.pendingSubmissions += q.pending.size();
             for (const auto& p : q.pending) {
@@ -2645,6 +2743,332 @@ struct VulkanDevice final : Device {
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
         owner->allocations.push_back(a); owner->objects.push_back(value->token); return TexturePtr(value);
+    }
+    VkBufferCreateInfo buildBufferCreateInfo(const BufferDesc& desc) const {
+        VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+        info.size = desc.size;
+        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+                     (desc.storage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0u);
+        if (owner->uniqueFamilies.size() > 1) {
+            info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
+            info.pQueueFamilyIndices = owner->uniqueFamilies.data();
+        } else {
+            info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+        return info;
+    }
+    Result<VkImageCreateInfo> buildValidatedImageCreateInfo(const TextureDesc& desc, VkImageCreateFlags extraFlags) {
+        if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (!owner->compressionFeatureEnabled(desc.format)) {
+            return fail(ErrorCode::Unsupported, "Vulkan adapter does not support requested compressed texture format family");
+        }
+        if ((desc.renderTarget || desc.depthStencil) && (desc.width > owner->maxFramebufferWidth || desc.height > owner->maxFramebufferHeight))
+            return fail(ErrorCode::Unsupported, "Color attachment exceeds adapter framebuffer extent limits");
+        const auto format = textureFormat(desc.format);
+        if (desc.storage) {
+            VkFormatProperties fmtProps{};
+            owner->native->instance->GetPhysicalDeviceFormatProperties(owner->physical, format, &fmtProps);
+            if (!(fmtProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
+                return fail(ErrorCode::Unsupported, "Adapter format lacks Vulkan storage image support");
+            }
+        }
+        const VkImageType imageType = vulkanImageType(desc.dimension);
+        const VkImageCreateFlags createFlags =
+            (desc.dimension == TextureDimension::TextureCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u) | extraFlags;
+        const std::uint32_t sliceHeight = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+        const std::uint32_t imageDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
+        const VkSampleCountFlagBits sampleBit = vulkanSampleCount(desc.sampleCount);
+        const VkImageUsageFlags usage = desc.sampleCount > 1u
+            ? (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
+            : (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+               (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0u) | (desc.storage ? VK_IMAGE_USAGE_STORAGE_BIT : 0u)));
+        VkImageFormatProperties properties{};
+        const auto r = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, format,
+            imageType, VK_IMAGE_TILING_OPTIMAL, usage, createFlags, &properties);
+        if (r == VK_ERROR_FORMAT_NOT_SUPPORTED) return fail(ErrorCode::Unsupported, "Vulkan image format or flags unsupported", r);
+        if (auto ok = owner->accept(r, "vkGetPhysicalDeviceImageFormatProperties"); !ok) return std::unexpected(ok.error());
+        const VkSampleCountFlags fbMask = desc.depthStencil
+            ? owner->limits.framebufferDepthSampleCounts
+            : owner->limits.framebufferColorSampleCounts;
+        if (desc.width > properties.maxExtent.width || sliceHeight > properties.maxExtent.height ||
+            imageDepth > properties.maxExtent.depth || desc.mipLevels > properties.maxMipLevels ||
+            desc.arrayLayers > properties.maxArrayLayers ||
+            !(properties.sampleCounts & sampleBit) ||
+            (desc.sampleCount > 1u && !(fbMask & sampleBit)))
+            return fail(ErrorCode::Unsupported, "Vulkan image exceeds adapter format, dimension, mip, array, or MSAA limits");
+        VkImageCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+        info.flags = createFlags;
+        info.imageType = imageType;
+        info.format = format;
+        info.extent = {desc.width, sliceHeight, imageDepth};
+        info.mipLevels = desc.mipLevels;
+        info.arrayLayers = desc.arrayLayers;
+        info.samples = sampleBit;
+        info.tiling = VK_IMAGE_TILING_OPTIMAL;
+        info.usage = usage;
+        if (owner->uniqueFamilies.size() > 1) {
+            info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
+            info.pQueueFamilyIndices = owner->uniqueFamilies.data();
+        } else {
+            info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+        info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        return info;
+    }
+    Result<ResourceMemoryRequirements> queryBufferMemoryRequirements(BufferDesc desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!desc.size || desc.size > SIZE_MAX || desc.memory != Memory::Device) {
+            return fail(ErrorCode::InvalidArgument, "Placed buffer requires non-empty Device memory");
+        }
+        const auto info = buildBufferCreateInfo(desc);
+        VkBuffer probe{};
+        if (auto ok = owner->accept(vulkan::acquireOutput(probe, owner->native->CreateBuffer, owner->native->handle, &info, nullptr), "vkCreateBuffer(probe)"); !ok)
+            return std::unexpected(ok.error());
+        VkMemoryRequirements req{};
+        owner->native->GetBufferMemoryRequirements(owner->native->handle, probe, &req);
+        owner->native->DestroyBuffer(owner->native->handle, probe, nullptr);
+        return ResourceMemoryRequirements{req.size, std::max<std::uint64_t>(1u, req.alignment), MemoryHeapType::Buffers};
+    }
+    Result<ResourceMemoryRequirements> queryTextureMemoryRequirements(TextureDesc desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto info = buildValidatedImageCreateInfo(desc, VK_IMAGE_CREATE_ALIAS_BIT);
+        if (!info) return std::unexpected(info.error());
+        VkImage probe{};
+        if (auto ok = owner->accept(vulkan::acquireOutput(probe, owner->native->CreateImage, owner->native->handle, &*info, nullptr), "vkCreateImage(probe)"); !ok)
+            return std::unexpected(ok.error());
+        VkMemoryRequirements req{};
+        owner->native->GetImageMemoryRequirements(owner->native->handle, probe, &req);
+        owner->native->DestroyImage(owner->native->handle, probe, nullptr);
+        const MemoryHeapType heapType = (desc.renderTarget || desc.depthStencil)
+            ? MemoryHeapType::RenderTargets
+            : MemoryHeapType::Textures;
+        return ResourceMemoryRequirements{req.size, std::max<std::uint64_t>(1u, req.alignment), heapType};
+    }
+    Result<MemoryHeapPtr> createMemoryHeap(MemoryHeapDesc desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateMemoryHeapDesc(desc); !ok) return std::unexpected(ok.error());
+        std::uint32_t typeBits = ~0u;
+        if (desc.type == MemoryHeapType::Buffers) {
+            const auto bInfo = buildBufferCreateInfo(BufferDesc{65536u, Memory::Device, true});
+            VkBuffer probe{};
+            if (auto ok = owner->accept(vulkan::acquireOutput(probe, owner->native->CreateBuffer, owner->native->handle, &bInfo, nullptr), "vkCreateBuffer(heap probe)"); !ok)
+                return std::unexpected(ok.error());
+            VkMemoryRequirements req{};
+            owner->native->GetBufferMemoryRequirements(owner->native->handle, probe, &req);
+            owner->native->DestroyBuffer(owner->native->handle, probe, nullptr);
+            typeBits = req.memoryTypeBits;
+        } else {
+            TextureDesc probeDesc{64u, 64u, Format::RGBA8UNorm, desc.type == MemoryHeapType::RenderTargets, false, false};
+            auto iInfo = buildValidatedImageCreateInfo(probeDesc, VK_IMAGE_CREATE_ALIAS_BIT);
+            if (!iInfo) return std::unexpected(iInfo.error());
+            VkImage probe{};
+            if (auto ok = owner->accept(vulkan::acquireOutput(probe, owner->native->CreateImage, owner->native->handle, &*iInfo, nullptr), "vkCreateImage(heap probe)"); !ok)
+                return std::unexpected(ok.error());
+            VkMemoryRequirements req{};
+            owner->native->GetImageMemoryRequirements(owner->native->handle, probe, &req);
+            owner->native->DestroyImage(owner->native->handle, probe, nullptr);
+            typeBits = req.memoryTypeBits;
+        }
+        std::optional<std::uint32_t> memoryType;
+        for (std::uint32_t n = 0; n < owner->memory.memoryTypeCount; ++n) {
+            if ((typeBits & (1u << n)) && (owner->memory.memoryTypes[n].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+                memoryType = n;
+                break;
+            }
+        }
+        if (!memoryType) return fail(ErrorCode::Unsupported, "No compatible device-local Vulkan memory type for MemoryHeap");
+        auto nativeHeap = std::make_shared<NativeMemoryHeap>();
+        nativeHeap->native = owner->native;
+        nativeHeap->desc = desc;
+        nativeHeap->memoryTypeIndex = *memoryType;
+        VkMemoryAllocateInfo allocInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+        allocInfo.allocationSize = desc.size;
+        allocInfo.memoryTypeIndex = *memoryType;
+        if (auto ok = owner->accept(vulkan::acquireOutput(nativeHeap->memory, owner->native->AllocateMemory, owner->native->handle, &allocInfo, nullptr), "vkAllocateMemory(MemoryHeap)"); !ok)
+            return std::unexpected(ok.error());
+        auto wrapper = std::make_shared<VulkanMemoryHeap>();
+        wrapper->owner = owner;
+        wrapper->heap = nativeHeap;
+        wrapper->token = std::make_shared<int>();
+        std::erase_if(owner->memoryHeaps, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->memoryHeaps.push_back(nativeHeap);
+        owner->objects.push_back(wrapper->token);
+        return MemoryHeapPtr(std::move(wrapper));
+    }
+    Result<BufferPtr> createPlacedBuffer(const MemoryHeapPtr& heap, std::uint64_t heapOffset, BufferDesc desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!heap) return fail(ErrorCode::InvalidArgument, "Null MemoryHeap");
+        auto vkHeap = std::dynamic_pointer_cast<VulkanMemoryHeap>(heap);
+        if (!vkHeap || vkHeap->owner != owner) return fail(ErrorCode::WrongDevice, "MemoryHeap belongs to another device");
+        if (!desc.size || desc.size > SIZE_MAX || desc.memory != Memory::Device) {
+            return fail(ErrorCode::InvalidArgument, "Placed buffer requires non-empty Device memory");
+        }
+        if (vkHeap->heap->desc.type != MemoryHeapType::Buffers) {
+            return fail(ErrorCode::InvalidArgument, "MemoryHeapType mismatch for placed buffer");
+        }
+        const auto info = buildBufferCreateInfo(desc);
+        auto a = std::make_shared<Allocation>();
+        a->native = owner->native;
+        a->desc = desc;
+        a->state = ResourceState::Common;
+        if (auto ok = owner->accept(vulkan::acquireOutput(a->buffer, owner->native->CreateBuffer, owner->native->handle, &info, nullptr), "vkCreateBuffer(placed)"); !ok)
+            return std::unexpected(ok.error());
+        VkMemoryRequirements req{};
+        owner->native->GetBufferMemoryRequirements(owner->native->handle, a->buffer, &req);
+        const std::uint64_t alignment = std::max<std::uint64_t>(1u, req.alignment);
+        if ((req.memoryTypeBits & (1u << vkHeap->heap->memoryTypeIndex)) == 0u) {
+            return fail(ErrorCode::Unsupported, "Placed buffer memory type is incompatible with MemoryHeap");
+        }
+        if (heapOffset % alignment != 0u) {
+            return fail(ErrorCode::InvalidArgument, "Placed buffer heapOffset is not aligned");
+        }
+        if (heapOffset > vkHeap->heap->desc.size || req.size > vkHeap->heap->desc.size - heapOffset) {
+            return fail(ErrorCode::InvalidArgument, "Placed buffer exceeds MemoryHeap size");
+        }
+        if (auto ok = owner->accept(owner->native->BindBufferMemory(owner->native->handle, a->buffer, vkHeap->heap->memory, heapOffset), "vkBindBufferMemory(placed)"); !ok)
+            return std::unexpected(ok.error());
+        a->heap = vkHeap->heap;
+        a->memory = vkHeap->heap->memory;
+        a->bytes = 0;
+        vkHeap->heap->entries.push_back({a, heapOffset, req.size});
+        auto value = std::make_shared<VulkanBuffer>();
+        value->owner = owner;
+        value->allocation = a;
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->allocations.push_back(a);
+        owner->objects.push_back(value->token);
+        return BufferPtr(std::move(value));
+    }
+    Result<TexturePtr> createPlacedTexture(const MemoryHeapPtr& heap, std::uint64_t heapOffset, TextureDesc desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!heap) return fail(ErrorCode::InvalidArgument, "Null MemoryHeap");
+        auto vkHeap = std::dynamic_pointer_cast<VulkanMemoryHeap>(heap);
+        if (!vkHeap || vkHeap->owner != owner) return fail(ErrorCode::WrongDevice, "MemoryHeap belongs to another device");
+        const MemoryHeapType expectedType = (desc.renderTarget || desc.depthStencil)
+            ? MemoryHeapType::RenderTargets
+            : MemoryHeapType::Textures;
+        if (vkHeap->heap->desc.type != expectedType) {
+            return fail(ErrorCode::InvalidArgument, "MemoryHeapType mismatch for placed texture");
+        }
+        auto info = buildValidatedImageCreateInfo(desc, VK_IMAGE_CREATE_ALIAS_BIT);
+        if (!info) return std::unexpected(info.error());
+        auto a = std::make_shared<Allocation>();
+        a->native = owner->native;
+        a->textureDesc = desc;
+        const std::uint32_t sliceHeight = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+        const std::uint32_t imageDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
+        if (desc.sampleCount == 1u) {
+            const auto fp = computeTextureRegionFootprint(desc.format, desc.width, sliceHeight);
+            if (!fp) return std::unexpected(fp.error());
+            a->footprint = {fp->size * imageDepth, fp->rowPitch, fp->rowBytes, fp->height};
+        } else {
+            a->footprint = {};
+        }
+        if (auto ok = owner->accept(vulkan::acquireOutput(a->image, owner->native->CreateImage, owner->native->handle, &*info, nullptr), "vkCreateImage(placed)"); !ok)
+            return std::unexpected(ok.error());
+        VkMemoryRequirements req{};
+        owner->native->GetImageMemoryRequirements(owner->native->handle, a->image, &req);
+        const std::uint64_t alignment = std::max<std::uint64_t>(1u, req.alignment);
+        if ((req.memoryTypeBits & (1u << vkHeap->heap->memoryTypeIndex)) == 0u) {
+            return fail(ErrorCode::Unsupported, "Placed texture memory type is incompatible with MemoryHeap");
+        }
+        if (heapOffset % alignment != 0u) {
+            return fail(ErrorCode::InvalidArgument, "Placed texture heapOffset is not aligned");
+        }
+        if (heapOffset > vkHeap->heap->desc.size || req.size > vkHeap->heap->desc.size - heapOffset) {
+            return fail(ErrorCode::InvalidArgument, "Placed texture exceeds MemoryHeap size");
+        }
+        if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, vkHeap->heap->memory, heapOffset), "vkBindImageMemory(placed)"); !ok)
+            return std::unexpected(ok.error());
+        a->heap = vkHeap->heap;
+        a->memory = vkHeap->heap->memory;
+        a->bytes = 0;
+        {
+            VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+            view.image = a->image;
+            view.viewType = vulkanImageViewType(desc.dimension);
+            view.format = info->format;
+            view.subresourceRange = {imageAspect(*a), 0, desc.mipLevels, 0, desc.arrayLayers};
+            if (auto ok = owner->accept(vulkan::acquireOutput(a->view, owner->native->CreateImageView, owner->native->handle, &view, nullptr), "vkCreateImageView(placed)"); !ok)
+                return std::unexpected(ok.error());
+        }
+        if ((desc.renderTarget || desc.depthStencil) && desc.dimension == TextureDimension::Texture2D && desc.mipLevels > 1u) {
+            VkImageViewCreateInfo attView{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+            attView.image = a->image;
+            attView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            attView.format = info->format;
+            attView.subresourceRange = {imageAspect(*a), 0, 1, 0, 1};
+            if (auto ok = owner->accept(vulkan::acquireOutput(a->attachmentView, owner->native->CreateImageView, owner->native->handle, &attView, nullptr), "vkCreateImageView(placed attachment)"); !ok)
+                return std::unexpected(ok.error());
+        }
+        vkHeap->heap->entries.push_back({a, heapOffset, req.size});
+        auto value = std::make_shared<VulkanTexture>();
+        value->owner = owner;
+        value->allocation = a;
+        value->token = std::make_shared<int>();
+        std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->allocations.push_back(a);
+        owner->objects.push_back(value->token);
+        return TexturePtr(std::move(value));
+    }
+    Result<SparseTextureProperties> querySparseTextureProperties(TextureDesc desc) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (!owner->compressionFeatureEnabled(desc.format)) {
+            return fail(ErrorCode::Unsupported, "Vulkan adapter does not support requested compressed texture format family");
+        }
+        SparseTextureProperties result{};
+        if (!capabilities.sparseResidencyTexture2D || desc.sampleCount > 1u ||
+            (desc.dimension != TextureDimension::Texture2D &&
+             desc.dimension != TextureDimension::Texture2DArray &&
+             desc.dimension != TextureDimension::TextureCube)) {
+            return result;
+        }
+        auto info = buildValidatedImageCreateInfo(desc, VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT);
+        if (!info) {
+            if (info.error().code == ErrorCode::Unsupported) return result;
+            return std::unexpected(info.error());
+        }
+        VkImage probe{};
+        if (auto ok = owner->accept(vulkan::acquireOutput(probe, owner->native->CreateImage, owner->native->handle, &*info, nullptr), "vkCreateImage(sparse probe)"); !ok)
+            return std::unexpected(ok.error());
+        VkMemoryRequirements memReq{};
+        owner->native->GetImageMemoryRequirements(owner->native->handle, probe, &memReq);
+        std::uint32_t reqCount{};
+        owner->native->GetImageSparseMemoryRequirements(owner->native->handle, probe, &reqCount, nullptr);
+        std::vector<VkSparseImageMemoryRequirements> sparseReqs(reqCount);
+        if (reqCount > 0u) {
+            owner->native->GetImageSparseMemoryRequirements(owner->native->handle, probe, &reqCount, sparseReqs.data());
+            sparseReqs.resize(reqCount);
+        }
+        owner->native->DestroyImage(owner->native->handle, probe, nullptr);
+        const VkImageAspectFlags targetAspect = desc.depthStencil ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        for (const auto& sr : sparseReqs) {
+            if ((sr.formatProperties.aspectMask & targetAspect) == 0u) continue;
+            const auto& g = sr.formatProperties.imageGranularity;
+            if (g.width == 0u || g.height == 0u || memReq.alignment == 0u) continue;
+            result.supported = true;
+            result.tileWidth = g.width;
+            result.tileHeight = g.height;
+            result.tileDepth = g.depth ? g.depth : 1u;
+            result.standardTileBytes = static_cast<std::uint32_t>(memReq.alignment);
+            result.packedMipStart = sr.imageMipTailFirstLod;
+            result.packedMipCount = sr.imageMipTailFirstLod < desc.mipLevels ? (desc.mipLevels - sr.imageMipTailFirstLod) : 0u;
+            result.packedMipTiles = sr.imageMipTailSize > 0u
+                ? static_cast<std::uint32_t>((sr.imageMipTailSize + memReq.alignment - 1u) / memReq.alignment)
+                : 0u;
+            result.totalTiles = static_cast<std::uint32_t>((memReq.size + memReq.alignment - 1u) / memReq.alignment);
+            break;
+        }
+        return result;
     }
     Result<TextureViewPtr> createTextureView(const TexturePtr& ptr, TextureViewDesc viewDesc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
@@ -3147,6 +3571,8 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     enabled.textureCompressionBC = selected->features.textureCompressionBC;
     enabled.textureCompressionETC2 = selected->features.textureCompressionETC2;
     enabled.textureCompressionASTC_LDR = selected->features.textureCompressionASTC_LDR;
+    enabled.sparseBinding = selected->features.sparseBinding;
+    enabled.sparseResidencyImage2D = selected->features.sparseBinding ? selected->features.sparseResidencyImage2D : VK_FALSE;
     info.pEnabledFeatures = &enabled;
     if (auto r = vulkan::acquireOutput(native->handle, (*instance)->CreateDevice, selected->physical, &info, nullptr); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
 #define LOAD(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); \
@@ -3213,6 +3639,10 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.dedicatedComputeQueue = selected->dedicatedComputeQueue;
     device->capabilities.dedicatedCopyQueue = selected->dedicatedCopyQueue;
     device->capabilities.timelineFences = native->timelineSemaphores;
+    device->capabilities.resourceAliasing = true;
+    device->capabilities.residencyControl = false;
+    device->capabilities.sparseBinding = enabled.sparseBinding != 0;
+    device->capabilities.sparseResidencyTexture2D = enabled.sparseResidencyImage2D != 0;
     VkImageFormatProperties depthProperties{};
     device->capabilities.depthAttachment = owner->native->instance->GetPhysicalDeviceImageFormatProperties(owner->physical, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &depthProperties) == VK_SUCCESS && (depthProperties.sampleCounts & VK_SAMPLE_COUNT_1_BIT);
