@@ -388,3 +388,35 @@
   - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
   - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
   - `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`, `P9-RG-02`: Linux Vulkan 및 macOS Metal CI/실기 검증.
+
+---
+
+## 2026-11-21 — `P11-PROF-01` GPU Profiling 확장 구현 및 실기 검증
+
+- **기준 커밋**: `1853f71f` (`Add optional RenderGraph with DAG scheduling, aliasing, culling, and diagnostics (P9-RG-01)`)
+- **작업 목적**:
+  - 선행 충족 작업이자 `P11-DBG-01`·`P12-SBX-01` 관문인 `P11-PROF-01` 구현: 기존 2-slot `writeTimestamp(0/1)`·13개 공개 헤더·5개 `CORE` `.cpp` 계약을 유지하면서 명령 목록당 최대 32개 중첩/순차 GPU Timestamp Scope(`beginTimestampScope`/`endTimestampScope`/`resolveTimestampScopes`/`timestampScopes`), 장치 프로파일링 ON/OFF 분리(`setProfilingEnabled`/`isProfilingEnabled`/`profilingSnapshot`/`resetProfilingStatistics`), thread-safe Draw/Dispatch/Cache/Stall/VRAM null 계약, `RenderGraph` 자동 스코프 연동을 구현하고 Windows 실기·Validation·WARP·설치 소비자·전체 CTest로 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P11-PROF-02`로 정직하게 분리 유지.
+- **수정 파일 (18개)**:
+  - `include/graphics/Types.hpp`, `include/graphics/CommandList.hpp`, `include/graphics/Device.hpp`
+  - `src/foundation/DeviceGeneration.hpp`, `src/foundation/Backend.cpp`
+  - `src/backends/d3d12/D3D12.cpp`, `src/backends/vulkan/Vulkan.cpp`, `src/backends/metal/Metal.cpp`
+  - `tests/ProfilingTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE11_PROFILING_REPORT.md`, `docs/PUBLIC_API.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 검증 결과** (격리 빌드 `out/p11-profiling`, 설치 `out/p11-profiling-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `023578C2434DEFFB52A03DA0B7EE1BD74C24AE189B1E679D29B26A99493CD48C`):
+  - MSVC 19.44.35228.0 / Windows SDK 10.0.26100.0 Release 전체 타겟 빌드 경고 0, 오류 0, 13개 공개 헤더 계약 유지.
+  - `gfx_profiling_tests --d3d12 --benchmark` (GTX 1660 SUPER): 통과 (`scopes_verified=37, rejections=18, assertions=21233`, 20F OFF `1.254 ms` / ON+GPU scope `1.624 ms`, `avg_gpu_scope_ms=0.002`).
+  - `gfx_profiling_tests --d3d12 --validation` (Debug + GBV, GTX 1660 SUPER): 통과 (`scopes_verified=37, val_errors=0, assertions=469`).
+  - `gfx_profiling_tests --d3d12 --warp` (WARP `removeForTesting` → `DeviceLost` → `recover()`): 통과 (`scopes_verified=37, rejections=21, assertions=476`).
+  - `gfx_profiling_tests --vulkan --benchmark` (GTX 1660 SUPER): 통과 (`scopes_verified=37, rejections=18, assertions=21507`, 20F OFF `2.860 ms` / ON+GPU scope `1.597 ms`, `avg_gpu_scope_ms=0.010`).
+  - `gfx_profiling_tests --vulkan --validation` (고정 VVL 1.3.290 core+sync, GTX 1660 SUPER): 통과 (`scopes_verified=37, val_errors=0, assertions=465`).
+  - 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)`): D3D12(GTX 1660 SUPER·Intel UHD 770·WARP, `vram_reported=yes`) 및 Vulkan(GTX 1660 SUPER·Intel UHD 770, `vram_reported=null`) 비검증·검증 **9/9 전체 통과** (`scopes=3, val_errors=0`).
+  - 전체 CTest 회귀: **132/132 통과** (`202.36s`, 실패·건너뜀 0).
+  - `tools/roadmap.py --check`: PASS (203 task IDs: 121 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P12-SBX-01`: Sandbox RHI 호환성 분석 및 비침투 어댑터 설계.
+  - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
+  - `P8/P9/P11` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P11-PROF-02`).

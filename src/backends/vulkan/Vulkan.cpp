@@ -542,11 +542,24 @@ struct Recording {
     bool timestampsResolved{}, timestampStartFirst{};
     std::chrono::steady_clock::time_point submittedAt;
     std::optional<double> timestampResult;
+    struct RecordedScope {
+        std::string name;
+        std::uint32_t depth{};
+        std::uint32_t beginSlot{};
+        std::uint32_t endSlot{};
+        bool closed{};
+    };
+    std::vector<RecordedScope> scopes;
+    std::vector<std::uint32_t> openScopeStack;
+    std::uint32_t nextScopeSlot{};
+    bool scopesResolved{};
+    std::optional<std::vector<TimestampScopeResult>> cachedScopeResults;
     VkQueryPool queryHandle() const { return sharedQueries ? sharedQueries->handle : queries; }
     void release() {
         if (pool) native->DestroyCommandPool(native->handle, pool, nullptr);
         if (queries) native->DestroyQueryPool(native->handle, queries, nullptr);
         queries = {}; timestampWritten = {}; timestampsResolved = timestampStartFirst = false; timestampResult.reset();
+        scopes.clear(); openScopeStack.clear(); nextScopeSlot = 0; scopesResolved = false; cachedScopeResults.reset();
         pool = {}; command = {}; sharedQueries.reset(); sharedPool.reset();
         selectedBindings = {}; selectedComputeBindings = {}; snapshots.clear(); descriptors = 0; selectedPipeline.reset(); selectedComputePipeline.reset(); pipelines.clear(); vertices = {}; indices = {}; passColors.clear(); passes.clear(); textureViews.clear(); uses.clear(); open = ended = inPass = false;
     }
@@ -581,6 +594,7 @@ struct State {
     bool fullDrawIndexUint32{};
     std::thread::id thread{std::this_thread::get_id()};
     std::uint64_t id{detail::allocateDeviceGeneration()};
+    std::shared_ptr<detail::ProfilingTracker> profiler;
     std::atomic<bool> retired{false}, lost{false};
     std::mutex recordingsMutex;
     std::vector<std::weak_ptr<Allocation>> allocations;
@@ -685,6 +699,8 @@ struct VulkanTimelineFence final : TimelineFence {
         info.semaphoreCount = 1;
         info.pSemaphores = &sem->handle;
         info.pValues = &value;
+        const bool track = owner->profiler && owner->profiler->isEnabled();
+        const auto t0 = track ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
         const auto r = owner->native->WaitSemaphoresKHR(
             owner->native->handle, &info, static_cast<std::uint64_t>(timeout.count()) * 1000000ull);
         if (r == VK_TIMEOUT) return fail(ErrorCode::Timeout, "TimelineFence wait timed out", r);
@@ -702,7 +718,12 @@ struct VulkanTimelineFence final : TimelineFence {
                 }
             }
         }
-        return owner->poll();
+        auto polled = owner->poll();
+        if (polled && track) {
+            const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+            owner->profiler->recordTimelineWait(ns > 0 ? static_cast<std::uint64_t>(ns) : 0u);
+        }
+        return polled;
     }
 };
 struct VulkanBuffer final : Buffer {
@@ -943,7 +964,7 @@ struct VulkanCommands final : CommandList {
             start.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
             if (auto ok = owner->accept(owner->native->BeginCommandBuffer(next->command, &start), "vkBeginCommandBuffer"); !ok) return ok;
             if (next->sharedQueries && next->sharedQueries->handle) {
-                owner->native->CmdResetQueryPool(next->command, next->sharedQueries->handle, 0, 2);
+                owner->native->CmdResetQueryPool(next->command, next->sharedQueries->handle, 0, 2u + kMaxTimestampScopesPerCommandList * 2u);
             }
             next->open = true;
             recordedEpoch = commandPool->epoch;
@@ -967,9 +988,10 @@ struct VulkanCommands final : CommandList {
         VkCommandBufferBeginInfo start{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}; start.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         if (auto ok = owner->accept(owner->native->BeginCommandBuffer(next->command, &start), "vkBeginCommandBuffer"); !ok) return ok;
         if (qType != QueueType::Copy && vulkan::timestampSupported(qSlot.timestampBits, owner->limits.timestampPeriod)) {
-            VkQueryPoolCreateInfo queries{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO}; queries.queryType = VK_QUERY_TYPE_TIMESTAMP; queries.queryCount = 2;
+            constexpr std::uint32_t kTotalQueries = 2u + kMaxTimestampScopesPerCommandList * 2u;
+            VkQueryPoolCreateInfo queries{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO}; queries.queryType = VK_QUERY_TYPE_TIMESTAMP; queries.queryCount = kTotalQueries;
             if (auto ok = owner->accept(vulkan::acquireOutput(next->queries, owner->native->CreateQueryPool, owner->native->handle, &queries, nullptr), "vkCreateQueryPool"); !ok) return ok;
-            owner->native->CmdResetQueryPool(next->command, next->queries, 0, 2);
+            owner->native->CmdResetQueryPool(next->command, next->queries, 0, kTotalQueries);
         }
         next->open = true;
         {
@@ -981,6 +1003,7 @@ struct VulkanCommands final : CommandList {
     }
     Result<void> end() override {
         if (auto ok = outsidePass(); !ok) return ok;
+        if (!record->openScopeStack.empty()) return fail(ErrorCode::InvalidState, "Unclosed timestamp scope before CommandList::end()");
         const auto r = owner->native->EndCommandBuffer(record->command);
         record->open = false; record->ended = r == VK_SUCCESS;
         if (commandPool) {
@@ -1019,7 +1042,9 @@ struct VulkanCommands final : CommandList {
         const VkPipelineStageFlags scope = stageScope(qType, true);
         owner->native->CmdPipelineBarrier(record->command, scope, scope, 0, 0, nullptr, 1, &barrier, 0, nullptr);
         if (use.shadow != target) use.mutated = true;
-        use.shadow = target; return {};
+        use.shadow = target;
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
     }
     Result<void> copyBuffer(const BufferPtr& source, const BufferPtr& destination, std::uint64_t bytes) override {
         return copyBufferRegion(source, 0, destination, 0, bytes);
@@ -1049,6 +1074,7 @@ struct VulkanCommands final : CommandList {
             auto after = before[1]; after.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; after.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
             owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &after, 0, nullptr);
         }
+        if (owner->profiler) owner->profiler->recordCopy();
         return {};
     }
     Result<void> transition(const TexturePtr& value, ResourceState target) override {
@@ -1097,7 +1123,9 @@ struct VulkanCommands final : CommandList {
         const VkPipelineStageFlags dstStage = stageScope(qType, false);
         owner->native->CmdPipelineBarrier(record->command, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         if (!use.imageInitialized || use.shadow != target) use.mutated = true;
-        use.shadow = target; use.imageInitialized = true; return {};
+        use.shadow = target; use.imageInitialized = true;
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
     }
     Result<void> copyTexture(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& buffer, bool upload) {
         if (image->textureDesc.sampleCount > 1u)
@@ -1139,6 +1167,7 @@ struct VulkanCommands final : CommandList {
                     0, 0, nullptr, 1, &b, 0, nullptr);
             }
         }
+        if (owner->profiler) owner->profiler->recordCopy();
         return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& source, const TexturePtr& destination) override {
@@ -1210,6 +1239,7 @@ struct VulkanCommands final : CommandList {
                     0, 0, nullptr, 1, &b, 0, nullptr);
             }
         }
+        if (owner->profiler) owner->profiler->recordCopy();
         return {};
     }
     Result<void> copyBufferToTextureRegion(const BufferPtr& source, const TexturePtr& destination, const TextureCopyRegion& region) override {
@@ -1270,6 +1300,7 @@ struct VulkanCommands final : CommandList {
         owner->native->CmdResolveImage(record->command, (*src)->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
             (*dst)->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
         find(*dst)->contentsInitialized = true;
+        if (owner->profiler) owner->profiler->recordCopy();
         return {};
     }
     Result<void> beginRenderPass(const TexturePtr& target, Color clear) override {
@@ -1383,7 +1414,9 @@ struct VulkanCommands final : CommandList {
         const VkViewport viewport{0, float(desc.height), float(desc.width), -float(desc.height), 0, 1};
         const VkRect2D scissor{{0, 0}, {desc.width, desc.height}};
         owner->native->CmdSetViewport(record->command, 0, 1, &viewport); owner->native->CmdSetScissor(record->command, 0, 1, &scissor);
-        record->inPass = true; return {};
+        record->inPass = true;
+        if (owner->profiler) owner->profiler->recordRenderPass();
+        return {};
     }
     Result<void> endRenderPass() override {
         if (auto ok = ready(); !ok) return ok;
@@ -1576,7 +1609,9 @@ struct VulkanCommands final : CommandList {
             return fail(ErrorCode::InvalidArgument, "Invalid draw count/index range");
         if (auto ok = inputReady(vertices, instances, firstVertex, firstInstance); !ok) return ok;
         if (auto ok = bindingsReady(); !ok) return ok;
-        owner->native->CmdDraw(record->command, vertices, instances, firstVertex, firstInstance); return {};
+        owner->native->CmdDraw(record->command, vertices, instances, firstVertex, firstInstance);
+        if (owner->profiler) owner->profiler->recordDraw(false, instances);
+        return {};
     }
     Result<void> drawIndexed(std::uint32_t count, std::uint32_t instances, std::uint32_t firstIndex, std::int32_t baseVertex, std::uint32_t firstInstance) override {
         if (auto ok = ready(); !ok) return ok;
@@ -1588,7 +1623,9 @@ struct VulkanCommands final : CommandList {
         if (std::uint64_t(firstIndex) + count > view.bytes / view.element) return fail(ErrorCode::InvalidArgument, "Index range exceeds view");
         if (auto ok = inputReady(0, instances, 0, firstInstance, true, baseVertex); !ok) return ok;
         if (auto ok = bindingsReady(); !ok) return ok;
-        owner->native->CmdDrawIndexed(record->command, count, instances, firstIndex, baseVertex, firstInstance); return {};
+        owner->native->CmdDrawIndexed(record->command, count, instances, firstIndex, baseVertex, firstInstance);
+        if (owner->profiler) owner->profiler->recordDraw(true, instances);
+        return {};
     }
     Result<void> setComputePipeline(const PipelinePtr& pipeline) override {
         if (auto ok = outsidePass(); !ok) return ok;
@@ -1804,6 +1841,7 @@ struct VulkanCommands final : CommandList {
             }
         }
         owner->native->CmdDispatch(record->command, groupCountX, groupCountY, groupCountZ);
+        if (owner->profiler) owner->profiler->recordDispatch();
         return {};
     }
     Result<void> uavBarrier(const BufferPtr& value) override {
@@ -1822,6 +1860,7 @@ struct VulkanCommands final : CommandList {
         barrier.size = VK_WHOLE_SIZE;
         owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+        if (owner->profiler) owner->profiler->recordUavBarrier();
         return {};
     }
     Result<void> uavBarrier(const TexturePtr& value) override {
@@ -1842,6 +1881,7 @@ struct VulkanCommands final : CommandList {
         barrier.subresourceRange = {imageAspect(**a), 0, 1, 0, 1};
         owner->native->CmdPipelineBarrier(record->command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        if (owner->profiler) owner->profiler->recordUavBarrier();
         return {};
     }
     Result<void> writeTimestamp(std::uint32_t index) override {
@@ -1880,6 +1920,89 @@ struct VulkanCommands final : CommandList {
         auto elapsed = vulkan::timestampMilliseconds(results[0].ticks, results[1].ticks, qSlot.timestampBits, owner->limits.timestampPeriod, host, record->timestampStartFirst);
         if (!elapsed) return std::unexpected(elapsed.error());
         record->timestampResult = *elapsed; return *elapsed;
+    }
+    Result<void> beginTimestampScope(std::string_view name) override {
+        if (auto ok = ready(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::Unsupported, "Timestamps are unsupported on Copy command lists");
+        const VkQueryPool queryPool = record->queryHandle();
+        if (!queryPool) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (name.empty() || name.size() > 256 || name.find('\0') != std::string_view::npos) {
+            return fail(ErrorCode::InvalidArgument, "Timestamp scope name must be non-empty NUL-free UTF-8 up to 256 bytes");
+        }
+        if (record->scopesResolved || record->scopes.size() >= kMaxTimestampScopesPerCommandList ||
+            record->nextScopeSlot + 2u > kMaxTimestampScopesPerCommandList * 2u) {
+            return fail(ErrorCode::InvalidState, "Timestamp scope capacity exceeded or already resolved");
+        }
+        const std::uint32_t beginSlot = record->nextScopeSlot++;
+        owner->native->CmdWriteTimestamp(record->command, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, 2u + beginSlot);
+        const std::uint32_t depth = static_cast<std::uint32_t>(record->openScopeStack.size());
+        record->scopes.push_back(Recording::RecordedScope{std::string(name), depth, beginSlot, 0u, false});
+        record->openScopeStack.push_back(static_cast<std::uint32_t>(record->scopes.size() - 1u));
+        return {};
+    }
+    Result<void> endTimestampScope() override {
+        if (auto ok = ready(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::Unsupported, "Timestamps are unsupported on Copy command lists");
+        const VkQueryPool queryPool = record->queryHandle();
+        if (!queryPool) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (record->openScopeStack.empty() || record->scopesResolved) {
+            return fail(ErrorCode::InvalidState, "No open timestamp scope to end");
+        }
+        const std::uint32_t idx = record->openScopeStack.back();
+        record->openScopeStack.pop_back();
+        const std::uint32_t endSlot = record->nextScopeSlot++;
+        owner->native->CmdWriteTimestamp(record->command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, 2u + endSlot);
+        record->scopes[idx].endSlot = endSlot;
+        record->scopes[idx].closed = true;
+        return {};
+    }
+    Result<void> resolveTimestampScopes() override {
+        if (auto ok = outsidePass(); !ok) return ok;
+        if (qType == QueueType::Copy) return fail(ErrorCode::Unsupported, "Timestamps are unsupported on Copy command lists");
+        if (!record->queryHandle()) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (record->scopes.empty() || !record->openScopeStack.empty() || record->scopesResolved) {
+            return fail(ErrorCode::InvalidState, "Timestamp scopes must be non-empty, balanced, and unresolved before resolving");
+        }
+        record->scopesResolved = true;
+        return {};
+    }
+    Result<std::vector<TimestampScopeResult>> timestampScopes() override {
+        if (auto ok = owner->pollQueue(qType); !ok) return std::unexpected(ok.error());
+        if (qType == QueueType::Copy) return fail(ErrorCode::Unsupported, "Timestamps are unsupported on Copy command lists");
+        auto& qSlot = owner->queues[queueIndex(qType)];
+        if (!vulkan::timestampSupported(qSlot.timestampBits, owner->limits.timestampPeriod)) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        if (!record || !record->submitted || record->submitted > qSlot.completed.load(std::memory_order_acquire) || !record->scopesResolved) {
+            return fail(ErrorCode::InvalidState, "GPU timestamp scopes are not ready");
+        }
+        if (record->cachedScopeResults) return *record->cachedScopeResults;
+        const VkQueryPool queryPool = record->queryHandle();
+        if (!queryPool) return fail(ErrorCode::Unsupported, "Queue timestamps unsupported");
+        struct Query { std::uint64_t ticks{}, available{}; };
+        std::vector<Query> results(record->nextScopeSlot);
+        const auto r = owner->native->GetQueryPoolResults(
+            owner->native->handle, queryPool, 2u, record->nextScopeSlot,
+            results.size() * sizeof(Query), results.data(), sizeof(Query),
+            VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT);
+        if (r == VK_NOT_READY) return fail(ErrorCode::InvalidState, "GPU query results unavailable");
+        if (auto ok = owner->accept(r, "vkGetQueryPoolResults"); !ok) return std::unexpected(ok.error());
+
+        const auto host = std::chrono::duration<double, std::nano>(std::chrono::steady_clock::now() - record->submittedAt).count();
+        std::vector<TimestampScopeResult> out;
+        out.reserve(record->scopes.size());
+        for (const auto& s : record->scopes) {
+            const auto& a = results[s.beginSlot];
+            const auto& b = results[s.endSlot];
+            if (!a.available || !b.available) {
+                return fail(ErrorCode::InvalidState, "GPU query availability missing");
+            }
+            auto elapsed = vulkan::timestampMilliseconds(
+                a.ticks, b.ticks, qSlot.timestampBits, owner->limits.timestampPeriod, host, true);
+            if (!elapsed) return std::unexpected(elapsed.error());
+            out.push_back(TimestampScopeResult{s.name, qType, s.depth, a.ticks, b.ticks, *elapsed});
+        }
+        record->cachedScopeResults = out;
+        if (owner->profiler) owner->profiler->appendGpuScopes(out);
+        return out;
     }
     Result<void> debugMarker(std::string_view text) override {
         if (auto ok = ready(); !ok) return ok;
@@ -1926,7 +2049,7 @@ struct VulkanCommandPool final : CommandPool {
             queries->native = owner->native;
             VkQueryPoolCreateInfo info{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
             info.queryType = VK_QUERY_TYPE_TIMESTAMP;
-            info.queryCount = 2;
+            info.queryCount = 2u + kMaxTimestampScopesPerCommandList * 2u;
             if (auto ok = owner->accept(vulkan::acquireOutput(queries->handle, owner->native->CreateQueryPool, owner->native->handle, &info, nullptr), "vkCreateQueryPool"); !ok) {
                 owner->native->FreeCommandBuffers(owner->native->handle, pool->handle, 1, &cmd);
                 return std::unexpected(ok.error());
@@ -2146,6 +2269,7 @@ struct VulkanQueue final : CommandQueue {
                 if (versionBumped.insert(use.allocation.get()).second) ++use.allocation->version;
             }
         }
+        if (owner->profiler) owner->profiler->recordSubmit();
         return Fence{qSlot.last, qSlot.id};
     }
     Result<void> wait(Fence target, std::chrono::milliseconds timeout) override {
@@ -2154,13 +2278,26 @@ struct VulkanQueue final : CommandQueue {
         auto& qSlot = owner->queues[queueIndex(qType)];
         if (target.device != qSlot.id) return fail(ErrorCode::WrongDevice, "Fence belongs to another generation or queue");
         if (!target.value || target.value > qSlot.last) return fail(ErrorCode::InvalidArgument, "Fence value was not submitted");
+        const bool track = owner->profiler && owner->profiler->isEnabled();
+        const auto t0 = track ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
         if (auto ok = owner->pollQueue(qType); !ok) return ok;
-        if (target.value <= qSlot.completed.load(std::memory_order_acquire)) return {};
+        if (target.value <= qSlot.completed.load(std::memory_order_acquire)) {
+            if (track) {
+                const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+                owner->profiler->recordQueueWait(ns > 0 ? static_cast<std::uint64_t>(ns) : 0u);
+            }
+            return {};
+        }
         auto found = std::find_if(qSlot.pending.begin(), qSlot.pending.end(), [&](auto& p) { return p.serial == target.value; });
         if (found == qSlot.pending.end()) return fail(ErrorCode::InvalidState, "Pending fence missing");
         if (auto ok = owner->accept(owner->native->WaitForFences(owner->native->handle, 1, &found->fence, VK_TRUE,
             static_cast<std::uint64_t>(timeout.count()) * 1000000ull), "vkWaitForFences"); !ok) return ok;
-        return owner->pollQueue(qType);
+        auto polled = owner->pollQueue(qType);
+        if (polled && track) {
+            const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+            owner->profiler->recordQueueWait(ns > 0 ? static_cast<std::uint64_t>(ns) : 0u);
+        }
+        return polled;
     }
     Result<void> waitIdle() override {
         if (auto ok = owner->check(); !ok) return ok;
@@ -2179,6 +2316,10 @@ struct VulkanDevice final : Device {
     DeviceDesc description;
     bool recoverySucceeded{};
     std::array<VulkanQueue, 3> queues;
+    void attachOwner(std::shared_ptr<State> state) {
+        owner = std::move(state);
+        owner->profiler = profilingTracker();
+    }
     ~VulkanDevice() override { owner->retire(); }
     const DeviceCaps& caps() const override { return capabilities; }
     Result<FormatSupport> queryFormatSupport(Format format) override {
@@ -2913,7 +3054,8 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     owner->maxColorAttachments = selected->maxColorAttachments;
     owner->maxFramebufferWidth = selected->maxFramebufferWidth; owner->maxFramebufferHeight = selected->maxFramebufferHeight;
     owner->limits = selected->limits; owner->fullDrawIndexUint32 = enabled.fullDrawIndexUint32 != 0;
-    auto device = std::make_unique<VulkanDevice>(); device->owner = owner;
+    auto device = std::make_unique<VulkanDevice>();
+    device->attachOwner(owner);
     const std::array<QueueType, 3> queueTypes{QueueType::Graphics, QueueType::Compute, QueueType::Copy};
     for (std::size_t i = 0; i < 3; ++i) {
         device->queues[i].owner = owner;

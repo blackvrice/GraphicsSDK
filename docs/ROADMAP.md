@@ -44,7 +44,7 @@ python tools/roadmap.py --write
 | 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+) | 8 | 0 | 0 | 9 | 0 | 기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다. |
 | 9 — Command·멀티스레드·Shader·Compute·Render Graph | 6 | 0 | 0 | 8 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
 | 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region | 0 | 0 | 0 | 4 | 0 | 저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다. |
-| 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 0 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
+| 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 1 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
 | 12 — GraphicsUI·Sandbox RHI 호환성 | 0 | 0 | 0 | 2 | 0 | GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다. |
 
 ## 다음 권장 작업
@@ -490,7 +490,8 @@ Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P11-PROF-01`<br>미완료 · 후속 최적화 | **GPU Profiling 확장 (다중 Timestamp Scope·Draw/Dispatch·Cache·Stall 통계)**<br>2슬롯 제한을 넘는 다중 GPU Timestamp Scope, Draw/Dispatch 카운트, Pipeline Cache Hit Rate, Upload/Readback 통계, VRAM Budget 및 GPU Stall 진단 API를 제공한다.<br>완료: 계측 ON/OFF 분리 검증, 정확한 카운터/GPU 시간 일치, 미측정 항목 null 계약 유지. | 선행: `P8-MEM-01`, `P9-CMP-01` |
+| [x] `P11-PROF-01`<br>완료 · 후속 최적화 | **GPU Profiling 확장 (다중 Timestamp Scope·Draw/Dispatch·Cache·Stall 통계)**<br>기존 2-slot 타임스탬프와 13개 공개 헤더/5개 CORE 유닛 계약을 유지하면서 명령 목록당 최대 32개(64슬롯) 중첩·순차 GPU Timestamp Scope(beginTimestampScope/endTimestampScope/resolveTimestampScopes/timestampScopes)와 장치 수준 ON/OFF 프로파일링(setProfilingEnabled/isProfilingEnabled/profilingSnapshot/resetProfilingStatistics), Thread-safe Draw/Indexed/Instanced/Dispatch/RenderPass/Copy/Barrier/UAV/Submit/Pipeline Cache Hit-Miss/Queue·Timeline CPU Stall/VRAM 예산 통계 및 RenderGraph 자동 스코프 연동을 구현했다. Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290(오류 0)/WARP 손실복구/설치 소비자 전체 어댑터 9/9 및 전체 CTest 132/132로 검증했다.<br>완료: 계측 ON/OFF 분리 검증, 정확한 카운터/GPU 시간 일치, 미측정 항목 null 계약 유지. | 선행: `P8-MEM-01`, `P9-CMP-01`<br>근거: [Types.hpp](../include/graphics/Types.hpp), [CommandList.hpp](../include/graphics/CommandList.hpp), [Device.hpp](../include/graphics/Device.hpp), [DeviceGeneration.hpp](../src/foundation/DeviceGeneration.hpp), [Backend.cpp](../src/foundation/Backend.cpp), [D3D12.cpp](../src/backends/d3d12/D3D12.cpp), [Vulkan.cpp](../src/backends/vulkan/Vulkan.cpp), [Metal.cpp](../src/backends/metal/Metal.cpp), [ProfilingTests.cpp](../tests/ProfilingTests.cpp), [PHASE11_PROFILING_REPORT](PHASE11_PROFILING_REPORT.md) |
+| [ ] `P11-PROF-02`<br>미완료 · 후속 최적화 | **GPU Profiling 확장 Linux Vulkan 및 macOS Metal 실기/CI 검증**<br>다중 GPU Timestamp Scope, ON/OFF 계측 분리, 카운터/Stall/VRAM null 계약을 Linux Vulkan(lavapipe/물리 GPU, 고정 VVL)과 macOS arm64/Intel Metal(GPU 스코프 Unsupported 및 카운터/Stall 동작) 환경에서 실제 빌드·실행 검증한다.<br>완료: Linux Vulkan 및 macOS Metal CI/실기에서 Profiling ON/OFF, 카운터, 다중 GPU 스코프(또는 Metal Unsupported) 및 null 계약 통과. | 선행: `P11-PROF-01`, `P8-MEM-03`, `P9-CMP-03`<br>환경: Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)<br>근거: [Vulkan.cpp](../src/backends/vulkan/Vulkan.cpp), [Metal.cpp](../src/backends/metal/Metal.cpp), [ProfilingTests.cpp](../tests/ProfilingTests.cpp), [PHASE11_PROFILING_REPORT](PHASE11_PROFILING_REPORT.md) |
 
 ### P11-DBG — 디버깅·캡처·크래시·Fuzz 검증
 

@@ -852,9 +852,50 @@ Result<void> validateTransientPoolDesc(const TransientPoolDesc& desc) {
     return {};
 }
 
-Device::Device() noexcept = default;
+Device::Device() noexcept {
+    try {
+        profiling = std::make_shared<detail::ProfilingTracker>();
+    } catch (...) {
+        profiling.reset();
+    }
+}
 Device::~Device() {
     if (lifetimeGuard) *lifetimeGuard = false;
+}
+
+Result<void> Device::setProfilingEnabled(bool enabled) {
+    if (auto status = checkStatus(); !status) return status;
+    if (!profiling) {
+        return std::unexpected(Error{ErrorCode::OutOfMemory, "Profiling tracker unavailable"});
+    }
+    profiling->setEnabled(enabled);
+    return {};
+}
+
+bool Device::isProfilingEnabled() const noexcept {
+    return profiling && profiling->isEnabled();
+}
+
+Result<ProfilingSnapshot> Device::profilingSnapshot() {
+    if (auto status = checkStatus(); !status) return std::unexpected(status.error());
+    if (!profiling) return ProfilingSnapshot{};
+    ProfilingSnapshot snap = profiling->snapshot();
+    if (snap.enabled) {
+        auto budget = queryMemoryBudget(MemorySegment::Local);
+        if (budget) {
+            snap.vramBudgetBytes = budget->budgetBytes;
+            snap.vramUsageBytes = budget->usageBytes;
+        } else if (budget.error().code != ErrorCode::Unsupported) {
+            return std::unexpected(budget.error());
+        }
+    }
+    return snap;
+}
+
+Result<void> Device::resetProfilingStatistics() {
+    if (auto status = checkStatus(); !status) return status;
+    if (profiling) profiling->reset();
+    return {};
 }
 
 Result<std::unique_ptr<UploadRing>> Device::createUploadRing(UploadRingDesc desc) {
@@ -897,11 +938,13 @@ Result<CachedGraphicsPipeline> Device::createCachedGraphicsPipeline(const Graphi
         const auto found = std::ranges::find(entries, desc, &GraphicsCache::Entry::desc);
         if (found != entries.end()) {
             entries.splice(entries.end(), entries, found);
+            if (profiling) profiling->recordPipelineCache(true);
             return CachedGraphicsPipeline{found->pipeline, true};
         }
     }
     auto pipeline = createGraphicsPipeline(desc);
     if (!pipeline) return std::unexpected(pipeline.error());
+    if (profiling) profiling->recordPipelineCache(false);
     if (cacheableKey(desc)) {
         if (!graphicsCache) graphicsCache = std::make_unique<GraphicsCache>();
         auto& entries = graphicsCache->entries;
@@ -1994,6 +2037,9 @@ Result<void> RenderGraph::execute(Device& device, TransientResourcePool* transie
     std::array<std::uint64_t, 3> hostSignaled{};
     std::array<std::size_t, 3> queueBatchOrdinal{0, 0, 0};
     std::vector<std::uint64_t> batchSyncValue(impl->batches.size(), 0);
+    const bool profileGpuPasses = device.isProfilingEnabled() && device.caps().timestampQueries;
+    std::vector<CommandList*> profiledBatchCmds;
+    if (profileGpuPasses) profiledBatchCmds.reserve(impl->batches.size());
 
     auto waitSubmittedOnError = [&]() {
         if (multiBatch) {
@@ -2023,20 +2069,44 @@ Result<void> RenderGraph::execute(Device& device, TransientResourcePool* transie
             return std::unexpected(ok.error());
         }
 
+        const bool scopeBatch = profileGpuPasses && batch.queue != QueueType::Copy;
+        std::uint32_t scopedPassesInBatch = 0;
+
         for (const auto& pp : batch.passes) {
             if (auto ok = emitBarriers(cmd, pp.preBarriers); !ok) {
                 waitSubmittedOnError();
                 return std::unexpected(ok.error());
+            }
+            bool openedScope = false;
+            if (scopeBatch && scopedPassesInBatch < kMaxTimestampScopesPerCommandList) {
+                if (auto ok = cmd.beginTimestampScope(impl->passes[pp.passIndex].desc.name); ok) {
+                    openedScope = true;
+                    ++scopedPassesInBatch;
+                }
             }
             Impl::PassResourceResolver resolver(impl->resources, slotBuffers, slotTextures, pp.declaredResources);
             if (auto ok = impl->passes[pp.passIndex].desc.execute(cmd, resolver); !ok) {
                 waitSubmittedOnError();
                 return std::unexpected(ok.error());
             }
+            if (openedScope) {
+                if (auto ok = cmd.endTimestampScope(); !ok) {
+                    waitSubmittedOnError();
+                    return std::unexpected(ok.error());
+                }
+            }
             if (auto ok = emitBarriers(cmd, pp.postBarriers); !ok) {
                 waitSubmittedOnError();
                 return std::unexpected(ok.error());
             }
+        }
+
+        if (scopedPassesInBatch > 0) {
+            if (auto ok = cmd.resolveTimestampScopes(); !ok) {
+                waitSubmittedOnError();
+                return std::unexpected(ok.error());
+            }
+            profiledBatchCmds.push_back(&cmd);
         }
 
         if (auto ok = cmd.end(); !ok) {
@@ -2085,6 +2155,10 @@ Result<void> RenderGraph::execute(Device& device, TransientResourcePool* transie
                 }
             }
         }
+    }
+
+    for (CommandList* pCmd : profiledBatchCmds) {
+        (void)pCmd->timestampScopes();
     }
 
     if (transientPool) {

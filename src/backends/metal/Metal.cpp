@@ -161,6 +161,7 @@ struct State {
     std::deque<Pending>& pending{queues[0].pending};
     const std::thread::id thread = std::this_thread::get_id();
     std::uint64_t generation{};
+    std::shared_ptr<detail::ProfilingTracker> profiler;
     std::atomic<bool> retired{false};
     std::atomic<bool> hasFailure{false};
     std::optional<Error> failure;
@@ -1239,6 +1240,7 @@ struct MetalCommands final : CommandList {
         op.kind = OperationKind::Compute;
         op.compute = ComputeDispatchOp{selectedCompute, computeBindings, groupCountX, groupCountY, groupCountZ};
         operations.push_back(std::move(op));
+        if (owner->profiler) owner->profiler->recordDispatch();
         return {};
     }
     Result<void> uavBarrier(const BufferPtr& value) override {
@@ -1249,6 +1251,7 @@ struct MetalCommands final : CommandList {
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal uavBarrier requires UnorderedAccess state");
         uses.reserve(uses.size() + 1);
         retain(*a, true);
+        if (owner->profiler) owner->profiler->recordUavBarrier();
         return {};
     }
     Result<void> uavBarrier(const TexturePtr& value) override {
@@ -1259,11 +1262,16 @@ struct MetalCommands final : CommandList {
         if (shadow(*a) != ResourceState::UnorderedAccess) return fail(ErrorCode::InvalidState, "Metal uavBarrier requires UnorderedAccess state");
         uses.reserve(uses.size() + 1);
         retain(*a, true);
+        if (owner->profiler) owner->profiler->recordUavBarrier();
         return {};
     }
     Result<void> writeTimestamp(std::uint32_t) override { return owner->unsupported(); }
     Result<void> resolveTimestamps() override { return owner->unsupported(); }
     Result<double> elapsedGpuMilliseconds() override { return owner->unsupported(); }
+    Result<void> beginTimestampScope(std::string_view) override { return owner->unsupported(); }
+    Result<void> endTimestampScope() override { return owner->unsupported(); }
+    Result<void> resolveTimestampScopes() override { return owner->unsupported(); }
+    Result<std::vector<TimestampScopeResult>> timestampScopes() override { return owner->unsupported(); }
 };
 Result<std::shared_ptr<Allocation>> MetalCommands::allocation(const TexturePtr& value) const {
     auto texture = std::dynamic_pointer_cast<MetalTexture>(value);
@@ -1477,6 +1485,7 @@ struct MetalQueue final : CommandQueue {
                 if (versionBumped.insert(use.allocation.get()).second) ++use.allocation->version;
             }
         }
+        if (owner->profiler) owner->profiler->recordSubmit();
         return Fence{qSlot.last, qSlot.id};
     }
     Result<void> wait(Fence fence, std::chrono::milliseconds timeout) override {
@@ -1485,10 +1494,18 @@ struct MetalQueue final : CommandQueue {
         auto& qSlot = owner->queues[queueIndex(qType)];
         if (fence.device != qSlot.id) return fail(ErrorCode::WrongDevice, "Metal fence belongs to another generation or queue");
         if (!fence.value || fence.value > qSlot.last) return fail(ErrorCode::InvalidArgument, "Metal fence value was not submitted");
+        const bool track = owner->profiler && owner->profiler->isEnabled();
+        const auto t0 = track ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
         const auto deadline = std::chrono::steady_clock::now() + timeout;
         for (;;) {
             if (auto ok = owner->pollQueue(qType); !ok) return ok;
-            if (qSlot.completed.load(std::memory_order_acquire) >= fence.value) return {};
+            if (qSlot.completed.load(std::memory_order_acquire) >= fence.value) {
+                if (track) {
+                    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+                    owner->profiler->recordQueueWait(ns > 0 ? static_cast<std::uint64_t>(ns) : 0u);
+                }
+                return {};
+            }
             const auto now = std::chrono::steady_clock::now();
             if (now >= deadline) return fail(ErrorCode::Timeout, "Metal fence wait timed out");
             std::this_thread::sleep_for(std::min(deadline - now, std::chrono::steady_clock::duration(std::chrono::milliseconds(1))));
@@ -1517,7 +1534,9 @@ struct MetalDevice final : Device {
           capabilities(std::move(caps)),
           queues{MetalQueue(owner, QueueType::Graphics),
                  MetalQueue(owner, QueueType::Compute),
-                 MetalQueue(owner, QueueType::Copy)} {}
+                 MetalQueue(owner, QueueType::Copy)} {
+        owner->profiler = profilingTracker();
+    }
     ~MetalDevice() override { owner->retire(); }
     const DeviceCaps& caps() const override { return capabilities; }
     Result<FormatSupport> queryFormatSupport(Format format) override {

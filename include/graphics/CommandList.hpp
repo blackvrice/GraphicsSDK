@@ -63,6 +63,12 @@ public:
     [[nodiscard]] virtual Result<void> writeTimestamp(std::uint32_t index) = 0;
     [[nodiscard]] virtual Result<void> resolveTimestamps() = 0;
     [[nodiscard]] virtual Result<double> elapsedGpuMilliseconds() = 0;
+    // Multi-scope GPU hardware timestamps (up to kMaxTimestampScopesPerCommandList nested/sequential scopes).
+    // Preserves legacy writeTimestamp(0/1) slots independently. Copy queues and Metal return Unsupported.
+    [[nodiscard]] virtual Result<void> beginTimestampScope(std::string_view name) = 0;
+    [[nodiscard]] virtual Result<void> endTimestampScope() = 0;
+    [[nodiscard]] virtual Result<void> resolveTimestampScopes() = 0;
+    [[nodiscard]] virtual Result<std::vector<TimestampScopeResult>> timestampScopes() = 0;
     [[nodiscard]] virtual Result<void> debugMarker(std::string_view text) = 0;
 };
 class CommandPool {

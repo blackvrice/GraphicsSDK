@@ -147,6 +147,7 @@ struct State {
     }
     DeviceCaps caps;
     DeviceDesc description;
+    std::shared_ptr<detail::ProfilingTracker> profiler;
     std::atomic<HRESULT> lostReason{S_OK};
     std::atomic<bool> retired{false};
     bool recoverySucceeded{};
@@ -216,8 +217,15 @@ struct State {
         auto status = check(); if (!status) return status;
         auto& q = queues[queueIndex(qType)];
         if (value > q.last) return invalid("Cannot wait for a fence that has not been submitted", ErrorCode::InvalidArgument);
-        return q.waiter.wait(*q.fence.Get(), value, timeout, [this, qType]{return completed(qType);},
+        const bool track = profiler && profiler->isEnabled();
+        const auto t0 = track ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
+        auto waited = q.waiter.wait(*q.fence.Get(), value, timeout, [this, qType]{return completed(qType);},
                              [this](HRESULT code,std::string operation){return failure(code,std::move(operation));});
+        if (waited && track) {
+            const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+            profiler->recordQueueWait(ns > 0 ? static_cast<std::uint64_t>(ns) : 0u);
+        }
+        return waited;
     }
     Result<void> idleQueue(QueueType qType) {
         auto status = check(); if (!status) return status;
@@ -392,11 +400,13 @@ struct NativeCommands final : Retirable {
     ComPtr<ID3D12DescriptorHeap> descriptors;
     ComPtr<ID3D12QueryHeap> query;
     ComPtr<ID3D12Resource> queryReadback;
+    ComPtr<ID3D12Resource> scopeReadback;
     std::vector<ComPtr<IUnknown>> references;
     std::vector<Use> uses;
-    void releaseNative() override {list.Reset();allocator.Reset();descriptors.Reset();query.Reset();queryReadback.Reset();references.clear();uses.clear();}
+    void releaseNative() override {list.Reset();allocator.Reset();descriptors.Reset();query.Reset();queryReadback.Reset();scopeReadback.Reset();references.clear();uses.clear();}
     void appendResources(std::vector<ComPtr<ID3D12Resource>>& out) const override {
         if(queryReadback)out.push_back(queryReadback);
+        if(scopeReadback)out.push_back(scopeReadback);
         for(const auto& use:uses)if(use.resource)out.push_back(use.resource);
     }
 };
@@ -428,12 +438,18 @@ struct DXTimelineFence final : TimelineFence, Retirable {
     }
     Result<void> wait(std::uint64_t value, std::chrono::milliseconds timeout) override {
         auto status = owner->check(); if (!status) return status;
+        const bool track = owner->profiler && owner->profiler->isEnabled();
+        const auto t0 = track ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
         auto waited = waiter.wait(*fence.Get(), value, timeout,
                            [this] { return completedValue(); },
                            [this](HRESULT code, std::string op) { return owner->failure(code, std::move(op)); });
         if (!waited) return waited;
         auto retired = owner->completedAll();
         if (!retired) return std::unexpected(retired.error());
+        if (track) {
+            const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+            owner->profiler->recordTimelineWait(ns > 0 ? static_cast<std::uint64_t>(ns) : 0u);
+        }
         return {};
     }
 };
@@ -460,6 +476,7 @@ struct DXCommands final : CommandList {
     ComPtr<ID3D12DescriptorHeap>& descriptors{objects->descriptors};
     ComPtr<ID3D12QueryHeap>& query{objects->query};
     ComPtr<ID3D12Resource>& queryReadback{objects->queryReadback};
+    ComPtr<ID3D12Resource>& scopeReadback{objects->scopeReadback};
     std::vector<ComPtr<IUnknown>>& references{objects->references};
     std::vector<Use>& uses{objects->uses};
     std::unordered_set<IUnknown*> retained;
@@ -481,6 +498,18 @@ struct DXCommands final : CommandList {
     std::vector<BoundResource> boundComputeResources;
     bool recording{}, ended{}, renderPass{}, textureBound{}, computeBound{}, timestampsResolved{};
     std::array<bool, 2> timestampWritten{};
+    struct RecordedScope {
+        std::string name;
+        std::uint32_t depth{};
+        std::uint32_t beginSlot{};
+        std::uint32_t endSlot{};
+        bool closed{};
+    };
+    std::vector<RecordedScope> scopes;
+    std::vector<std::uint32_t> openScopeStack;
+    std::uint32_t nextScopeSlot{};
+    bool scopesResolved{};
+    std::optional<std::vector<TimestampScopeResult>> cachedScopeResults;
     QueueType queueType() const override { return qType; }
     ~DXCommands() override {
         if (!pool) return;
@@ -503,6 +532,7 @@ struct DXCommands final : CommandList {
         vertexBuffers = {}; indexBuffer.reset(); indexSize = indexElementSize = 0;
         descriptorCount = 0; submitted = 0; renderPass = false; recording = false; ended = false;
         textureBound = false; computeBound = false; timestampsResolved = false; timestampWritten = {};
+        scopes.clear(); openScopeStack.clear(); nextScopeSlot = 0; scopesResolved = false; cachedScopeResults.reset();
     }
     Result<void> ready(bool outsidePass = false) {
         // Device removal is checked at begin/submit/wait, rather than polling the
@@ -551,7 +581,9 @@ struct DXCommands final : CommandList {
     Result<void> change(Use& usage, ResourceState next) {
         if (usage.state != next) usage.mutated = true;
         if (usage.memory == Memory::Upload || usage.memory == Memory::Readback) {
-            usage.state = next; return {};
+            usage.state = next;
+            if (owner->profiler) owner->profiler->recordBarrier();
+            return {};
         }
         const auto targetNative = native(next);
         if (qType == QueueType::Copy) {
@@ -566,7 +598,9 @@ struct DXCommands final : CommandList {
                 list->ResourceBarrier(1, &barrier);
                 usage.nativeState = D3D12_RESOURCE_STATE_COMMON;
             }
-            usage.state = next; return {};
+            usage.state = next;
+            if (owner->profiler) owner->profiler->recordBarrier();
+            return {};
         }
         if (usage.nativeState != targetNative) {
             D3D12_RESOURCE_BARRIER barrier{}; barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -575,7 +609,9 @@ struct DXCommands final : CommandList {
             list->ResourceBarrier(1, &barrier);
             usage.nativeState = targetNative;
         }
-        usage.state = next; return {};
+        usage.state = next;
+        if (owner->profiler) owner->profiler->recordBarrier();
+        return {};
     }
     Result<void> begin() override {
         auto& qState = owner->queues[queueIndex(qType)];
@@ -609,6 +645,7 @@ struct DXCommands final : CommandList {
     }
     Result<void> end() override {
         auto status = ready(true); if (!status) return status;
+        if (!openScopeStack.empty()) return invalid("Unclosed timestamp scope before CommandList::end()");
         HRESULT result = list->Close(); if (FAILED(result)) return owner->failure(result, "Command list close failed");
         recording = false; ended = true;
         if (pool) {
@@ -694,7 +731,9 @@ struct DXCommands final : CommandList {
             if ((*destination)->desc.memory == Memory::Device && dstUse.nativeState == D3D12_RESOURCE_STATE_COMMON)
                 dstUse.nativeState = D3D12_RESOURCE_STATE_COPY_DEST;
         }
-        list->CopyBufferRegion((*destination)->resource.Get(), dstOffset, (*source)->resource.Get(), srcOffset, bytes); return {};
+        list->CopyBufferRegion((*destination)->resource.Get(), dstOffset, (*source)->resource.Get(), srcOffset, bytes);
+        if (owner->profiler) owner->profiler->recordCopy();
+        return {};
     }
     Result<void> copyBufferToTexture(const BufferPtr& src, const TexturePtr& dst) override {
         auto status = ready(true); if (!status) return status;
@@ -715,7 +754,9 @@ struct DXCommands final : CommandList {
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; a.PlacedFootprint = (*destination)->placed;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-        list->CopyTextureRegion(&b, 0, 0, 0, &a, nullptr); return {};
+        list->CopyTextureRegion(&b, 0, 0, 0, &a, nullptr);
+        if (owner->profiler) owner->profiler->recordCopy();
+        return {};
     }
     Result<void> copyTextureToBuffer(const TexturePtr& src, const BufferPtr& dst) override {
         auto status = ready(true); if (!status) return status;
@@ -736,7 +777,9 @@ struct DXCommands final : CommandList {
         D3D12_TEXTURE_COPY_LOCATION a{}, b{};
         a.pResource = (*source)->resource.Get(); a.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         b.pResource = (*destination)->resource.Get(); b.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; b.PlacedFootprint = (*source)->placed;
-        list->CopyTextureRegion(&b, 0, 0, 0, &a, nullptr); return {};
+        list->CopyTextureRegion(&b, 0, 0, 0, &a, nullptr);
+        if (owner->profiler) owner->profiler->recordCopy();
+        return {};
     }
     Result<void> copyTextureRegion(const std::shared_ptr<DXTexture>& image, const std::shared_ptr<DXBuffer>& buffer, const TextureCopyRegion& region, bool upload) {
         const auto& desc = image->desc;
@@ -789,6 +832,7 @@ struct DXCommands final : CommandList {
             D3D12_BOX sourceBox{region.x, region.y, 0, region.x + region.width, region.y + region.height, 1};
             list->CopyTextureRegion(&bufferLocation, 0, 0, 0, &textureLocation, fullExtent ? nullptr : &sourceBox);
         }
+        if (owner->profiler) owner->profiler->recordCopy();
         return {};
     }
     Result<void> copyBufferToTextureRegion(const BufferPtr& src, const TexturePtr& dst, const TextureCopyRegion& region) override {
@@ -824,6 +868,7 @@ struct DXCommands final : CommandList {
         use((*source)->tracker, (*source)->resource);
         use((*destination)->tracker, (*destination)->resource, Memory::Device, true);
         list->ResolveSubresource((*destination)->resource.Get(), 0, (*source)->resource.Get(), 0, native((*source)->desc.format));
+        if (owner->profiler) owner->profiler->recordCopy();
         return {};
     }
     Result<void> beginRenderPass(const TexturePtr& ptr, Color clear) override {
@@ -888,7 +933,9 @@ struct DXCommands final : CommandList {
         colorTargets=std::move(colors);depthTarget=std::move(depth);depthReadOnly=pass.depth.readOnly;renderPass=true;
         D3D12_VIEWPORT viewport{0,0,static_cast<float>(passWidth),static_cast<float>(passHeight),0,1};
         D3D12_RECT scissor{0,0,static_cast<LONG>(passWidth),static_cast<LONG>(passHeight)};
-        list->RSSetViewports(1, &viewport); list->RSSetScissorRects(1, &scissor); return {};
+        list->RSSetViewports(1, &viewport); list->RSSetScissorRects(1, &scissor);
+        if (owner->profiler) owner->profiler->recordRenderPass();
+        return {};
     }
     Result<void> endRenderPass() override {
         auto status = ready(); if (!status) return status;
@@ -1076,7 +1123,9 @@ struct DXCommands final : CommandList {
         if (!vertices || !instances) return invalid("Empty draw", ErrorCode::InvalidArgument);
         if(static_cast<std::uint64_t>(firstVertex)+vertices>std::uint64_t{UINT_MAX}+1 || static_cast<std::uint64_t>(firstInstance)+instances>std::uint64_t{UINT_MAX}+1)return invalid("Draw range overflow",ErrorCode::InvalidArgument);
         status=inputReady(vertices,instances,firstVertex,firstInstance);if(!status)return status;
-        list->DrawInstanced(vertices, instances, firstVertex, firstInstance); return {};
+        list->DrawInstanced(vertices, instances, firstVertex, firstInstance);
+        if (owner->profiler) owner->profiler->recordDraw(false, instances);
+        return {};
     }
     Result<void> drawIndexed(UINT indices,UINT instances,UINT firstIndex,INT baseVertex,UINT firstInstance) override {
         auto status=drawReady();if(!status)return status;
@@ -1085,7 +1134,9 @@ struct DXCommands final : CommandList {
         if(static_cast<std::uint64_t>(firstIndex)+indices>indexSize/indexElementSize || static_cast<std::uint64_t>(firstInstance)+instances>std::uint64_t{UINT_MAX}+1)
             return invalid("Indexed draw range exceeds buffer view",ErrorCode::InvalidArgument);
         status=inputReady(0,instances,0,firstInstance,true,baseVertex);if(!status)return status;
-        list->DrawIndexedInstanced(indices,instances,firstIndex,baseVertex,firstInstance);return {};
+        list->DrawIndexedInstanced(indices,instances,firstIndex,baseVertex,firstInstance);
+        if (owner->profiler) owner->profiler->recordDraw(true, instances);
+        return {};
     }
     Result<void> setComputePipeline(const PipelinePtr& ptr) override {
         auto status = ready(true); if (!status) return status;
@@ -1271,6 +1322,7 @@ struct DXCommands final : CommandList {
             }
         }
         list->Dispatch(groupCountX, groupCountY, groupCountZ);
+        if (owner->profiler) owner->profiler->recordDispatch();
         return {};
     }
     Result<void> uavBarrier(const BufferPtr& ptr) override {
@@ -1284,6 +1336,7 @@ struct DXCommands final : CommandList {
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
         barrier.UAV.pResource = (*object)->resource.Get();
         list->ResourceBarrier(1, &barrier);
+        if (owner->profiler) owner->profiler->recordUavBarrier();
         return {};
     }
     Result<void> uavBarrier(const TexturePtr& ptr) override {
@@ -1297,6 +1350,7 @@ struct DXCommands final : CommandList {
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
         barrier.UAV.pResource = (*object)->resource.Get();
         list->ResourceBarrier(1, &barrier);
+        if (owner->profiler) owner->profiler->recordUavBarrier();
         return {};
     }
     Result<void> writeTimestamp(UINT index) override {
@@ -1322,6 +1376,89 @@ struct DXCommands final : CommandList {
         UINT64 values[2]{}; std::memcpy(values, data, 16); D3D12_RANGE written{0, 0}; queryReadback->Unmap(0, &written);
         if (values[1] < values[0]) return invalid("Timestamps written in reverse order");
         return 1000.0 * static_cast<double>(values[1] - values[0]) / static_cast<double>(frequency);
+    }
+    Result<void> beginTimestampScope(std::string_view name) override {
+        auto status = ready(); if (!status) return status;
+        if (!query) return invalid("Timestamps are unsupported on Copy command lists", ErrorCode::Unsupported);
+        if (name.empty() || name.size() > 256 || name.find('\0') != std::string_view::npos) {
+            return invalid("Timestamp scope name must be non-empty NUL-free UTF-8 up to 256 bytes", ErrorCode::InvalidArgument);
+        }
+        if (scopesResolved || scopes.size() >= kMaxTimestampScopesPerCommandList ||
+            nextScopeSlot + 2u > kMaxTimestampScopesPerCommandList * 2u) {
+            return invalid("Timestamp scope capacity exceeded or already resolved");
+        }
+        if (!scopeReadback) {
+            auto rb = makeBuffer(*owner, static_cast<std::uint64_t>(kMaxTimestampScopesPerCommandList) * 2u * sizeof(UINT64), Memory::Readback);
+            if (!rb) return std::unexpected(rb.error());
+            scopeReadback = std::move(*rb);
+        }
+        const std::uint32_t beginSlot = nextScopeSlot++;
+        list->EndQuery(query.Get(), D3D12_QUERY_TYPE_TIMESTAMP, 2u + beginSlot);
+        const std::uint32_t depth = static_cast<std::uint32_t>(openScopeStack.size());
+        scopes.push_back(RecordedScope{std::string(name), depth, beginSlot, 0u, false});
+        openScopeStack.push_back(static_cast<std::uint32_t>(scopes.size() - 1u));
+        return {};
+    }
+    Result<void> endTimestampScope() override {
+        auto status = ready(); if (!status) return status;
+        if (!query) return invalid("Timestamps are unsupported on Copy command lists", ErrorCode::Unsupported);
+        if (openScopeStack.empty() || scopesResolved) {
+            return invalid("No open timestamp scope to end");
+        }
+        const std::uint32_t idx = openScopeStack.back();
+        openScopeStack.pop_back();
+        const std::uint32_t endSlot = nextScopeSlot++;
+        list->EndQuery(query.Get(), D3D12_QUERY_TYPE_TIMESTAMP, 2u + endSlot);
+        scopes[idx].endSlot = endSlot;
+        scopes[idx].closed = true;
+        return {};
+    }
+    Result<void> resolveTimestampScopes() override {
+        auto status = ready(true); if (!status) return status;
+        if (!query) return invalid("Timestamps are unsupported on Copy command lists", ErrorCode::Unsupported);
+        if (scopes.empty() || !openScopeStack.empty() || scopesResolved || !scopeReadback) {
+            return invalid("Timestamp scopes must be non-empty, balanced, and unresolved before resolving");
+        }
+        list->ResolveQueryData(query.Get(), D3D12_QUERY_TYPE_TIMESTAMP, 2u, nextScopeSlot, scopeReadback.Get(), 0);
+        scopesResolved = true;
+        return {};
+    }
+    Result<std::vector<TimestampScopeResult>> timestampScopes() override {
+        auto done = owner->completed(qType); if (!done) return std::unexpected(done.error());
+        if (!query) return invalid("Timestamps are unsupported on Copy command lists", ErrorCode::Unsupported);
+        if (!submitted || *done < submitted || !scopesResolved || !scopeReadback) {
+            return invalid("GPU timestamp scopes are not ready");
+        }
+        if (cachedScopeResults) return *cachedScopeResults;
+        UINT64 frequency{};
+        HRESULT result = owner->queues[queueIndex(qType)].queue->GetTimestampFrequency(&frequency);
+        if (FAILED(result) || !frequency) {
+            return owner->failure(FAILED(result) ? result : E_FAIL, "Timestamp frequency unavailable");
+        }
+        const std::size_t byteCount = static_cast<std::size_t>(nextScopeSlot) * sizeof(UINT64);
+        void* data{};
+        D3D12_RANGE range{0, byteCount};
+        result = scopeReadback->Map(0, &range, &data);
+        if (FAILED(result)) return owner->failure(result, "Timestamp scope Map failed");
+        std::vector<UINT64> ticks(nextScopeSlot, 0u);
+        std::memcpy(ticks.data(), data, byteCount);
+        D3D12_RANGE written{0, 0};
+        scopeReadback->Unmap(0, &written);
+
+        std::vector<TimestampScopeResult> out;
+        out.reserve(scopes.size());
+        for (const auto& s : scopes) {
+            const UINT64 startTick = ticks[s.beginSlot];
+            const UINT64 endTick = ticks[s.endSlot];
+            std::optional<double> gpuMs;
+            if (endTick >= startTick) {
+                gpuMs = 1000.0 * static_cast<double>(endTick - startTick) / static_cast<double>(frequency);
+            }
+            out.push_back(TimestampScopeResult{s.name, qType, s.depth, startTick, endTick, gpuMs});
+        }
+        cachedScopeResults = out;
+        if (owner->profiler) owner->profiler->appendGpuScopes(out);
+        return out;
     }
     Result<void> debugMarker(std::string_view text) override {
         auto status = ready(); if (!status) return status;
@@ -1361,7 +1498,7 @@ Result<std::unique_ptr<CommandList>> makeDXCommands(
         if (FAILED(result)) return state->failure(result, "Create command descriptor heap failed");
         D3D12_QUERY_HEAP_DESC queries{};
         queries.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-        queries.Count = 2;
+        queries.Count = 2u + kMaxTimestampScopesPerCommandList * 2u;
         result = state->device->CreateQueryHeap(&queries, IID_PPV_ARGS(&commands->query));
         if (FAILED(result)) return state->failure(result, "Create timestamp query heap failed");
         auto readback = makeBuffer(*state, 16, Memory::Readback);
@@ -1585,7 +1722,7 @@ struct DXQueue final : CommandQueue {
         for (DXCommands* cmd : validated) {
             for (const auto& ref : cmd->references) addUnique(ref);
             addCom(cmd->pool ? cmd->pool->allocator : cmd->allocator);
-            addCom(cmd->list); addCom(cmd->descriptors); addCom(cmd->query); addCom(cmd->queryReadback);
+            addCom(cmd->list); addCom(cmd->descriptors); addCom(cmd->query); addCom(cmd->queryReadback); addCom(cmd->scopeReadback);
             nativeLists.push_back(cmd->list.Get());
         }
         for (const auto& [wf, _] : waitFences) addCom(wf->fence);
@@ -1628,6 +1765,7 @@ struct DXQueue final : CommandQueue {
             if (FAILED(result)) return state->failure(result, "Queue timeline signal failed");
             sf->lastSignaled = val;
         }
+        if (state->profiler) state->profiler->recordSubmit();
         return Fence{q.last, q.id};
     }
     Result<void> wait(Fence fence, std::chrono::milliseconds timeout) override {
@@ -1643,6 +1781,7 @@ class DXDevice final : public Device {
     std::array<DXQueue, 3> queueViews;
 public:
     explicit DXDevice(std::shared_ptr<State> value) : state(std::move(value)) {
+        state->profiler = profilingTracker();
         const std::array<QueueType, 3> types{QueueType::Graphics, QueueType::Compute, QueueType::Copy};
         for (std::size_t i = 0; i < 3; ++i) {
             queueViews[i].state = state;

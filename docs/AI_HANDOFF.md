@@ -1,6 +1,6 @@
 # 다른 AI를 위한 개발 인수인계
 
-2026-11-20 갱신. 직전 확인 기준 HEAD는 `e1c7f62f`이며 이번 세션에서 `P9-RG-01`(선택적 Render Graph: DAG 의존성·자동 배리어·Transient Aliasing·Dead Pass Culling·멀티큐 타임라인 배치·진단) 구현·검증과 `P9-RG-02`(Linux/Metal 실행 검증) 분리를 반영했다.
+2026-11-21 갱신. 직전 확인 기준 HEAD는 `1853f71f`이며 이번 세션에서 `P11-PROF-01`(GPU Profiling 확장: 최대 32중첩 GPU Timestamp Scope·계측 ON/OFF 분리·정확한 Draw/Dispatch/Cache/Stall/VRAM null 계약·`RenderGraph` 자동 스코프 연동) 구현·검증과 `P11-PROF-02`(Linux/Metal 실행 검증) 분리를 반영했다.
 이 값은 인수인계 기준이며 새 세션에서는 반드시 실제 `git status`, `git log`, `docs/ROADMAP_TASKS.json`을 다시 확인한다.
 기존 작업 방식과 코드 품질 기준은 루트 [AGENTS.md](../AGENTS.md)를, 시간순 세션 이력은 [AI_WORK_LOG.md](AI_WORK_LOG.md)를 따른다.
 
@@ -8,17 +8,17 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 마지막 작업 | `P9-RG-01` (`RenderGraph` 공통 구현: RAW/WAW/WAR + 명시적 `dependsOn` DAG, Kahn 위상 정렬/순환 검출, 역방향 BFS Dead Pass/Transient Culling, 비겹침 수명 구간 물리 슬롯 Aliasing, 자동 `transition`/`uavBarrier`/교차 큐 `Common` 해제 배리어, GPU-to-GPU 및 큐별 호스트 완료 타임라인 분리 멀티큐 실행, `dumpText`/`dumpDot` 진단, Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290 오류 0·WARP 손실복구·설치 소비자 전체 어댑터 검증 및 24프레임 수동 배리어 대비 성능 비교), `P9-RG-02` 분리 |
-| 마지막 확인 Commit | 직전 HEAD `e1c7f62f` (이번 세션 커밋은 `git log -1`로 확인) |
+| 마지막 작업 | `P11-PROF-01` (다중 GPU Timestamp Scope `beginTimestampScope`/`endTimestampScope`/`resolveTimestampScopes`/`timestampScopes` 66-slot D3D12/Vulkan + Metal `Unsupported`, `Device::setProfilingEnabled`/`isProfilingEnabled`/`profilingSnapshot`/`resetProfilingStatistics`, thread-safe 카운터·CPU Stall·VRAM null 계약·`RenderGraph` 자동 스코프 연동, Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290 오류 0·WARP 손실복구·설치 소비자 9/9·CTest 132/132), `P11-PROF-02` 분리 |
+| 마지막 확인 Commit | 직전 HEAD `1853f71f` (이번 세션 커밋은 `git log -1`로 확인) |
 | 현재 브랜치 | `main` (`origin`: `https://github.com/blackvrice/GraphicsSDK.git`) |
-| 현재 버전 | `0.0.1` (`v0.0.10` 선택적 Render Graph 슬라이스 완료) |
-| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`, `P9-RG-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
-| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), `TextureView`(`P8-TEX-01`), MSAA/Resolve(`P8-TEX-03`), 공개 `UploadRing`/Readback·Transient Pool(`P8-MEM-01`), 동적 Viewport(`P9-CMD-04`), 명시적 `CommandPool`(`P9-CMD-01`), 병렬 명령 기록·일괄 제출(`P9-CMD-02`), Graphics/Compute/Copy 다중 큐·Timeline Fence(`P9-CMD-03`), Compute/UAV/Dispatch(`P9-CMP-01`), 선택적 `RenderGraph`(`P9-RG-01`) 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 202 ID(120 완료) 검증 통과 |
-| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-02/04/05/06`, `P8-MEM-02/03`, `P9-CMD-05/06/07/08`, `P9-CMP-02/03`, `P9-RG-02`, `P10`~`P12`) |
-| 수정 파일 | `include/graphics/Device.hpp`, `src/foundation/Backend.cpp`, `tests/RenderGraphTests.cpp`, `CMakeLists.txt`, `docs/{PHASE9_RENDER_GRAPH_REPORT,PUBLIC_API,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
-| 테스트 결과 | `gfx_render_graph_tests` 5/5 모드(D3D12 HW+bench/GBV/WARP 손실복구/Vulkan HW+bench/고정 VVL 1.3.290, `errors=0`), 설치 소비자 전체 어댑터 9/9(GTX 1660 SUPER + Intel UHD 770 + WARP, 비검증+검증), 전체 CTest **127/127 통과** (`179.26s`), GTX 1660 SUPER 24프레임 수동 배리어 대비 D3D12 precompiled `-3.08%`(compile `9.47us`)·Vulkan precompiled `-2.02%`(compile `7.86us`), `roadmap.py --check` PASS (202 ID) (Linux/macOS 실기 미실행) |
+| 현재 버전 | `0.0.1` (`v0.0.10` Render Graph + GPU Profiling 확장 슬라이스 완료) |
+| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06`, `P8-MEM-03`, `P9-CMD-05/06/07/08`, `P9-CMP-03`, `P9-RG-02`, `P11-PROF-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
+| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), `TextureView`(`P8-TEX-01`), MSAA/Resolve(`P8-TEX-03`), 공개 `UploadRing`/Readback·Transient Pool(`P8-MEM-01`), 동적 Viewport(`P9-CMD-04`), 명시적 `CommandPool`(`P9-CMD-01`), 병렬 명령 기록·일괄 제출(`P9-CMD-02`), Graphics/Compute/Copy 다중 큐·Timeline Fence(`P9-CMD-03`), Compute/UAV/Dispatch(`P9-CMP-01`), 선택적 `RenderGraph`(`P9-RG-01`), GPU Profiling 확장(`P11-PROF-01`) 구현 및 Windows D3D12/Vulkan/Validation/WARP/설치 소비자 검증 통과, `ROADMAP_TASKS.json` 203 ID(121 완료) 검증 통과 |
+| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-02/04/05/06`, `P8-MEM-02/03`, `P9-CMD-05/06/07/08`, `P9-CMP-02/03`, `P9-RG-02`, `P10`~`P12`, `P11-PROF-02`) |
+| 수정 파일 | `include/graphics/{Types,CommandList,Device}.hpp`, `src/foundation/{DeviceGeneration.hpp,Backend.cpp}`, `src/backends/{d3d12/D3D12.cpp,vulkan/Vulkan.cpp,metal/Metal.cpp}`, `tests/ProfilingTests.cpp`, `CMakeLists.txt`, `docs/{PHASE11_PROFILING_REPORT,PUBLIC_API,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
+| 테스트 결과 | `gfx_profiling_tests` 5/5 모드(D3D12 HW+bench/GBV/WARP 손실복구/Vulkan HW+bench/고정 VVL 1.3.290, `val_errors=0`, `scopes_verified=37`), 설치 소비자 전체 어댑터 9/9(GTX 1660 SUPER + Intel UHD 770 + WARP, 비검증+검증), 전체 CTest **132/132 통과** (`202.36s`), `roadmap.py --check` PASS (203 ID) (Linux/macOS 실기 미실행) |
 | 확인된 문제 | 장시간 GBV 메모리(`P2-ACC-01`)·과거 Intel AV(`P2-ACC-02`) 미해결, Linux 물리 GPU·물리 Mac 부재 |
-| 다음 추천 작업 | `P8-TEX-02`(다중 Mipmap·Array·Cubemap), `P11-PROF-01`(GPU Profiling 확장), `P9-CMP-02`(Indirect/Bindless), `P10-PRES-01`(Frame Pacing/VRR), `P8/P9` Linux/Metal 검증(`P8-XFER-04/06`·`P8-CAP-02`·`P8-TEX-05/06`·`P8-MEM-03`·`P9-CMD-05/06/07/08`·`P9-CMP-03`·`P9-RG-02`), 또는 Phase 7 CI 배포 후보 연동 |
+| 다음 추천 작업 | `P12-SBX-01`(Sandbox RHI 호환성 분석 및 비침투 어댑터 설계), `P11-DBG-01`(디버깅 고도화), `P8-TEX-02`(다중 Mipmap·Array·Cubemap), `P9-CMP-02`(Indirect/Bindless), `P10-PRES-01`(Frame Pacing/VRR), `P8/P9/P11` Linux/Metal 검증 |
 | 주의사항 | `tools/macos_metal_package.py`의 13개 공개 헤더 allowlist와 `tools/macos_core.py`의 5개 `CORE` `.cpp`·11개 CPU 테스트 목록을 유지해야 기존 replay와 `macos-core.yml`이 깨지지 않는다. 기존 사용자 변경(`tests/VulkanAllocationBenchmarkTests.cpp`)은 덮어쓰거나 커밋하지 않는다. (`.idea/`는 `.gitignore`에 반영 완료) |
 
 ## 새 AI에게 전달할 지시문

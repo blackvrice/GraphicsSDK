@@ -4,6 +4,7 @@
 #include <expected>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace gfx {
 enum class ErrorCode { InvalidArgument, InvalidState, WrongDevice, Unsupported, OutOfMemory, DeviceLost, Timeout, BackendFailure };
@@ -111,5 +112,47 @@ struct DeviceCaps {
     bool dedicatedComputeQueue{};
     bool dedicatedCopyQueue{};
     bool timelineFences{};
+};
+
+inline constexpr std::uint32_t kMaxTimestampScopesPerCommandList = 32;
+
+struct TimestampScopeResult {
+    std::string name;
+    QueueType queue{QueueType::Graphics};
+    std::uint32_t depth{};
+    std::uint64_t startTicks{};
+    std::uint64_t endTicks{};
+    // Real GPU hardware elapsed time in milliseconds; std::nullopt when unmeasured or unsupported.
+    // Never synthesized from CPU wall time.
+    std::optional<double> gpuMilliseconds;
+};
+
+struct ProfilingCounters {
+    std::uint64_t drawCalls{};
+    std::uint64_t indexedDrawCalls{};
+    std::uint64_t instancedDrawCalls{};
+    std::uint64_t dispatchCalls{};
+    std::uint64_t renderPasses{};
+    std::uint64_t copyCommands{};
+    std::uint64_t barriers{};
+    std::uint64_t uavBarriers{};
+    std::uint64_t submissions{};
+    std::uint64_t pipelineCacheHits{};
+    std::uint64_t pipelineCacheMisses{};
+    std::uint64_t queueWaits{};
+    std::uint64_t timelineWaits{};
+};
+
+struct ProfilingSnapshot {
+    bool enabled{};
+    ProfilingCounters counters;
+    // Cumulative CPU time spent blocked in CommandQueue::wait / TimelineFence::wait.
+    // std::nullopt when profiling is disabled.
+    std::optional<double> cpuStallMilliseconds;
+    // OS adapter local VRAM snapshot when supported; std::nullopt when disabled or unsupported.
+    std::optional<std::uint64_t> vramBudgetBytes;
+    std::optional<std::uint64_t> vramUsageBytes;
+    // Resolved GPU hardware timestamp scopes recorded while profiling is enabled.
+    std::vector<TimestampScopeResult> gpuTimestampScopes;
 };
 }

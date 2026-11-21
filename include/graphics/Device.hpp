@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace gfx {
+namespace detail { struct ProfilingTracker; }
 struct RGResourceHandle {
     std::uint32_t id{};
     bool operator==(const RGResourceHandle&) const = default;
@@ -126,11 +127,23 @@ public:
     // Vulkan requires Khronos validation/debug utils, synchronization features and layer settings.
     // Vulkan counts delivered ERROR callbacks; external layer settings can filter/limit them.
     [[nodiscard]] virtual Result<std::uint64_t> validationErrorCount() = 0;
+    // Creating thread only. Enables or disables device-level profiling counters, stall timing,
+    // and GPU scope aggregation. Disabled by default so uninstrumented paths stay overhead-free.
+    [[nodiscard]] Result<void> setProfilingEnabled(bool enabled);
+    [[nodiscard]] bool isProfilingEnabled() const noexcept;
+    // Creating thread only. Returns current profiling snapshot. When disabled, enabled=false and
+    // unmeasured/optional fields remain std::nullopt.
+    [[nodiscard]] Result<ProfilingSnapshot> profilingSnapshot();
+    // Creating thread only. Resets accumulated counters, stall timing, and recorded GPU scopes.
+    [[nodiscard]] Result<void> resetProfilingStatistics();
+protected:
+    [[nodiscard]] const std::shared_ptr<detail::ProfilingTracker>& profilingTracker() const noexcept { return profiling; }
 private:
     friend class RenderGraph;
     struct GraphicsCache;
     std::unique_ptr<GraphicsCache> graphicsCache;
     std::shared_ptr<bool> lifetimeGuard;
+    std::shared_ptr<detail::ProfilingTracker> profiling;
 };
 
 class RenderGraph {

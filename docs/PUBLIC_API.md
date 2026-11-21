@@ -94,6 +94,15 @@ Transient 물리 슬롯 Aliasing, 자동 상태 전이(`transition`)·연속 UAV
 큐별 호스트 완료 타임라인으로 실행하며, `TransientResourcePool` 전달 시 물리 슬롯을 자동 획득·반납한다.
 [선택적 Render Graph 보고서](PHASE9_RENDER_GRAPH_REPORT.md)를 따른다.
 
+다중 GPU 타임스탬프 스코프와 장치 프로파일링(`P11-PROF-01`)은 기존 2-slot `writeTimestamp(0/1)` 계약을 보존하면서
+`CommandList::beginTimestampScope(name)`/`endTimestampScope()`/`resolveTimestampScopes()`/`timestampScopes()`로
+명령 목록당 최대 `kMaxTimestampScopesPerCommandList`(32)개의 중첩·순차 하드웨어 GPU 스코프를 측정한다(Copy 큐·Metal은
+`Unsupported`). `Device::setProfilingEnabled(bool)`(기본값 `false`), `isProfilingEnabled()`, `profilingSnapshot()`,
+`resetProfilingStatistics()`는 계측 ON/OFF를 엄격히 분리하며, 수락된 Draw/Indexed/Instanced/Dispatch/RenderPass/Copy/
+Barrier/UAV Barrier/Submit/Pipeline Cache Hit-Miss/Queue·Timeline Wait 카운터와 CPU 스톨 시간, OS 로컬 VRAM 예산을
+집계한다. 계측 OFF이거나 미지원 항목(예: Vulkan OS VRAM 예산, 미측정 GPU 시간)은 `std::nullopt`로 유지하며 CPU 시간으로
+대체하지 않는다. [GPU Profiling 확장 보고서](PHASE11_PROFILING_REPORT.md)를 따른다.
+
 Vulkan `debugMarker(text)`는 debug-utils 확장과 함수가 있을 때 실제 label을 넣는다.
 정상 recording에서 함수가 없으면 Unsupported이며 creating thread·recording·퇴역 검사를 먼저 한다.
 지원 시 빈 문자열은 허용하고, NUL-free UTF-8과 UINT32_MAX 이하 길이를 요구한다. Substring·임시
