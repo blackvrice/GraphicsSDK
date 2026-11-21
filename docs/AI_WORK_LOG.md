@@ -420,3 +420,27 @@
   - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
   - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
   - `P8/P9/P11` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P11-PROF-02`).
+
+---
+
+## 2026-11-21 — `P12-SBX-01` Sandbox RHI 호환성 분석 및 비침투 독립 어댑터 구현·실기 검증
+
+- **기준 커밋**: `353ff060` (`Add multi-scope GPU timestamps and ON/OFF device profiling statistics (P11-PROF-01)`)
+- **작업 목적**:
+  - 선행 충족 작업 `P12-SBX-01` 완료: 읽기 전용 Sandbox RHI(`.deps/references/sandbox`, 미수정)의 `RenderDevice`/`RhiTypes`/`HandlePool`/`DeferredDestruction`/`UploadRing`/`Timestamp`와 GraphicsSDK 공개 API 간의 항목별 1:1 매핑·계약 차이·잔여 격차를 분석하고, GraphicsSDK 공개 헤더(`include/graphics`) 및 코어(`src/`)를 일절 수정하지 않는 비침투 독립 어댑터(`examples/sandbox_adapter/SandboxRhiAdapter.hpp`)와 검증 테스트(`tests/SandboxAdapterTests.cpp`)를 Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290/WARP/설치 소비자로 실기 검증.
+  - Linux Vulkan 및 macOS Metal 실행 검증은 `P12-SBX-02`로 정직하게 분리 유지.
+- **수정 파일 (10개)**:
+  - `examples/sandbox_adapter/SandboxRhiAdapter.hpp`, `tests/SandboxAdapterTests.cpp`, `CMakeLists.txt`
+  - `docs/PHASE12_SANDBOX_ADAPTER_REPORT.md`, `docs/ROADMAP_TASKS.json`, `docs/ROADMAP.md`, `docs/DEVELOPMENT_DASHBOARD.md`, `README.md`, `docs/AI_HANDOFF.md`, `docs/AI_WORK_LOG.md`
+- **테스트 및 검증 결과** (격리 빌드 `out/p12-sandbox-adapter`, 설치 `out/p12-sandbox-adapter-install`, 설치 `GraphicsSDKCore.lib` SHA-256 `B259BED4D12FEB51C7503B45924E0D3AF20108FA1CCC10117A5A014B988C54E6`):
+  - `gfx_sandbox_adapter_tests` 5/5 모드 통과: D3D12(`assertions=156`), D3D12 Debug+GBV(`val_errors=0, assertions=158`), D3D12 WARP 손실(`DeviceLost` 거부, `assertions=158`), Vulkan(`assertions=156`), Vulkan 고정 VVL 1.3.290(`val_errors=0, assertions=158`).
+  - 실증 발견: GraphicsSDK의 엄격한 Upload 버퍼 `observedVersion` 스냅샷 계약을 준수하기 위해 한 프레임 내 `UploadRing` 세그먼트 CPU 쓰기(`uploadData`)는 복사 명령 기록 전에 일괄 스테이징(stage-before-record)해야 함을 확인 및 문서화.
+  - 독립 설치 소비자(`find_package(GraphicsSDK 0.0.1 EXACT CONFIG REQUIRED)` + `SandboxRhiAdapter.hpp`): D3D12(GTX 1660 SUPER·Intel UHD 770·WARP) 및 Vulkan(GTX 1660 SUPER·Intel UHD 770) 비검증·검증 **9/9 전체 통과** (`val_errors=0, released=2, ts_valid=yes`).
+  - `sandbox_adapter_*` CTest **5/5 통과** (`1.88s`), SDK 코어(`include/graphics/`, `src/`) 미수정으로 직전 132/132 회귀 유지.
+  - `tools/roadmap.py --check`: PASS (204 task IDs: 122 완료, 82 미완료 [필수 38, 조건부 8, 후속 36]).
+- **다음 추천 작업**:
+  - `P8-TEX-02`: Texture1D/3D·Texture2DArray·Cubemap·Mipmap 지원.
+  - `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz).
+  - `P9-CMP-02`: Async Compute·Indirect/MDI·Bindless·GPU Culling.
+  - `P10-PRES-01`: Frame Pacing·Present Mode·VRR.
+  - `P8/P9/P11/P12` Linux Vulkan 및 macOS Metal CI/실기 검증 (`P8-XFER-04/06`~`P12-SBX-02`).

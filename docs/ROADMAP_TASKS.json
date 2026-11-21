@@ -3972,16 +3972,42 @@
       "phase": 12,
       "group": "P12-SBX",
       "title": "Sandbox RHI 호환성 분석 및 비침투 어댑터 설계",
-      "status": "todo",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P8-MEM-01",
         "P9-CMD-01",
         "P11-PROF-01"
       ],
-      "work": "읽기 전용 Sandbox RHI(RenderDevice/RhiTypes/UploadRing/DeferredDestruction/Timestamp)와 GraphicsSDK 공개 API 차이를 해소하고 Sandbox를 수정하지 않는 독립 호환 어댑터 계약을 설계한다.",
+      "work": "읽기 전용 Sandbox RHI(.deps/references/sandbox, 미수정)의 RenderDevice/RhiTypes/HandlePool/DeferredDestruction/UploadRing/Timestamp와 GraphicsSDK 공개 API 간의 항목별 1:1 매핑과 잔여 격차를 분석하고, GraphicsSDK 공개 헤더/코어를 수정하지 않는 독립 비침투 어댑터(examples/sandbox_adapter/SandboxRhiAdapter.hpp)와 검증 스위트(tests/SandboxAdapterTests.cpp)를 구현했다. 세대 기반 HandlePool, 펜스 지연 해제, framesInFlight=2 다중 프레임 슬롯, UploadRing stage-before-record 계약 및 포화(uploadRingDeferred) 추적, 오프셋/부분 2D 복사, 동적 Viewport/Scissor, 완료 프레임 GPU 타임스탬프 회수, 미지원 포맷/mip/layer 명시적 Unsupported 거부를 Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290(오류 0)/WARP 손실/설치 소비자 전체 어댑터 9/9 및 CTest 5/5로 검증했다.",
       "done_when": "항목별 1:1 매핑·격차 해소 검증 및 독립 예제/테스트에서 어댑터 계약 통과.",
-      "evidence": []
+      "evidence": [
+        "examples/sandbox_adapter/SandboxRhiAdapter.hpp",
+        "tests/SandboxAdapterTests.cpp",
+        "docs/PHASE12_SANDBOX_ADAPTER_REPORT.md"
+      ]
+    },
+    {
+      "id": "P12-SBX-02",
+      "phase": 12,
+      "group": "P12-SBX",
+      "title": "Sandbox RHI 비침투 어댑터 Linux Vulkan 및 macOS Metal 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P12-SBX-01",
+        "P8-MEM-03",
+        "P9-CMD-06",
+        "P11-PROF-02"
+      ],
+      "work": "독립 비침투 어댑터(examples/sandbox_adapter/SandboxRhiAdapter.hpp)와 gfx_sandbox_adapter_tests를 Linux Vulkan(lavapipe/물리 GPU, 고정 VVL)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·전체 픽셀/바이트 참조·지연 해제·미지원 거부로 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 비침투 어댑터 다중 프레임 루프, HandlePool/DeferredDestruction, UploadRing, 미지원 거부 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "examples/sandbox_adapter/SandboxRhiAdapter.hpp",
+        "tests/SandboxAdapterTests.cpp",
+        "docs/PHASE12_SANDBOX_ADAPTER_REPORT.md"
+      ]
     }
   ]
 }
