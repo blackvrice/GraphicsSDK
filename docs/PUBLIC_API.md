@@ -34,6 +34,12 @@ D3D12(`DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL` + `IDXGISwapChain1::Present1`, 최대 6
 `Device::{recordBreadcrumb, markBreadcrumbsCompleted, clearBreadcrumbs, diagnosticReport}`는
 최근 `kMaxCrashBreadcrumbs`(128)개 GPU Crash Breadcrumbs 링 버퍼와 자동 Resource Leak Detection(`DiagnosticReport::{hasLeaks, deviceLost, breadcrumbs, summary}`)을 제공하며,
 `DeviceLost` 발생 이후에도 마지막 미완료 브레드크럼을 안전하게 조회할 수 있다. [디버깅 고도화 보고서](PHASE11_DIAGNOSTICS_FUZZ_REPORT.md)를 따른다.
+`DeviceCaps::{externalMemoryInterop, externalFenceInterop}`, `BufferDesc::shared`, `TextureDesc::shared`,
+비소유 `NativeHandle`(`Device::{nativeDeviceHandle, nativeBufferHandle, nativeTextureHandle, nativeTimelineFenceHandle}`),
+그리고 RAII `ExternalHandle`(`ExternalHandleType::{OpaqueWin32Nt, D3D12Resource, D3D12Fence, OpaqueFd, MetalSharedEvent}`,
+`Device::{exportBufferHandle, importBufferHandle, exportTextureHandle, importTextureHandle, createSharedTimelineFence, exportTimelineFenceHandle, importTimelineFenceHandle}`)은
+공개 헤더의 OS/API 무의존성을 유지하면서 Same-API 및 Cross-API(Windows D3D12 ↔ Vulkan) Zero-Copy 공유 리소스와 공유 타임라인 동기화를 제공한다.
+[Native GPU Interoperability 보고서](PHASE11_NATIVE_INTEROP_REPORT.md)를 따른다.
 queue는 submit 결과로 Fence를 반환하고 wait/waitIdle/completedValue를 제공한다.
 GPU 비동기 완료를 명시적으로 기다린 뒤 readback을 읽는다.
 

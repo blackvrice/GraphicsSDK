@@ -12,8 +12,31 @@
 #include <sstream>
 #include <unordered_map>
 #include <vector>
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace gfx {
+void ExternalHandle::reset() noexcept {
+    if (!handle_) return;
+#ifdef _WIN32
+    if (type_ == ExternalHandleType::OpaqueWin32Nt ||
+        type_ == ExternalHandleType::D3D12Resource ||
+        type_ == ExternalHandleType::D3D12Fence) {
+        CloseHandle(reinterpret_cast<HANDLE>(handle_));
+    }
+#else
+    if (type_ == ExternalHandleType::OpaqueFd) {
+        close(static_cast<int>(handle_));
+    }
+#endif
+    handle_ = 0;
+}
 struct Device::GraphicsCache {
     struct Entry {
         GraphicsPipelineDesc desc;

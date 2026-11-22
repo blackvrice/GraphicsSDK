@@ -93,7 +93,7 @@ struct Viewport {
     float minDepth{0.0f}, maxDepth{1.0f};
     bool operator==(const Viewport&) const = default;
 };
-struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; bool storage{}; };
+struct BufferDesc { std::uint64_t size{}; Memory memory{Memory::Device}; bool storage{}; bool shared{}; };
 enum class TextureDimension { Texture2D = 0, Texture1D, Texture3D, Texture2DArray, TextureCube };
 struct TextureDesc {
     std::uint32_t width{}, height{};
@@ -104,6 +104,7 @@ struct TextureDesc {
     std::uint32_t depth{1};
     std::uint32_t mipLevels{1};
     std::uint32_t arrayLayers{1};
+    bool shared{};
 };
 enum class TextureViewUsage { ShaderRead, RenderTarget, DepthStencil, Storage };
 // Subresource view descriptor over a Texture. When format or dimension is unset,
@@ -191,6 +192,8 @@ struct DeviceCaps {
     bool meshShaders{};
     std::uint32_t maxDrawIndirectCount{};
     std::uint32_t maxBindlessDescriptors{};
+    bool externalMemoryInterop{};
+    bool externalFenceInterop{};
 };
 
 enum class MemoryHeapType { Buffers, Textures, RenderTargets };
@@ -292,5 +295,73 @@ struct DiagnosticReport {
     bool deviceLost{};
     std::vector<BreadcrumbEntry> breadcrumbs;
     std::string summary;
+};
+
+enum class ExternalHandleType { OpaqueWin32Nt, D3D12Resource, D3D12Fence, OpaqueFd, MetalSharedEvent };
+
+enum class NativeObjectType {
+    D3D12Device,
+    D3D12CommandQueue,
+    D3D12Resource,
+    D3D12Fence,
+    VulkanInstance,
+    VulkanPhysicalDevice,
+    VulkanDevice,
+    VulkanQueue,
+    VulkanBuffer,
+    VulkanImage,
+    VulkanDeviceMemory,
+    VulkanSemaphore,
+    MetalDevice,
+    MetalCommandQueue,
+    MetalBuffer,
+    MetalTexture,
+    MetalSharedEvent
+};
+
+// Non-owning opaque handle to an underlying native GPU object.
+// Valid only while the owning SDK object remains alive.
+struct NativeHandle {
+    Backend backend{Backend::D3D12};
+    NativeObjectType type{NativeObjectType::D3D12Device};
+    std::uintptr_t value{};
+    explicit operator bool() const noexcept { return value != 0; }
+    bool operator==(const NativeHandle&) const = default;
+};
+
+// Owning RAII wrapper for an OS-level exported external memory or timeline fence handle
+// (Win32 NT HANDLE on Windows, POSIX fd on Linux). Closes the OS handle on destruction
+// unless ownership is transferred via release(). Keeps OS headers out of public headers.
+class ExternalHandle {
+public:
+    ExternalHandle() noexcept = default;
+    ExternalHandle(ExternalHandleType type, std::uintptr_t rawHandle) noexcept
+        : type_(type), handle_(rawHandle) {}
+    ~ExternalHandle() noexcept { reset(); }
+    ExternalHandle(const ExternalHandle&) = delete;
+    ExternalHandle& operator=(const ExternalHandle&) = delete;
+    ExternalHandle(ExternalHandle&& other) noexcept
+        : type_(other.type_), handle_(other.handle_) { other.handle_ = 0; }
+    ExternalHandle& operator=(ExternalHandle&& other) noexcept {
+        if (this != &other) {
+            reset();
+            type_ = other.type_;
+            handle_ = other.handle_;
+            other.handle_ = 0;
+        }
+        return *this;
+    }
+    [[nodiscard]] ExternalHandleType type() const noexcept { return type_; }
+    [[nodiscard]] std::uintptr_t raw() const noexcept { return handle_; }
+    [[nodiscard]] explicit operator bool() const noexcept { return handle_ != 0; }
+    [[nodiscard]] std::uintptr_t release() noexcept {
+        const std::uintptr_t out = handle_;
+        handle_ = 0;
+        return out;
+    }
+    void reset() noexcept;
+private:
+    ExternalHandleType type_{ExternalHandleType::OpaqueWin32Nt};
+    std::uintptr_t handle_{};
 };
 }

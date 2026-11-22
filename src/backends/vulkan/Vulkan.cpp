@@ -337,6 +337,8 @@ struct NativeDevice {
     bool hdrMetadata{};
     bool incrementalPresent{};
     bool timelineSemaphores{};
+    bool externalMemoryWin32{};
+    bool externalSemaphoreWin32{};
     PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT{};
     PFN_vkCreateSwapchainKHR CreateSwapchainKHR{};
     PFN_vkDestroySwapchainKHR DestroySwapchainKHR{};
@@ -347,6 +349,12 @@ struct NativeDevice {
     PFN_vkGetSemaphoreCounterValueKHR GetSemaphoreCounterValueKHR{};
     PFN_vkWaitSemaphoresKHR WaitSemaphoresKHR{};
     PFN_vkSignalSemaphoreKHR SignalSemaphoreKHR{};
+#ifdef _WIN32
+    PFN_vkGetMemoryWin32HandleKHR GetMemoryWin32HandleKHR{};
+    PFN_vkGetMemoryWin32HandlePropertiesKHR GetMemoryWin32HandlePropertiesKHR{};
+    PFN_vkGetSemaphoreWin32HandleKHR GetSemaphoreWin32HandleKHR{};
+    PFN_vkImportSemaphoreWin32HandleKHR ImportSemaphoreWin32HandleKHR{};
+#endif
 #define DECLARE(name) PFN_vk##name name{};
     DEVICE_FUNCTIONS(DECLARE)
 #undef DECLARE
@@ -549,6 +557,7 @@ struct NativeTimelineSemaphore {
     std::shared_ptr<NativeDevice> native;
     VkSemaphore handle{};
     std::uint64_t lastSignaled{};
+    bool shared{};
     void release() {
         if (handle) native->DestroySemaphore(native->handle, handle, nullptr);
         handle = {};
@@ -2733,11 +2742,22 @@ struct VulkanDevice final : Device {
         if (!desc.size || desc.size > SIZE_MAX || desc.size > (1ull << 40) || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
             (desc.storage && desc.memory != Memory::Device))
             return fail(ErrorCode::InvalidArgument, "Invalid Vulkan buffer description");
+        if (desc.shared) {
+            if (desc.memory != Memory::Device) return fail(ErrorCode::Unsupported, "Shared Vulkan interop buffers require Device memory");
+            if (!owner->native->externalMemoryWin32) return fail(ErrorCode::Unsupported, "Vulkan external memory interop extension is unavailable");
+        }
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->desc = desc;
         a->state = desc.memory == Memory::Upload ? ResourceState::CopySource : desc.memory == Memory::Readback ? ResourceState::CopyDestination : ResourceState::Common;
         VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; info.size = desc.size;
         info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT |
             (desc.storage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0u);
+        VkExternalMemoryBufferCreateInfo extBuf{VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO};
+#ifdef _WIN32
+        if (desc.shared) {
+            extBuf.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+            info.pNext = &extBuf;
+        }
+#endif
         if (owner->uniqueFamilies.size() > 1) {
             info.sharingMode = VK_SHARING_MODE_CONCURRENT;
             info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
@@ -2758,6 +2778,16 @@ struct VulkanDevice final : Device {
         if (!type) return fail(ErrorCode::Unsupported, "No compatible Vulkan buffer memory type");
         a->bytes = req.size; a->coherent = (owner->memory.memoryTypes[*type].propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
         VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize = req.size; allocate.memoryTypeIndex = *type;
+        VkExportMemoryAllocateInfo exportAlloc{VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO};
+        VkMemoryDedicatedAllocateInfo dedicatedAlloc{VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO};
+#ifdef _WIN32
+        if (desc.shared) {
+            exportAlloc.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+            dedicatedAlloc.buffer = a->buffer;
+            dedicatedAlloc.pNext = &exportAlloc;
+            allocate.pNext = &dedicatedAlloc;
+        }
+#endif
         if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory"); !ok) return std::unexpected(ok.error());
         if (auto ok = owner->accept(owner->native->BindBufferMemory(owner->native->handle, a->buffer, a->memory, 0), "vkBindBufferMemory"); !ok) return std::unexpected(ok.error());
         auto value = std::make_shared<VulkanBuffer>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
@@ -2768,6 +2798,9 @@ struct VulkanDevice final : Device {
     Result<TexturePtr> createTexture(TextureDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (desc.shared && !owner->native->externalMemoryWin32) {
+            return fail(ErrorCode::Unsupported, "Vulkan external memory interop extension is unavailable");
+        }
         if (!owner->compressionFeatureEnabled(desc.format)) {
             return fail(ErrorCode::Unsupported, "Vulkan adapter does not support requested compressed texture format family");
         }
@@ -2817,6 +2850,13 @@ struct VulkanDevice final : Device {
         info.imageType = imageType; info.format = format; info.extent = {desc.width, sliceHeight, imageDepth};
         info.mipLevels = desc.mipLevels; info.arrayLayers = desc.arrayLayers; info.samples = sampleBit; info.tiling = VK_IMAGE_TILING_OPTIMAL;
         info.usage = usage;
+        VkExternalMemoryImageCreateInfo extImg{VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO};
+#ifdef _WIN32
+        if (desc.shared) {
+            extImg.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+            info.pNext = &extImg;
+        }
+#endif
         if (owner->uniqueFamilies.size() > 1) {
             info.sharingMode = VK_SHARING_MODE_CONCURRENT;
             info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
@@ -2833,6 +2873,16 @@ struct VulkanDevice final : Device {
         if (!type) return fail(ErrorCode::Unsupported, "No device-local Vulkan image memory type");
         a->bytes = req.size;
         VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; allocate.allocationSize = req.size; allocate.memoryTypeIndex = *type;
+        VkExportMemoryAllocateInfo exportAlloc{VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO};
+        VkMemoryDedicatedAllocateInfo dedicatedAlloc{VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO};
+#ifdef _WIN32
+        if (desc.shared) {
+            exportAlloc.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+            dedicatedAlloc.image = a->image;
+            dedicatedAlloc.pNext = &exportAlloc;
+            allocate.pNext = &dedicatedAlloc;
+        }
+#endif
         if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory image"); !ok) return std::unexpected(ok.error());
         if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, a->memory, 0), "vkBindImageMemory"); !ok) return std::unexpected(ok.error());
         {
@@ -2870,6 +2920,9 @@ struct VulkanDevice final : Device {
     }
     Result<VkImageCreateInfo> buildValidatedImageCreateInfo(const TextureDesc& desc, VkImageCreateFlags extraFlags) {
         if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (desc.shared && !owner->native->externalMemoryWin32) {
+            return fail(ErrorCode::Unsupported, "Vulkan external memory interop extension is unavailable");
+        }
         if (!owner->compressionFeatureEnabled(desc.format)) {
             return fail(ErrorCode::Unsupported, "Vulkan adapter does not support requested compressed texture format family");
         }
@@ -3130,6 +3183,9 @@ struct VulkanDevice final : Device {
     Result<SparseTextureProperties> querySparseTextureProperties(TextureDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
         if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+        if (desc.shared && !owner->native->externalMemoryWin32) {
+            return fail(ErrorCode::Unsupported, "Vulkan external memory interop extension is unavailable");
+        }
         if (!owner->compressionFeatureEnabled(desc.format)) {
             return fail(ErrorCode::Unsupported, "Vulkan adapter does not support requested compressed texture format family");
         }
@@ -3598,6 +3654,350 @@ struct VulkanDevice final : Device {
         owner->objects.push_back(value->token);
         return TimelineFencePtr(std::move(value));
     }
+    Result<NativeHandle> nativeDeviceHandle() override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return NativeHandle{Backend::Vulkan, NativeObjectType::VulkanDevice,
+                            reinterpret_cast<std::uintptr_t>(owner->native->handle)};
+    }
+    Result<NativeHandle> nativeBufferHandle(const BufferPtr& buffer) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* vk = dynamic_cast<VulkanBuffer*>(buffer.get());
+        if (!vk) return fail(buffer ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Vulkan buffer");
+        if (vk->owner != owner) return fail(ErrorCode::WrongDevice, "Buffer belongs to a different device");
+        return NativeHandle{Backend::Vulkan, NativeObjectType::VulkanBuffer,
+                            static_cast<std::uintptr_t>(reinterpret_cast<std::uintptr_t>(vk->allocation->buffer))};
+    }
+    Result<NativeHandle> nativeTextureHandle(const TexturePtr& texture) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* vk = dynamic_cast<VulkanTexture*>(texture.get());
+        if (!vk) return fail(texture ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Vulkan texture");
+        if (vk->owner != owner) return fail(ErrorCode::WrongDevice, "Texture belongs to a different device");
+        return NativeHandle{Backend::Vulkan, NativeObjectType::VulkanImage,
+                            static_cast<std::uintptr_t>(reinterpret_cast<std::uintptr_t>(vk->allocation->image))};
+    }
+    Result<NativeHandle> nativeTimelineFenceHandle(const TimelineFencePtr& fence) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* vk = dynamic_cast<VulkanTimelineFence*>(fence.get());
+        if (!vk) return fail(fence ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Vulkan timeline fence");
+        if (vk->owner != owner) return fail(ErrorCode::WrongDevice, "TimelineFence belongs to a different device");
+        return NativeHandle{Backend::Vulkan, NativeObjectType::VulkanSemaphore,
+                            static_cast<std::uintptr_t>(reinterpret_cast<std::uintptr_t>(vk->sem->handle))};
+    }
+    Result<ExternalHandle> exportBufferHandle(const BufferPtr& buffer) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* vk = dynamic_cast<VulkanBuffer*>(buffer.get());
+        if (!vk) return fail(buffer ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Vulkan buffer");
+        if (vk->owner != owner) return fail(ErrorCode::WrongDevice, "Buffer belongs to a different device");
+        if (!vk->allocation->desc.shared) return fail(ErrorCode::InvalidState, "Buffer was not created with shared=true");
+#ifdef _WIN32
+        if (!owner->native->externalMemoryWin32 || !owner->native->GetMemoryWin32HandleKHR) {
+            return fail(ErrorCode::Unsupported, "VK_KHR_external_memory_win32 is unavailable");
+        }
+        VkMemoryGetWin32HandleInfoKHR info{VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR};
+        info.memory = vk->allocation->memory;
+        info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+        HANDLE ntHandle{};
+        if (auto ok = owner->accept(owner->native->GetMemoryWin32HandleKHR(owner->native->handle, &info, &ntHandle), "vkGetMemoryWin32HandleKHR(buffer)"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        return ExternalHandle{ExternalHandleType::OpaqueWin32Nt, reinterpret_cast<std::uintptr_t>(ntHandle)};
+#else
+        return fail(ErrorCode::Unsupported, "External memory export is currently implemented for Win32 NT handles");
+#endif
+    }
+    Result<BufferPtr> importBufferHandle(BufferDesc desc, const ExternalHandle& handle) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!handle) return fail(ErrorCode::InvalidArgument, "ExternalHandle is empty");
+        if (!desc.size || desc.size > (1ull << 40) || desc.memory != Memory::Device) {
+            return fail(ErrorCode::InvalidArgument, "Imported Vulkan buffer requires non-zero size and Device memory");
+        }
+#ifdef _WIN32
+        if (handle.type() != ExternalHandleType::D3D12Resource && handle.type() != ExternalHandleType::OpaqueWin32Nt) {
+            return fail(ErrorCode::Unsupported, "Windows Vulkan import requires D3D12Resource or OpaqueWin32Nt handle");
+        }
+        if (!owner->native->externalMemoryWin32 || !owner->native->GetMemoryWin32HandlePropertiesKHR) {
+            return fail(ErrorCode::Unsupported, "VK_KHR_external_memory_win32 is unavailable");
+        }
+        HANDLE raw = reinterpret_cast<HANDLE>(handle.raw());
+        const VkExternalMemoryHandleTypeFlagBits matchedType = (handle.type() == ExternalHandleType::D3D12Resource)
+            ? VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT
+            : VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+        std::uint32_t handleMemoryTypeBits = UINT32_MAX;
+        if (matchedType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT) {
+            VkMemoryWin32HandlePropertiesKHR handleProps{VK_STRUCTURE_TYPE_MEMORY_WIN32_HANDLE_PROPERTIES_KHR};
+            const VkResult pr = owner->native->GetMemoryWin32HandlePropertiesKHR(owner->native->handle, matchedType, raw, &handleProps);
+            if (pr != VK_SUCCESS) {
+                return fail(ErrorCode::InvalidArgument, "External D3D12 handle is not importable as Vulkan buffer memory", pr);
+            }
+            handleMemoryTypeBits = handleProps.memoryTypeBits;
+        }
+        desc.shared = true;
+        auto a = std::make_shared<Allocation>(); a->native = owner->native; a->desc = desc; a->state = ResourceState::Common;
+        VkExternalMemoryBufferCreateInfo extBuf{VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO};
+        extBuf.handleTypes = matchedType;
+        VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+        info.pNext = &extBuf;
+        info.size = desc.size;
+        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT |
+            (desc.storage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0u);
+        if (owner->uniqueFamilies.size() > 1) {
+            info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
+            info.pQueueFamilyIndices = owner->uniqueFamilies.data();
+        } else {
+            info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+        if (auto ok = owner->accept(vulkan::acquireOutput(a->buffer, owner->native->CreateBuffer, owner->native->handle, &info, nullptr), "vkCreateBuffer(import)"); !ok) return std::unexpected(ok.error());
+        VkMemoryRequirements req{}; owner->native->GetBufferMemoryRequirements(owner->native->handle, a->buffer, &req);
+        const std::uint32_t mask = req.memoryTypeBits & handleMemoryTypeBits;
+        std::optional<std::uint32_t> type;
+        for (std::uint32_t i = 0; i < owner->memory.memoryTypeCount; ++i) {
+            if ((mask & (1u << i)) && (owner->memory.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) { type = i; break; }
+        }
+        if (!type) {
+            for (std::uint32_t i = 0; i < owner->memory.memoryTypeCount; ++i) {
+                if (mask & (1u << i)) { type = i; break; }
+            }
+        }
+        if (!type) return fail(ErrorCode::Unsupported, "No compatible Vulkan memory type for imported buffer handle");
+        a->bytes = req.size;
+        VkImportMemoryWin32HandleInfoKHR importInfo{VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR};
+        importInfo.handleType = matchedType;
+        importInfo.handle = raw;
+        VkMemoryDedicatedAllocateInfo dedicated{VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO};
+        dedicated.buffer = a->buffer;
+        dedicated.pNext = &importInfo;
+        VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+        allocate.pNext = &dedicated;
+        allocate.allocationSize = req.size;
+        allocate.memoryTypeIndex = *type;
+        if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory(import buffer)"); !ok) return std::unexpected(ok.error());
+        if (auto ok = owner->accept(owner->native->BindBufferMemory(owner->native->handle, a->buffer, a->memory, 0), "vkBindBufferMemory(import)"); !ok) return std::unexpected(ok.error());
+        auto value = std::make_shared<VulkanBuffer>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
+        std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->allocations.push_back(a); owner->objects.push_back(value->token);
+        return BufferPtr(std::move(value));
+#else
+        (void)desc; (void)handle;
+        return fail(ErrorCode::Unsupported, "External memory import is currently implemented for Win32 NT handles");
+#endif
+    }
+    Result<ExternalHandle> exportTextureHandle(const TexturePtr& texture) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* vk = dynamic_cast<VulkanTexture*>(texture.get());
+        if (!vk) return fail(texture ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Vulkan texture");
+        if (vk->owner != owner) return fail(ErrorCode::WrongDevice, "Texture belongs to a different device");
+        if (!vk->allocation->textureDesc.shared) return fail(ErrorCode::InvalidState, "Texture was not created with shared=true");
+#ifdef _WIN32
+        if (!owner->native->externalMemoryWin32 || !owner->native->GetMemoryWin32HandleKHR) {
+            return fail(ErrorCode::Unsupported, "VK_KHR_external_memory_win32 is unavailable");
+        }
+        VkMemoryGetWin32HandleInfoKHR info{VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR};
+        info.memory = vk->allocation->memory;
+        info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+        HANDLE ntHandle{};
+        if (auto ok = owner->accept(owner->native->GetMemoryWin32HandleKHR(owner->native->handle, &info, &ntHandle), "vkGetMemoryWin32HandleKHR(texture)"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        return ExternalHandle{ExternalHandleType::OpaqueWin32Nt, reinterpret_cast<std::uintptr_t>(ntHandle)};
+#else
+        return fail(ErrorCode::Unsupported, "External texture export is currently implemented for Win32 NT handles");
+#endif
+    }
+    Result<TexturePtr> importTextureHandle(TextureDesc desc, const ExternalHandle& handle) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!handle) return fail(ErrorCode::InvalidArgument, "ExternalHandle is empty");
+        if (auto ok = validateTextureDescription(desc); !ok) return std::unexpected(ok.error());
+#ifdef _WIN32
+        if (handle.type() != ExternalHandleType::D3D12Resource && handle.type() != ExternalHandleType::OpaqueWin32Nt) {
+            return fail(ErrorCode::Unsupported, "Windows Vulkan texture import requires D3D12Resource or OpaqueWin32Nt handle");
+        }
+        if (!owner->native->externalMemoryWin32 || !owner->native->GetMemoryWin32HandlePropertiesKHR) {
+            return fail(ErrorCode::Unsupported, "VK_KHR_external_memory_win32 is unavailable");
+        }
+        HANDLE raw = reinterpret_cast<HANDLE>(handle.raw());
+        const VkExternalMemoryHandleTypeFlagBits matchedType = (handle.type() == ExternalHandleType::D3D12Resource)
+            ? VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT
+            : VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+        std::uint32_t handleMemoryTypeBits = UINT32_MAX;
+        if (matchedType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT) {
+            VkMemoryWin32HandlePropertiesKHR handleProps{VK_STRUCTURE_TYPE_MEMORY_WIN32_HANDLE_PROPERTIES_KHR};
+            const VkResult pr = owner->native->GetMemoryWin32HandlePropertiesKHR(owner->native->handle, matchedType, raw, &handleProps);
+            if (pr != VK_SUCCESS) {
+                return fail(ErrorCode::InvalidArgument, "External D3D12 handle is not importable as Vulkan image memory", pr);
+            }
+            handleMemoryTypeBits = handleProps.memoryTypeBits;
+        }
+        desc.shared = true;
+        const auto format = textureFormat(desc.format);
+        const VkImageType imageType = vulkanImageType(desc.dimension);
+        const std::uint32_t sliceHeight = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
+        const std::uint32_t imageDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
+        const VkSampleCountFlagBits sampleBit = vulkanSampleCount(desc.sampleCount);
+        const VkImageUsageFlags usage = desc.sampleCount > 1u
+            ? (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
+            : (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+               (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0u) | (desc.storage ? VK_IMAGE_USAGE_STORAGE_BIT : 0u)));
+        auto a = std::make_shared<Allocation>(); a->native = owner->native; a->textureDesc = desc;
+        if (desc.sampleCount == 1u) {
+            const auto fp = computeTextureRegionFootprint(desc.format, desc.width, sliceHeight);
+            if (!fp) return std::unexpected(fp.error());
+            a->footprint = {fp->size * imageDepth, fp->rowPitch, fp->rowBytes, fp->height};
+        }
+        VkExternalMemoryImageCreateInfo extImg{VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO};
+        extImg.handleTypes = matchedType;
+        VkImageCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+        info.pNext = &extImg;
+        info.flags = desc.dimension == TextureDimension::TextureCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u;
+        info.imageType = imageType; info.format = format; info.extent = {desc.width, sliceHeight, imageDepth};
+        info.mipLevels = desc.mipLevels; info.arrayLayers = desc.arrayLayers; info.samples = sampleBit; info.tiling = VK_IMAGE_TILING_OPTIMAL;
+        info.usage = usage; info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        if (owner->uniqueFamilies.size() > 1) {
+            info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.queueFamilyIndexCount = static_cast<std::uint32_t>(owner->uniqueFamilies.size());
+            info.pQueueFamilyIndices = owner->uniqueFamilies.data();
+        } else {
+            info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+        if (auto ok = owner->accept(vulkan::acquireOutput(a->image, owner->native->CreateImage, owner->native->handle, &info, nullptr), "vkCreateImage(import)"); !ok) return std::unexpected(ok.error());
+        VkMemoryRequirements req{}; owner->native->GetImageMemoryRequirements(owner->native->handle, a->image, &req);
+        const std::uint32_t mask = req.memoryTypeBits & handleMemoryTypeBits;
+        std::optional<std::uint32_t> type;
+        for (std::uint32_t i = 0; i < owner->memory.memoryTypeCount; ++i) {
+            if ((mask & (1u << i)) && (owner->memory.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) { type = i; break; }
+        }
+        if (!type) {
+            for (std::uint32_t i = 0; i < owner->memory.memoryTypeCount; ++i) {
+                if (mask & (1u << i)) { type = i; break; }
+            }
+        }
+        if (!type) return fail(ErrorCode::Unsupported, "No compatible Vulkan memory type for imported texture handle");
+        a->bytes = req.size;
+        VkImportMemoryWin32HandleInfoKHR importInfo{VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR};
+        importInfo.handleType = matchedType;
+        importInfo.handle = raw;
+        VkMemoryDedicatedAllocateInfo dedicated{VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO};
+        dedicated.image = a->image;
+        dedicated.pNext = &importInfo;
+        VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+        allocate.pNext = &dedicated;
+        allocate.allocationSize = req.size;
+        allocate.memoryTypeIndex = *type;
+        if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory(import image)"); !ok) return std::unexpected(ok.error());
+        if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, a->memory, 0), "vkBindImageMemory(import)"); !ok) return std::unexpected(ok.error());
+        VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+        view.image = a->image; view.viewType = vulkanImageViewType(desc.dimension); view.format = format;
+        view.subresourceRange = {imageAspect(*a), 0, desc.mipLevels, 0, desc.arrayLayers};
+        if (auto ok = owner->accept(vulkan::acquireOutput(a->view, owner->native->CreateImageView, owner->native->handle, &view, nullptr), "vkCreateImageView(import)"); !ok) return std::unexpected(ok.error());
+        auto value = std::make_shared<VulkanTexture>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
+        std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->allocations.push_back(a); owner->objects.push_back(value->token);
+        return TexturePtr(std::move(value));
+#else
+        (void)desc; (void)handle;
+        return fail(ErrorCode::Unsupported, "External texture import is currently implemented for Win32 NT handles");
+#endif
+    }
+    Result<TimelineFencePtr> createSharedTimelineFence(std::uint64_t initialValue) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!owner->native->timelineSemaphores || !owner->native->externalSemaphoreWin32) {
+            return fail(ErrorCode::Unsupported, "Adapter does not support external timeline semaphore interop");
+        }
+        if (initialValue >= UINT64_MAX - 1) return fail(ErrorCode::InvalidArgument, "Invalid initial timeline fence value");
+#ifdef _WIN32
+        auto sem = std::make_shared<NativeTimelineSemaphore>();
+        sem->native = owner->native;
+        sem->lastSignaled = initialValue;
+        sem->shared = true;
+        VkExportSemaphoreCreateInfo exportInfo{VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO};
+        exportInfo.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+        VkSemaphoreTypeCreateInfoKHR typeInfo{VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR};
+        typeInfo.pNext = &exportInfo;
+        typeInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
+        typeInfo.initialValue = initialValue;
+        VkSemaphoreCreateInfo info{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+        info.pNext = &typeInfo;
+        if (auto ok = owner->accept(vulkan::acquireOutput(sem->handle, owner->native->CreateSemaphore, owner->native->handle, &info, nullptr), "vkCreateSemaphore(shared timeline)"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        auto value = std::make_shared<VulkanTimelineFence>();
+        value->owner = owner; value->sem = sem; value->token = std::make_shared<int>();
+        std::erase_if(owner->timelineSemaphores, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->timelineSemaphores.push_back(sem); owner->objects.push_back(value->token);
+        return TimelineFencePtr(std::move(value));
+#else
+        return fail(ErrorCode::Unsupported, "Shared timeline fence interop is currently implemented for Win32 NT handles");
+#endif
+    }
+    Result<ExternalHandle> exportTimelineFenceHandle(const TimelineFencePtr& fence) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* vk = dynamic_cast<VulkanTimelineFence*>(fence.get());
+        if (!vk) return fail(fence ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Vulkan timeline fence");
+        if (vk->owner != owner) return fail(ErrorCode::WrongDevice, "TimelineFence belongs to a different device");
+        if (!vk->sem->shared) return fail(ErrorCode::InvalidState, "TimelineFence was not created via createSharedTimelineFence");
+#ifdef _WIN32
+        if (!owner->native->externalSemaphoreWin32 || !owner->native->GetSemaphoreWin32HandleKHR) {
+            return fail(ErrorCode::Unsupported, "VK_KHR_external_semaphore_win32 is unavailable");
+        }
+        VkSemaphoreGetWin32HandleInfoKHR info{VK_STRUCTURE_TYPE_SEMAPHORE_GET_WIN32_HANDLE_INFO_KHR};
+        info.semaphore = vk->sem->handle;
+        info.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+        HANDLE ntHandle{};
+        if (auto ok = owner->accept(owner->native->GetSemaphoreWin32HandleKHR(owner->native->handle, &info, &ntHandle), "vkGetSemaphoreWin32HandleKHR"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        return ExternalHandle{ExternalHandleType::OpaqueWin32Nt, reinterpret_cast<std::uintptr_t>(ntHandle)};
+#else
+        return fail(ErrorCode::Unsupported, "Timeline fence export is currently implemented for Win32 NT handles");
+#endif
+    }
+    Result<TimelineFencePtr> importTimelineFenceHandle(const ExternalHandle& handle, std::uint64_t initialValue) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!handle) return fail(ErrorCode::InvalidArgument, "ExternalHandle is empty");
+        if (initialValue >= UINT64_MAX - 1) return fail(ErrorCode::InvalidArgument, "Invalid initial timeline fence value");
+        if (!owner->native->timelineSemaphores || !owner->native->externalSemaphoreWin32) {
+            return fail(ErrorCode::Unsupported, "Adapter does not support external timeline semaphore interop");
+        }
+#ifdef _WIN32
+        if (handle.type() != ExternalHandleType::D3D12Fence && handle.type() != ExternalHandleType::OpaqueWin32Nt) {
+            return fail(ErrorCode::Unsupported, "Windows Vulkan fence import requires D3D12Fence or OpaqueWin32Nt handle");
+        }
+        auto sem = std::make_shared<NativeTimelineSemaphore>();
+        sem->native = owner->native;
+        sem->lastSignaled = initialValue;
+        sem->shared = true;
+        VkSemaphoreTypeCreateInfoKHR typeInfo{VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR};
+        typeInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
+        typeInfo.initialValue = initialValue;
+        VkSemaphoreCreateInfo info{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+        info.pNext = &typeInfo;
+        if (auto ok = owner->accept(vulkan::acquireOutput(sem->handle, owner->native->CreateSemaphore, owner->native->handle, &info, nullptr), "vkCreateSemaphore(import timeline)"); !ok) {
+            return std::unexpected(ok.error());
+        }
+        VkImportSemaphoreWin32HandleInfoKHR imp{VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR};
+        imp.semaphore = sem->handle;
+        imp.handle = reinterpret_cast<HANDLE>(handle.raw());
+        imp.handleType = (handle.type() == ExternalHandleType::D3D12Fence)
+            ? VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT
+            : VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+        const VkResult r = owner->native->ImportSemaphoreWin32HandleKHR(owner->native->handle, &imp);
+        if (r != VK_SUCCESS) {
+            return fail(ErrorCode::InvalidArgument, "vkImportSemaphoreWin32HandleKHR failed", r);
+        }
+        auto value = std::make_shared<VulkanTimelineFence>();
+        value->owner = owner; value->sem = sem; value->token = std::make_shared<int>();
+        std::erase_if(owner->timelineSemaphores, [](auto& w) { return w.expired(); });
+        std::erase_if(owner->objects, [](auto& w) { return w.expired(); });
+        owner->timelineSemaphores.push_back(sem); owner->objects.push_back(value->token);
+        return TimelineFencePtr(std::move(value));
+#else
+        (void)handle; (void)initialValue;
+        return fail(ErrorCode::Unsupported, "Timeline fence import is currently implemented for Win32 NT handles");
+#endif
+    }
     Result<void> checkSurfaceSupport(Surface surface) override {
         if (auto ok = owner->check(); !ok) return ok;
         auto checked = makeSurface(owner, surface);
@@ -3730,6 +4130,16 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
         }
     }
     const bool meshShaderSupported = hasExtension("VK_EXT_mesh_shader");
+#ifdef _WIN32
+    if (hasExtension(VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME)) {
+        native->externalMemoryWin32 = true;
+        enabledDeviceExtensions.push_back(VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME);
+    }
+    if (hasExtension(VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME)) {
+        native->externalSemaphoreWin32 = true;
+        enabledDeviceExtensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME);
+    }
+#endif
     info.enabledExtensionCount = static_cast<std::uint32_t>(enabledDeviceExtensions.size());
     info.ppEnabledExtensionNames = enabledDeviceExtensions.empty() ? nullptr : enabledDeviceExtensions.data();
     info.pNext = featureChain;
@@ -3766,6 +4176,22 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
             native->timelineSemaphores = false;
         }
     }
+#ifdef _WIN32
+    if (native->externalMemoryWin32) {
+        native->GetMemoryWin32HandleKHR = reinterpret_cast<PFN_vkGetMemoryWin32HandleKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkGetMemoryWin32HandleKHR"));
+        native->GetMemoryWin32HandlePropertiesKHR = reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkGetMemoryWin32HandlePropertiesKHR"));
+        if (!native->GetMemoryWin32HandleKHR || !native->GetMemoryWin32HandlePropertiesKHR) {
+            native->externalMemoryWin32 = false;
+        }
+    }
+    if (native->externalSemaphoreWin32) {
+        native->GetSemaphoreWin32HandleKHR = reinterpret_cast<PFN_vkGetSemaphoreWin32HandleKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkGetSemaphoreWin32HandleKHR"));
+        native->ImportSemaphoreWin32HandleKHR = reinterpret_cast<PFN_vkImportSemaphoreWin32HandleKHR>((*instance)->GetDeviceProcAddr(native->handle, "vkImportSemaphoreWin32HandleKHR"));
+        if (!native->GetSemaphoreWin32HandleKHR || !native->ImportSemaphoreWin32HandleKHR) {
+            native->externalSemaphoreWin32 = false;
+        }
+    }
+#endif
     for (std::size_t i = 0; i < 3; ++i) {
         native->GetDeviceQueue(native->handle, selected->families[i], 0, &native->queues[i]);
     }
@@ -3817,6 +4243,8 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.timelineFences = native->timelineSemaphores;
     device->capabilities.resourceAliasing = true;
     device->capabilities.residencyControl = false;
+    device->capabilities.externalMemoryInterop = native->externalMemoryWin32;
+    device->capabilities.externalFenceInterop = native->timelineSemaphores && native->externalSemaphoreWin32;
     device->capabilities.sparseBinding = enabled.sparseBinding != 0;
     device->capabilities.sparseResidencyTexture2D = enabled.sparseResidencyImage2D != 0;
     device->capabilities.indirectDraw = true;

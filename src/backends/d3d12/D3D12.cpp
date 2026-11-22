@@ -535,14 +535,15 @@ struct DXMemoryHeap final : MemoryHeap, Retirable {
         return residentFlag->load(std::memory_order_acquire);
     }
 };
-Result<ComPtr<ID3D12Resource>> makeBuffer(State& state, std::uint64_t size, Memory memory, bool storage = false) {
+Result<ComPtr<ID3D12Resource>> makeBuffer(State& state, std::uint64_t size, Memory memory, bool storage = false, bool shared = false) {
     auto desc = bufferDescription(size);
     if (storage) desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     D3D12_HEAP_PROPERTIES heap{};
     heap.Type = memory == Memory::Upload ? D3D12_HEAP_TYPE_UPLOAD : memory == Memory::Readback ? D3D12_HEAP_TYPE_READBACK : D3D12_HEAP_TYPE_DEFAULT;
     auto initial = memory == Memory::Upload ? D3D12_RESOURCE_STATE_GENERIC_READ : memory == Memory::Readback ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_COMMON;
     ComPtr<ID3D12Resource> resource;
-    HRESULT result = state.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, initial, nullptr, IID_PPV_ARGS(&resource));
+    const D3D12_HEAP_FLAGS heapFlags = shared ? D3D12_HEAP_FLAG_SHARED : D3D12_HEAP_FLAG_NONE;
+    HRESULT result = state.device->CreateCommittedResource(&heap, heapFlags, &desc, initial, nullptr, IID_PPV_ARGS(&resource));
     if (FAILED(result)) return state.failure(result, "CreateCommittedResource(buffer) failed");
     return resource;
 }
@@ -695,6 +696,7 @@ struct DXTimelineFence final : TimelineFence, Retirable {
     ComPtr<ID3D12Fence> fence;
     detail::FenceWaiter waiter;
     std::uint64_t lastSignaled{};
+    bool shared{};
     void releaseNative() override { fence.Reset(); waiter.reset(); }
     Result<std::uint64_t> completedValue() override {
         auto status = owner->check(); if (!status) return std::unexpected(status.error());
@@ -2533,7 +2535,8 @@ public:
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (!desc.size || desc.size > SIZE_MAX || desc.size > (1ull << 40) || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
             (desc.storage && desc.memory != Memory::Device)) return invalid("Invalid buffer description", ErrorCode::InvalidArgument);
-        auto resource = makeBuffer(*state, desc.size, desc.memory, desc.storage); if (!resource) return std::unexpected(resource.error());
+        if (desc.shared && desc.memory != Memory::Device) return invalid("Shared interop buffers require Device memory", ErrorCode::Unsupported);
+        auto resource = makeBuffer(*state, desc.size, desc.memory, desc.storage, desc.shared); if (!resource) return std::unexpected(resource.error());
         auto buffer = std::make_shared<DXBuffer>(); buffer->owner = state; buffer->resource = std::move(*resource); buffer->desc = desc;
         if (desc.memory == Memory::Upload) buffer->tracker->state = ResourceState::CopySource;
         if (desc.memory == Memory::Readback) buffer->tracker->state = ResourceState::CopyDestination;
@@ -2577,9 +2580,13 @@ public:
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         status = validateTextureForDevice(desc); if (!status) return std::unexpected(status.error());
         auto texture = std::make_shared<DXTexture>(); texture->owner = state; texture->desc = desc;
-        const auto nativeDesc = textureNativeDesc(desc);
+        auto nativeDesc = textureNativeDesc(desc);
+        if (desc.shared && !desc.depthStencil && desc.sampleCount == 1u) {
+            nativeDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+        }
         D3D12_HEAP_PROPERTIES heap{}; heap.Type = D3D12_HEAP_TYPE_DEFAULT;
-        HRESULT result = state->device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&texture->resource));
+        const D3D12_HEAP_FLAGS heapFlags = desc.shared ? D3D12_HEAP_FLAG_SHARED : D3D12_HEAP_FLAG_NONE;
+        HRESULT result = state->device->CreateCommittedResource(&heap, heapFlags, &nativeDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&texture->resource));
         if (FAILED(result)) return state->failure(result, "Create texture failed");
         status = texture->initViews(); if (!status) return std::unexpected(status.error());
         state->track(texture);
@@ -3141,6 +3148,142 @@ public:
         state->track(timeline);
         return TimelineFencePtr(std::move(timeline));
     }
+    Result<NativeHandle> nativeDeviceHandle() override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        return NativeHandle{Backend::D3D12, NativeObjectType::D3D12Device,
+                            reinterpret_cast<std::uintptr_t>(state->device.Get())};
+    }
+    Result<NativeHandle> nativeBufferHandle(const BufferPtr& buffer) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        auto* dx = dynamic_cast<DXBuffer*>(buffer.get());
+        if (!dx) return invalid("Invalid D3D12 buffer", buffer ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument);
+        if (dx->owner != state) return invalid("Buffer belongs to a different device", ErrorCode::WrongDevice);
+        return NativeHandle{Backend::D3D12, NativeObjectType::D3D12Resource,
+                            reinterpret_cast<std::uintptr_t>(dx->resource.Get())};
+    }
+    Result<NativeHandle> nativeTextureHandle(const TexturePtr& texture) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        auto* dx = dynamic_cast<DXTexture*>(texture.get());
+        if (!dx) return invalid("Invalid D3D12 texture", texture ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument);
+        if (dx->owner != state) return invalid("Texture belongs to a different device", ErrorCode::WrongDevice);
+        return NativeHandle{Backend::D3D12, NativeObjectType::D3D12Resource,
+                            reinterpret_cast<std::uintptr_t>(dx->resource.Get())};
+    }
+    Result<NativeHandle> nativeTimelineFenceHandle(const TimelineFencePtr& fence) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        auto* dx = dynamic_cast<DXTimelineFence*>(fence.get());
+        if (!dx) return invalid("Invalid D3D12 timeline fence", fence ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument);
+        if (dx->owner != state) return invalid("TimelineFence belongs to a different device", ErrorCode::WrongDevice);
+        return NativeHandle{Backend::D3D12, NativeObjectType::D3D12Fence,
+                            reinterpret_cast<std::uintptr_t>(dx->fence.Get())};
+    }
+    Result<ExternalHandle> exportBufferHandle(const BufferPtr& buffer) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        auto* dx = dynamic_cast<DXBuffer*>(buffer.get());
+        if (!dx) return invalid("Invalid D3D12 buffer", buffer ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument);
+        if (dx->owner != state) return invalid("Buffer belongs to a different device", ErrorCode::WrongDevice);
+        if (!dx->desc.shared) return invalid("Buffer was not created with shared=true", ErrorCode::InvalidState);
+        HANDLE ntHandle{};
+        const HRESULT hr = state->device->CreateSharedHandle(dx->resource.Get(), nullptr, GENERIC_ALL, nullptr, &ntHandle);
+        if (FAILED(hr) || !ntHandle) return state->failure(hr, "CreateSharedHandle(buffer) failed");
+        return ExternalHandle{ExternalHandleType::D3D12Resource, reinterpret_cast<std::uintptr_t>(ntHandle)};
+    }
+    Result<BufferPtr> importBufferHandle(BufferDesc desc, const ExternalHandle& handle) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (handle.type() != ExternalHandleType::D3D12Resource && handle.type() != ExternalHandleType::OpaqueWin32Nt)
+            return invalid("D3D12 interop requires D3D12Resource or OpaqueWin32Nt handle", ErrorCode::Unsupported);
+        if (!handle) return invalid("ExternalHandle is empty", ErrorCode::InvalidArgument);
+        if (!desc.size || desc.size > (1ull << 40) || desc.memory != Memory::Device) {
+            return invalid("Imported D3D12 buffer requires non-zero size and Device memory", ErrorCode::InvalidArgument);
+        }
+        ComPtr<ID3D12Resource> resource;
+        const HRESULT hr = state->device->OpenSharedHandle(reinterpret_cast<HANDLE>(handle.raw()), IID_PPV_ARGS(&resource));
+        if (FAILED(hr)) return state->failure(hr, "OpenSharedHandle(buffer) failed");
+        const auto nativeDesc = resource->GetDesc();
+        if (nativeDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER || nativeDesc.Width < desc.size) {
+            return invalid("Imported D3D12 shared handle does not match requested buffer description", ErrorCode::InvalidArgument);
+        }
+        desc.shared = true;
+        auto buffer = std::make_shared<DXBuffer>();
+        buffer->owner = state;
+        buffer->resource = std::move(resource);
+        buffer->desc = desc;
+        state->track(buffer);
+        return BufferPtr(std::move(buffer));
+    }
+    Result<ExternalHandle> exportTextureHandle(const TexturePtr& texture) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        auto* dx = dynamic_cast<DXTexture*>(texture.get());
+        if (!dx) return invalid("Invalid D3D12 texture", texture ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument);
+        if (dx->owner != state) return invalid("Texture belongs to a different device", ErrorCode::WrongDevice);
+        if (!dx->desc.shared) return invalid("Texture was not created with shared=true", ErrorCode::InvalidState);
+        HANDLE ntHandle{};
+        const HRESULT hr = state->device->CreateSharedHandle(dx->resource.Get(), nullptr, GENERIC_ALL, nullptr, &ntHandle);
+        if (FAILED(hr) || !ntHandle) return state->failure(hr, "CreateSharedHandle(texture) failed");
+        return ExternalHandle{ExternalHandleType::D3D12Resource, reinterpret_cast<std::uintptr_t>(ntHandle)};
+    }
+    Result<TexturePtr> importTextureHandle(TextureDesc desc, const ExternalHandle& handle) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (handle.type() != ExternalHandleType::D3D12Resource && handle.type() != ExternalHandleType::OpaqueWin32Nt)
+            return invalid("D3D12 interop requires D3D12Resource or OpaqueWin32Nt handle", ErrorCode::Unsupported);
+        if (!handle) return invalid("ExternalHandle is empty", ErrorCode::InvalidArgument);
+        status = validateTextureForDevice(desc); if (!status) return std::unexpected(status.error());
+        ComPtr<ID3D12Resource> resource;
+        const HRESULT hr = state->device->OpenSharedHandle(reinterpret_cast<HANDLE>(handle.raw()), IID_PPV_ARGS(&resource));
+        if (FAILED(hr)) return state->failure(hr, "OpenSharedHandle(texture) failed");
+        const auto nativeDesc = resource->GetDesc();
+        if (nativeDesc.Width != desc.width || nativeDesc.Height != desc.height || nativeDesc.Format != native(desc.format)) {
+            return invalid("Imported D3D12 shared handle does not match requested texture extent or format", ErrorCode::InvalidArgument);
+        }
+        desc.shared = true;
+        auto texture = std::make_shared<DXTexture>();
+        texture->owner = state;
+        texture->resource = std::move(resource);
+        texture->desc = desc;
+        status = texture->initViews(); if (!status) return std::unexpected(status.error());
+        state->track(texture);
+        return TexturePtr(std::move(texture));
+    }
+    Result<TimelineFencePtr> createSharedTimelineFence(std::uint64_t initialValue) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (initialValue >= UINT64_MAX - 1) return invalid("Invalid initial timeline fence value", ErrorCode::InvalidArgument);
+        auto timeline = std::make_shared<DXTimelineFence>();
+        timeline->owner = state;
+        timeline->lastSignaled = initialValue;
+        timeline->shared = true;
+        HRESULT result = state->device->CreateFence(initialValue, D3D12_FENCE_FLAG_SHARED, IID_PPV_ARGS(&timeline->fence));
+        if (FAILED(result)) return state->failure(result, "Create shared timeline fence failed");
+        state->track(timeline);
+        return TimelineFencePtr(std::move(timeline));
+    }
+    Result<ExternalHandle> exportTimelineFenceHandle(const TimelineFencePtr& fence) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        auto* dx = dynamic_cast<DXTimelineFence*>(fence.get());
+        if (!dx) return invalid("Invalid D3D12 timeline fence", fence ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument);
+        if (dx->owner != state) return invalid("TimelineFence belongs to a different device", ErrorCode::WrongDevice);
+        if (!dx->shared) return invalid("TimelineFence was not created via createSharedTimelineFence", ErrorCode::InvalidState);
+        HANDLE ntHandle{};
+        const HRESULT hr = state->device->CreateSharedHandle(dx->fence.Get(), nullptr, GENERIC_ALL, nullptr, &ntHandle);
+        if (FAILED(hr) || !ntHandle) return state->failure(hr, "CreateSharedHandle(fence) failed");
+        return ExternalHandle{ExternalHandleType::D3D12Fence, reinterpret_cast<std::uintptr_t>(ntHandle)};
+    }
+    Result<TimelineFencePtr> importTimelineFenceHandle(const ExternalHandle& handle, std::uint64_t initialValue) override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        if (handle.type() != ExternalHandleType::D3D12Fence && handle.type() != ExternalHandleType::OpaqueWin32Nt)
+            return invalid("D3D12 fence interop requires D3D12Fence or OpaqueWin32Nt handle", ErrorCode::Unsupported);
+        if (!handle) return invalid("ExternalHandle is empty", ErrorCode::InvalidArgument);
+        if (initialValue >= UINT64_MAX - 1) return invalid("Invalid initial timeline fence value", ErrorCode::InvalidArgument);
+        ComPtr<ID3D12Fence> fence;
+        const HRESULT hr = state->device->OpenSharedHandle(reinterpret_cast<HANDLE>(handle.raw()), IID_PPV_ARGS(&fence));
+        if (FAILED(hr)) return state->failure(hr, "OpenSharedHandle(fence) failed");
+        auto timeline = std::make_shared<DXTimelineFence>();
+        timeline->owner = state;
+        timeline->fence = std::move(fence);
+        timeline->lastSignaled = initialValue;
+        timeline->shared = true;
+        state->track(timeline);
+        return TimelineFencePtr(std::move(timeline));
+    }
     Result<std::uint64_t> validationErrorCount() override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
         if (!state->info) return invalid("Validation was not requested", ErrorCode::Unsupported);
@@ -3431,6 +3574,8 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     if (SUCCEEDED(state->device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &d3d12Options7, sizeof(d3d12Options7)))) {
         state->caps.meshShaders = d3d12Options7.MeshShaderTier >= D3D12_MESH_SHADER_TIER_1;
     }
+    state->caps.externalMemoryInterop = true;
+    state->caps.externalFenceInterop = true;
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
     if (desc.validation) {
         result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable");

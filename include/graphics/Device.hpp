@@ -168,6 +168,19 @@ public:
     // Safe to call even after DeviceLost to inspect the last uncompleted breadcrumbs.
     [[nodiscard]] DiagnosticReport diagnosticReport();
     void clearBreadcrumbs() noexcept;
+    // Non-owning opaque native handle queries (valid while the corresponding SDK object is alive).
+    [[nodiscard]] virtual Result<NativeHandle> nativeDeviceHandle() = 0;
+    [[nodiscard]] virtual Result<NativeHandle> nativeBufferHandle(const BufferPtr& buffer) = 0;
+    [[nodiscard]] virtual Result<NativeHandle> nativeTextureHandle(const TexturePtr& texture) = 0;
+    [[nodiscard]] virtual Result<NativeHandle> nativeTimelineFenceHandle(const TimelineFencePtr& fence) = 0;
+    // External memory and timeline fence export/import for cross-API interoperability.
+    [[nodiscard]] virtual Result<ExternalHandle> exportBufferHandle(const BufferPtr& buffer) = 0;
+    [[nodiscard]] virtual Result<BufferPtr> importBufferHandle(BufferDesc desc, const ExternalHandle& handle) = 0;
+    [[nodiscard]] virtual Result<ExternalHandle> exportTextureHandle(const TexturePtr& texture) = 0;
+    [[nodiscard]] virtual Result<TexturePtr> importTextureHandle(TextureDesc desc, const ExternalHandle& handle) = 0;
+    [[nodiscard]] virtual Result<TimelineFencePtr> createSharedTimelineFence(std::uint64_t initialValue = 0) = 0;
+    [[nodiscard]] virtual Result<ExternalHandle> exportTimelineFenceHandle(const TimelineFencePtr& fence) = 0;
+    [[nodiscard]] virtual Result<TimelineFencePtr> importTimelineFenceHandle(const ExternalHandle& handle, std::uint64_t initialValue = 0) = 0;
 protected:
     [[nodiscard]] const std::shared_ptr<detail::ProfilingTracker>& profilingTracker() const noexcept { return profiling; }
 private:

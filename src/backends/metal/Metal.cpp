@@ -2381,6 +2381,42 @@ struct MetalDevice final : Device {
         return &queues[queueIndex(type)];
     }
     Result<std::uint64_t> validationErrorCount() override { return owner->unsupported(); }
+    Result<NativeHandle> nativeDeviceHandle() override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        return NativeHandle{Backend::Metal, NativeObjectType::MetalDevice,
+                            reinterpret_cast<std::uintptr_t>((__bridge void*)owner->device)};
+    }
+    Result<NativeHandle> nativeBufferHandle(const BufferPtr& buffer) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* mtl = dynamic_cast<MetalBuffer*>(buffer.get());
+        if (!mtl) return fail(buffer ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Metal buffer");
+        if (mtl->owner != owner) return fail(ErrorCode::WrongDevice, "Buffer belongs to a different device");
+        return NativeHandle{Backend::Metal, NativeObjectType::MetalBuffer,
+                            reinterpret_cast<std::uintptr_t>((__bridge void*)mtl->allocation->buffer)};
+    }
+    Result<NativeHandle> nativeTextureHandle(const TexturePtr& texture) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* mtl = dynamic_cast<MetalTexture*>(texture.get());
+        if (!mtl) return fail(texture ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Metal texture");
+        if (mtl->owner != owner) return fail(ErrorCode::WrongDevice, "Texture belongs to a different device");
+        return NativeHandle{Backend::Metal, NativeObjectType::MetalTexture,
+                            reinterpret_cast<std::uintptr_t>((__bridge void*)mtl->allocation->texture)};
+    }
+    Result<NativeHandle> nativeTimelineFenceHandle(const TimelineFencePtr& fence) override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        auto* mtl = dynamic_cast<MetalTimelineFence*>(fence.get());
+        if (!mtl) return fail(fence ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Metal timeline fence");
+        if (mtl->owner != owner) return fail(ErrorCode::WrongDevice, "TimelineFence belongs to a different device");
+        return NativeHandle{Backend::Metal, NativeObjectType::MetalSharedEvent,
+                            reinterpret_cast<std::uintptr_t>((__bridge void*)mtl->event->handle)};
+    }
+    Result<ExternalHandle> exportBufferHandle(const BufferPtr&) override { return fail(ErrorCode::Unsupported, "External buffer handle export is unsupported on Metal"); }
+    Result<BufferPtr> importBufferHandle(BufferDesc, const ExternalHandle&) override { return fail(ErrorCode::Unsupported, "External buffer handle import is unsupported on Metal"); }
+    Result<ExternalHandle> exportTextureHandle(const TexturePtr&) override { return fail(ErrorCode::Unsupported, "External texture handle export is unsupported on Metal"); }
+    Result<TexturePtr> importTextureHandle(TextureDesc, const ExternalHandle&) override { return fail(ErrorCode::Unsupported, "External texture handle import is unsupported on Metal"); }
+    Result<TimelineFencePtr> createSharedTimelineFence(std::uint64_t) override { return fail(ErrorCode::Unsupported, "External timeline fence export is unsupported on Metal"); }
+    Result<ExternalHandle> exportTimelineFenceHandle(const TimelineFencePtr&) override { return fail(ErrorCode::Unsupported, "External timeline fence export is unsupported on Metal"); }
+    Result<TimelineFencePtr> importTimelineFenceHandle(const ExternalHandle&, std::uint64_t) override { return fail(ErrorCode::Unsupported, "External timeline fence import is unsupported on Metal"); }
 };
 }
 Result<std::vector<AdapterInfo>> enumerateMetalAdapters() {

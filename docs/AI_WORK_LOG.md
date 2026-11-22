@@ -668,3 +668,20 @@
   - `gfx_diagnostics_fuzz_tests` 5/5 모드(총 4,500 Fuzz 케이스, Debug+GBV/고정 VVL 1.3.290 `val_errors=0`, WARP Fault Injection + 복구) 및 `ctest -R diagnostics_fuzz` 5/5 PASS (`1.93s`).
   - `gfx_debug_capture.exe` 빌드 및 독립 설치 소비자(`tests/consumer`) 실행 PASS (`GraphicsSDK 0.0.1`).
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P11-INT-01`: Native GPU Interoperability (External Memory·Fence·Semaphore·Handle)
+
+- **기준 HEAD**: `fa9e9da1`
+- **완료 ID / 분리 ID**: `P11-INT-01` 완료, `P11-INT-02`(Linux Vulkan `OpaqueFd` / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - `include/graphics/{Types,Device}.hpp`, `src/foundation/Backend.cpp`: OS/API 헤더 노출 없이 `DeviceCaps::{externalMemoryInterop,externalFenceInterop}`, `BufferDesc/TextureDesc::shared`, 비소유 `NativeHandle`(`nativeDeviceHandle`, `nativeBufferHandle`, `nativeTextureHandle`, `nativeTimelineFenceHandle`), RAII `ExternalHandle`(`OpaqueWin32Nt`, `D3D12Resource`, `D3D12Fence`, `OpaqueFd`, `MetalSharedEvent`) 및 `export/import`/`createSharedTimelineFence` API 구현.
+  - `src/backends/d3d12/D3D12.cpp`: `D3D12_HEAP_FLAG_SHARED`, `D3D12_FENCE_FLAG_SHARED`, `CreateSharedHandle`/`OpenSharedHandle`, 비소유 핸들 조회 구현.
+  - `src/backends/vulkan/Vulkan.cpp`: `VK_KHR_external_memory_win32`/`VK_KHR_external_semaphore_win32`, `ExternalHandleType` 명시 분기(`D3D12Resource`/`D3D12Fence`/`OpaqueWin32Nt`), Vulkan 규격 `VUID-vkGetMemoryWin32HandlePropertiesKHR-handleType-00666` 준수(`OPAQUE_WIN32_BIT`는 `req.memoryTypeBits` 직접 사용) 구현.
+  - `src/backends/metal/Metal.cpp`: 비소유 `native*Handle` (`__bridge void*`) 조회 및 외부 핸들 `Unsupported` 구현.
+  - `tests/NativeInteropTests.cpp`, `CMakeLists.txt`, `docs/PHASE11_NATIVE_INTEROP_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p11-native-interop`, 설치 `out/p11-native-interop-install`, `GraphicsSDKCore.lib` SHA-256 `4C307CE13C01BF18204D9CBC6F3143C9571401CE517FB74220C860F43460CC2C`):
+  - `gfx_native_interop_tests` 6/6 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770): D3D12 Same-API(`8,348`/`8,350` assertions, GBV `val_errors=0`), Vulkan Same-API(`8,348`/`8,350` assertions, 고정 VVL 1.3.290 `val_errors=0`), Cross-API D3D12↔Vulkan(`99`/`101` assertions, 양측 Validation `val_errors=0`).
+  - `ctest -R native_interop` 5/5 PASS (`5.21s`), 회귀 CTest 44/44 PASS (`29.80s`), 독립 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
