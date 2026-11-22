@@ -748,3 +748,19 @@
   - `gfx_profiling_tests --vulkan --validation`: `profilingSnapshot()` Vulkan OS VRAM 예산 실측 확인, `val_errors=0` PASS.
   - CTest (`memory_pool_vulkan`, `profiling_vulkan`, `vulkan_transfer`) 3/3 PASS (`2.22s`), 설치 소비자(`tests/consumer`) PASS.
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P3-CAP-07`: Vulkan opt-in GPU-Assisted Validation (GPU-AV)
+
+- **기준 HEAD**: `2f8c5770`
+- **완료 ID**: `P3-CAP-07` (Phase 3 조건부 잔여 7 → 6, 전체 138/218 완료)
+- **수행 내용**:
+  - `include/graphics/Types.hpp`, `src/foundation/Backend.cpp`: `DeviceDesc::gpuAssistedValidation`, `DeviceCaps::gpuAssistedValidation` 추가 (`validation=false` 동시 지정 시 `InvalidArgument` 거부).
+  - `src/backends/vulkan/{VulkanValidation.hpp,Vulkan.cpp}`: `gpuAssistedValidation=true` 시 `VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT` + `RESERVE_BINDING_SLOT_EXT`, Vulkan 1.2 인스턴스, `shaderInt64`/`storesAndAtomics` 활성화 (기존 Sync-only validation과 엄격히 구분).
+  - `src/backends/d3d12/D3D12.cpp`: GBV 활성화 상태를 `caps.gpuAssistedValidation`에 보고.
+  - `tests/VulkanGpuAssistedValidationTests.cpp`, `CMakeLists.txt`, `docs/PHASE3_VULKAN_GPU_AV_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p3-gpu-av`, 설치 `out/p3-gpu-av-install`, `GraphicsSDKCore.lib` SHA-256 `9059363E4336CF57CE4AC5B66BE4AB1F4EB38F1C0F210CD4FC6102ED8AC7CBDE`):
+  - `gfx_vulkan_gpu_av_tests` (고정 VVL 1.3.290, NVIDIA GTX 1660 SUPER + Intel UHD 770): 양쪽 GPU에서 Sync-only 간접 버퍼 제어 `errors=0`, GPU-AV 정상 Draw(64²)+Compute `errors=0`, GPU-AV 동일 간접 버퍼(`DispatchIndirectCommand{1,1,65537}`) `VUID-VkDispatchIndirectCommand-z-00419` `errors=1` 검출 PASS (`207` assertions).
+  - CTest (`vulkan_gpu_assisted_validation`) 1/1 PASS (`1.11s`), 독립 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

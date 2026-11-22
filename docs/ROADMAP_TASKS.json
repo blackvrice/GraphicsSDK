@@ -1496,15 +1496,21 @@
       "phase": 3,
       "group": "P3-CAP",
       "title": "GPU-assisted validation",
-      "status": "todo",
+      "status": "done",
       "gate": "conditional",
       "depends_on": [
         "P3-SCP-01"
       ],
-      "work": "초기 subset은 core/sync validation을 필수로 유지한다. GPU-assisted는 별도 선택 기능이며 선택 시 설정·capability·오류 검출 controls와 실제 실행을 추가한다.",
+      "work": "기존 core/sync validation(gpuAssistedValidation=false)과 엄격히 구분되는 opt-in DeviceDesc::gpuAssistedValidation 및 DeviceCaps::gpuAssistedValidation 계약을 추가했다(validation=false 동시 지정 시 InvalidArgument 거부). Vulkan에서는 VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT 및 RESERVE_BINDING_SLOT_EXT와 Vulkan 1.2/shaderInt64/storesAndAtomics를 활성화하고, D3D12에서는 GBV 활성화 상태를 보고한다. 고정 VVL 1.3.290 + 물리 GPU 2종(GTX 1660 SUPER·Intel UHD 770)에서 Sync-only(간접 버퍼 제어 errors=0) vs GPU-AV(정상 Draw+Compute errors=0, 동일 간접 버퍼 VUID-VkDispatchIndirectCommand-z-00419 errors=1 검출), CTest 1/1 및 설치 소비자로 검증했다.",
       "done_when": "실제 GPU-assisted 실행 증거. 기존 sync validation과 구분.",
       "evidence": [
-        "docs/PHASE3_SCOPE.md"
+        "include/graphics/Types.hpp",
+        "src/foundation/Backend.cpp",
+        "src/backends/vulkan/VulkanValidation.hpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "tests/VulkanGpuAssistedValidationTests.cpp",
+        "docs/PHASE3_VULKAN_GPU_AV_REPORT.md"
       ],
       "requires": "선택한 기능의 native GPU/driver/runtime 환경",
       "scope_from": "P3-SCP-01"

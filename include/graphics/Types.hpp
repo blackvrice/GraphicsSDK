@@ -146,6 +146,8 @@ struct DeviceDesc {
     Backend backend{Backend::D3D12}; bool validation{}; bool softwareAdapter{}; bool enableDeviceLossTesting{};
     // Exact selection, including recovery. softwareAdapter must match the selected entry.
     std::optional<AdapterId> adapter;
+    // Opt-in GPU-assisted validation (Vulkan GPU-AV / D3D12 GBV); requires validation=true.
+    bool gpuAssistedValidation{};
 };
 // Diagnostic snapshot after pruning completed submissions. Allocation bytes describe
 // unique SDK-held resource allocations, not residency, driver caches or total VRAM.
@@ -202,6 +204,7 @@ struct DeviceCaps {
     std::uint32_t maxBindlessDescriptors{};
     bool externalMemoryInterop{};
     bool externalFenceInterop{};
+    bool gpuAssistedValidation{};
 };
 
 enum class MemoryHeapType { Buffers, Textures, RenderTargets };

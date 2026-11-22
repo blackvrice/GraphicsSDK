@@ -20,18 +20,24 @@ struct ValidationConfiguration {
     inline static constexpr const char* extensions[] = {VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
         VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME, VK_EXT_LAYER_SETTINGS_EXTENSION_NAME};
     VkDebugUtilsMessengerCreateInfoEXT messenger{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
-    VkValidationFeatureEnableEXT synchronization{VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT};
+    VkValidationFeatureEnableEXT enabledFeatures[3]{
+        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT
+    };
     VkValidationFeaturesEXT features{VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT};
     std::uint32_t duplicateLimit{};
     const char* emptyFilter = "";
     VkBool32 submitValidation{VK_TRUE};
     VkLayerSettingEXT settings[3]{};
     VkLayerSettingsCreateInfoEXT layerSettings{VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT};
-    explicit ValidationConfiguration(ValidationCounter& counter) {
+    explicit ValidationConfiguration(ValidationCounter& counter, bool gpuAssisted = false) {
         messenger.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         messenger.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         messenger.pfnUserCallback = validationMessage; messenger.pUserData = &counter;
-        features.pNext = &messenger; features.enabledValidationFeatureCount = 1; features.pEnabledValidationFeatures = &synchronization;
+        features.pNext = &messenger;
+        features.enabledValidationFeatureCount = gpuAssisted ? 3u : 1u;
+        features.pEnabledValidationFeatures = enabledFeatures;
         settings[0] = {layer, "duplicate_message_limit", VK_LAYER_SETTING_TYPE_UINT32_EXT, 1, &duplicateLimit};
         settings[1] = {layer, "message_id_filter", VK_LAYER_SETTING_TYPE_STRING_EXT, 1, &emptyFilter};
         settings[2] = {layer, "syncval_submit_time_validation", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &submitValidation};

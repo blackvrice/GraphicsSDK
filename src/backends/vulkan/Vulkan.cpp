@@ -108,7 +108,7 @@ struct Instance {
         if (handle && DestroyInstance) DestroyInstance(handle, nullptr);
     }
 };
-Result<std::shared_ptr<Instance>> createInstance(bool validation) {
+Result<std::shared_ptr<Instance>> createInstance(bool validation, bool gpuAssisted = false) {
     auto instance = std::make_shared<Instance>();
     instance->loader = std::make_shared<Loader>();
     const auto get = instance->loader->get;
@@ -176,8 +176,9 @@ Result<std::shared_ptr<Instance>> createInstance(bool validation) {
                 return fail(ErrorCode::Unsupported, "Vulkan validation requires debug_utils, validation_features and layer_settings");
     }
     VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};
-    app.pApplicationName = "GraphicsSDK"; app.apiVersion = VK_API_VERSION_1_1;
-    vulkan::ValidationConfiguration validationConfig(instance->validation);
+    app.pApplicationName = "GraphicsSDK";
+    app.apiVersion = gpuAssisted ? VK_API_VERSION_1_2 : VK_API_VERSION_1_1;
+    vulkan::ValidationConfiguration validationConfig(instance->validation, gpuAssisted);
     VkInstanceCreateInfo info{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
     info.pApplicationInfo = &app;
     if (validation) {
@@ -4195,7 +4196,7 @@ Result<std::vector<AdapterInfo>> enumerateVulkanAdapters() {
 }
 Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     if (desc.enableDeviceLossTesting) return fail(ErrorCode::Unsupported, "Vulkan loss injection unsupported");
-    auto instance = createInstance(desc.validation); if (!instance) return std::unexpected(instance.error());
+    auto instance = createInstance(desc.validation, desc.gpuAssistedValidation); if (!instance) return std::unexpected(instance.error());
     auto found = candidates(*instance); if (!found) return std::unexpected(found.error());
     auto selected = std::find_if(found->begin(), found->end(), [&](auto& c) {
         return desc.adapter ? c.info.id == *desc.adapter : c.info.softwareAdapter == desc.softwareAdapter;
@@ -4308,6 +4309,11 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     enabled.textureCompressionASTC_LDR = selected->features.textureCompressionASTC_LDR;
     enabled.sparseBinding = selected->features.sparseBinding;
     enabled.sparseResidencyImage2D = selected->features.sparseBinding ? selected->features.sparseResidencyImage2D : VK_FALSE;
+    if (desc.gpuAssistedValidation) {
+        enabled.fragmentStoresAndAtomics = selected->features.fragmentStoresAndAtomics;
+        enabled.vertexPipelineStoresAndAtomics = selected->features.vertexPipelineStoresAndAtomics;
+        enabled.shaderInt64 = selected->features.shaderInt64;
+    }
     info.pEnabledFeatures = &enabled;
     if (auto r = vulkan::acquireOutput(native->handle, (*instance)->CreateDevice, selected->physical, &info, nullptr); r != VK_SUCCESS) return nativeError(r, "vkCreateDevice");
 #define LOAD(name) native->name = reinterpret_cast<PFN_vk##name>((*instance)->GetDeviceProcAddr(native->handle, "vk" #name)); \
@@ -4402,6 +4408,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.residencyControl = false;
     device->capabilities.externalMemoryInterop = native->externalMemoryWin32;
     device->capabilities.externalFenceInterop = native->timelineSemaphores && native->externalSemaphoreWin32;
+    device->capabilities.gpuAssistedValidation = desc.validation && desc.gpuAssistedValidation;
     device->capabilities.sparseBinding = enabled.sparseBinding != 0;
     device->capabilities.sparseResidencyTexture2D = enabled.sparseResidencyImage2D != 0;
     device->capabilities.indirectDraw = true;

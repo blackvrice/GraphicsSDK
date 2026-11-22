@@ -1,6 +1,6 @@
 # 다른 AI를 위한 개발 인수인계
 
-2026-11-22 갱신. 직전 확인 기준 HEAD는 `cf0ee13e`이며 이번 세션에서 `P3-CAP-04`(Vulkan `VK_EXT_memory_budget` OS 프로세스 메모리 예산·사용량 조회 계약 및 미지원 어댑터 `Unsupported` 보존) 구현·실기 검증을 반영했다.
+2026-11-22 갱신. 직전 확인 기준 HEAD는 `2f8c5770`이며 이번 세션에서 `P3-CAP-07`(Vulkan opt-in GPU-Assisted Validation `DeviceDesc::gpuAssistedValidation` 및 Sync-only vs GPU-AV 간접 버퍼 검출 대조) 구현·실기 검증을 반영했다.
 이 값은 인수인계 기준이며 새 세션에서는 반드시 실제 `git status`, `git log`, `docs/ROADMAP_TASKS.json`을 다시 확인한다.
 기존 작업 방식과 코드 품질 기준은 루트 [AGENTS.md](../AGENTS.md)를, 시간순 세션 이력은 [AI_WORK_LOG.md](AI_WORK_LOG.md)를 따른다.
 
@@ -8,15 +8,15 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 마지막 작업 | `P3-CAP-04` (Vulkan `VK_EXT_memory_budget` + `vkGetPhysicalDeviceMemoryProperties2` 기반 `queryMemoryBudget(Local/NonLocal)`, 미지원 시 `Unsupported` 보존, GTX 1660 SUPER `11/5403MiB`·Intel UHD 770 `0/48149MiB`·VVL 1.3.290 오류 0·`MemoryPool`/`Profiling` 실측 연동·CTest 3/3·설치 소비자 검증) |
-| 마지막 확인 Commit | 직전 HEAD `cf0ee13e` (이번 세션 커밋은 `git log -1`로 확인) |
+| 마지막 작업 | `P3-CAP-07` (`DeviceDesc::gpuAssistedValidation` / `DeviceCaps::gpuAssistedValidation`, `VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT` + `RESERVE_BINDING_SLOT_EXT`, 물리 GPU 2종 고정 VVL 1.3.290 Sync-only `0` vs GPU-AV `VUID-VkDispatchIndirectCommand-z-00419` `1` 검출 대조·정상 Draw+Compute `0`·CTest 1/1·설치 소비자 검증) |
+| 마지막 확인 Commit | 직전 HEAD `2f8c5770` (이번 세션 커밋은 `git log -1`로 확인) |
 | 현재 브랜치 | `main` (`origin`: `https://github.com/blackvrice/GraphicsSDK.git`) |
-| 현재 버전 | `0.0.1` (**Phase 8·9·10·11·12 Windows D3D12/Vulkan 전 항목 100% 완료** + `P3-CAP-04` 완료) |
+| 현재 버전 | `0.0.1` (**Phase 8·9·10·11·12 Windows D3D12/Vulkan 전 항목 100% 완료** + `P3-CAP-04`/`P3-CAP-07` 완료) |
 | 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06/07/08`, `P8-MEM-03/04`, `P9-CMD-05/06/07/08`, `P9-CMP-03/04`, `P9-RG-02`, `P9-SHD-01`, `P10-PRES-02`, `P10-HDR-02`, `P10-SURF-02`, `P10-DIRTY-02`, `P11-INT-02`, `P11-VID-02`, `P11-AI-02`, `P11-PROF-02`, `P11-DBG-02`, `P12-UI-02`, `P12-SBX-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
-| 완료한 내용 | Phase 8~12 Windows D3D12/Vulkan 전 항목 + `P3-CAP-04`(Vulkan `VK_EXT_memory_budget`) 구현 및 Windows D3D12/Vulkan/Validation/WARP 검증 통과, `ROADMAP_TASKS.json` 218 ID(137 완료) 검증 통과 |
-| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 7, 후속 확장 36 (`P8~P12` Linux/Metal 검증, `P9-SHD-01`, `P6-OPT-*`) |
-| 수정 파일 | `src/backends/vulkan/Vulkan.cpp`, `tests/{VulkanTests,MemoryPoolTests}.cpp`, `docs/{PHASE3_VULKAN_MEMORY_BUDGET_REPORT,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
-| 테스트 결과 | `gfx_vulkan_tests`(일반+VVL 1.3.290, 2GPU), `gfx_memory_pool_tests --vulkan --validation`, `gfx_profiling_tests --vulkan --validation`(val_errors=0), `ctest -R "vulkan_transfer|memory_pool_vulkan|profiling_vulkan"` 3/3 PASS (`2.22s`), 설치 소비자 PASS, `roadmap.py --check` PASS (218 ID) |
+| 완료한 내용 | Phase 8~12 Windows D3D12/Vulkan 전 항목 + `P3-CAP-04`(`VK_EXT_memory_budget`) + `P3-CAP-07`(Vulkan GPU-AV) 구현 및 Windows D3D12/Vulkan/Validation/WARP 검증 통과, `ROADMAP_TASKS.json` 218 ID(138 완료) 검증 통과 |
+| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 6, 후속 확장 36 (`P8~P12` Linux/Metal 검증, `P9-SHD-01`, `P6-OPT-*`) |
+| 수정 파일 | `include/graphics/Types.hpp`, `src/foundation/Backend.cpp`, `src/backends/vulkan/{VulkanValidation.hpp,Vulkan.cpp}`, `src/backends/d3d12/D3D12.cpp`, `tests/VulkanGpuAssistedValidationTests.cpp`, `CMakeLists.txt`, `docs/{PHASE3_VULKAN_GPU_AV_REPORT,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
+| 테스트 결과 | `gfx_vulkan_gpu_av_tests`(물리 GPU 2종 고정 VVL 1.3.290, Sync-only `0` vs GPU-AV `1` 검출 대조·정상 Draw+Compute `0`), `ctest -R vulkan_gpu_assisted_validation` 1/1 PASS (`1.11s`), 설치 소비자 PASS, `roadmap.py --check` PASS (218 ID) |
 | 확인된 문제 | 장시간 GBV 메모리(`P2-ACC-01`)·과거 Intel AV(`P2-ACC-02`) 미해결, Linux 물리 GPU·물리 Mac 부재 |
 | 다음 추천 작업 | `P8~P12` Linux Vulkan / macOS Metal CI 실기 검증, Phase 6 GPU 자원 최적화 후보(`P6-OPT-*`), 기존 필수 게이트(`P3-LNX-15`, Phase 5/7) |
 | 주의사항 | `tools/macos_metal_package.py`의 13개 공개 헤더 allowlist와 `tools/macos_core.py`의 5개 `CORE` `.cpp`·11개 CPU 테스트 목록을 유지해야 기존 replay와 `macos-core.yml`이 깨지지 않는다. 기존 사용자 변경(`tests/VulkanAllocationBenchmarkTests.cpp`)은 덮어쓰거나 커밋하지 않는다. (`.idea/`는 `.gitignore`에 반영 완료) |

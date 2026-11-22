@@ -2857,6 +2857,8 @@ bool backendCompiled(Backend backend) noexcept {
     (void)backend; return false;
 }
 Result<std::unique_ptr<Device>> createDevice(DeviceDesc desc) {
+    if (desc.gpuAssistedValidation && !desc.validation)
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "gpuAssistedValidation requires validation=true"});
     if (desc.adapter && desc.adapter->backend!=desc.backend)
         return std::unexpected(Error{ErrorCode::InvalidArgument,"Adapter identity belongs to a different backend"});
 #ifdef GFX_HAS_METAL

@@ -3634,11 +3634,12 @@ Result<std::vector<AdapterInfo>> enumerateD3D12Adapters() {
     return result;
 }
 Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
+    bool gbvEnabled = false;
     if (desc.validation) {
         ComPtr<ID3D12Debug> debug; HRESULT result = D3D12GetDebugInterface(IID_PPV_ARGS(&debug));
         if (FAILED(result)) return invalid("D3D12 debug layer unavailable; install Windows Graphics Tools", ErrorCode::Unsupported);
         debug->EnableDebugLayer(); ComPtr<ID3D12Debug1> debug1;
-        if (SUCCEEDED(debug.As(&debug1))) debug1->SetEnableGPUBasedValidation(TRUE);
+        if (SUCCEEDED(debug.As(&debug1))) { debug1->SetEnableGPUBasedValidation(TRUE); gbvEnabled = true; }
     }
     auto state = std::make_shared<State>();
     state->description=desc;
@@ -3722,6 +3723,7 @@ Result<std::unique_ptr<Device>> createD3D12Device(DeviceDesc desc) {
     }
     state->caps.externalMemoryInterop = true;
     state->caps.externalFenceInterop = true;
+    state->caps.gpuAssistedValidation = gbvEnabled;
     ComPtr<ID3D12Device5> device5;state->caps.deviceRecovery=true;state->caps.deviceLossInjection=SUCCEEDED(state->device.As(&device5));
     if (desc.validation) {
         result = state->device.As(&state->info); if (FAILED(result)) return state->failure(result, "D3D12 InfoQueue unavailable");
