@@ -52,7 +52,7 @@ if(GFX_ENABLE_METAL)
   target_compile_options(GraphicsSDKCore PRIVATE $<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>)
   target_compile_definitions(GraphicsSDKCore PRIVATE GFX_HAS_METAL=1)
   # Resolve frameworks against the consumer's macOS SDK when linking the static package.
-  target_link_libraries(GraphicsSDKCore PRIVATE "-framework Metal" "-framework Foundation" "-framework QuartzCore")
+  target_link_libraries(GraphicsSDKCore PRIVATE "-framework Metal" "-framework Foundation" "-framework QuartzCore" "-framework CoreGraphics")
 endif()
 if(GFX_ENABLE_D3D12)
   if(NOT WIN32)
