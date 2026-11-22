@@ -217,6 +217,11 @@ struct MetalSwapChain final : SwapChain {
         if (auto ok = resize(m->clientWidth, m->clientHeight); !ok) return std::unexpected(ok.error());
         return true;
     }
+    Result<void> presentDirtyRects(std::span<const DirtyRect> rects) override {
+        if (auto ok = check(); !ok) return ok;
+        if (auto ok = detail::validateDirtyRects(rects, desc.width, desc.height, 64u); !ok) return ok;
+        return fail(ErrorCode::Unsupported, "Metal CAMetalLayer does not expose dirty-rect partial presentation");
+    }
 
     Result<void> resize(std::uint32_t width, std::uint32_t height) override {
         if (auto ok = check(); !ok) return ok;
@@ -247,6 +252,8 @@ Result<SurfacePresentCapabilities> queryMetalSurfacePresentCapabilities(State& o
     caps.frameLatencyWaitable = true;
     caps.minImageCount = 2u;
     caps.maxImageCount = 3u;
+    caps.partialPresent = false;
+    caps.maxDirtyRects = 0u;
     return caps;
 }
 

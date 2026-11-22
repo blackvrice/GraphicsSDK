@@ -378,7 +378,7 @@ struct VulkanSwapchain final : SwapChain {
         }
         return TexturePtr(buffers[native->current]);
     }
-    Result<void> present() override {
+    Result<void> presentInternal(std::span<const DirtyRect> dirtyRects) {
         auto image = acquire(); if (!image) return std::unexpected(image.error());
         auto& a = *buffers[native->current]->allocation;
         if (a.state != ResourceState::Present || a.version == UINT64_MAX) return fail(ErrorCode::InvalidState, "Present requires submitted Present state and available version");
@@ -393,6 +393,20 @@ struct VulkanSwapchain final : SwapChain {
         VkPresentInfoKHR info{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR}; info.waitSemaphoreCount = 1; info.pWaitSemaphores = &semaphore;
         info.swapchainCount = 1; info.pSwapchains = &native->handle; info.pImageIndices = &native->current;
         VkSwapchainPresentFenceInfoEXT completion{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT}; completion.swapchainCount = 1; completion.pFences = &fence;
+        std::vector<VkRectLayerKHR> vkRects;
+        VkPresentRegionKHR vkRegion{};
+        VkPresentRegionsKHR vkRegions{VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR};
+        if (!dirtyRects.empty()) {
+            vkRects.reserve(dirtyRects.size());
+            for (const auto& r : dirtyRects) {
+                vkRects.push_back(VkRectLayerKHR{{static_cast<std::int32_t>(r.x), static_cast<std::int32_t>(r.y)}, {r.width, r.height}, 0u});
+            }
+            vkRegion.rectangleCount = static_cast<std::uint32_t>(vkRects.size());
+            vkRegion.pRectangles = vkRects.data();
+            vkRegions.swapchainCount = 1u;
+            vkRegions.pRegions = &vkRegion;
+            completion.pNext = &vkRegions;
+        }
         info.pNext = &completion;
         const auto presT0 = detail::FramePacingTracker::Clock::now();
         auto r = n.QueuePresentKHR(n.queue, &info); ++a.version; native->acquired = false;
@@ -413,6 +427,17 @@ struct VulkanSwapchain final : SwapChain {
         if (r == VK_ERROR_SURFACE_LOST_KHR) return surfaceResult(r, "Present surface lost");
         if (r == VK_ERROR_OUT_OF_DATE_KHR) return fail(ErrorCode::InvalidState, "Surface out of date; resize required", r);
         return owner->accept(r, "vkQueuePresentKHR");
+    }
+    Result<void> present() override {
+        return presentInternal({});
+    }
+    Result<void> presentDirtyRects(std::span<const DirtyRect> rects) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        if (auto ok = detail::validateDirtyRects(rects, desc.width, desc.height, 64u); !ok) return ok;
+        if (!owner->native->incrementalPresent) {
+            return fail(ErrorCode::Unsupported, "VK_KHR_incremental_present is unavailable on this Vulkan device");
+        }
+        return presentInternal(rects);
     }
     PresentMode presentMode() const override { return activeMode; }
     FramePacingMode pacingMode() const override { return desc.pacingMode; }
@@ -514,6 +539,8 @@ Result<SurfacePresentCapabilities> queryVulkanSurfacePresentCapabilities(const s
     out.frameLatencyWaitable = true;
     out.minImageCount = caps.minImageCount;
     out.maxImageCount = caps.maxImageCount ? caps.maxImageCount : 4u;
+    out.partialPresent = owner->native->incrementalPresent;
+    out.maxDirtyRects = out.partialPresent ? 64u : 0u;
     return out;
 #else
     (void)owner; (void)surface;

@@ -29,6 +29,11 @@ struct MultiPresentResult {
     std::uint32_t skippedMinimizedCount{};
     bool operator==(const MultiPresentResult&) const = default;
 };
+// Pixel-space dirty rectangle for partial presentation hints (top-left origin).
+struct DirtyRect {
+    std::uint32_t x{}, y{}, width{}, height{};
+    bool operator==(const DirtyRect&) const = default;
+};
 enum class PresentMode { Fifo, Immediate, Mailbox, Tearing };
 enum class FramePacingMode { Balanced, LowLatency, Throughput };
 enum class ColorSpace {
@@ -81,6 +86,8 @@ struct SurfacePresentCapabilities {
     bool frameLatencyWaitable{};
     std::uint32_t minImageCount{2};
     std::uint32_t maxImageCount{4};
+    bool partialPresent{};
+    std::uint32_t maxDirtyRects{};
     bool operator==(const SurfacePresentCapabilities&) const = default;
 };
 struct FramePacingStats {

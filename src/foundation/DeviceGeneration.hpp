@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdint>
 #include <mutex>
+#include <span>
 #include <vector>
 
 namespace gfx::detail {
@@ -186,6 +187,25 @@ inline Result<void> validateHdrMetadata(const HdrMetadata& m) {
     }
     if (m.maxContentLightLevel > 0.0f && m.maxFrameAverageLightLevel > m.maxContentLightLevel) {
         return std::unexpected(Error{ErrorCode::InvalidArgument, "HDR maxFrameAverageLightLevel cannot exceed maxContentLightLevel"});
+    }
+    return {};
+}
+
+inline Result<void> validateDirtyRects(std::span<const DirtyRect> rects, std::uint32_t width,
+                                       std::uint32_t height, std::uint32_t maxRects = 64u) {
+    if (rects.empty()) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "presentDirtyRects requires at least one dirty rect"});
+    }
+    if (rects.size() > maxRects) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "Dirty rect count exceeds backend limit"});
+    }
+    for (const auto& r : rects) {
+        if (r.width == 0u || r.height == 0u) {
+            return std::unexpected(Error{ErrorCode::InvalidArgument, "Dirty rect must have non-zero width and height"});
+        }
+        if (r.x > width || r.y > height || r.width > width - r.x || r.height > height - r.y) {
+            return std::unexpected(Error{ErrorCode::InvalidArgument, "Dirty rect exceeds swapchain extent"});
+        }
     }
     return {};
 }

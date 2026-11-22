@@ -623,3 +623,20 @@
   - 독립 설치 소비자(`tests/consumer`): 빌드·실행 PASS (`GraphicsSDK 0.0.1`).
   - 전체 CTest 회귀: **140/140 (100% PASS, `162.08s`)**.
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P10-DIRTY-01`: Dirty Region Rendering 기반 (Preserve·부분 복사·Partial Present 조회 및 전체 vs 부분 실측)
+
+- **기준 HEAD**: `a1bcb26e`
+- **완료 ID / 분리 ID**: `P10-DIRTY-01` 완료 (**Phase 10 Windows D3D12/Vulkan 전 항목 완료**), `P10-DIRTY-02`(Linux Vulkan / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - `include/graphics/{Surface,SwapChain}.hpp`, `src/foundation/DeviceGeneration.hpp`: `DirtyRect`, `SurfacePresentCapabilities::{partialPresent,maxDirtyRects}`, `SwapChain::presentDirtyRects(span)`, `validateDirtyRects` 추가.
+  - `src/backends/d3d12/D3D12.cpp`: `DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL` + `IDXGISwapChain1::Present1`(`DirtyRectsCount` 최대 64, 초기/리사이즈 직후 첫 프레임 자동 전체 프레젠트, `Tearing` 조합 `Unsupported` 거부) 구현.
+  - `src/backends/vulkan/{Vulkan.cpp,Presentation.hpp}`: `VK_KHR_incremental_present` 선택 활성화 및 `VkPresentRegionsKHR` 체이닝(미노출 시 `partialPresent=false` 및 `Unsupported` 거부) 구현.
+  - `src/backends/metal/MetalPresentation.hpp`: `partialPresent=false`, `presentDirtyRects` `Unsupported` 구현.
+  - `tests/DirtyRegionTests.cpp`, `CMakeLists.txt`, `docs/PHASE10_DIRTY_REGION_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (격리 빌드 `out/p10-dirty-region`, 설치 `out/p10-dirty-region-install`, `GraphicsSDKCore.lib` SHA-256 `BBCDFFAC9495FEBA3796DEA58D94A577DC1AC01EED1E7816FBADE6BB3DD342CC`):
+  - `gfx_dirty_region_tests` 5/5 모드 PASS: 256×256(65,536픽셀) 비갱신 영역 100% 보존 + Partial Present 조회/실행/거부 + 1024×1024×32 레이어 전체 vs 128×128 부분 렌더링 실측(D3D12 GTX **46.88x** / Intel **99.45x** / WARP **7.77x**, Vulkan GTX **32.14x** / Intel **98.77x** GPU 가속), Debug+GBV/고정 VVL 1.3.290 `val_errors=0`.
+  - 독립 설치 소비자(`tests/consumer`) 및 전체 CTest 회귀: **145/145 (100% PASS, `160.81s`)**.
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

@@ -2,6 +2,7 @@
 #include "Resources.hpp"
 #include "Surface.hpp"
 #include <chrono>
+#include <span>
 
 namespace gfx {
 class SwapChain {
@@ -33,5 +34,8 @@ public:
     // Resizes the swapchain to match the native surface when changed; returns true if resized,
     // false if already matching, or InvalidState when the surface is minimized (0x0).
     [[nodiscard]] virtual Result<bool> syncExtent() = 0;
+    // Presents with dirty-region hints when supported by the backend/surface.
+    // Validates all rects are non-empty and within [0..width, 0..height] before presenting.
+    [[nodiscard]] virtual Result<void> presentDirtyRects(std::span<const DirtyRect> rects) = 0;
 };
 }

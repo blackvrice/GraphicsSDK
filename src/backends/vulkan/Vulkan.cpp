@@ -335,6 +335,7 @@ struct NativeDevice {
     std::array<VkQueue, 3> queues{};
     bool presentation{};
     bool hdrMetadata{};
+    bool incrementalPresent{};
     bool timelineSemaphores{};
     PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT{};
     PFN_vkCreateSwapchainKHR CreateSwapchainKHR{};
@@ -3691,6 +3692,10 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
             if (hasExtension(VK_EXT_HDR_METADATA_EXTENSION_NAME)) {
                 native->hdrMetadata = true;
                 enabledDeviceExtensions.push_back(VK_EXT_HDR_METADATA_EXTENSION_NAME);
+            }
+            if (hasExtension(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME)) {
+                native->incrementalPresent = true;
+                enabledDeviceExtensions.push_back(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME);
             }
         }
     }

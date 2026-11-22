@@ -2043,6 +2043,7 @@ struct DXSwapChain final : SwapChain {
     ComPtr<IDXGISwapChain3>& chain{objects->chain};
     HWND window{};
     bool lastOccluded{};
+    bool hasFullPresent{};
     SwapChainDesc desc;
     PresentMode activeMode{PresentMode::Fifo};
     Format activeFormat{Format::RGBA8UNorm};
@@ -2103,11 +2104,49 @@ struct DXSwapChain final : SwapChain {
         const auto t1 = detail::FramePacingTracker::Clock::now();
         if (FAILED(result)) return owner->failure(result, "Present failed");
         lastOccluded = (result == DXGI_STATUS_OCCLUDED);
+        hasFullPresent = true;
         const double presentMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
         pacing.recordPresent(presentMs, t1);
         // Invalidate recordings from before presentation, even after the ring
         // rotates back to this same buffer without another application submit.
         ++texture->tracker->version;return {};
+    }
+    Result<void> presentDirtyRects(std::span<const DirtyRect> rects) override {
+        auto status = owner->check(); if (!status) return status;
+        if (buffers.size() != desc.buffers) return invalid("Swapchain buffers unavailable");
+        if (auto ok = detail::validateDirtyRects(rects, desc.width, desc.height, 64u); !ok) return ok;
+        if (activeMode == PresentMode::Tearing) {
+            return invalid("Dirty-rect partial present is unsupported with Tearing present mode", ErrorCode::Unsupported);
+        }
+        auto texture = buffers[chain->GetCurrentBackBufferIndex()];
+        if (texture->tracker->state != ResourceState::Present) return invalid("Backbuffer must be submitted in Present state");
+        if (texture->tracker->version == UINT64_MAX) return invalid("Backbuffer version exhausted");
+        std::vector<RECT> nativeRects;
+        nativeRects.reserve(rects.size());
+        for (const auto& r : rects) {
+            nativeRects.push_back(RECT{
+                static_cast<LONG>(r.x),
+                static_cast<LONG>(r.y),
+                static_cast<LONG>(r.x + r.width),
+                static_cast<LONG>(r.y + r.height)
+            });
+        }
+        DXGI_PRESENT_PARAMETERS params{};
+        if (hasFullPresent) {
+            params.DirtyRectsCount = static_cast<UINT>(nativeRects.size());
+            params.pDirtyRects = nativeRects.data();
+        }
+        const UINT syncInterval = activeMode == PresentMode::Fifo ? 1u : 0u;
+        const auto t0 = detail::FramePacingTracker::Clock::now();
+        HRESULT result = chain->Present1(syncInterval, 0u, &params);
+        const auto t1 = detail::FramePacingTracker::Clock::now();
+        if (FAILED(result)) return owner->failure(result, "Present1 (dirty rects) failed");
+        lastOccluded = (result == DXGI_STATUS_OCCLUDED);
+        hasFullPresent = true;
+        const double presentMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        pacing.recordPresent(presentMs, t1);
+        ++texture->tracker->version;
+        return {};
     }
     Result<void> resize(UINT width, UINT height) override {
         auto status = owner->check(); if (!status) return status;
@@ -2124,6 +2163,7 @@ struct DXSwapChain final : SwapChain {
         }
         (void)chain->SetColorSpace1(dxgiColorSpace);
         if (activeMetadata) { (void)applyMetadataNative(*activeMetadata); }
+        hasFullPresent = false;
         desc.width = width; desc.height = height; return rebuild();
     }
     PresentMode presentMode() const override { return activeMode; }
@@ -3135,6 +3175,8 @@ public:
         caps.frameLatencyWaitable = true;
         caps.minImageCount = 2u;
         caps.maxImageCount = 4u;
+        caps.partialPresent = true;
+        caps.maxDirtyRects = 64u;
         return caps;
     }
     Result<SurfaceColorCapabilities> querySurfaceColorCapabilities(Surface surface) override {
@@ -3249,7 +3291,7 @@ public:
         DXGI_SWAP_CHAIN_DESC1 nativeDesc{}; nativeDesc.Width = desc.width; nativeDesc.Height = desc.height;
         nativeDesc.Format = storageFormat; nativeDesc.SampleDesc.Count = 1;
         nativeDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; nativeDesc.BufferCount = desc.buffers;
-        nativeDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        nativeDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
         nativeDesc.Flags = swapFlags;
         ComPtr<IDXGISwapChain1> chain;
         HRESULT result = state->factory->CreateSwapChainForHwnd(state->queues[0].queue.Get(), static_cast<HWND>(surface.window), &nativeDesc, nullptr, nullptr, &chain);
