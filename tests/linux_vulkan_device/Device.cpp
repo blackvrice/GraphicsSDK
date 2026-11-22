@@ -129,7 +129,8 @@ void selection() {
     if(software) {gfx::DeviceDesc d;d.backend=gfx::Backend::Vulkan;d.softwareAdapter=true;auto p=take(gfx::createDevice(d));++creations;check(p->caps().softwareAdapter,"Explicit software default selection");}
     if(!hardware) {gfx::DeviceDesc d;d.backend=gfx::Backend::Vulkan;reject(gfx::createDevice(d),gfx::ErrorCode::Unsupported,"hardware-default-never-falls-back-to-software");}
     reject(gfx::enumerateAdapters(gfx::Backend::Metal),gfx::ErrorCode::Unsupported,"uncompiled-backend-enumeration");
-    auto loss=description(adapters.front());loss.enableDeviceLossTesting=true;reject(gfx::createDevice(loss),gfx::ErrorCode::Unsupported,"unsupported-loss-opt-in");
+    auto loss=description(adapters.front());loss.enableDeviceLossTesting=true;
+    {auto ld=take(gfx::createDevice(loss));++creations;check(ld->caps().deviceLossInjection,"Opt-in Vulkan synthetic loss injection");take(ld->removeForTesting());reject(ld->checkStatus(),gfx::ErrorCode::DeviceLost,"synthetic-loss-observed");auto rec=take(ld->recover());++creations;take(rec->checkStatus());}
     std::cout<<"{\"schema_version\":1,\"case\":\"selection\",\"SDK_source_fingerprint\":"<<quote(gfx::buildFingerprint())<<",\"assertions\":"<<assertions<<",\"device_creations\":"<<creations
         <<",\"software_adapters\":"<<software<<",\"hardware_adapters\":"<<hardware<<",\"loader_path\":"<<quote(native.loaderPath)<<",\"adapters\":[";
     bool first=true;for(auto& n:raw) {if(!first)std::cout<<',';first=false;std::cout<<"{\"name\":"<<quote(n.properties.deviceName)<<",\"id\":"<<quote(std::to_string(n.id))<<",\"vendor_id\":"<<n.properties.vendorID<<",\"device_id\":"<<n.properties.deviceID

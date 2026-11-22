@@ -2810,7 +2810,14 @@ struct VulkanDevice final : Device {
     }
     Result<void> removeForTesting() override {
         if (auto ok = owner->check(); !ok) return ok;
-        return fail(ErrorCode::Unsupported, "Vulkan loss injection unsupported");
+        if (!description.enableDeviceLossTesting) {
+            return fail(ErrorCode::Unsupported, "Vulkan loss injection requires DeviceDesc::enableDeviceLossTesting=true");
+        }
+        // Controlled synthetic device-loss injection for recovery and error-coverage testing.
+        // Distinct from OS/driver unexpected TDR or hot-unplug hardware acceptance.
+        (void)owner->native->DeviceWaitIdle(owner->native->handle);
+        owner->lost.store(true, std::memory_order_release);
+        return {};
     }
     Result<BufferPtr> createBuffer(BufferDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
@@ -4195,7 +4202,6 @@ Result<std::vector<AdapterInfo>> enumerateVulkanAdapters() {
     return result;
 }
 Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
-    if (desc.enableDeviceLossTesting) return fail(ErrorCode::Unsupported, "Vulkan loss injection unsupported");
     auto instance = createInstance(desc.validation, desc.gpuAssistedValidation); if (!instance) return std::unexpected(instance.error());
     auto found = candidates(*instance); if (!found) return std::unexpected(found.error());
     auto selected = std::find_if(found->begin(), found->end(), [&](auto& c) {
@@ -4409,6 +4415,7 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     device->capabilities.externalMemoryInterop = native->externalMemoryWin32;
     device->capabilities.externalFenceInterop = native->timelineSemaphores && native->externalSemaphoreWin32;
     device->capabilities.gpuAssistedValidation = desc.validation && desc.gpuAssistedValidation;
+    device->capabilities.deviceLossInjection = desc.enableDeviceLossTesting;
     device->capabilities.sparseBinding = enabled.sparseBinding != 0;
     device->capabilities.sparseResidencyTexture2D = enabled.sparseResidencyImage2D != 0;
     device->capabilities.indirectDraw = true;

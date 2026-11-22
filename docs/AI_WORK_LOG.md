@@ -764,3 +764,17 @@
   - `gfx_vulkan_gpu_av_tests` (고정 VVL 1.3.290, NVIDIA GTX 1660 SUPER + Intel UHD 770): 양쪽 GPU에서 Sync-only 간접 버퍼 제어 `errors=0`, GPU-AV 정상 Draw(64²)+Compute `errors=0`, GPU-AV 동일 간접 버퍼(`DispatchIndirectCommand{1,1,65537}`) `VUID-VkDispatchIndirectCommand-z-00419` `errors=1` 검출 PASS (`207` assertions).
   - CTest (`vulkan_gpu_assisted_validation`) 1/1 PASS (`1.11s`), 독립 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P3-CAP-03`: Vulkan opt-in 손실 시험 경로 (Synthetic Loss Injection & Recovery)
+
+- **기준 HEAD**: `1c4f9c32`
+- **완료 ID**: `P3-CAP-03` (Phase 3 조건부 잔여 6 → 5, 전체 139/218 완료)
+- **수행 내용**:
+  - `src/backends/vulkan/Vulkan.cpp`: `DeviceDesc::enableDeviceLossTesting=true` opt-in 허용 및 `removeForTesting()` 합성 손실 주입(`VK_ERROR_DEVICE_LOST`) 구현(기본 opt-out `Unsupported` 유지, 예상 밖 하드웨어 TDR 수용과 경계 구분).
+  - `tests/{VulkanLossInjectionTests,VulkanTests}.cpp`, `tests/linux_vulkan_device/Device.cpp`, `CMakeLists.txt`, `docs/PHASE3_VULKAN_LOSS_INJECTION_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p3-loss-injection`, 설치 `out/p3-loss-injection-install`, `GraphicsSDKCore.lib` SHA-256 `61EA780E0DAC585CFAC6D240B04EB0CCD187DEBCBF9A6C862C9B1AE0B7886AD2`):
+  - `gfx_vulkan_loss_injection_tests` (일반 + 고정 VVL 1.3.290, GTX 1660 SUPER + Intel UHD 770): opt-out 거부, 타 스레드 거부, 9개 API `DeviceLost` error coverage, 크래시 브레드크럼 보존, `recover()` 새 세대 생성, 이중 `recover` 거부, 옛 자원 `WrongDevice`, 복구 후 64×64 Draw 및 `val_errors=0` PASS.
+  - `gfx_vulkan_tests --validation` PASS (`724` assertions), CTest 3/3 PASS (`3.94s`), 설치 소비자(`tests/consumer`) PASS.
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

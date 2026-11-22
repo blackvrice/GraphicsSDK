@@ -196,7 +196,14 @@ int main(int argc, char** argv) try {
     while (std::any_of(adapters.begin(), adapters.end(), [&](auto& p) { return p.id == missing.adapter; })) ++missing.adapter->value;
     reject(gfx::createDevice(missing), gfx::ErrorCode::Unsupported, "Missing exact adapter never falls back");
     missing.adapter.reset(); missing.enableDeviceLossTesting = true;
-    reject(gfx::createDevice(missing), gfx::ErrorCode::Unsupported, "Unsupported loss opt-in");
+    auto lossDev = take(gfx::createDevice(missing));
+    check(lossDev->caps().deviceLossInjection, "Opt-in Vulkan loss injection capability");
+    take(lossDev->removeForTesting());
+    reject(lossDev->checkStatus(), gfx::ErrorCode::DeviceLost, "Controlled synthetic Vulkan device loss");
+    auto recovered = take(lossDev->recover());
+    check(recovered->caps().deviceLossInjection, "Recovered device preserves opt-in loss testing");
+    take(recovered->checkStatus());
+    reject(lossDev->recover(), gfx::ErrorCode::InvalidState, "Second recover on retired generation rejected");
     std::cout << "PASS assertions=" << assertions << " transfers=" << transfers << " verified_bytes=" << verifiedBytes << " adapters=" << adapters.size() << std::endl;
     return 0;
 } catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << std::endl; return 1; }
