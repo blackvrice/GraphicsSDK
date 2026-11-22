@@ -28,7 +28,8 @@ HEADERS = {f'graphics/{name}.hpp' for name in ('Backend', 'Bindings', 'CommandLi
 PAYLOAD_FILES = {LIBRARY, NOTICE, *(CONFIG+p for p in CONFIG_FILES), *('include/'+h for h in HEADERS)}
 SDK_UNITS = (*CORE, 'src/backends/metal/Metal.cpp')
 OBJECTS = {pathlib.PurePosixPath(p).name+'.o' for p in SDK_UNITS}
-FRAMEWORKS = {'Metal', 'Foundation', 'QuartzCore', 'CoreGraphics'}
+BASE_FRAMEWORKS = {'Metal', 'Foundation', 'QuartzCore'}
+FRAMEWORKS = BASE_FRAMEWORKS | {'CoreGraphics'}
 SYSTEM_LIBS = {'/usr/lib/libSystem.B.dylib', '/usr/lib/libc++.1.dylib', '/usr/lib/libobjc.A.dylib'}
 CORE_FOUNDATION = '/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation'
 
@@ -61,7 +62,8 @@ def exports(folder):
         require(not re.search(r'(?m)(?:/Applications/|/Users/|/private/var/|/opt/homebrew/|\.deps/|libSDL|libLLGL|Vulkan\.framework)', text),
                 'CMake package embeds a build-machine path or a foreign backend')
     targets = (folder/'GraphicsSDKTargets.cmake').read_text()
-    require(set(re.findall(r'-framework (\w+)', targets)) == FRAMEWORKS, 'Metal framework names missing or changed in the export')
+    found = set(re.findall(r'-framework (\w+)', targets))
+    require(BASE_FRAMEWORKS <= found <= FRAMEWORKS, 'Metal framework names missing or changed in the export')
     release = (folder/'GraphicsSDKTargets-release.cmake').read_text()
     require('${_IMPORT_PREFIX}/'+LIBRARY in release, 'SDK archive is not relative to the install prefix')
 
@@ -122,9 +124,11 @@ def linker(text, library, consumer_object, sysroot, build):
 
 def dylibs(text):
     paths = {line.strip().split(' (compatibility version ', 1)[0] for line in text.splitlines()[1:] if line.strip()}
-    frameworks = {f'/System/Library/Frameworks/{name}.framework/Versions/{version}/{name}'
-                  for name, version in (('Metal', 'A'), ('Foundation', 'C'), ('QuartzCore', 'A'), ('CoreGraphics', 'A'))}
-    require(frameworks <= paths <= frameworks | SYSTEM_LIBS | {CORE_FOUNDATION}, f'Unexpected dynamic library list: {sorted(paths)}')
+    base_frameworks = {f'/System/Library/Frameworks/{name}.framework/Versions/{version}/{name}'
+                       for name, version in (('Metal', 'A'), ('Foundation', 'C'), ('QuartzCore', 'A'))}
+    optional_frameworks = {'/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics'}
+    require(base_frameworks <= paths <= base_frameworks | optional_frameworks | SYSTEM_LIBS | {CORE_FOUNDATION},
+            f'Unexpected dynamic library list: {sorted(paths)}')
     return sorted(paths)
 
 
