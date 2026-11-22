@@ -702,3 +702,17 @@
   - `gfx_zero_copy_video_tests` 5/5 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770 + WARP): NV12/P010 Direct Multi-Planar·Zero-Copy Shared Interop·Safe-Copy Fallback 128×128 BT.709 전 픽셀 CPU 참조 일치, Debug+GBV 및 고정 VVL 1.3.290 `val_errors=0`.
   - `ctest -R zero_copy_video` 5/5 PASS (`4.11s`), `native_interop` 5/5 PASS (`3.39s`), 회귀 44/44 PASS (`28.81s`), 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P11-AI-01`: 외부 AI 연산(CUDA/DirectML/ONNX Runtime) Interop 설계 및 프로토타입 검증
+
+- **기준 HEAD**: `56bde601`
+- **완료 ID / 분리 ID**: `P11-AI-01` 완료 (**Phase 8·10·11·12 Windows D3D12/Vulkan 전 항목 완료**), `P11-AI-02`(Linux Vulkan / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - SDK 공개 헤더(13개) 및 코어 소스(5개) 무수정 상태에서 `<graphics/Graphics.hpp>`만 사용하는 비침투 브리지 `examples/ai_compute_interop/AiTensorInteropBridge.hpp` 및 검증 스위트 `tests/AiComputeInteropTests.cpp`, 순수 SPIR-V 1.3 `ai_affine_relu_fp32` 추가.
+  - In-Process DirectML/ONNX Runtime(D3D12 EP) 비소유 `NativeHandle` 경계(타 장치 `WrongDevice` 거부), External-Handle Zero-Copy 3-Frame GPU-to-GPU 핑퐁(12,288 FP32 Affine+ReLU), Safe-Copy Host-Staging Fallback 구현 및 설계 문서(`docs/PHASE11_AI_COMPUTE_INTEROP_REPORT.md`) 작성.
+- **검증 결과** (`out/p11-ai-interop`):
+  - `gfx_ai_compute_interop_tests` 7/7 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770 + WARP): Same-API D3D12/Vulkan, Cross-API D3D12↔Vulkan, Debug+GBV 및 고정 VVL 1.3.290 모두 `val_errors=0`.
+  - `ctest -R ai_compute_interop` 6/6 PASS (`5.18s`).
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

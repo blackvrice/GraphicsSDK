@@ -44,7 +44,7 @@ python tools/roadmap.py --write
 | 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+) | 11 | 0 | 0 | 9 | 0 | 기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다. |
 | 9 — Command·멀티스레드·Shader·Compute·Render Graph | 7 | 0 | 0 | 8 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
 | 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region | 4 | 0 | 0 | 4 | 0 | 저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다. |
-| 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 4 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
+| 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 5 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
 | 12 — GraphicsUI·Sandbox RHI 호환성 | 2 | 0 | 0 | 2 | 0 | GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다. |
 
 ## 다음 권장 작업
@@ -494,7 +494,8 @@ Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P11-AI-01`<br>미완료 · 후속 최적화 | **GPU Compute 및 외부 AI 연산(CUDA/DirectML/ONNX Runtime) 연계 검토**<br>AI 실행 엔진을 내장하지 않고 외부 CUDA/DirectML/ONNX Runtime과 GPU 버퍼·동기화 펜스를 안전하게 공유하는 Interop 설계 및 프로토타입 검증을 수행한다.<br>완료: 소유권·동기화 경계 설계 문서 및 지원 환경 기준 연계 검증 기록. | 선행: `P9-CMP-01`, `P11-INT-01` |
+| [x] `P11-AI-01`<br>완료 · 후속 최적화 | **GPU Compute 및 외부 AI 연산(CUDA/DirectML/ONNX Runtime) 연계 검토 (설계·비침투 브리지·Win D3D12/Vulkan/Cross-API 검증)**<br>SDK 공개 헤더(13개) 및 코어 소스(5개)에 외부 AI 의존성을 추가하지 않고 <graphics/Graphics.hpp>만 사용하는 비침투 브리지(examples/ai_compute_interop/AiTensorInteropBridge.hpp)와 소유권·동기화 경계 설계 문서(docs/PHASE11_AI_COMPUTE_INTEROP_REPORT.md)를 구축했다. In-Process DirectML/ONNX Runtime(D3D12 EP) 비소유 NativeHandle 경계(타 장치 WrongDevice 거부), External-Handle Zero-Copy(CUDA/Vulkan/D3D12 3-Frame GPU-to-GPU Timeline 핑퐁 12,288 FP32 Affine+ReLU), Host-Staging Safe Fallback을 Windows 물리 GPU 2종(GTX 1660 SUPER·Intel UHD 770)·WARP에서 Same-API(D3D12/Vulkan) 및 Cross-API(D3D12↔Vulkan) 7개 모드(Debug+GBV 및 고정 VVL 1.3.290 val_errors=0)와 CTest 6/6으로 검증했다.<br>완료: 소유권·동기화 경계 설계 문서 및 지원 환경 기준 연계 검증 기록. | 선행: `P9-CMP-01`, `P11-INT-01`<br>근거: [AiTensorInteropBridge.hpp](../examples/ai_compute_interop/AiTensorInteropBridge.hpp), [ComputeFixtures.hpp](../tests/fixtures/ComputeFixtures.hpp), [AiComputeInteropTests.cpp](../tests/AiComputeInteropTests.cpp), [PHASE11_AI_COMPUTE_INTEROP_REPORT](PHASE11_AI_COMPUTE_INTEROP_REPORT.md) |
+| [ ] `P11-AI-02`<br>미완료 · 후속 최적화 | **외부 AI 연산 Interop 브리지 Linux Vulkan 및 macOS Metal 실기/CI 검증**<br>비침투 AI Interop 브리지(examples/ai_compute_interop/AiTensorInteropBridge.hpp)와 gfx_ai_compute_interop_tests를 Linux Vulkan(OpaqueFd/Fallback)과 macOS arm64/Intel Metal(NativeHandle/Fallback) 환경에서 실제 빌드·실행 검증한다.<br>완료: Linux Vulkan 및 macOS Metal CI/실기에서 AI 텐서 전처리·추론·후처리 전체 FP32 참조 일치 및 validation 0 통과. | 선행: `P11-AI-01`, `P11-INT-02`<br>환경: Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)<br>근거: [AiTensorInteropBridge.hpp](../examples/ai_compute_interop/AiTensorInteropBridge.hpp), [AiComputeInteropTests.cpp](../tests/AiComputeInteropTests.cpp), [PHASE11_AI_COMPUTE_INTEROP_REPORT](PHASE11_AI_COMPUTE_INTEROP_REPORT.md) |
 
 ### P11-PROF — GPU Profiling 및 진단
 
