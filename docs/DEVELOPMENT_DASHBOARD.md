@@ -27,8 +27,8 @@
 | Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 15 | 7 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·병렬 기록/일괄 제출(`P9-CMD-02`)·다중 큐/Timeline Fence(`P9-CMD-03`)·Compute/UAV(`P9-CMP-01`)·Async Compute/Indirect/MDI/GPU Culling/Capability(`P9-CMP-02`)·선택적 Render Graph(`P9-RG-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 영속 Shader Cache(`P9-SHD-01`) 잔여 |
 | Phase 10 | Frame Pacing·HDR·Multi-Surface·Dirty Region | 8 | 4 | 0 | 0 | 4 | Frame Pacing(`P10-PRES-01`)·HDR/Color Space(`P10-HDR-01`)·Multi-Surface(`P10-SURF-01`)·Dirty Region(`P10-DIRTY-01`) **Phase 10 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 4건 잔여 |
 | Phase 11 | Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 6 | 1 | 0 | 0 | 5 | GPU Profiling 확장(`P11-PROF-01`: 다중 32-Scope GPU Timestamp·ON/OFF 분리·카운터/Stall/VRAM null 계약) D3D12/Win Vulkan 완료 · Linux/Metal 검증(`P11-PROF-02`) 및 Interop/Video/Debugging 대기 |
-| Phase 12 | GraphicsUI·Sandbox RHI 호환성 | 3 | 1 | 0 | 0 | 2 | Sandbox RHI 1:1 매핑 및 비침투 독립 어댑터(`P12-SBX-01`) Win D3D12/Vulkan 완료 · Linux/Metal 검증(`P12-SBX-02`) 및 GraphicsUI 통합(`P12-UI-01`) 대기 |
-| **합계** | **전체 13 Phases** | **212** | **130** | **38** | **8** | **36** | **진행 중** |
+| Phase 12 | GraphicsUI·Sandbox RHI 호환성 | 4 | 2 | 0 | 0 | 2 | GraphicsUI 공통 기반(`P12-UI-01`)·Sandbox RHI 비침투 어댑터(`P12-SBX-01`) **Phase 12 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 2건 잔여 |
+| **합계** | **전체 13 Phases** | **213** | **131** | **38** | **8** | **36** | **진행 중** |
 
 ---
 
@@ -47,7 +47,7 @@
 | `v0.0.7` | 동적 Viewport·Command Pool·병렬 명령 기록·다중 큐·Timeline Fence | `P9-CMD-01`~`08` | `01, 02, 03, 04` 완료 · `05, 06, 07, 08`(Linux/Metal) 잔여 |
 | `v0.0.8` | Compute Pipeline·Storage Buffer/Texture(UAV)·Dispatch·Async Compute GPU Culling·Indirect/MDI·Bindless/Mesh Cap | `P9-CMP-01`~`04` | `01, 02` 완료 · `03, 04`(Linux/Metal) 잔여 |
 | `v0.0.9` | Frame Pacing·HDR/Color Space·Multi-Surface·Dirty Region 기반 | `P10-PRES-01`~`P10-DIRTY-02` | `01` 4종 완료 (**Phase 10 Win D3D12/Vulkan 완료**) · Linux/Metal 4건 잔여 |
-| `v0.0.10` | 선택적 Render Graph·Native Interop·Zero-Copy Video·GPU Profiling/Diagnostics·Sandbox 비침투 어댑터 | `P9-RG-01/02`, `P11-*`, `P12-*` | `P9-RG-01`·`P11-PROF-01`·`P12-SBX-01` 완료 · Linux/Metal 검증 및 나머지 `P11~12` 잔여 |
+| `v0.0.10` | 선택적 Render Graph·Native Interop·Zero-Copy Video·GPU Profiling/Diagnostics·GraphicsUI·Sandbox 어댑터 | `P9-RG-01/02`, `P11-*`, `P12-*` | `P9-RG-01`·`P11-PROF-01`·`P12-UI-01`·`P12-SBX-01` 완료 (**Phase 12 Win 완료**) · Linux/Metal 및 나머지 `P11` 잔여 |
 
 ---
 

@@ -45,7 +45,7 @@ python tools/roadmap.py --write
 | 9 — Command·멀티스레드·Shader·Compute·Render Graph | 7 | 0 | 0 | 8 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
 | 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region | 4 | 0 | 0 | 4 | 0 | 저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다. |
 | 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 1 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
-| 12 — GraphicsUI·Sandbox RHI 호환성 | 1 | 0 | 0 | 2 | 0 | GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다. |
+| 12 — GraphicsUI·Sandbox RHI 호환성 | 2 | 0 | 0 | 2 | 0 | GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다. |
 
 ## 다음 권장 작업
 
@@ -515,7 +515,8 @@ GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 �
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P12-UI-01`<br>미완료 · 후속 최적화 | **GraphicsUI 공통 기반 검증 (2D·Alpha·Scissor·Dynamic VB/IB·Atlas·Multi-Surface)**<br>GraphicsUI가 요구하는 2D 알파 블렌딩, Scissor, 동적 정점/인덱스 업로드, 텍스처/폰트 아틀라스 부분 갱신, 오프스크린 타깃, 다중 창 저지연 출력을 통합 예제로 검증한다.<br>완료: 상위 UI 위젯 의존성 없이 SDK 공개 API만으로 전체 픽셀 참조와 저지연 프레임 타이밍 확인. | 선행: `P8-XFER-05`, `P9-CMD-01`, `P10-DIRTY-01` |
+| [x] `P12-UI-01`<br>완료 · 후속 최적화 | **GraphicsUI 공통 기반 검증 (2D·Alpha·Scissor·Dynamic VB/IB·Atlas·Multi-Surface) (Win D3D12/Vulkan 검증)**<br>상위 UI 위젯 의존성이나 SDK 공개 헤더/코어 수정 없이 <graphics/Graphics.hpp>만 사용하는 독립 통합 예제(examples/graphics_ui_foundation/UiBatchRenderer.hpp)와 검증 스위트(tests/GraphicsUiFoundationTests.cpp)를 구축했다. 2D 알파 블렌딩(alphaBlend=true), 쿼드별 Scissor 클리핑·동적 Viewport, UploadRing stage-before-record 기반 동적 VB/IB 업로드(copyBufferRegion + drawIndexed), 64x64 폰트/아이콘 아틀라스 부분 갱신(copyBufferToTextureRegion) 및 샘플링, 128x128(16,384픽셀) 오프스크린 독립 소프트웨어 Porter-Duff CPU 참조 대조, 2중 창 저지연(FramePacingMode::LowLatency, maxFrameLatency=1, presentSwapChains) 출력을 Windows D3D12(GTX 1660 SUPER avg 1.07~1.12ms / Intel UHD 770 / Debug+GBV 오류 0 / WARP 복구) 및 Vulkan(GTX 1660 SUPER avg 0.237~0.249ms·qLat 0.127~0.186ms / Intel 오프스크린 통과·스왑체인 거부 / 고정 VVL 1.3.290 오류 0) 5모드 및 CTest 5/5로 검증했다.<br>완료: 상위 UI 위젯 의존성 없이 SDK 공개 API만으로 전체 픽셀 참조와 저지연 프레임 타이밍 확인. | 선행: `P8-XFER-05`, `P9-CMD-01`, `P10-DIRTY-01`<br>근거: [UiBatchRenderer.hpp](../examples/graphics_ui_foundation/UiBatchRenderer.hpp), [GraphicsUiFoundationTests.cpp](../tests/GraphicsUiFoundationTests.cpp), [PHASE12_GRAPHICS_UI_REPORT](PHASE12_GRAPHICS_UI_REPORT.md) |
+| [ ] `P12-UI-02`<br>미완료 · 후속 최적화 | **GraphicsUI 공통 기반 Linux Vulkan 및 macOS Metal 실기/CI 검증**<br>독립 GraphicsUI 공통 기반 예제(examples/graphics_ui_foundation/UiBatchRenderer.hpp)를 Linux Vulkan(XCB/lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행·전 픽셀 참조·다중 창 저지연 타이밍으로 검증한다.<br>완료: Linux Vulkan 및 macOS Metal CI/실기에서 GraphicsUI 2D 알파·Scissor·동적 VB/IB·아틀라스·다중 창 출력 통과. | 선행: `P12-UI-01`, `P10-DIRTY-02`<br>환경: Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)<br>근거: [UiBatchRenderer.hpp](../examples/graphics_ui_foundation/UiBatchRenderer.hpp), [GraphicsUiFoundationTests.cpp](../tests/GraphicsUiFoundationTests.cpp), [PHASE12_GRAPHICS_UI_REPORT](PHASE12_GRAPHICS_UI_REPORT.md) |
 
 ### P12-SBX — Sandbox RHI 호환 어댑터 설계
 

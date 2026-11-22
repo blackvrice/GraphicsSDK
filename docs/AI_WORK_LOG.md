@@ -640,3 +640,16 @@
   - `gfx_dirty_region_tests` 5/5 모드 PASS: 256×256(65,536픽셀) 비갱신 영역 100% 보존 + Partial Present 조회/실행/거부 + 1024×1024×32 레이어 전체 vs 128×128 부분 렌더링 실측(D3D12 GTX **46.88x** / Intel **99.45x** / WARP **7.77x**, Vulkan GTX **32.14x** / Intel **98.77x** GPU 가속), Debug+GBV/고정 VVL 1.3.290 `val_errors=0`.
   - 독립 설치 소비자(`tests/consumer`) 및 전체 CTest 회귀: **145/145 (100% PASS, `160.81s`)**.
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P12-UI-01`: GraphicsUI 공통 기반 통합 검증 (2D·Alpha·Scissor·Dynamic VB/IB·Atlas·Multi-Surface)
+
+- **기준 HEAD**: `bb23e67f`
+- **완료 ID / 분리 ID**: `P12-UI-01` 완료 (**Phase 12 Windows D3D12/Vulkan 전 항목 완료**), `P12-UI-02`(Linux Vulkan / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - SDK 공개 헤더(13개) 및 코어 소스(5개) 무수정 상태에서 `<graphics/Graphics.hpp>`만 사용하는 독립 예제 `examples/graphics_ui_foundation/UiBatchRenderer.hpp` 및 검증 스위트 `tests/GraphicsUiFoundationTests.cpp` 작성.
+  - 2D 알파 블렌딩(`alphaBlend=true`), 쿼드별 `setScissor`/동적 `setViewport`, `UploadRing` `stage-before-record` 기반 동적 VB/IB 업로드(`copyBufferRegion` + `drawIndexed`), 64×64 아틀라스 부분 갱신(`copyBufferToTextureRegion`) 및 샘플링, 128×128(16,384픽셀) 오프스크린 Porter-Duff CPU 참조, 2중 창 저지연(`FramePacingMode::LowLatency`, `maxFrameLatency=1`, `presentSwapChains`) 검증.
+- **검증 결과** (`out/p12-graphics-ui`, 경고 0 / 오류 0):
+  - `gfx_graphics_ui_tests` 5/5 모드 및 `ctest -R graphics_ui` 5/5 PASS (`2.85s`): D3D12 GTX 1660 SUPER (`winA avg=1.122ms`, `winB avg=1.068ms`), Intel UHD 770 (`2.101ms`/`1.453ms`), Debug+GBV `val_errors=0`, WARP 손실/복구, Vulkan GTX 1660 SUPER (`winA avg=0.249ms`, `winB avg=0.237ms`, `qLat 0.127~0.186ms`), Intel 오프스크린 통과/스왑체인 거부, 고정 VVL 1.3.290 `val_errors=0`, 자원 누수 0.
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
