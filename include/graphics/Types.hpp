@@ -43,7 +43,13 @@ enum class Format {
     ASTC8x8UNorm,
     RGBA8SRGB,
     BGRA8SRGB,
-    RGB10A2UNorm
+    RGB10A2UNorm,
+    R8UNorm,
+    RG8UNorm,
+    R16UNorm,
+    RG16UNorm,
+    NV12,
+    P010
 };
 struct FormatBlockInfo {
     std::uint32_t blockWidth{1};
@@ -117,6 +123,7 @@ struct TextureViewDesc {
     std::uint32_t baseArrayLayer{};
     std::uint32_t arrayLayerCount{1};
     std::optional<TextureDimension> dimension;
+    std::uint32_t planeSlice{};
     bool operator==(const TextureViewDesc&) const = default;
 };
 struct TextureFootprint { std::uint64_t size{}; std::uint32_t rowPitch{}, rowBytes{}, height{}; };
@@ -132,6 +139,7 @@ struct TextureCopyRegion {
     std::uint32_t arrayLayer{};
     std::uint32_t z{};
     std::uint32_t depth{1};
+    std::uint32_t planeSlice{};
 };
 struct Fence { std::uint64_t value{}, device{}; };
 struct DeviceDesc {

@@ -40,6 +40,10 @@ D3D12(`DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL` + `IDXGISwapChain1::Present1`, 최대 6
 `Device::{exportBufferHandle, importBufferHandle, exportTextureHandle, importTextureHandle, createSharedTimelineFence, exportTimelineFenceHandle, importTimelineFenceHandle}`)은
 공개 헤더의 OS/API 무의존성을 유지하면서 Same-API 및 Cross-API(Windows D3D12 ↔ Vulkan) Zero-Copy 공유 리소스와 공유 타임라인 동기화를 제공한다.
 [Native GPU Interoperability 보고서](PHASE11_NATIVE_INTEROP_REPORT.md)를 따른다.
+`Format`은 단일/이중 채널 포맷(`R8UNorm`, `RG8UNorm`, `R16UNorm`, `RG16UNorm`)과 다중 평면 4:2:0 비디오 포맷(`NV12`, `P010`)을 추가로 지원하며,
+`isMultiPlanarFormat`/`formatPlaneCount`/`formatPlaneFormat`/`computeTexturePlaneFootprint` 및 `TextureViewDesc::planeSlice`·`TextureCopyRegion::planeSlice`로
+평면별 업로드·`ShaderRead` 뷰·Compute Shader BT.709 색 변환·`shared=true` Zero-Copy 디코더 공유 및 단일 평면 안전 복사 폴백 경로를 제공한다.
+[Zero-Copy Video 기반 보고서](PHASE11_ZERO_COPY_VIDEO_REPORT.md)를 따른다.
 queue는 submit 결과로 Fence를 반환하고 wait/waitIdle/completedValue를 제공한다.
 GPU 비동기 완료를 명시적으로 기다린 뒤 readback을 읽는다.
 

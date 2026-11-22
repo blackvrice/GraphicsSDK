@@ -495,6 +495,13 @@ MTLPixelFormat pixelFormat(Format f) {
     case Format::RGBA8SRGB: return MTLPixelFormatRGBA8Unorm_sRGB;
     case Format::BGRA8SRGB: return MTLPixelFormatBGRA8Unorm_sRGB;
     case Format::RGB10A2UNorm: return MTLPixelFormatRGB10A2Unorm;
+    case Format::R8UNorm: return MTLPixelFormatR8Unorm;
+    case Format::RG8UNorm: return MTLPixelFormatRG8Unorm;
+    case Format::R16UNorm: return MTLPixelFormatR16Unorm;
+    case Format::RG16UNorm: return MTLPixelFormatRG16Unorm;
+    case Format::NV12:
+    case Format::P010:
+        return MTLPixelFormatInvalid;
     }
     return MTLPixelFormatInvalid;
 }

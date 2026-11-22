@@ -4145,17 +4145,48 @@
       "id": "P11-VID-01",
       "phase": 11,
       "group": "P11-VID",
-      "title": "Zero-Copy Video 기반 (NV12·P010·하드웨어 코덱 연계·GPU 색 변환)",
-      "status": "todo",
+      "title": "Zero-Copy Video 기반 (NV12·P010·하드웨어 코덱 연계·GPU 색 변환) (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P8-TEX-01",
         "P9-CMP-01",
         "P11-INT-01"
       ],
-      "work": "NV12/P010 다중 평면 YUV 텍스처 및 평면별 View, 하드웨어 디코드/인코드 텍스처 공유, GPU 색 변환 셰이더 경로와 Zero-Copy 불가 환경의 안전 복사 폴백을 구현한다.",
+      "work": "13개 공개 헤더/5개 CORE 유닛 계약을 유지하며 Format::{R8UNorm,RG8UNorm,R16UNorm,RG16UNorm,NV12,P010}, TextureViewDesc::planeSlice, TextureCopyRegion::planeSlice, isMultiPlanarFormat/formatPlaneCount/formatPlaneFormat/computeTexturePlaneFootprint를 구현했다. D3D12(DXGI_FORMAT_NV12/P010, SubresourceIndex=planeSlice, SRV PlaneSlice, shared Zero-Copy), Vulkan(VK_FORMAT_G8_B8R8_2PLANE_420_UNORM/G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16, MUTABLE_FORMAT|EXTENDED_USAGE, PLANE_0/PLANE_1 aspect, P010 R10X6/R10X6G10X6 규격 뷰, importTextureHandle contentsInitialized 반영), Metal(단일/이중 채널 폴백 매핑 및 다중 평면 Unsupported)을 구현하고, Windows 물리 GPU 2종(GTX 1660 SUPER·Intel UHD 770)·WARP에서 HLSL/순수 SPIR-V 1.3 BT.709 Compute 색 변환으로 NV12/P010 Direct·Zero-Copy Shared Interop·Safe-Copy Fallback 5모드(Debug+GBV 및 고정 VVL 1.3.290 val_errors=0), CTest 5/5 + 회귀 49/49, 설치 소비자로 검증했다.",
       "done_when": "NV12/P010 전체 프레임 변환 참조 일치, Zero-Copy 및 폴백 경로 모두 validation 0 통과.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/RenderPass.hpp",
+        "src/foundation/RenderPass.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/metal/Metal.cpp",
+        "tests/fixtures/ComputeFixtures.hpp",
+        "tests/ZeroCopyVideoTests.cpp",
+        "docs/PHASE11_ZERO_COPY_VIDEO_REPORT.md"
+      ]
+    },
+    {
+      "id": "P11-VID-02",
+      "phase": 11,
+      "group": "P11-VID",
+      "title": "Zero-Copy Video (NV12·P010·Safe-Copy Fallback) Linux Vulkan 및 macOS Metal 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P11-VID-01",
+        "P11-INT-02"
+      ],
+      "work": "NV12/P010 다중 평면 YUV 텍스처, 평면별 View, GPU BT.709 색 변환 및 안전 복사 폴백 경로(tests/ZeroCopyVideoTests.cpp)를 Linux Vulkan과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 NV12/P010 또는 폴백 경로 전체 프레임 BT.709 참조 일치 및 validation 0 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/metal/Metal.cpp",
+        "tests/ZeroCopyVideoTests.cpp",
+        "docs/PHASE11_ZERO_COPY_VIDEO_REPORT.md"
+      ]
     },
     {
       "id": "P11-AI-01",

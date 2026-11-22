@@ -7,12 +7,16 @@ namespace gfx {
 namespace {
 auto bad(const char* message){return std::unexpected(Error{ErrorCode::InvalidArgument,message});}
 auto unsupported(const char* message){return std::unexpected(Error{ErrorCode::Unsupported,message});}
-bool uncompressedColorFormat(Format f){return f==Format::RGBA8UNorm || f==Format::RGBA16Float || f==Format::BGRA8UNorm || f==Format::RGBA8SRGB || f==Format::BGRA8SRGB || f==Format::RGB10A2UNorm;}
+bool uncompressedColorFormat(Format f) {
+    return f == Format::RGBA8UNorm || f == Format::RGBA16Float || f == Format::BGRA8UNorm ||
+           f == Format::RGBA8SRGB || f == Format::BGRA8SRGB || f == Format::RGB10A2UNorm ||
+           f == Format::R8UNorm || f == Format::RG8UNorm || f == Format::R16UNorm || f == Format::RG16UNorm;
+}
 bool compressedFormat(Format f) {
     return f >= Format::BC1UNorm && f <= Format::ASTC8x8UNorm;
 }
 bool knownTextureFormat(Format f) {
-    return uncompressedColorFormat(f) || f == Format::D32Float || compressedFormat(f);
+    return uncompressedColorFormat(f) || f == Format::D32Float || compressedFormat(f) || isMultiPlanarFormat(f);
 }
 bool loadOp(LoadOp op){return op==LoadOp::Clear || op==LoadOp::Load;}
 bool validSampleCount(std::uint32_t n){return n==1u || n==2u || n==4u || n==8u;}
@@ -36,8 +40,37 @@ std::uint32_t maxMipCount(const TextureDesc& d) {
     return mips;
 }
 }
+bool isMultiPlanarFormat(Format format) noexcept {
+    return format == Format::NV12 || format == Format::P010;
+}
+std::uint32_t formatPlaneCount(Format format) noexcept {
+    return isMultiPlanarFormat(format) ? 2u : 1u;
+}
+Result<Format> formatPlaneFormat(Format format, std::uint32_t planeSlice) {
+    if (format == Format::NV12) {
+        if (planeSlice == 0u) return Format::R8UNorm;
+        if (planeSlice == 1u) return Format::RG8UNorm;
+        return bad("NV12 planeSlice must be 0 (Y) or 1 (UV)");
+    }
+    if (format == Format::P010) {
+        if (planeSlice == 0u) return Format::R16UNorm;
+        if (planeSlice == 1u) return Format::RG16UNorm;
+        return bad("P010 planeSlice must be 0 (Y) or 1 (UV)");
+    }
+    if (!knownTextureFormat(format)) return bad("Unknown texture format");
+    if (planeSlice != 0u) return bad("Single-plane texture requires planeSlice=0");
+    return format;
+}
 Result<FormatBlockInfo> queryFormatBlockInfo(Format format) {
     switch (format) {
+    case Format::R8UNorm:
+    case Format::NV12:
+        return FormatBlockInfo{1u, 1u, 1u, false};
+    case Format::RG8UNorm:
+    case Format::R16UNorm:
+    case Format::P010:
+        return FormatBlockInfo{1u, 1u, 2u, false};
+    case Format::RG16UNorm:
     case Format::RGBA8UNorm:
     case Format::BGRA8UNorm:
     case Format::RGBA8SRGB:
@@ -76,6 +109,22 @@ Result<void> validateTextureDescription(TextureDesc d) {
         (d.depthStencil && (d.renderTarget || d.storage)) ||
         !validSampleCount(d.sampleCount)) {
         return bad("Invalid texture format, attachment usage, or sample count");
+    }
+    if (isMultiPlanarFormat(d.format)) {
+        if (d.renderTarget || d.depthStencil || d.storage) {
+            return unsupported("Multi-planar YUV textures support transfer and per-plane ShaderRead views only");
+        }
+        if (d.sampleCount > 1u) {
+            return bad("Multi-planar YUV textures cannot be multisampled");
+        }
+        if (d.dimension != TextureDimension::Texture2D || d.mipLevels != 1u || d.arrayLayers != 1u || d.depth != 1u) {
+            return bad("Multi-planar YUV textures require single-mip, single-layer Texture2D");
+        }
+        if (d.width < 2u || d.height < 2u || d.width > 16384u || d.height > 16384u ||
+            (d.width % 2u) != 0u || (d.height % 2u) != 0u) {
+            return bad("Multi-planar 4:2:0 YUV textures require even width and height in 2..16384");
+        }
+        return {};
     }
     if (blockInfo->compressed) {
         if (d.renderTarget || d.storage) {
@@ -136,7 +185,24 @@ Result<void> validateTextureDescription(TextureDesc d) {
 }
 Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureViewDesc viewDesc) {
     if (auto ok = validateTextureDescription(textureDesc); !ok) return std::unexpected(ok.error());
-    const Format resolvedFormat = viewDesc.format.value_or(textureDesc.format);
+    const bool multiPlanar = isMultiPlanarFormat(textureDesc.format);
+    if (!multiPlanar && viewDesc.planeSlice != 0u) {
+        return bad("Non-planar textures require planeSlice=0");
+    }
+    Format resolvedFormat = textureDesc.format;
+    if (multiPlanar) {
+        auto planeFmt = formatPlaneFormat(textureDesc.format, viewDesc.planeSlice);
+        if (!planeFmt) return std::unexpected(planeFmt.error());
+        resolvedFormat = viewDesc.format.value_or(*planeFmt);
+        if (resolvedFormat != *planeFmt) {
+            return bad("Multi-planar texture view format must match the selected planeSlice format");
+        }
+        if (viewDesc.usage != TextureViewUsage::ShaderRead) {
+            return unsupported("Multi-planar YUV textures support ShaderRead plane views only");
+        }
+    } else {
+        resolvedFormat = viewDesc.format.value_or(textureDesc.format);
+    }
     if (!knownTextureFormat(resolvedFormat)) return bad("Unknown texture view format");
     if (viewDesc.usage != TextureViewUsage::ShaderRead &&
         viewDesc.usage != TextureViewUsage::RenderTarget &&
@@ -152,11 +218,13 @@ Result<TextureViewDesc> validateTextureView(TextureDesc textureDesc, TextureView
         viewDesc.arrayLayerCount > textureDesc.arrayLayers - viewDesc.baseArrayLayer) {
         return bad("Texture view array layer range outside texture bounds");
     }
-    if ((resolvedFormat == Format::D32Float) != (textureDesc.format == Format::D32Float)) {
-        return bad("Cannot reinterpret between color and depth texture formats");
-    }
-    if (resolvedFormat != textureDesc.format) {
-        return unsupported("Cross-format texture view reinterpretation is unsupported");
+    if (!multiPlanar) {
+        if ((resolvedFormat == Format::D32Float) != (textureDesc.format == Format::D32Float)) {
+            return bad("Cannot reinterpret between color and depth texture formats");
+        }
+        if (resolvedFormat != textureDesc.format) {
+            return unsupported("Cross-format texture view reinterpretation is unsupported");
+        }
     }
     TextureDimension resolvedDim = textureDesc.dimension;
     if (viewDesc.dimension.has_value()) {
@@ -237,6 +305,20 @@ Result<TextureFootprint> computeTextureRegionFootprint(
     }
     const std::uint64_t totalBytes = static_cast<std::uint64_t>(resolvedPitch) * blocksY;
     return TextureFootprint{totalBytes, resolvedPitch, rowBytes, blocksY};
+}
+Result<TextureFootprint> computeTexturePlaneFootprint(
+    Format format, std::uint32_t width, std::uint32_t height, std::uint32_t planeSlice, std::uint32_t rowPitch) {
+    auto planeFmt = formatPlaneFormat(format, planeSlice);
+    if (!planeFmt) return std::unexpected(planeFmt.error());
+    if (isMultiPlanarFormat(format)) {
+        if (width < 2u || height < 2u || width > 16384u || height > 16384u || (width % 2u) != 0u || (height % 2u) != 0u) {
+            return bad("Multi-planar 4:2:0 YUV footprint requires even width and height in 2..16384");
+        }
+        const std::uint32_t planeW = planeSlice == 0u ? width : (width / 2u);
+        const std::uint32_t planeH = planeSlice == 0u ? height : (height / 2u);
+        return computeTextureRegionFootprint(*planeFmt, planeW, planeH, rowPitch);
+    }
+    return computeTextureRegionFootprint(*planeFmt, width, height, rowPitch);
 }
 Result<void> validateRenderTargets(const RenderTargetLayout& layout,DepthState depth) {
     if(layout.colors.size()>8 || (layout.colors.empty() && !layout.depth))return bad("Render layout requires 1..8 color attachments or depth");

@@ -961,6 +961,23 @@ VkFormat textureFormat(Format f) {
     case Format::RGBA8SRGB: return VK_FORMAT_R8G8B8A8_SRGB;
     case Format::BGRA8SRGB: return VK_FORMAT_B8G8R8A8_SRGB;
     case Format::RGB10A2UNorm: return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+    case Format::R8UNorm: return VK_FORMAT_R8_UNORM;
+    case Format::RG8UNorm: return VK_FORMAT_R8G8_UNORM;
+    case Format::R16UNorm: return VK_FORMAT_R16_UNORM;
+    case Format::RG16UNorm: return VK_FORMAT_R16G16_UNORM;
+    case Format::NV12: return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+    case Format::P010: return VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+    }
+    return VK_FORMAT_UNDEFINED;
+}
+VkFormat multiPlanarPlaneVkFormat(Format parentFormat, std::uint32_t planeSlice) {
+    if (parentFormat == Format::NV12) {
+        return planeSlice == 0u ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8G8_UNORM;
+    }
+    if (parentFormat == Format::P010) {
+        // Vulkan spec "Compatible formats of planes of multi-planar formats":
+        // G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16 uses R10X6 / R10X6G10X6 plane view formats.
+        return planeSlice == 0u ? VK_FORMAT_R10X6_UNORM_PACK16 : VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
     }
     return VK_FORMAT_UNDEFINED;
 }
@@ -1310,6 +1327,8 @@ struct VulkanCommands final : CommandList {
     Result<void> copyTexture(const std::shared_ptr<Allocation>& image, const std::shared_ptr<Allocation>& buffer, bool upload) {
         if (image->textureDesc.sampleCount > 1u)
             return fail(ErrorCode::InvalidArgument, "Direct buffer copy is invalid for multisampled textures; resolve first");
+        if (isMultiPlanarFormat(image->textureDesc.format))
+            return fail(ErrorCode::InvalidArgument, "Use copyBufferToTextureRegion/copyTextureToBufferRegion with planeSlice for multi-planar textures");
         if (buffer->desc.size < image->footprint.size ||
             buffer->desc.memory == (upload ? Memory::Readback : Memory::Upload))
             return fail(ErrorCode::InvalidArgument, "Texture copy buffer size or memory kind invalid");
@@ -1376,12 +1395,20 @@ struct VulkanCommands final : CommandList {
         if (region.mipLevel >= desc.mipLevels || region.arrayLayer >= desc.arrayLayers || !region.depth) {
             return fail(ErrorCode::InvalidArgument, "Texture copy region subresource or depth invalid");
         }
-        const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
-        const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
+        const bool multiPlanar = isMultiPlanarFormat(desc.format);
+        auto planeFmt = formatPlaneFormat(desc.format, region.planeSlice);
+        if (!planeFmt) return std::unexpected(planeFmt.error());
+        const Format copyFormat = *planeFmt;
+        const std::uint32_t mipW = multiPlanar
+            ? (region.planeSlice == 0u ? desc.width : (desc.width / 2u))
+            : std::max(1u, desc.width >> region.mipLevel);
+        const std::uint32_t mipH = multiPlanar
+            ? (region.planeSlice == 0u ? desc.height : (desc.height / 2u))
+            : (desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel));
         const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
-        const auto blockInfo = queryFormatBlockInfo(desc.format);
+        const auto blockInfo = queryFormatBlockInfo(copyFormat);
         if (!blockInfo) return std::unexpected(blockInfo.error());
-        auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
+        auto footprint = computeTextureRegionFootprint(copyFormat, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > mipW || region.width > mipW - region.x ||
             region.y > mipH || region.height > mipH - region.y ||
@@ -1437,7 +1464,10 @@ struct VulkanCommands final : CommandList {
         copy.bufferOffset = region.bufferOffset;
         copy.bufferRowLength = (footprint->rowPitch / blockInfo->bytesPerBlock) * blockInfo->blockWidth;
         copy.bufferImageHeight = footprint->height * blockInfo->blockHeight;
-        copy.imageSubresource = {imageAspect(*image), region.mipLevel, region.arrayLayer, 1};
+        const VkImageAspectFlags copyAspect = multiPlanar
+            ? (region.planeSlice == 0u ? VK_IMAGE_ASPECT_PLANE_0_BIT : VK_IMAGE_ASPECT_PLANE_1_BIT)
+            : imageAspect(*image);
+        copy.imageSubresource = {copyAspect, region.mipLevel, region.arrayLayer, 1};
         copy.imageOffset = {static_cast<std::int32_t>(region.x), static_cast<std::int32_t>(region.y), static_cast<std::int32_t>(region.z)};
         copy.imageExtent = {region.width, region.height, region.depth};
         if (upload) {
@@ -2657,16 +2687,17 @@ struct VulkanDevice final : Device {
         const auto features = props.optimalTilingFeatures;
         const bool isDepth = format == Format::D32Float;
         const bool isCompressed = blockInfo->compressed;
+        const bool isPlanar = isMultiPlanarFormat(format);
         result.copySource = (features & VK_FORMAT_FEATURE_TRANSFER_SRC_BIT) != 0;
         result.copyDestination = (features & VK_FORMAT_FEATURE_TRANSFER_DST_BIT) != 0;
-        result.renderTarget = !isDepth && !isCompressed && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) != 0;
+        result.renderTarget = !isDepth && !isCompressed && !isPlanar && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) != 0;
         result.blendable = result.renderTarget && (features & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT) != 0;
         result.depthStencil = isDepth && (features & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0 && capabilities.depthAttachment;
         result.sampled = !isDepth && (features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
         result.linearFilter = result.sampled && (features & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) != 0;
         result.texture2D = result.copySource && result.copyDestination && (isDepth ? result.depthStencil : result.sampled);
         result.partialRegionCopy = result.texture2D && !isDepth;
-        result.storage = !isDepth && !isCompressed && (features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
+        result.storage = !isDepth && !isCompressed && !isPlanar && (features & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
         result.sampleCounts = result.texture2D ? 1u : 0u;
         if (result.texture2D && (isDepth ? result.depthStencil : result.renderTarget)) {
             const VkImageUsageFlags msaaUsage = isDepth
@@ -2815,7 +2846,10 @@ struct VulkanDevice final : Device {
             }
         }
         const VkImageType imageType = vulkanImageType(desc.dimension);
-        const VkImageCreateFlags createFlags = desc.dimension == TextureDimension::TextureCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u;
+        const bool isPlanar = isMultiPlanarFormat(desc.format);
+        const VkImageCreateFlags createFlags =
+            (desc.dimension == TextureDimension::TextureCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u) |
+            (isPlanar ? (VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT | VK_IMAGE_CREATE_EXTENDED_USAGE_BIT) : 0u);
         const std::uint32_t sliceHeight = desc.dimension == TextureDimension::Texture1D ? 1u : desc.height;
         const std::uint32_t imageDepth = desc.dimension == TextureDimension::Texture3D ? desc.depth : 1u;
         const VkSampleCountFlagBits sampleBit = vulkanSampleCount(desc.sampleCount);
@@ -2885,7 +2919,7 @@ struct VulkanDevice final : Device {
 #endif
         if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory image"); !ok) return std::unexpected(ok.error());
         if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, a->memory, 0), "vkBindImageMemory"); !ok) return std::unexpected(ok.error());
-        {
+        if (!isPlanar) {
             VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
             view.image = a->image; view.viewType = vulkanImageViewType(desc.dimension); view.format = format;
             view.subresourceRange = {imageAspect(*a), 0, desc.mipLevels, 0, desc.arrayLayers};
@@ -3249,12 +3283,18 @@ struct VulkanDevice final : Device {
         nativeView->native = owner->native;
         nativeView->allocation = parent->allocation;
         nativeView->desc = *resolved;
+        const bool isPlanar = isMultiPlanarFormat(parent->allocation->textureDesc.format);
         VkImageViewCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
         info.image = parent->allocation->image;
         info.viewType = vulkanImageViewType(*resolved->dimension);
-        info.format = textureFormat(*resolved->format);
+        info.format = isPlanar
+            ? multiPlanarPlaneVkFormat(parent->allocation->textureDesc.format, resolved->planeSlice)
+            : textureFormat(*resolved->format);
+        const VkImageAspectFlags viewAspect = isPlanar
+            ? (resolved->planeSlice == 0u ? VK_IMAGE_ASPECT_PLANE_0_BIT : VK_IMAGE_ASPECT_PLANE_1_BIT)
+            : imageAspect(*parent->allocation);
         info.subresourceRange = {
-            imageAspect(*parent->allocation),
+            viewAspect,
             resolved->baseMipLevel,
             resolved->mipLevelCount,
             resolved->baseArrayLayer,
@@ -3840,16 +3880,19 @@ struct VulkanDevice final : Device {
             : (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                (desc.depthStencil ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_SAMPLED_BIT | (desc.renderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0u) | (desc.storage ? VK_IMAGE_USAGE_STORAGE_BIT : 0u)));
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->textureDesc = desc;
+        a->contentsInitialized = true;
         if (desc.sampleCount == 1u) {
             const auto fp = computeTextureRegionFootprint(desc.format, desc.width, sliceHeight);
             if (!fp) return std::unexpected(fp.error());
             a->footprint = {fp->size * imageDepth, fp->rowPitch, fp->rowBytes, fp->height};
         }
+        const bool isPlanar = isMultiPlanarFormat(desc.format);
         VkExternalMemoryImageCreateInfo extImg{VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO};
         extImg.handleTypes = matchedType;
         VkImageCreateInfo info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
         info.pNext = &extImg;
-        info.flags = desc.dimension == TextureDimension::TextureCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u;
+        info.flags = (desc.dimension == TextureDimension::TextureCube ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u) |
+            (isPlanar ? (VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT | VK_IMAGE_CREATE_EXTENDED_USAGE_BIT) : 0u);
         info.imageType = imageType; info.format = format; info.extent = {desc.width, sliceHeight, imageDepth};
         info.mipLevels = desc.mipLevels; info.arrayLayers = desc.arrayLayers; info.samples = sampleBit; info.tiling = VK_IMAGE_TILING_OPTIMAL;
         info.usage = usage; info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -3886,10 +3929,12 @@ struct VulkanDevice final : Device {
         allocate.memoryTypeIndex = *type;
         if (auto ok = owner->accept(vulkan::acquireOutput(a->memory, owner->native->AllocateMemory, owner->native->handle, &allocate, nullptr), "vkAllocateMemory(import image)"); !ok) return std::unexpected(ok.error());
         if (auto ok = owner->accept(owner->native->BindImageMemory(owner->native->handle, a->image, a->memory, 0), "vkBindImageMemory(import)"); !ok) return std::unexpected(ok.error());
-        VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
-        view.image = a->image; view.viewType = vulkanImageViewType(desc.dimension); view.format = format;
-        view.subresourceRange = {imageAspect(*a), 0, desc.mipLevels, 0, desc.arrayLayers};
-        if (auto ok = owner->accept(vulkan::acquireOutput(a->view, owner->native->CreateImageView, owner->native->handle, &view, nullptr), "vkCreateImageView(import)"); !ok) return std::unexpected(ok.error());
+        if (!isPlanar) {
+            VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+            view.image = a->image; view.viewType = vulkanImageViewType(desc.dimension); view.format = format;
+            view.subresourceRange = {imageAspect(*a), 0, desc.mipLevels, 0, desc.arrayLayers};
+            if (auto ok = owner->accept(vulkan::acquireOutput(a->view, owner->native->CreateImageView, owner->native->handle, &view, nullptr), "vkCreateImageView(import)"); !ok) return std::unexpected(ok.error());
+        }
         auto value = std::make_shared<VulkanTexture>(); value->owner = owner; value->allocation = a; value->token = std::make_shared<int>();
         std::erase_if(owner->allocations, [](auto& w) { return w.expired(); });
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); });

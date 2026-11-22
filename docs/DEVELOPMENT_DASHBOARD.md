@@ -26,9 +26,9 @@
 | Phase 8 | GPU 자원·전송·Capability·Texture·Memory Pool 확장 | 20 | 11 | 0 | 0 | 9 | `copyBufferRegion`·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(`P8-TEX-01`)·1D/3D/2DArray/Cubemap/Mipmap(`P8-TEX-02`)·MSAA/Resolve(`P8-TEX-03`)·압축 텍스처 BC/ETC2/ASTC(`P8-TEX-04`)·`UploadRing`/Pools(`P8-MEM-01`)·Fragmentation/Residency/Aliasing/Sparse(`P8-MEM-02`) **Phase 8 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 9건 잔여 |
 | Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 15 | 7 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·병렬 기록/일괄 제출(`P9-CMD-02`)·다중 큐/Timeline Fence(`P9-CMD-03`)·Compute/UAV(`P9-CMP-01`)·Async Compute/Indirect/MDI/GPU Culling/Capability(`P9-CMP-02`)·선택적 Render Graph(`P9-RG-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 영속 Shader Cache(`P9-SHD-01`) 잔여 |
 | Phase 10 | Frame Pacing·HDR·Multi-Surface·Dirty Region | 8 | 4 | 0 | 0 | 4 | Frame Pacing(`P10-PRES-01`)·HDR/Color Space(`P10-HDR-01`)·Multi-Surface(`P10-SURF-01`)·Dirty Region(`P10-DIRTY-01`) **Phase 10 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 4건 잔여 |
-| Phase 11 | Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 8 | 3 | 0 | 0 | 5 | Native GPU Interop(`P11-INT-01`)·GPU Profiling 확장(`P11-PROF-01`)·디버깅 고도화/Crash Breadcrumbs/Leak/Fuzz(`P11-DBG-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증(`P11-INT-02`/`P11-PROF-02`/`P11-DBG-02`) 및 Video/AI 대기 |
+| Phase 11 | Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 9 | 4 | 0 | 0 | 5 | Native GPU Interop(`P11-INT-01`)·Zero-Copy Video NV12/P010(`P11-VID-01`)·GPU Profiling 확장(`P11-PROF-01`)·디버깅 고도화(`P11-DBG-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증(`P11-INT-02`/`P11-VID-02`/`P11-PROF-02`/`P11-DBG-02`) 및 AI 연계(`P11-AI-01`) 대기 |
 | Phase 12 | GraphicsUI·Sandbox RHI 호환성 | 4 | 2 | 0 | 0 | 2 | GraphicsUI 공통 기반(`P12-UI-01`)·Sandbox RHI 비침투 어댑터(`P12-SBX-01`) **Phase 12 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 2건 잔여 |
-| **합계** | **전체 13 Phases** | **215** | **133** | **38** | **8** | **36** | **진행 중** |
+| **합계** | **전체 13 Phases** | **216** | **134** | **38** | **8** | **36** | **진행 중** |
 
 ---
 
@@ -93,7 +93,8 @@
 | Dirty Region Rendering·Partial Present (`LoadOp::Load`·`presentDirtyRects`·실측 비교) | **물리 GPU + GBV + WARP (`Present1`·46.88x~99.45x GPU 가속, `P10-DIRTY-01`)** | **물리 GPU + 고정 VVL (`32.14x~98.77x` GPU 가속·미노출 거부, `P10-DIRTY-01`)** | 구현(Linux CI 대기, `P10-DIRTY-02`) | 구현(macOS CI 대기, `P10-DIRTY-02`) |
 | Crash Breadcrumbs·Leak Detection·Fault Injection·Input Fuzz (`diagnosticReport`) | **물리 GPU + GBV + WARP (4,500 Fuzz·1 TiB 방어, `P11-DBG-01`)** | **물리 GPU + 고정 VVL (1,000 Fuzz·1 TiB 방어, `P11-DBG-01`)** | 구현(Linux CI 대기, `P11-DBG-02`) | 구현(macOS CI 대기, `P11-DBG-02`) |
 | Native GPU Interoperability (`NativeHandle`·`ExternalHandle`·Cross-API D3D12↔Vulkan) | **물리 GPU + GBV (Same-API & Cross-API, `P11-INT-01`)** | **물리 GPU + 고정 VVL (Same-API & Cross-API, `P11-INT-01`)** | 구현(Linux `OpaqueFd` CI 대기, `P11-INT-02`) | 비소유 핸들 구현·외부 핸들 `Unsupported` (`P11-INT-02`) |
-| Zero-Copy Video / AI 연계 | 미구현 (`P11-VID-01`/`P11-AI-01`) | 미구현 (`P11-VID-01`/`P11-AI-01`) | 미구현 (`P11`) | 미구현 (`P11`) |
+| Zero-Copy Video (NV12·P010·평면 View·BT.709 Compute·Safe Fallback) | **물리 GPU + GBV + WARP (NV12/P010 Direct·Zero-Copy·Fallback, `P11-VID-01`)** | **물리 GPU + 고정 VVL (NV12/P010 Direct·Zero-Copy·Fallback, `P11-VID-01`)** | 구현(Linux CI 대기, `P11-VID-02`) | 단일 평면 폴백 구현·다중 평면 `Unsupported` (`P11-VID-02`) |
+| 외부 AI 연산 연계 (CUDA/DirectML/ONNX Runtime) | 미구현 (`P11-AI-01`) | 미구현 (`P11-AI-01`) | 미구현 (`P11`) | 미구현 (`P11`) |
 
 ---
 

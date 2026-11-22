@@ -685,3 +685,20 @@
   - `gfx_native_interop_tests` 6/6 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770): D3D12 Same-API(`8,348`/`8,350` assertions, GBV `val_errors=0`), Vulkan Same-API(`8,348`/`8,350` assertions, 고정 VVL 1.3.290 `val_errors=0`), Cross-API D3D12↔Vulkan(`99`/`101` assertions, 양측 Validation `val_errors=0`).
   - `ctest -R native_interop` 5/5 PASS (`5.21s`), 회귀 CTest 44/44 PASS (`29.80s`), 독립 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P11-VID-01`: Zero-Copy Video 기반 (NV12·P010·하드웨어 코덱 연계·GPU BT.709 색 변환·폴백)
+
+- **기준 HEAD**: `8c5fbc80`
+- **완료 ID / 분리 ID**: `P11-VID-01` 완료, `P11-VID-02`(Linux Vulkan / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - `include/graphics/{Types,RenderPass}.hpp`, `src/foundation/RenderPass.cpp`: `Format::{R8UNorm,RG8UNorm,R16UNorm,RG16UNorm,NV12,P010}`, `TextureViewDesc::planeSlice`, `TextureCopyRegion::planeSlice`, `isMultiPlanarFormat`/`formatPlaneCount`/`formatPlaneFormat`/`computeTexturePlaneFootprint` 및 다중 평면 4:2:0 짝수 해상도/용도 검증 추가.
+  - `src/backends/d3d12/D3D12.cpp`: `DXGI_FORMAT_NV12`/`P010`·평면 `SubresourceIndex`/`PlaneSlice` SRV·`shared=true` Zero-Copy 공유 구현.
+  - `src/backends/vulkan/Vulkan.cpp`: `VK_FORMAT_G8_B8R8_2PLANE_420_UNORM`/`G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16`, `MUTABLE_FORMAT|EXTENDED_USAGE`, `PLANE_0`/`PLANE_1` aspect, `P010` `R10X6`/`R10X6G10X6` 규격 평면 뷰, `importTextureHandle` `contentsInitialized=true` 반영.
+  - `src/backends/metal/Metal.cpp`: 단일/이중 채널 포맷(`R8`/`RG8`/`R16`/`RG16`) 매핑 및 `NV12`/`P010` `Unsupported`.
+  - `tests/fixtures/ComputeFixtures.hpp`, `tests/ZeroCopyVideoTests.cpp`, `CMakeLists.txt`, `docs/PHASE11_ZERO_COPY_VIDEO_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p11-zero-copy-video`, 설치 `out/p11-zero-copy-video-install`, `GraphicsSDKCore.lib` SHA-256 `FB60165BDAA7EA413F68DE45218928497914692ADA2C50E357C4B3AEE48BF876`):
+  - `gfx_zero_copy_video_tests` 5/5 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770 + WARP): NV12/P010 Direct Multi-Planar·Zero-Copy Shared Interop·Safe-Copy Fallback 128×128 BT.709 전 픽셀 CPU 참조 일치, Debug+GBV 및 고정 VVL 1.3.290 `val_errors=0`.
+  - `ctest -R zero_copy_video` 5/5 PASS (`4.11s`), `native_interop` 5/5 PASS (`3.39s`), 회귀 44/44 PASS (`28.81s`), 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

@@ -65,6 +65,12 @@ DXGI_FORMAT native(Format format) {
     case Format::RGBA8SRGB: return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     case Format::BGRA8SRGB: return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
     case Format::RGB10A2UNorm: return DXGI_FORMAT_R10G10B10A2_UNORM;
+    case Format::R8UNorm: return DXGI_FORMAT_R8_UNORM;
+    case Format::RG8UNorm: return DXGI_FORMAT_R8G8_UNORM;
+    case Format::R16UNorm: return DXGI_FORMAT_R16_UNORM;
+    case Format::RG16UNorm: return DXGI_FORMAT_R16G16_UNORM;
+    case Format::NV12: return DXGI_FORMAT_NV12;
+    case Format::P010: return DXGI_FORMAT_P010;
     default: return DXGI_FORMAT_UNKNOWN;
     }
 }
@@ -1071,6 +1077,7 @@ struct DXCommands final : CommandList {
         auto source = owned<DXBuffer>(src); auto destination = owned<DXTexture>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
         if ((*destination)->desc.sampleCount > 1u) return invalid("Direct buffer copy is invalid for multisampled textures; resolve first", ErrorCode::InvalidArgument);
+        if (isMultiPlanarFormat((*destination)->desc.format)) return invalid("Use copyBufferToTextureRegion with planeSlice for multi-planar textures", ErrorCode::InvalidArgument);
         if ((*source)->desc.memory == Memory::Readback || (*source)->desc.size < (*destination)->layout.size) return invalid("Upload buffer is too small or not copyable", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture upload requires CopySource/CopyDestination");
@@ -1094,6 +1101,7 @@ struct DXCommands final : CommandList {
         auto source = owned<DXTexture>(src); auto destination = owned<DXBuffer>(dst);
         if (!source) return std::unexpected(source.error()); if (!destination) return std::unexpected(destination.error());
         if ((*source)->desc.sampleCount > 1u) return invalid("Direct buffer copy is invalid for multisampled textures; resolve first", ErrorCode::InvalidArgument);
+        if (isMultiPlanarFormat((*source)->desc.format)) return invalid("Use copyTextureToBufferRegion with planeSlice for multi-planar textures", ErrorCode::InvalidArgument);
         if ((*destination)->desc.memory == Memory::Upload || (*destination)->desc.size < (*source)->layout.size) return invalid("Readback buffer is too small or not copyable", ErrorCode::InvalidArgument);
         if (current(**source) != ResourceState::CopySource || current(**destination) != ResourceState::CopyDestination)
             return invalid("Texture download requires CopySource/CopyDestination");
@@ -1120,12 +1128,20 @@ struct DXCommands final : CommandList {
         if (region.mipLevel >= desc.mipLevels || region.arrayLayer >= desc.arrayLayers || !region.depth) {
             return invalid("Texture copy region subresource or depth invalid", ErrorCode::InvalidArgument);
         }
-        const std::uint32_t mipW = std::max(1u, desc.width >> region.mipLevel);
-        const std::uint32_t mipH = desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel);
+        const bool multiPlanar = isMultiPlanarFormat(desc.format);
+        auto planeFmt = formatPlaneFormat(desc.format, region.planeSlice);
+        if (!planeFmt) return std::unexpected(planeFmt.error());
+        const Format copyFormat = *planeFmt;
+        const std::uint32_t mipW = multiPlanar
+            ? (region.planeSlice == 0u ? desc.width : (desc.width / 2u))
+            : std::max(1u, desc.width >> region.mipLevel);
+        const std::uint32_t mipH = multiPlanar
+            ? (region.planeSlice == 0u ? desc.height : (desc.height / 2u))
+            : (desc.dimension == TextureDimension::Texture1D ? 1u : std::max(1u, desc.height >> region.mipLevel));
         const std::uint32_t mipD = desc.dimension == TextureDimension::Texture3D ? std::max(1u, desc.depth >> region.mipLevel) : 1u;
-        auto blockInfo = queryFormatBlockInfo(desc.format);
+        auto blockInfo = queryFormatBlockInfo(copyFormat);
         if (!blockInfo) return std::unexpected(blockInfo.error());
-        auto footprint = computeTextureRegionFootprint(desc.format, region.width, region.height, region.bufferRowPitch);
+        auto footprint = computeTextureRegionFootprint(copyFormat, region.width, region.height, region.bufferRowPitch);
         if (!footprint) return std::unexpected(footprint.error());
         if (region.x > mipW || region.width > mipW - region.x ||
             region.y > mipH || region.height > mipH - region.y ||
@@ -1178,7 +1194,7 @@ struct DXCommands final : CommandList {
         bufferLocation.pResource = buffer->resource.Get();
         bufferLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
         bufferLocation.PlacedFootprint.Offset = region.bufferOffset;
-        bufferLocation.PlacedFootprint.Footprint.Format = native(desc.format);
+        bufferLocation.PlacedFootprint.Footprint.Format = native(copyFormat);
         bufferLocation.PlacedFootprint.Footprint.Width = copyW;
         bufferLocation.PlacedFootprint.Footprint.Height = copyH;
         bufferLocation.PlacedFootprint.Footprint.Depth = region.depth;
@@ -1186,7 +1202,9 @@ struct DXCommands final : CommandList {
         D3D12_TEXTURE_COPY_LOCATION textureLocation{};
         textureLocation.pResource = image->resource.Get();
         textureLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-        textureLocation.SubresourceIndex = region.mipLevel + region.arrayLayer * desc.mipLevels;
+        textureLocation.SubresourceIndex = multiPlanar
+            ? region.planeSlice
+            : (region.mipLevel + region.arrayLayer * desc.mipLevels);
         if (upload) {
             list->CopyTextureRegion(&textureLocation, region.x, region.y, region.z, &bufferLocation, nullptr);
         } else {
@@ -2413,16 +2431,17 @@ public:
         const auto s1 = nativeSupport.Support1;
         const bool isDepth = format == Format::D32Float;
         const bool isCompressed = blockInfo->compressed;
+        const bool isPlanar = isMultiPlanarFormat(format);
         result.texture2D = (s1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D) != 0;
-        result.renderTarget = !isDepth && !isCompressed && (s1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET) != 0;
+        result.renderTarget = !isDepth && !isCompressed && !isPlanar && (s1 & D3D12_FORMAT_SUPPORT1_RENDER_TARGET) != 0;
         result.depthStencil = isDepth && (s1 & D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL) != 0;
-        result.sampled = !isDepth && (s1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE) != 0;
+        result.sampled = !isDepth && (isPlanar ? result.texture2D : ((s1 & D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE) != 0));
         result.linearFilter = result.sampled;
         result.blendable = result.renderTarget && (s1 & D3D12_FORMAT_SUPPORT1_BLENDABLE) != 0;
         result.copySource = result.texture2D;
         result.copyDestination = result.texture2D;
         result.partialRegionCopy = result.texture2D && !isDepth;
-        result.storage = !isDepth && !isCompressed && (s1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW) != 0;
+        result.storage = !isDepth && !isCompressed && !isPlanar && (s1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW) != 0;
         result.sampleCounts = result.texture2D ? 1u : 0u;
         const bool msaaEligible = isDepth
             ? result.depthStencil
@@ -2551,11 +2570,11 @@ public:
             return invalid("D3D12 adapter does not support this compressed texture format", ErrorCode::Unsupported);
         }
         const auto blockInfo = queryFormatBlockInfo(desc.format);
-        if (blockInfo && blockInfo->compressed) {
+        if ((blockInfo && blockInfo->compressed) || isMultiPlanarFormat(desc.format)) {
             auto support = queryFormatSupport(desc.format);
             if (!support) return std::unexpected(support.error());
             if (!support->texture2D || !support->sampled) {
-                return invalid("D3D12 adapter does not support requested compressed texture format", ErrorCode::Unsupported);
+                return invalid("D3D12 adapter does not support requested texture format", ErrorCode::Unsupported);
             }
         }
         if (desc.sampleCount > 1u) {
@@ -2837,6 +2856,9 @@ public:
                 *resolved->format, *resolved->dimension,
                 resolved->baseMipLevel, resolved->mipLevelCount,
                 resolved->baseArrayLayer, resolved->arrayLayerCount);
+            if (isMultiPlanarFormat(parent->desc.format)) {
+                view->srvDesc.Texture2D.PlaneSlice = resolved->planeSlice;
+            }
         }
         state->track(view);
         return TextureViewPtr(view);
