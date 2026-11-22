@@ -28,7 +28,7 @@ HEADERS = {f'graphics/{name}.hpp' for name in ('Backend', 'Bindings', 'CommandLi
 PAYLOAD_FILES = {LIBRARY, NOTICE, *(CONFIG+p for p in CONFIG_FILES), *('include/'+h for h in HEADERS)}
 SDK_UNITS = (*CORE, 'src/backends/metal/Metal.cpp')
 OBJECTS = {pathlib.PurePosixPath(p).name+'.o' for p in SDK_UNITS}
-FRAMEWORKS = {'Metal', 'Foundation', 'QuartzCore'}
+FRAMEWORKS = {'Metal', 'Foundation', 'QuartzCore', 'CoreGraphics'}
 SYSTEM_LIBS = {'/usr/lib/libSystem.B.dylib', '/usr/lib/libc++.1.dylib', '/usr/lib/libobjc.A.dylib'}
 CORE_FOUNDATION = '/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation'
 
@@ -123,7 +123,7 @@ def linker(text, library, consumer_object, sysroot, build):
 def dylibs(text):
     paths = {line.strip().split(' (compatibility version ', 1)[0] for line in text.splitlines()[1:] if line.strip()}
     frameworks = {f'/System/Library/Frameworks/{name}.framework/Versions/{version}/{name}'
-                  for name, version in (('Metal', 'A'), ('Foundation', 'C'), ('QuartzCore', 'A'))}
+                  for name, version in (('Metal', 'A'), ('Foundation', 'C'), ('QuartzCore', 'A'), ('CoreGraphics', 'A'))}
     require(frameworks <= paths <= frameworks | SYSTEM_LIBS | {CORE_FOUNDATION}, f'Unexpected dynamic library list: {sorted(paths)}')
     return sorted(paths)
 
