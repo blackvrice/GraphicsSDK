@@ -177,7 +177,7 @@ struct QueueSlot {
 struct State {
     id<MTLDevice> device;
     std::array<QueueSlot, 3> queues;
-    id<MTLCommandQueue>& queue{queues[0].queue};
+    id<MTLCommandQueue> __strong& queue{queues[0].queue};
     std::uint64_t& last{queues[0].last};
     std::deque<Pending>& pending{queues[0].pending};
     const std::thread::id thread = std::this_thread::get_id();

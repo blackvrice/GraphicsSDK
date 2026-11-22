@@ -487,7 +487,9 @@ void runMultiPlanarAndZeroCopySuite(
         std::cout << "  [" << tag << "] " << fmtName << " Direct Multi-Planar 128x128 BT.709: PASS\n";
 
         // 2. Zero-Copy Shared Hardware Decode -> Render Device path (on physical GPUs with interop).
-        if (!warp && dev->caps().externalMemoryInterop && dev->caps().externalFenceInterop) {
+        // Microsoft Basic Render Driver (vendorId 0x1414) is software-emulated even when exposed as default adapter on headless VMs.
+        if (!warp && !dev->caps().softwareAdapter && adapter.vendorId != 0x1414u &&
+            dev->caps().externalMemoryInterop && dev->caps().externalFenceInterop) {
             auto decoderDev = take(gfx::createDevice(desc), "create decoder device", totals);
             const auto zcFrame = buildDeterministicYuvFrame(kW, kH, tenBit, tenBit ? 15u : 13u, totals);
 

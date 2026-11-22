@@ -81,8 +81,8 @@ def main():
         require(result['schema_version']==1 and result['case']==case and result['SDK_source_fingerprint']==fingerprint,'Runtime source/case identity differs')
         if case=='selection':
             require(result['software_adapters']>0 and result['hardware_adapters']==0 and all(a['device_type']==4 for a in result['adapters']),'Software-only classification differs')
-            require(result['device_creations']==2*len(result['adapters'])+1 and result['assertions']>=30,'Exact device selection coverage')
-            required={'software-kind-mismatch','backend-id-mismatch','missing-exact-id-no-fallback','zero-id-no-fallback','hardware-default-never-falls-back-to-software','uncompiled-backend-enumeration','unsupported-loss-opt-in'}
+            require(result['device_creations']==2*len(result['adapters'])+3 and result['assertions']>=30,'Exact device selection coverage')
+            required={'software-kind-mismatch','backend-id-mismatch','missing-exact-id-no-fallback','zero-id-no-fallback','hardware-default-never-falls-back-to-software','uncompiled-backend-enumeration','synthetic-loss-observed'}
             require(required<={r['case'] for r in result['rejections']},'Missing selection negative controls')
             require(any('libvulkan_lvp.so' in p for p in result['runtime_modules']),'Actual lavapipe module missing')
         else:
