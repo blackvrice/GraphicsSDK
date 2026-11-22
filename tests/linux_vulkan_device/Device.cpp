@@ -48,6 +48,9 @@ template<class T> T take(gfx::Result<T> r) {
     if(!r) throw std::runtime_error(r.error().message+" native="+std::to_string(r.error().nativeCode));
     return std::move(*r);
 }
+void take(gfx::Result<void> r) {
+    if(!r) throw std::runtime_error(r.error().message+" native="+std::to_string(r.error().nativeCode));
+}
 struct NativeInfo {
     VkPhysicalDeviceProperties properties{};
     std::array<std::uint8_t,VK_UUID_SIZE> uuid{},driverUuid{};

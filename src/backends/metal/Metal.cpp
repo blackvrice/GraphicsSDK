@@ -2415,7 +2415,7 @@ struct MetalDevice final : Device {
         if (!mtl) return fail(fence ? ErrorCode::WrongDevice : ErrorCode::InvalidArgument, "Invalid Metal timeline fence");
         if (mtl->owner != owner) return fail(ErrorCode::WrongDevice, "TimelineFence belongs to a different device");
         return NativeHandle{Backend::Metal, NativeObjectType::MetalSharedEvent,
-                            reinterpret_cast<std::uintptr_t>((__bridge void*)mtl->event->handle)};
+                            reinterpret_cast<std::uintptr_t>((__bridge void*)mtl->native->event)};
     }
     Result<ExternalHandle> exportBufferHandle(const BufferPtr&) override { return fail(ErrorCode::Unsupported, "External buffer handle export is unsupported on Metal"); }
     Result<BufferPtr> importBufferHandle(BufferDesc, const ExternalHandle&) override { return fail(ErrorCode::Unsupported, "External buffer handle import is unsupported on Metal"); }

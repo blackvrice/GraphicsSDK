@@ -2428,6 +2428,12 @@ public:
         nativeSupport.Format = dxgiFormat;
         const HRESULT hr = state->device->CheckFeatureSupport(
             D3D12_FEATURE_FORMAT_SUPPORT, &nativeSupport, sizeof(nativeSupport));
+        if (hr == E_FAIL) {
+            // D3D12 drivers (including older WARP) return E_FAIL when a DXGI_FORMAT is unsupported.
+            if (auto live = state->check(); !live) return std::unexpected(live.error());
+            result.sampleCounts = 0u;
+            return result;
+        }
         if (FAILED(hr)) return state->failure(hr, "Query D3D12 format support failed");
         const auto s1 = nativeSupport.Support1;
         const bool isDepth = format == Format::D32Float;
@@ -3010,9 +3016,29 @@ public:
         };
         mixKey(desc.vertex.bytes.data(), desc.vertex.bytes.size());
         mixKey(desc.fragment.bytes.data(), desc.fragment.bytes.size());
+        mixKey(binary->GetBufferPointer(), binary->GetBufferSize());
+        const auto vbCount = desc.vertexLayout.buffers.size();
+        mixKey(&vbCount, sizeof(vbCount));
+        for (const auto& vb : desc.vertexLayout.buffers) {
+            mixKey(&vb.slot, sizeof(vb.slot));
+            mixKey(&vb.stride, sizeof(vb.stride));
+            mixKey(&vb.rate, sizeof(vb.rate));
+        }
+        const auto vaCount = desc.vertexLayout.attributes.size();
+        mixKey(&vaCount, sizeof(vaCount));
+        for (const auto& va : desc.vertexLayout.attributes) {
+            const auto semLen = va.semantic.size();
+            mixKey(&semLen, sizeof(semLen));
+            mixKey(va.semantic.data(), semLen);
+            mixKey(&va.semanticIndex, sizeof(va.semanticIndex));
+            mixKey(&va.format, sizeof(va.format));
+            mixKey(&va.slot, sizeof(va.slot));
+            mixKey(&va.offset, sizeof(va.offset));
+        }
         mixKey(&desc.alphaBlend, sizeof(desc.alphaBlend));
         mixKey(&desc.depthState, sizeof(desc.depthState));
         mixKey(&targets.sampleCount, sizeof(targets.sampleCount));
+        mixKey(&pso.NumRenderTargets, sizeof(pso.NumRenderTargets));
         mixKey(pso.RTVFormats, sizeof(DXGI_FORMAT) * pso.NumRenderTargets);
         mixKey(&pso.DSVFormat, sizeof(pso.DSVFormat));
         if (auto it = state->cachedPsoBlobs.find(psoKey); it != state->cachedPsoBlobs.end() && !it->second.empty()) {
@@ -3137,10 +3163,12 @@ public:
         pso.pRootSignature = pipeline->root.Get();
         pso.CS = {desc.compute.bytes.data(), desc.compute.bytes.size()};
         std::uint64_t psoKey = 14695981039346656037ull ^ 0xC0FFEEu;
-        for (const std::byte b : desc.compute.bytes) {
-            psoKey ^= static_cast<std::uint64_t>(std::to_integer<std::uint8_t>(b));
-            psoKey *= 1099511628211ull;
-        }
+        auto mixKey = [&](const void* p, std::size_t n) {
+            const auto* b = static_cast<const std::uint8_t*>(p);
+            for (std::size_t i = 0; i < n; ++i) { psoKey ^= b[i]; psoKey *= 1099511628211ull; }
+        };
+        mixKey(desc.compute.bytes.data(), desc.compute.bytes.size());
+        mixKey(binary->GetBufferPointer(), binary->GetBufferSize());
         if (auto it = state->cachedPsoBlobs.find(psoKey); it != state->cachedPsoBlobs.end() && !it->second.empty()) {
             pso.CachedPSO = {it->second.data(), it->second.size()};
             result = state->device->CreateComputePipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
