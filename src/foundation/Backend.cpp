@@ -947,8 +947,10 @@ Result<void> validateTransientPoolDesc(const TransientPoolDesc& desc) {
 Device::Device() noexcept {
     try {
         profiling = std::make_shared<detail::ProfilingTracker>();
+        diagnostics = std::make_shared<detail::DiagnosticTracker>();
     } catch (...) {
         profiling.reset();
+        diagnostics.reset();
     }
 }
 Device::~Device() {
@@ -988,6 +990,72 @@ Result<void> Device::resetProfilingStatistics() {
     if (auto status = checkStatus(); !status) return status;
     if (profiling) profiling->reset();
     return {};
+}
+
+Result<std::uint64_t> Device::recordBreadcrumb(std::string_view label, QueueType q, std::uint64_t fenceValue) {
+    if (label.empty() || label.size() > 256u) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "Breadcrumb label must be 1..256 bytes"});
+    }
+    if (q != QueueType::Graphics && q != QueueType::Compute && q != QueueType::Copy) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "Unknown queue type for breadcrumb"});
+    }
+    if (!diagnostics) {
+        return std::unexpected(Error{ErrorCode::OutOfMemory, "Diagnostic tracker unavailable"});
+    }
+    return diagnostics->record(label, q, fenceValue);
+}
+
+void Device::markBreadcrumbsCompleted(QueueType q, std::uint64_t completedFence) noexcept {
+    if (diagnostics) diagnostics->markCompleted(q, completedFence);
+}
+
+void Device::clearBreadcrumbs() noexcept {
+    if (diagnostics) diagnostics->clear();
+}
+
+DiagnosticReport Device::diagnosticReport() {
+    DiagnosticReport out{};
+    const auto status = checkStatus();
+    if (!status && status.error().code == ErrorCode::DeviceLost) {
+        out.deviceLost = true;
+    } else if (status) {
+        for (QueueType q : {QueueType::Graphics, QueueType::Compute, QueueType::Copy}) {
+            if (auto qRes = queue(q); qRes && *qRes) {
+                if (auto done = (*qRes)->completedValue(); done && diagnostics) {
+                    diagnostics->markCompleted(q, *done);
+                }
+            }
+        }
+        if (auto stats = resourceStatistics(); stats) {
+            out.liveTrackedObjects = stats->trackedObjects;
+            out.liveUniqueResources = stats->uniqueResources;
+            out.liveAllocationBytes = stats->resourceAllocationBytes;
+            out.pendingSubmissions = stats->pendingSubmissions;
+            out.hasLeaks = (stats->uniqueResources > 0u || stats->trackedObjects > 0u);
+        }
+    }
+    if (diagnostics) {
+        out.breadcrumbs = diagnostics->snapshot();
+    }
+    std::uint64_t incompleteCount = 0;
+    std::string lastIncomplete;
+    for (const auto& b : out.breadcrumbs) {
+        if (!b.completed) {
+            ++incompleteCount;
+            lastIncomplete = b.label;
+        }
+    }
+    out.summary = "deviceLost=" + std::string(out.deviceLost ? "true" : "false") +
+                  " hasLeaks=" + std::string(out.hasLeaks ? "true" : "false") +
+                  " uniqueResources=" + std::to_string(out.liveUniqueResources) +
+                  " allocBytes=" + std::to_string(out.liveAllocationBytes) +
+                  " pendingSubmits=" + std::to_string(out.pendingSubmissions) +
+                  " breadcrumbs=" + std::to_string(out.breadcrumbs.size()) +
+                  " incomplete=" + std::to_string(incompleteCount);
+    if (!lastIncomplete.empty()) {
+        out.summary += " lastIncomplete=" + lastIncomplete;
+    }
+    return out;
 }
 
 Result<MultiPresentResult> Device::presentSwapChains(std::span<SwapChain* const> swapChains, bool skipMinimized) {

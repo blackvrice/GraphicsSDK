@@ -2730,7 +2730,7 @@ struct VulkanDevice final : Device {
     }
     Result<BufferPtr> createBuffer(BufferDesc desc) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        if (!desc.size || desc.size > SIZE_MAX || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
+        if (!desc.size || desc.size > SIZE_MAX || desc.size > (1ull << 40) || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
             (desc.storage && desc.memory != Memory::Device))
             return fail(ErrorCode::InvalidArgument, "Invalid Vulkan buffer description");
         auto a = std::make_shared<Allocation>(); a->native = owner->native; a->desc = desc;

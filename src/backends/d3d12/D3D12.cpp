@@ -2531,7 +2531,7 @@ public:
     }
     Result<BufferPtr> createBuffer(BufferDesc desc) override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());
-        if (!desc.size || desc.size > SIZE_MAX || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
+        if (!desc.size || desc.size > SIZE_MAX || desc.size > (1ull << 40) || (desc.memory != Memory::Device && desc.memory != Memory::Upload && desc.memory != Memory::Readback) ||
             (desc.storage && desc.memory != Memory::Device)) return invalid("Invalid buffer description", ErrorCode::InvalidArgument);
         auto resource = makeBuffer(*state, desc.size, desc.memory, desc.storage); if (!resource) return std::unexpected(resource.error());
         auto buffer = std::make_shared<DXBuffer>(); buffer->owner = state; buffer->resource = std::move(*resource); buffer->desc = desc;

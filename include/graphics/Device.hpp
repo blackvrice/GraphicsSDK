@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace gfx {
-namespace detail { struct ProfilingTracker; }
+namespace detail { struct ProfilingTracker; struct DiagnosticTracker; }
 struct RGResourceHandle {
     std::uint32_t id{};
     bool operator==(const RGResourceHandle&) const = default;
@@ -158,6 +158,16 @@ public:
     [[nodiscard]] Result<ProfilingSnapshot> profilingSnapshot();
     // Creating thread only. Resets accumulated counters, stall timing, and recorded GPU scopes.
     [[nodiscard]] Result<void> resetProfilingStatistics();
+    // Records a bounded GPU crash-breadcrumb checkpoint (ring buffer of last kMaxCrashBreadcrumbs entries).
+    [[nodiscard]] Result<std::uint64_t> recordBreadcrumb(std::string_view label,
+                                                         QueueType queue = QueueType::Graphics,
+                                                         std::uint64_t fenceValue = 0);
+    // Marks recorded breadcrumbs on 'queue' with submittedFence <= completedFence as completed.
+    void markBreadcrumbsCompleted(QueueType queue, std::uint64_t completedFence) noexcept;
+    // Returns crash breadcrumbs, automatic resource leak detection snapshot, and summary.
+    // Safe to call even after DeviceLost to inspect the last uncompleted breadcrumbs.
+    [[nodiscard]] DiagnosticReport diagnosticReport();
+    void clearBreadcrumbs() noexcept;
 protected:
     [[nodiscard]] const std::shared_ptr<detail::ProfilingTracker>& profilingTracker() const noexcept { return profiling; }
 private:
@@ -166,6 +176,7 @@ private:
     std::unique_ptr<GraphicsCache> graphicsCache;
     std::shared_ptr<bool> lifetimeGuard;
     std::shared_ptr<detail::ProfilingTracker> profiling;
+    std::shared_ptr<detail::DiagnosticTracker> diagnostics;
 };
 
 class RenderGraph {

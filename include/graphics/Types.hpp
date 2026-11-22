@@ -270,4 +270,27 @@ struct ProfilingSnapshot {
     // Resolved GPU hardware timestamp scopes recorded while profiling is enabled.
     std::vector<TimestampScopeResult> gpuTimestampScopes;
 };
+
+inline constexpr std::uint32_t kMaxCrashBreadcrumbs = 128;
+
+struct BreadcrumbEntry {
+    std::uint64_t sequence{};
+    QueueType queue{QueueType::Graphics};
+    std::string label;
+    std::uint64_t submittedFence{};
+    bool completed{};
+};
+
+// Device-level diagnostic snapshot combining crash breadcrumbs and automatic resource leak detection.
+// Safe to query even after DeviceLost to inspect the last uncompleted GPU checkpoints.
+struct DiagnosticReport {
+    std::uint64_t liveTrackedObjects{};
+    std::uint64_t liveUniqueResources{};
+    std::uint64_t liveAllocationBytes{};
+    std::uint64_t pendingSubmissions{};
+    bool hasLeaks{};
+    bool deviceLost{};
+    std::vector<BreadcrumbEntry> breadcrumbs;
+    std::string summary;
+};
 }

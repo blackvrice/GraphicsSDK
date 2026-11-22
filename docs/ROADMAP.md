@@ -44,7 +44,7 @@ python tools/roadmap.py --write
 | 8 — GPU 자원·전송·Capability·Texture 확장 (v0.0.2+) | 11 | 0 | 0 | 9 | 0 | 기존 Phase 0~7 기반을 보존하면서 오프셋 버퍼 복사, 부분 텍스처 복사, Capability/포맷 조회, Texture View·Mipmap·Array·압축 텍스처, Upload Ring·Pool·VRAM 관리를 세분화해 확장한다. |
 | 9 — Command·멀티스레드·Shader·Compute·Render Graph | 7 | 0 | 0 | 8 | 0 | 동적 Viewport, 명령 풀·병렬 기록, 다중 큐·Timeline Fence, Shader 캐시·Variant·Hot Reload, Compute/GPU-driven 및 선택적 Render Graph를 단계적으로 구현한다. |
 | 10 — Frame Pacing·HDR·Multi-Surface·Dirty Region | 4 | 0 | 0 | 4 | 0 | 저지연 출력, VRR/Present Mode, HDR/색 공간, 다중 창·스왑체인 동기화, Dirty Region 부분 렌더링 기반을 확장한다. |
-| 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 1 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
+| 11 — Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 2 | 0 | 0 | 5 | 0 | 외부 GPU 리소스 상호운용, YUV/NV12/P010 Zero-Copy 영상 기반, 외부 AI 연산 연계 검토, 다중 Timestamp Profiling 및 크래시/캡처 진단을 고도화한다. |
 | 12 — GraphicsUI·Sandbox RHI 호환성 | 2 | 0 | 0 | 2 | 0 | GraphicsSDK의 독립 경계를 유지하면서 GraphicsUI 2D/UI 기반 요건 검증과 Sandbox RHI 호환 어댑터 설계를 진행한다. 외부 저장소를 임의 수정하지 않는다. |
 
 ## 다음 권장 작업
@@ -505,7 +505,8 @@ Windows 설치 기반은 있음. 전체 지원 플랫폼의 배포·감사·CI·
 
 | 체크 · ID · 구분 | 작업 / 완료 기준 | 선행 · 환경 · 근거 |
 |---|---|---|
-| [ ] `P11-DBG-01`<br>미완료 · 후속 최적화 | **디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz)**<br>GPU Crash Breadcrumbs, RenderDoc/PIX 캡처 호환성 검증, 자동 Resource Leak Detection, Fault Injection 및 입력 Fuzz 테스트를 구축한다.<br>완료: 의도적 오류/누수/손실 주입 제어 통과 및 RenderDoc/PIX 캡처 확인 기록. | 선행: `P11-PROF-01` |
+| [x] `P11-DBG-01`<br>완료 · 후속 최적화 | **디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz) (API·D3D12·Win Vulkan 구현/검증)**<br>13개 공개 헤더/5개 CORE 유닛 계약을 유지하며 kMaxCrashBreadcrumbs(128), BreadcrumbEntry, DiagnosticReport, Device::{recordBreadcrumb,markBreadcrumbsCompleted,clearBreadcrumbs,diagnosticReport}를 구현했다. CommandList::debugMarker(D3D12 SetMarker/Vulkan vkCmdInsertDebugUtilsLabelEXT) + gfx_debug_capture 호환성, 의도적 자원 유지/해제 Leak Detection, WARP removeForTesting Fault Injection 후 DeviceLost 상태에서의 미완료 크래시 브레드크럼 보존 및 recover() 복구, 500개 결정적 입력 Fuzz(버퍼/텍스처/복사/뷰포트)를 구축했다. Fuzz 중 64비트 createBuffer UINT64_MAX 근처 크기의 드라이버 정렬 오버플로 크래시(0xC0000005)를 검출해 D3D12/Vulkan에 1 TiB 상한 방어를 추가했고, Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290/WARP 5모드(총 4,500 Fuzz 케이스, val_errors=0), 설치 소비자 및 CTest 5/5로 검증했다.<br>완료: 의도적 오류/누수/손실 주입 제어 통과 및 RenderDoc/PIX 캡처 확인 기록. | 선행: `P11-PROF-01`<br>근거: [Types.hpp](../include/graphics/Types.hpp), [Device.hpp](../include/graphics/Device.hpp), [DeviceGeneration.hpp](../src/foundation/DeviceGeneration.hpp), [Backend.cpp](../src/foundation/Backend.cpp), [D3D12.cpp](../src/backends/d3d12/D3D12.cpp), [Vulkan.cpp](../src/backends/vulkan/Vulkan.cpp), [DiagnosticsFuzzTests.cpp](../tests/DiagnosticsFuzzTests.cpp), [PHASE11_DIAGNOSTICS_FUZZ_REPORT](PHASE11_DIAGNOSTICS_FUZZ_REPORT.md) |
+| [ ] `P11-DBG-02`<br>미완료 · 후속 최적화 | **디버깅 고도화(Crash Breadcrumbs·Leak·Fuzz) macOS Metal 및 Linux Vulkan 실기/CI 검증**<br>Crash Breadcrumbs, 자동 Leak Detection, debugMarker 및 결정적 입력 Fuzz 스위트(tests/DiagnosticsFuzzTests.cpp)를 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행 검증한다.<br>완료: Linux Vulkan 및 macOS Metal CI/실기에서 Crash Breadcrumbs, Leak Detection, 결정적 입력 Fuzz 및 validation 0 통과. | 선행: `P11-DBG-01`<br>환경: Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)<br>근거: [Backend.cpp](../src/foundation/Backend.cpp), [DiagnosticsFuzzTests.cpp](../tests/DiagnosticsFuzzTests.cpp), [PHASE11_DIAGNOSTICS_FUZZ_REPORT](PHASE11_DIAGNOSTICS_FUZZ_REPORT.md) |
 
 ## Phase 12 — GraphicsUI·Sandbox RHI 호환성
 

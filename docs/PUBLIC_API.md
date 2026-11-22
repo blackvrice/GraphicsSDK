@@ -31,6 +31,9 @@ Device는 장치 정보/기능, 자원/파이프라인/명령 목록/스왑체�
 `SurfacePresentCapabilities::{partialPresent, maxDirtyRects}`와 `SwapChain::presentDirtyRects(std::span<const DirtyRect>)`는
 `LoadOp::Load`(비갱신 영역 보존)·`setViewport`·`setScissor`·`copyBufferToTextureRegion`과 함께 Dirty Region Rendering을 지원한다.
 D3D12(`DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL` + `IDXGISwapChain1::Present1`, 최대 64개, `Tearing` 조합은 `Unsupported`) 및 Vulkan(`VK_KHR_incremental_present` 가용 시 `VkPresentRegionsKHR`, 미노출 시 `Unsupported`), Metal(`Unsupported`)의 플랫폼 경계를 준수하며 빈 목록·0크기·범위 초과·상한 초과는 실행 전 `ErrorCode::InvalidArgument`로 거부한다. [Dirty Region Rendering 보고서](PHASE10_DIRTY_REGION_REPORT.md)를 따른다.
+`Device::{recordBreadcrumb, markBreadcrumbsCompleted, clearBreadcrumbs, diagnosticReport}`는
+최근 `kMaxCrashBreadcrumbs`(128)개 GPU Crash Breadcrumbs 링 버퍼와 자동 Resource Leak Detection(`DiagnosticReport::{hasLeaks, deviceLost, breadcrumbs, summary}`)을 제공하며,
+`DeviceLost` 발생 이후에도 마지막 미완료 브레드크럼을 안전하게 조회할 수 있다. [디버깅 고도화 보고서](PHASE11_DIAGNOSTICS_FUZZ_REPORT.md)를 따른다.
 queue는 submit 결과로 Fence를 반환하고 wait/waitIdle/completedValue를 제공한다.
 GPU 비동기 완료를 명시적으로 기다린 뒤 readback을 읽는다.
 

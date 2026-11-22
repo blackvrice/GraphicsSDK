@@ -653,3 +653,18 @@
 - **검증 결과** (`out/p12-graphics-ui`, 경고 0 / 오류 0):
   - `gfx_graphics_ui_tests` 5/5 모드 및 `ctest -R graphics_ui` 5/5 PASS (`2.85s`): D3D12 GTX 1660 SUPER (`winA avg=1.122ms`, `winB avg=1.068ms`), Intel UHD 770 (`2.101ms`/`1.453ms`), Debug+GBV `val_errors=0`, WARP 손실/복구, Vulkan GTX 1660 SUPER (`winA avg=0.249ms`, `winB avg=0.237ms`, `qLat 0.127~0.186ms`), Intel 오프스크린 통과/스왑체인 거부, 고정 VVL 1.3.290 `val_errors=0`, 자원 누수 0.
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P11-DBG-01`: 디버깅 고도화 (Crash Breadcrumbs·PIX/RenderDoc·Leak·Fault Injection·Input Fuzz)
+
+- **기준 HEAD**: `d1e3d438`
+- **완료 ID / 분리 ID**: `P11-DBG-01` 완료, `P11-DBG-02`(Linux Vulkan / macOS Metal 실기·CI 검증) 분리
+- **수행 내용**:
+  - `include/graphics/{Types,Device}.hpp`, `src/foundation/{DeviceGeneration.hpp,Backend.cpp}`: `kMaxCrashBreadcrumbs=128`, `BreadcrumbEntry`, `DiagnosticReport`, `Device::{recordBreadcrumb,markBreadcrumbsCompleted,clearBreadcrumbs,diagnosticReport}` 추가 (자동 Leak Detection + `DeviceLost` 후 미완료 크래시 브레드크럼 보존).
+  - `src/backends/{d3d12/D3D12.cpp,vulkan/Vulkan.cpp}`: Fuzz 테스트 중 검출된 64비트 `createBuffer` `UINT64_MAX` 근처 크기의 드라이버 정렬 올림 오버플로 크래시(`0xC0000005`)를 `1 TiB (1ull << 40)` 상한 검증으로 방어.
+  - `tests/DiagnosticsFuzzTests.cpp`, `CMakeLists.txt`, `docs/PHASE11_DIAGNOSTICS_FUZZ_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p11-diagnostics-fuzz`, 설치 `out/p11-diagnostics-fuzz-install`, `GraphicsSDKCore.lib` SHA-256 `D7FC089561685FD4E844CBF7DA5B2F2EBFE0EEF1DEF5C16499C6D1A42E11E78D`):
+  - `gfx_diagnostics_fuzz_tests` 5/5 모드(총 4,500 Fuzz 케이스, Debug+GBV/고정 VVL 1.3.290 `val_errors=0`, WARP Fault Injection + 복구) 및 `ctest -R diagnostics_fuzz` 5/5 PASS (`1.93s`).
+  - `gfx_debug_capture.exe` 빌드 및 독립 설치 소비자(`tests/consumer`) 실행 PASS (`GraphicsSDK 0.0.1`).
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

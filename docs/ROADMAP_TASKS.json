@@ -4195,15 +4195,43 @@
       "id": "P11-DBG-01",
       "phase": 11,
       "group": "P11-DBG",
-      "title": "디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz)",
-      "status": "todo",
+      "title": "디버깅 고도화 (Crash Breadcrumbs·RenderDoc/PIX·Leak·Fault/Fuzz) (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
       "gate": "followup",
       "depends_on": [
         "P11-PROF-01"
       ],
-      "work": "GPU Crash Breadcrumbs, RenderDoc/PIX 캡처 호환성 검증, 자동 Resource Leak Detection, Fault Injection 및 입력 Fuzz 테스트를 구축한다.",
+      "work": "13개 공개 헤더/5개 CORE 유닛 계약을 유지하며 kMaxCrashBreadcrumbs(128), BreadcrumbEntry, DiagnosticReport, Device::{recordBreadcrumb,markBreadcrumbsCompleted,clearBreadcrumbs,diagnosticReport}를 구현했다. CommandList::debugMarker(D3D12 SetMarker/Vulkan vkCmdInsertDebugUtilsLabelEXT) + gfx_debug_capture 호환성, 의도적 자원 유지/해제 Leak Detection, WARP removeForTesting Fault Injection 후 DeviceLost 상태에서의 미완료 크래시 브레드크럼 보존 및 recover() 복구, 500개 결정적 입력 Fuzz(버퍼/텍스처/복사/뷰포트)를 구축했다. Fuzz 중 64비트 createBuffer UINT64_MAX 근처 크기의 드라이버 정렬 오버플로 크래시(0xC0000005)를 검출해 D3D12/Vulkan에 1 TiB 상한 방어를 추가했고, Windows D3D12/Vulkan/Debug+GBV/고정 VVL 1.3.290/WARP 5모드(총 4,500 Fuzz 케이스, val_errors=0), 설치 소비자 및 CTest 5/5로 검증했다.",
       "done_when": "의도적 오류/누수/손실 주입 제어 통과 및 RenderDoc/PIX 캡처 확인 기록.",
-      "evidence": []
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/Device.hpp",
+        "src/foundation/DeviceGeneration.hpp",
+        "src/foundation/Backend.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "tests/DiagnosticsFuzzTests.cpp",
+        "docs/PHASE11_DIAGNOSTICS_FUZZ_REPORT.md"
+      ]
+    },
+    {
+      "id": "P11-DBG-02",
+      "phase": 11,
+      "group": "P11-DBG",
+      "title": "디버깅 고도화(Crash Breadcrumbs·Leak·Fuzz) macOS Metal 및 Linux Vulkan 실기/CI 검증",
+      "status": "todo",
+      "gate": "followup",
+      "depends_on": [
+        "P11-DBG-01"
+      ],
+      "work": "Crash Breadcrumbs, 자동 Leak Detection, debugMarker 및 결정적 입력 Fuzz 스위트(tests/DiagnosticsFuzzTests.cpp)를 Linux Vulkan(lavapipe/물리 GPU)과 macOS arm64/Intel Metal 환경에서 실제 빌드·실행 검증한다.",
+      "done_when": "Linux Vulkan 및 macOS Metal CI/실기에서 Crash Breadcrumbs, Leak Detection, 결정적 입력 Fuzz 및 validation 0 통과.",
+      "requires": "Linux Vulkan 및 macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "src/foundation/Backend.cpp",
+        "tests/DiagnosticsFuzzTests.cpp",
+        "docs/PHASE11_DIAGNOSTICS_FUZZ_REPORT.md"
+      ]
     },
     {
       "id": "P12-UI-01",

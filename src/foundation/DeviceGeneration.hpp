@@ -336,4 +336,39 @@ struct FramePacingTracker {
         return out;
     }
 };
+
+struct DiagnosticTracker {
+    mutable std::mutex mutex;
+    std::uint64_t nextSequence{1};
+    std::vector<BreadcrumbEntry> ring;
+
+    std::uint64_t record(std::string_view label, QueueType queue, std::uint64_t fenceValue) {
+        std::scoped_lock lock(mutex);
+        const std::uint64_t seq = nextSequence++;
+        if (ring.size() >= kMaxCrashBreadcrumbs) {
+            ring.erase(ring.begin());
+        }
+        ring.push_back(BreadcrumbEntry{seq, queue, std::string(label), fenceValue, false});
+        return seq;
+    }
+
+    void markCompleted(QueueType queue, std::uint64_t completedFence) noexcept {
+        std::scoped_lock lock(mutex);
+        for (auto& e : ring) {
+            if (e.queue == queue && e.submittedFence > 0u && e.submittedFence <= completedFence) {
+                e.completed = true;
+            }
+        }
+    }
+
+    std::vector<BreadcrumbEntry> snapshot() const {
+        std::scoped_lock lock(mutex);
+        return ring;
+    }
+
+    void clear() noexcept {
+        std::scoped_lock lock(mutex);
+        ring.clear();
+    }
+};
 }
