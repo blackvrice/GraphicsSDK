@@ -337,6 +337,7 @@ struct NativeDevice {
     VkQueue queue{};
     std::array<VkQueue, 3> queues{};
     bool presentation{};
+    bool swapchainMaintenance1{};
     bool hdrMetadata{};
     bool incrementalPresent{};
     bool timelineSemaphores{};
@@ -402,6 +403,9 @@ struct NativeSwapchain {
     bool alive{true}, acquired{}, invalid{};
     void release() {
         auto& n = *surface->native;
+        if (!n.swapchainMaintenance1 && (handle || !finished.empty()) && n.handle && n.DeviceWaitIdle) {
+            (void)n.DeviceWaitIdle(n.handle);
+        }
         if (handle) n.DestroySwapchainKHR(n.handle, handle, nullptr);
         for (auto s : finished) if (s) n.DestroySemaphore(n.handle, s, nullptr);
         handle = {}; finished.clear(); alive = false; acquired = false;
@@ -4240,23 +4244,26 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
     std::vector<const char*> enabledDeviceExtensions;
     void* featureChain = nullptr;
     VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT maintenance{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT};
-    if ((*instance)->presentation && hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME) && hasExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME)) {
-        VkPhysicalDeviceFeatures2 features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2}; features.pNext = &maintenance;
-        (*instance)->GetPhysicalDeviceFeatures2(selected->physical, &features);
-        native->presentation = maintenance.swapchainMaintenance1 == VK_TRUE;
-        if (native->presentation) {
-            enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-            enabledDeviceExtensions.push_back(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
-            maintenance.pNext = featureChain;
-            featureChain = &maintenance;
-            if (hasExtension(VK_EXT_HDR_METADATA_EXTENSION_NAME)) {
-                native->hdrMetadata = true;
-                enabledDeviceExtensions.push_back(VK_EXT_HDR_METADATA_EXTENSION_NAME);
+    if ((*instance)->presentation && hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
+        native->presentation = true;
+        enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        if (hasExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME)) {
+            VkPhysicalDeviceFeatures2 features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2}; features.pNext = &maintenance;
+            (*instance)->GetPhysicalDeviceFeatures2(selected->physical, &features);
+            if (maintenance.swapchainMaintenance1 == VK_TRUE) {
+                native->swapchainMaintenance1 = true;
+                enabledDeviceExtensions.push_back(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+                maintenance.pNext = featureChain;
+                featureChain = &maintenance;
             }
-            if (hasExtension(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME)) {
-                native->incrementalPresent = true;
-                enabledDeviceExtensions.push_back(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME);
-            }
+        }
+        if (hasExtension(VK_EXT_HDR_METADATA_EXTENSION_NAME)) {
+            native->hdrMetadata = true;
+            enabledDeviceExtensions.push_back(VK_EXT_HDR_METADATA_EXTENSION_NAME);
+        }
+        if (hasExtension(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME)) {
+            native->incrementalPresent = true;
+            enabledDeviceExtensions.push_back(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME);
         }
     }
     VkPhysicalDeviceTimelineSemaphoreFeaturesKHR timelineFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR};

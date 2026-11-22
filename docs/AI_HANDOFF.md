@@ -1,6 +1,6 @@
 # 다른 AI를 위한 개발 인수인계
 
-2026-11-22 갱신. 직전 확인 기준 HEAD는 `1c4f9c32`이며 이번 세션에서 `P3-CAP-03`(Vulkan opt-in `enableDeviceLossTesting` 합성 손실 시험 경로·error coverage·세대 복구) 구현·실기 검증을 반영했다.
+2026-11-22 갱신. 직전 확인 기준 HEAD는 `b142368c`이며 이번 세션에서 `P3-CAP-05`(Intel UHD Graphics 770 Vulkan WSI 출력 확대: `swapchainMaintenance1` 분리·`QueueWaitIdle` 완료 보장·`DeviceWaitIdle` 수명 보호) 구현·실기 검증을 반영했다.
 이 값은 인수인계 기준이며 새 세션에서는 반드시 실제 `git status`, `git log`, `docs/ROADMAP_TASKS.json`을 다시 확인한다.
 기존 작업 방식과 코드 품질 기준은 루트 [AGENTS.md](../AGENTS.md)를, 시간순 세션 이력은 [AI_WORK_LOG.md](AI_WORK_LOG.md)를 따른다.
 
@@ -8,15 +8,15 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 마지막 작업 | `P3-CAP-03` (Vulkan opt-in `enableDeviceLossTesting` + `removeForTesting()` 합성 손실 주입, 9개 API `DeviceLost` error coverage, 크래시 브레드크럼 보존, `recover()` 세대 복구 및 64² Draw, 고정 VVL 1.3.290 `val_errors=0`, CTest 3/3·설치 소비자 검증) |
-| 마지막 확인 Commit | 직전 HEAD `1c4f9c32` (이번 세션 커밋은 `git log -1`로 확인) |
+| 마지막 작업 | `P3-CAP-05` (Intel UHD 770 Vulkan WSI 출력 확대: `NativeDevice::swapchainMaintenance1` 분리, `QueueWaitIdle` 완료 동기화, `NativeSwapchain::release()` `DeviceWaitIdle` 보호, 2GPU 전체 WSI 7스위트 고정 VVL 1.3.290 `val_errors=0`·설치 소비자 검증) |
+| 마지막 확인 Commit | 직전 HEAD `b142368c` (이번 세션 커밋은 `git log -1`로 확인) |
 | 현재 브랜치 | `main` (`origin`: `https://github.com/blackvrice/GraphicsSDK.git`) |
-| 현재 버전 | `0.0.1` (**Phase 8·9·10·11·12 Windows D3D12/Vulkan 전 항목 100% 완료** + `P3-CAP-03`/`04`/`07` 완료) |
+| 현재 버전 | `0.0.1` (**Phase 8·9·10·11·12 Windows D3D12/Vulkan 전 항목 100% 완료** + `P3-CAP-03`/`04`/`05`/`07` 완료) |
 | 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06/07/08`, `P8-MEM-03/04`, `P9-CMD-05/06/07/08`, `P9-CMP-03/04`, `P9-RG-02`, `P9-SHD-01`, `P10-PRES-02`, `P10-HDR-02`, `P10-SURF-02`, `P10-DIRTY-02`, `P11-INT-02`, `P11-VID-02`, `P11-AI-02`, `P11-PROF-02`, `P11-DBG-02`, `P12-UI-02`, `P12-SBX-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
-| 완료한 내용 | Phase 8~12 Windows D3D12/Vulkan 전 항목 + `P3-CAP-03`(Vulkan 손실 시험 경로) + `P3-CAP-04`(`VK_EXT_memory_budget`) + `P3-CAP-07`(Vulkan GPU-AV) 구현 및 Windows D3D12/Vulkan/Validation/WARP 검증 통과, `ROADMAP_TASKS.json` 218 ID(139 완료) 검증 통과 |
-| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 5, 후속 확장 36 (`P8~P12` Linux/Metal 검증, `P9-SHD-01`, `P6-OPT-*`) |
-| 수정 파일 | `src/backends/vulkan/Vulkan.cpp`, `tests/{VulkanLossInjectionTests,VulkanTests}.cpp`, `tests/linux_vulkan_device/Device.cpp`, `CMakeLists.txt`, `docs/{PHASE3_VULKAN_LOSS_INJECTION_REPORT,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
-| 테스트 결과 | `gfx_vulkan_loss_injection_tests`(일반+VVL 1.3.290, 2GPU `val_errors=0`), `gfx_vulkan_tests --validation`(2GPU), `ctest -R "vulkan_loss_injection|vulkan_transfer"` 3/3 PASS (`3.94s`), 설치 소비자 PASS, `roadmap.py --check` PASS (218 ID) |
+| 완료한 내용 | Phase 8~12 Windows D3D12/Vulkan 전 항목 + `P3-CAP-03`(Vulkan 손실 시험) + `P3-CAP-04`(`VK_EXT_memory_budget`) + `P3-CAP-05`(Intel UHD 770 Vulkan WSI) + `P3-CAP-07`(Vulkan GPU-AV) 구현 및 Windows D3D12/Vulkan/Validation/WARP 검증 통과, `ROADMAP_TASKS.json` 218 ID(140 완료) 검증 통과 |
+| 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 4, 후속 확장 36 (`P8~P12` Linux/Metal 검증, `P9-SHD-01`, `P6-OPT-*`) |
+| 수정 파일 | `src/backends/vulkan/{Vulkan.cpp,Presentation.hpp}`, `docs/{PHASE3_INTEL_VULKAN_WSI_REPORT,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
+| 테스트 결과 | NVIDIA GTX 1660 SUPER + Intel UHD 770 양쪽에서 `gfx_vulkan_presentation_tests`(일반+VVL, `supported_adapters=2`), `frame_pacing`, `hdr_colorspace`, `multi_surface`, `dirty_region`, `graphics_ui` 전부 고정 VVL 1.3.290 `val_errors=0`, 설치 소비자 PASS, `roadmap.py --check` PASS (218 ID) |
 | 확인된 문제 | 장시간 GBV 메모리(`P2-ACC-01`)·과거 Intel AV(`P2-ACC-02`) 미해결, Linux 물리 GPU·물리 Mac 부재 |
 | 다음 추천 작업 | `P8~P12` Linux Vulkan / macOS Metal CI 실기 검증, Phase 6 GPU 자원 최적화 후보(`P6-OPT-*`), 기존 필수 게이트(`P3-LNX-15`, Phase 5/7) |
 | 주의사항 | `tools/macos_metal_package.py`의 13개 공개 헤더 allowlist와 `tools/macos_core.py`의 5개 `CORE` `.cpp`·11개 CPU 테스트 목록을 유지해야 기존 replay와 `macos-core.yml`이 깨지지 않는다. 기존 사용자 변경(`tests/VulkanAllocationBenchmarkTests.cpp`)은 덮어쓰거나 커밋하지 않는다. (`.idea/`는 `.gitignore`에 반영 완료) |

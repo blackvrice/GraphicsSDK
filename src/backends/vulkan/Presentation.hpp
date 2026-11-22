@@ -291,7 +291,9 @@ struct VulkanSwapchain final : SwapChain {
         auto next = std::make_shared<NativeSwapchain>(); next->surface = surface;
         auto info = configuration; info.oldSwapchain = native ? native->handle : VkSwapchainKHR{};
         VkSwapchainPresentModesCreateInfoEXT modes{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT};
-        modes.presentModeCount = 1; modes.pPresentModes = &info.presentMode; info.pNext = &modes;
+        if (owner->native->swapchainMaintenance1) {
+            modes.presentModeCount = 1; modes.pPresentModes = &info.presentMode; info.pNext = &modes;
+        }
         // Calling native recreation retires oldSwapchain even when creation fails.
         if (native) native->alive = false;
         buffers.clear();
@@ -383,19 +385,27 @@ struct VulkanSwapchain final : SwapChain {
         auto& a = *buffers[native->current]->allocation;
         if (a.state != ResourceState::Present || a.version == UINT64_MAX) return fail(ErrorCode::InvalidState, "Present requires submitted Present state and available version");
         auto& n = *owner->native;
-        VkFence fence{}; VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-        if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Present completion fence"); !ok) return ok;
+        VkFence fence{};
+        if (n.swapchainMaintenance1) {
+            VkFenceCreateInfo ci{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+            if (auto ok = owner->accept(vulkan::acquireOutput(fence, n.CreateFence, n.handle, &ci, nullptr), "Present completion fence"); !ok) return ok;
+        }
         // One semaphore per native image, reused only after reacquiring that image.
         // An empty ordered submission signals completion of all earlier SDK rendering.
         auto semaphore = native->finished[native->current]; VkSubmitInfo submit{VK_STRUCTURE_TYPE_SUBMIT_INFO};
         submit.signalSemaphoreCount = 1; submit.pSignalSemaphores = &semaphore;
-        if (auto ok = owner->accept(n.QueueSubmit(n.queue, 1, &submit, {}), "Signal presentation completion"); !ok) { n.DestroyFence(n.handle, fence, nullptr); return ok; }
+        if (auto ok = owner->accept(n.QueueSubmit(n.queue, 1, &submit, {}), "Signal presentation completion"); !ok) {
+            if (fence) n.DestroyFence(n.handle, fence, nullptr);
+            return ok;
+        }
         VkPresentInfoKHR info{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR}; info.waitSemaphoreCount = 1; info.pWaitSemaphores = &semaphore;
         info.swapchainCount = 1; info.pSwapchains = &native->handle; info.pImageIndices = &native->current;
-        VkSwapchainPresentFenceInfoEXT completion{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT}; completion.swapchainCount = 1; completion.pFences = &fence;
+        VkSwapchainPresentFenceInfoEXT completion{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT};
+        completion.swapchainCount = 1; completion.pFences = &fence;
         std::vector<VkRectLayerKHR> vkRects;
         VkPresentRegionKHR vkRegion{};
         VkPresentRegionsKHR vkRegions{VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR};
+        const void* nextPtr = nullptr;
         if (!dirtyRects.empty()) {
             vkRects.reserve(dirtyRects.size());
             for (const auto& r : dirtyRects) {
@@ -405,19 +415,30 @@ struct VulkanSwapchain final : SwapChain {
             vkRegion.pRectangles = vkRects.data();
             vkRegions.swapchainCount = 1u;
             vkRegions.pRegions = &vkRegion;
-            completion.pNext = &vkRegions;
+            nextPtr = &vkRegions;
         }
-        info.pNext = &completion;
+        if (n.swapchainMaintenance1) {
+            completion.pNext = nextPtr;
+            info.pNext = &completion;
+        } else {
+            info.pNext = nextPtr;
+        }
         const auto presT0 = detail::FramePacingTracker::Clock::now();
         auto r = n.QueuePresentKHR(n.queue, &info); ++a.version; native->acquired = false;
         if (r == VK_ERROR_SURFACE_LOST_KHR) { surface->lost = true; native->invalid = true; }
-        // Completion here permits safe semaphore/swapchain destruction even without
-        // another acquisition. WaitIdle alone cannot prove presentation completion.
         auto waited = VK_SUCCESS;
-        if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR || r == VK_ERROR_OUT_OF_DATE_KHR || r == VK_ERROR_SURFACE_LOST_KHR)
-            waited = n.WaitForFences(n.handle, 1, &fence, VK_TRUE, UINT64_MAX);
+        if (n.swapchainMaintenance1) {
+            // Completion fence permits safe semaphore/swapchain destruction without another acquisition.
+            if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR || r == VK_ERROR_OUT_OF_DATE_KHR || r == VK_ERROR_SURFACE_LOST_KHR)
+                waited = n.WaitForFences(n.handle, 1, &fence, VK_TRUE, UINT64_MAX);
+        } else {
+            // Drivers without VK_EXT_swapchain_maintenance1 (e.g., Intel UHD 770):
+            // synchronize queue completion here and drain device before swapchain/semaphore teardown.
+            if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR || r == VK_ERROR_OUT_OF_DATE_KHR || r == VK_ERROR_SURFACE_LOST_KHR)
+                waited = n.QueueWaitIdle(n.queue);
+        }
         const auto presT1 = detail::FramePacingTracker::Clock::now();
-        n.DestroyFence(n.handle, fence, nullptr);
+        if (fence) n.DestroyFence(n.handle, fence, nullptr);
         if (auto ok = owner->accept(waited, "Wait presentation resource completion"); !ok) { native->invalid = true; return ok; }
         if (r == VK_SUCCESS || r == VK_SUBOPTIMAL_KHR) {
             pacing.recordPresent(std::chrono::duration<double, std::milli>(presT1 - presT0).count(), presT1);

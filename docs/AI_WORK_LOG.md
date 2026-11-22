@@ -778,3 +778,16 @@
   - `gfx_vulkan_loss_injection_tests` (일반 + 고정 VVL 1.3.290, GTX 1660 SUPER + Intel UHD 770): opt-out 거부, 타 스레드 거부, 9개 API `DeviceLost` error coverage, 크래시 브레드크럼 보존, `recover()` 새 세대 생성, 이중 `recover` 거부, 옛 자원 `WrongDevice`, 복구 후 64×64 Draw 및 `val_errors=0` PASS.
   - `gfx_vulkan_tests --validation` PASS (`724` assertions), CTest 3/3 PASS (`3.94s`), 설치 소비자(`tests/consumer`) PASS.
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P3-CAP-05`: Intel UHD Graphics 770 Vulkan WSI 출력 확대
+
+- **기준 HEAD**: `b142368c`
+- **완료 ID**: `P3-CAP-05` (Phase 3 조건부 잔여 5 → 4, 전체 140/218 완료)
+- **수행 내용**:
+  - `src/backends/vulkan/{Vulkan.cpp,Presentation.hpp}`: `NativeDevice::presentation`(`VK_KHR_swapchain`)과 `swapchainMaintenance1`(`VK_EXT_swapchain_maintenance1`) 분리, 미노출 어댑터(Intel UHD 770)에서 `VkSwapchainPresentModesCreateInfoEXT`/`VkSwapchainPresentFenceInfoEXT` 생략·`QueueWaitIdle` 완료 동기화·`NativeSwapchain::release()` `DeviceWaitIdle` 수명 보호 구현.
+  - `docs/PHASE3_INTEL_VULKAN_WSI_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p3-intel-wsi`, 설치 `out/p3-intel-wsi-install`, `GraphicsSDKCore.lib` SHA-256 `0BD612AF1D80C8FD5AF0A5D3F17F3A766921B755E9B3446C40C59D8FFFE47803`):
+  - NVIDIA GTX 1660 SUPER + Intel UHD 770 양쪽에서 `gfx_vulkan_presentation_tests`(일반+VVL 1.3.290, `supported_adapters=2`, 290 presents, 71.8MB verified), `frame_pacing`, `hdr_colorspace`, `multi_surface`(3중 창), `dirty_region`, `graphics_ui`(2중 창) 전체 `val_errors=0` PASS, 설치 소비자(`tests/consumer`) PASS.
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

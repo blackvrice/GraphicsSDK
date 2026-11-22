@@ -1464,15 +1464,17 @@
       "phase": 3,
       "group": "P3-CAP",
       "title": "현재 미지원 Intel 출력 확대",
-      "status": "todo",
+      "status": "done",
       "gate": "conditional",
       "depends_on": [
         "P3-SCP-02"
       ],
-      "work": "현재 Intel UHD 770/32.0.101.6129의 출력은 미지원 유지하며 초기 legacy fallback은 미채택. 확대 선택 시 완료 보장을 유지하는 별도 경로와 해당 driver의 실제 검증을 구현한다.",
+      "work": "NativeDevice::presentation(VK_KHR_swapchain)과 swapchainMaintenance1을 분리해 VK_EXT_swapchain_maintenance1 미노출 어댑터(Intel UHD Graphics 770)에서도 VkSwapchainPresentModesCreateInfoEXT/VkSwapchainPresentFenceInfoEXT 없이 QueueWaitIdle 완료 동기화와 NativeSwapchain::release() DeviceWaitIdle 수명 보호로 안전한 출력을 구현했다. Intel UHD 770 + NVIDIA GTX 1660 SUPER 양쪽에서 gfx_vulkan_presentation_tests(일반+고정 VVL 1.3.290, supported_adapters=2, 290 presents, 71.8MB verified), frame_pacing, hdr_colorspace, multi_surface(3중 창), dirty_region, graphics_ui(2중 창) 전체 validation 오류 0 및 설치 소비자로 검증했다.",
       "done_when": "해당 Intel GPU/driver에서 실제 present·수명·validation·참조 검사.",
       "evidence": [
-        "docs/PHASE3_WINDOWS_SUPPORT.md"
+        "src/backends/vulkan/Vulkan.cpp",
+        "src/backends/vulkan/Presentation.hpp",
+        "docs/PHASE3_INTEL_VULKAN_WSI_REPORT.md"
       ],
       "requires": "선택한 기능의 native GPU/driver/runtime 환경",
       "scope_from": "P3-SCP-02"
