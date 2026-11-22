@@ -52,7 +52,7 @@ class MetalPackage(unittest.TestCase):
                 (folder/name).write_text('', encoding='utf-8')
             (folder/'GraphicsSDKTargets-release.cmake').write_text('${_IMPORT_PREFIX}/lib/libGraphicsSDKCore.a', encoding='utf-8')
             targets = folder/'GraphicsSDKTargets.cmake'
-            targets.write_text('-framework Foundation;-framework QuartzCore;-framework Metal', encoding='utf-8')
+            targets.write_text('-framework Foundation;-framework QuartzCore;-framework Metal;-framework CoreGraphics', encoding='utf-8')
             package.exports(folder)
             targets.write_text('-framework Foundation;-framework QuartzCore;/Applications/Xcode.app/Metal.framework', encoding='utf-8')
             with self.assertRaises(ValueError):
