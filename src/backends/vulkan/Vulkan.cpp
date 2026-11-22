@@ -321,6 +321,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
     X(CreateImage) X(DestroyImage) X(GetImageMemoryRequirements) X(GetImageSparseMemoryRequirements) X(BindImageMemory) X(CmdCopyBufferToImage) X(CmdCopyImageToBuffer) X(CmdResolveImage) \
     X(CreateImageView) X(DestroyImageView) X(CreateRenderPass) X(DestroyRenderPass) X(CreateFramebuffer) X(DestroyFramebuffer) X(CmdBeginRenderPass) X(CmdEndRenderPass) \
     X(CreateShaderModule) X(DestroyShaderModule) X(CreatePipelineLayout) X(DestroyPipelineLayout) X(CreateGraphicsPipelines) X(CreateComputePipelines) X(DestroyPipeline) \
+    X(CreatePipelineCache) X(DestroyPipelineCache) X(GetPipelineCacheData) X(MergePipelineCaches) \
     X(CreateSampler) X(DestroySampler) X(CreateDescriptorSetLayout) X(DestroyDescriptorSetLayout) \
     X(CreateDescriptorPool) X(DestroyDescriptorPool) X(AllocateDescriptorSets) X(UpdateDescriptorSets) X(CmdBindDescriptorSets) \
     X(CreateQueryPool) X(DestroyQueryPool) X(CmdResetQueryPool) X(CmdWriteTimestamp) X(GetQueryPoolResults) \
@@ -331,6 +332,7 @@ Result<std::vector<Candidate>> candidates(const std::shared_ptr<Instance>& insta
 struct NativeDevice {
     std::shared_ptr<Instance> instance;
     VkDevice handle{};
+    VkPipelineCache pipelineCache{};
     VkQueue queue{};
     std::array<VkQueue, 3> queues{};
     bool presentation{};
@@ -358,7 +360,16 @@ struct NativeDevice {
 #define DECLARE(name) PFN_vk##name name{};
     DEVICE_FUNCTIONS(DECLARE)
 #undef DECLARE
-    void release() { if (handle) { DestroyDevice(handle, nullptr); handle = {}; } }
+    void release() {
+        if (handle) {
+            if (pipelineCache && DestroyPipelineCache) {
+                DestroyPipelineCache(handle, pipelineCache, nullptr);
+                pipelineCache = {};
+            }
+            DestroyDevice(handle, nullptr);
+            handle = {};
+        }
+    }
     ~NativeDevice() { if (handle && DestroyDevice) release(); }
 };
 struct NativeSurface {
@@ -3491,7 +3502,12 @@ struct VulkanDevice final : Device {
         info.layout = p->layout; info.renderPass = p->pass;
         // Pipeline arrays have defined null/partial-success outputs. Keep every
         // non-null handle in RAII cleanup even if the overall call fails.
-        if (auto ok = owner->accept(owner->native->CreateGraphicsPipelines(owner->native->handle, {}, 1, &info, nullptr, &p->pipeline), "vkCreateGraphicsPipelines"); !ok) return std::unexpected(ok.error());
+        if (!owner->native->pipelineCache) {
+            VkPipelineCacheCreateInfo cacheInfo{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO};
+            if (auto ok = owner->accept(vulkan::acquireOutput(owner->native->pipelineCache, owner->native->CreatePipelineCache, owner->native->handle, &cacheInfo, nullptr), "vkCreatePipelineCache"); !ok)
+                return std::unexpected(ok.error());
+        }
+        if (auto ok = owner->accept(owner->native->CreateGraphicsPipelines(owner->native->handle, owner->native->pipelineCache, 1, &info, nullptr, &p->pipeline), "vkCreateGraphicsPipelines"); !ok) return std::unexpected(ok.error());
         auto value = std::make_shared<VulkanPipeline>(); value->owner = owner; value->native = p; value->token = std::make_shared<int>();
         std::erase_if(owner->objects, [](auto& w) { return w.expired(); }); std::erase_if(owner->pipelines, [](auto& w) { return w.expired(); });
         owner->pipelines.push_back(p); owner->objects.push_back(value->token); return PipelinePtr(value);
@@ -3595,7 +3611,12 @@ struct VulkanDevice final : Device {
         pipeInfo.stage.module = guard.module;
         pipeInfo.stage.pName = "main";
         pipeInfo.layout = p->layout;
-        if (auto ok = owner->accept(owner->native->CreateComputePipelines(owner->native->handle, {}, 1, &pipeInfo, nullptr, &p->pipeline), "vkCreateComputePipelines"); !ok) return std::unexpected(ok.error());
+        if (!owner->native->pipelineCache) {
+            VkPipelineCacheCreateInfo cacheInfo{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO};
+            if (auto ok = owner->accept(vulkan::acquireOutput(owner->native->pipelineCache, owner->native->CreatePipelineCache, owner->native->handle, &cacheInfo, nullptr), "vkCreatePipelineCache"); !ok)
+                return std::unexpected(ok.error());
+        }
+        if (auto ok = owner->accept(owner->native->CreateComputePipelines(owner->native->handle, owner->native->pipelineCache, 1, &pipeInfo, nullptr, &p->pipeline), "vkCreateComputePipelines"); !ok) return std::unexpected(ok.error());
 
         auto value = std::make_shared<VulkanPipeline>();
         value->owner = owner;
@@ -4042,6 +4063,61 @@ struct VulkanDevice final : Device {
         (void)handle; (void)initialValue;
         return fail(ErrorCode::Unsupported, "Timeline fence import is currently implemented for Win32 NT handles");
 #endif
+    }
+    Result<PipelineCacheFingerprint> pipelineCacheFingerprint() const override {
+        VkPhysicalDeviceProperties2 props2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        owner->native->instance->GetPhysicalDeviceProperties2(owner->physical, &props2);
+        const auto& props = props2.properties;
+        std::uint64_t h = 14695981039346656037ull;
+        auto mix = [&](const void* p, std::size_t n) {
+            const auto* b = static_cast<const std::uint8_t*>(p);
+            for (std::size_t i = 0; i < n; ++i) { h ^= b[i]; h *= 1099511628211ull; }
+        };
+        mix(&props.apiVersion, sizeof(props.apiVersion));
+        mix(&props.driverVersion, sizeof(props.driverVersion));
+        mix(&props.vendorID, sizeof(props.vendorID));
+        mix(&props.deviceID, sizeof(props.deviceID));
+        mix(props.pipelineCacheUUID, sizeof(props.pipelineCacheUUID));
+        PipelineCacheFingerprint fp{};
+        fp.sdkVersion = std::string(gfx::version);
+        fp.backend = Backend::Vulkan;
+        fp.vendorId = props.vendorID;
+        fp.deviceId = props.deviceID;
+        fp.adapterName = capabilities.adapterName;
+        fp.driverFingerprint = h;
+        return fp;
+    }
+    Result<std::vector<std::byte>> serializePipelineCache() override {
+        if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
+        if (!owner->native->pipelineCache) return std::vector<std::byte>{};
+        std::size_t size = 0;
+        if (auto ok = owner->accept(owner->native->GetPipelineCacheData(owner->native->handle, owner->native->pipelineCache, &size, nullptr), "vkGetPipelineCacheData(size)"); !ok)
+            return std::unexpected(ok.error());
+        std::vector<std::byte> out(size);
+        if (size > 0) {
+            if (auto ok = owner->accept(owner->native->GetPipelineCacheData(owner->native->handle, owner->native->pipelineCache, &size, out.data()), "vkGetPipelineCacheData"); !ok)
+                return std::unexpected(ok.error());
+            out.resize(size);
+        }
+        return out;
+    }
+    Result<void> loadPipelineCacheData(std::span<const std::byte> data) override {
+        if (auto ok = owner->check(); !ok) return ok;
+        if (data.empty()) return {};
+        if (!owner->native->pipelineCache) {
+            VkPipelineCacheCreateInfo emptyInfo{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO};
+            if (auto ok = owner->accept(vulkan::acquireOutput(owner->native->pipelineCache, owner->native->CreatePipelineCache, owner->native->handle, &emptyInfo, nullptr), "vkCreatePipelineCache"); !ok)
+                return ok;
+        }
+        VkPipelineCacheCreateInfo info{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO};
+        info.initialDataSize = data.size();
+        info.pInitialData = data.data();
+        VkPipelineCache imported{};
+        if (auto ok = owner->accept(vulkan::acquireOutput(imported, owner->native->CreatePipelineCache, owner->native->handle, &info, nullptr), "vkCreatePipelineCache(import)"); !ok)
+            return ok;
+        const VkResult mr = owner->native->MergePipelineCaches(owner->native->handle, owner->native->pipelineCache, 1, &imported);
+        owner->native->DestroyPipelineCache(owner->native->handle, imported, nullptr);
+        return owner->accept(mr, "vkMergePipelineCaches");
     }
     Result<void> checkSurfaceSupport(Surface surface) override {
         if (auto ok = owner->check(); !ok) return ok;

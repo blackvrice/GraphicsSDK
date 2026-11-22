@@ -24,11 +24,11 @@
 | Phase 6 | GPU 자원 최적화 | 26 | 18 | 0 | 0 | 8 | 기준선·4슬롯 기각·링 모델 완료 · 후보/판정 잔여 |
 | Phase 7 | 독립 SDK 배포 | 15 | 9 | 6 | 0 | 0 | 6프로필 후보·공통 감사·Windows GPU smoke 완료 · CI/최종 수용 잔여 |
 | Phase 8 | GPU 자원·전송·Capability·Texture·Memory Pool 확장 | 20 | 11 | 0 | 0 | 9 | `copyBufferRegion`·부분 2D 텍스처 복사·GPU 한도/포맷 조회·`TextureView`(`P8-TEX-01`)·1D/3D/2DArray/Cubemap/Mipmap(`P8-TEX-02`)·MSAA/Resolve(`P8-TEX-03`)·압축 텍스처 BC/ETC2/ASTC(`P8-TEX-04`)·`UploadRing`/Pools(`P8-MEM-01`)·Fragmentation/Residency/Aliasing/Sparse(`P8-MEM-02`) **Phase 8 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 9건 잔여 |
-| Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 15 | 7 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·병렬 기록/일괄 제출(`P9-CMD-02`)·다중 큐/Timeline Fence(`P9-CMD-03`)·Compute/UAV(`P9-CMP-01`)·Async Compute/Indirect/MDI/GPU Culling/Capability(`P9-CMP-02`)·선택적 Render Graph(`P9-RG-01`) D3D12/Win Vulkan 완료 · Linux/Metal 검증 및 영속 Shader Cache(`P9-SHD-01`) 잔여 |
+| Phase 9 | Command·멀티스레드·Shader·Compute·Render Graph | 16 | 8 | 0 | 0 | 8 | 동적 `setViewport`(`P9-CMD-04`)·명시적 `CommandPool`(`P9-CMD-01`)·병렬 기록/일괄 제출(`P9-CMD-02`)·다중 큐/Timeline Fence(`P9-CMD-03`)·영속 Shader/Pipeline Cache(`P9-SHD-02`)·Compute/UAV(`P9-CMP-01`)·Async Compute/Indirect/MDI/GPU Culling/Capability(`P9-CMP-02`)·선택적 Render Graph(`P9-RG-01`) **Phase 9 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 및 `P9-SHD-01` 최종 수용 잔여 |
 | Phase 10 | Frame Pacing·HDR·Multi-Surface·Dirty Region | 8 | 4 | 0 | 0 | 4 | Frame Pacing(`P10-PRES-01`)·HDR/Color Space(`P10-HDR-01`)·Multi-Surface(`P10-SURF-01`)·Dirty Region(`P10-DIRTY-01`) **Phase 10 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 4건 잔여 |
 | Phase 11 | Native Interop·Zero-Copy Video·AI·Profiling/Debugging | 10 | 5 | 0 | 0 | 5 | Native GPU Interop(`P11-INT-01`)·Zero-Copy Video NV12/P010(`P11-VID-01`)·외부 AI Interop(`P11-AI-01`)·GPU Profiling 확장(`P11-PROF-01`)·디버깅 고도화(`P11-DBG-01`) **Phase 11 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 5건 잔여 |
 | Phase 12 | GraphicsUI·Sandbox RHI 호환성 | 4 | 2 | 0 | 0 | 2 | GraphicsUI 공통 기반(`P12-UI-01`)·Sandbox RHI 비침투 어댑터(`P12-SBX-01`) **Phase 12 Win D3D12/Vulkan 전 항목 완료** · Linux/Metal 검증 2건 잔여 |
-| **합계** | **전체 13 Phases** | **217** | **135** | **38** | **8** | **36** | **진행 중** |
+| **합계** | **전체 13 Phases** | **218** | **136** | **38** | **8** | **36** | **진행 중** |
 
 ---
 
@@ -80,7 +80,7 @@
 | Depth/MRT·Clear/Load·Scissor·Alpha Blend | 물리 GPU + GBV + WARP | 물리 GPU + 고정 VVL | SW + 고정 VVL | 호스팅 가상 + Validation |
 | Vertex/Index/Instance 입력·Binding Layout | 물리 GPU + GBV + WARP | 물리 GPU + 고정 VVL | SW + 고정 VVL | 호스팅 가상 + Validation |
 | GPU Timestamp (2-slot + 다중 32-Scope·ON/OFF 프로파일링) | **물리 GPU + GBV + WARP (`P11-PROF-01`)** | **물리 GPU + 고정 VVL (`P11-PROF-01`)** | 2-slot SW 검증 · 다중 스코프 구현(`P11-PROF-02`) | GPU 스코프 `Unsupported` · 카운터 구현(`P11-PROF-02`) |
-| Pipeline Cache (장치별 8-entry LRU) | SW(WARP) 검증 | SW/설치 소비자 검증 | SW 검증 | 호스팅 가상 검증 |
+| Pipeline Cache (8-entry LRU + 디스크 영속 `GFXPC001`·Variant·Prewarm·Hot Reload) | **물리 GPU + GBV + WARP (`9.93x~49.20x` warm, `P9-SHD-02`)** | **물리 GPU + 고정 VVL (`37.00x~54.85x` warm, `P9-SHD-02`)** | 구현(Linux CI 대기, `P9-SHD-01`) | 공통 캐시 구현(`P9-SHD-01`) |
 | OS Memory Budget 조회 (`queryMemoryBudget`) | 물리 GPU + GBV | 미지원 (`P3-CAP-04` 조건부) | 미지원 (`P3-CAP-04`) | 미지원 (`Unsupported`) |
 | 장치 손실 복구 (`recover`) | 통제 RemoveDevice 검증 | 합성 손실 레이어 검증 | SW 합성 손실 검증 | 미지원 (`Unsupported`) |
 | SwapChain / 화면 출력 | NVIDIA 수동 표시 수용 (DPI/TDR 대기) | NVIDIA 자동 검증 (Intel 미지원) | XCB Xvfb SW 검증 (수동 `P3-WSI-08` 대기) | CAMetalLayer 호스팅 검증 (물리 Mac 대기) |

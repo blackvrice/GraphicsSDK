@@ -307,6 +307,7 @@ struct QueueState {
 struct State {
     ComPtr<IDXGIFactory6> factory;
     ComPtr<ID3D12Device> device;
+    std::unordered_map<std::uint64_t, std::vector<std::byte>> cachedPsoBlobs;
     std::array<QueueState, 3> queues;
     ComPtr<ID3D12CommandQueue>& queue{queues[0].queue};
     ComPtr<ID3D12InfoQueue> info;
@@ -3002,8 +3003,34 @@ public:
         pso.SampleMask = UINT_MAX; pso.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         pso.NumRenderTargets=static_cast<UINT>(targets.colors.size());for(UINT i=0;i<pso.NumRenderTargets;++i)pso.RTVFormats[i]=native(targets.colors[i]);
         pso.SampleDesc.Count=targets.sampleCount;pso.SampleDesc.Quality=0;
-        result = state->device->CreateGraphicsPipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+        std::uint64_t psoKey = 14695981039346656037ull;
+        auto mixKey = [&](const void* p, std::size_t n) {
+            const auto* b = static_cast<const std::uint8_t*>(p);
+            for (std::size_t i = 0; i < n; ++i) { psoKey ^= b[i]; psoKey *= 1099511628211ull; }
+        };
+        mixKey(desc.vertex.bytes.data(), desc.vertex.bytes.size());
+        mixKey(desc.fragment.bytes.data(), desc.fragment.bytes.size());
+        mixKey(&desc.alphaBlend, sizeof(desc.alphaBlend));
+        mixKey(&desc.depthState, sizeof(desc.depthState));
+        mixKey(&targets.sampleCount, sizeof(targets.sampleCount));
+        mixKey(pso.RTVFormats, sizeof(DXGI_FORMAT) * pso.NumRenderTargets);
+        mixKey(&pso.DSVFormat, sizeof(pso.DSVFormat));
+        if (auto it = state->cachedPsoBlobs.find(psoKey); it != state->cachedPsoBlobs.end() && !it->second.empty()) {
+            pso.CachedPSO = {it->second.data(), it->second.size()};
+            result = state->device->CreateGraphicsPipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+            if (FAILED(result)) {
+                pso.CachedPSO = {};
+                result = state->device->CreateGraphicsPipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+            }
+        } else {
+            result = state->device->CreateGraphicsPipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+        }
         if (FAILED(result)) return state->failure(result, "Graphics pipeline creation failed");
+        ComPtr<ID3DBlob> cachedBlob;
+        if (SUCCEEDED(pipeline->pso->GetCachedBlob(&cachedBlob)) && cachedBlob && cachedBlob->GetBufferSize() > 0) {
+            const auto* bp = static_cast<const std::byte*>(cachedBlob->GetBufferPointer());
+            state->cachedPsoBlobs[psoKey].assign(bp, bp + cachedBlob->GetBufferSize());
+        }
         state->track(pipeline);
         return pipeline;
     }
@@ -3109,8 +3136,27 @@ public:
         D3D12_COMPUTE_PIPELINE_STATE_DESC pso{};
         pso.pRootSignature = pipeline->root.Get();
         pso.CS = {desc.compute.bytes.data(), desc.compute.bytes.size()};
-        result = state->device->CreateComputePipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+        std::uint64_t psoKey = 14695981039346656037ull ^ 0xC0FFEEu;
+        for (const std::byte b : desc.compute.bytes) {
+            psoKey ^= static_cast<std::uint64_t>(std::to_integer<std::uint8_t>(b));
+            psoKey *= 1099511628211ull;
+        }
+        if (auto it = state->cachedPsoBlobs.find(psoKey); it != state->cachedPsoBlobs.end() && !it->second.empty()) {
+            pso.CachedPSO = {it->second.data(), it->second.size()};
+            result = state->device->CreateComputePipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+            if (FAILED(result)) {
+                pso.CachedPSO = {};
+                result = state->device->CreateComputePipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+            }
+        } else {
+            result = state->device->CreateComputePipelineState(&pso, IID_PPV_ARGS(&pipeline->pso));
+        }
         if (FAILED(result)) return state->failure(result, "Compute pipeline creation failed");
+        ComPtr<ID3DBlob> cachedBlob;
+        if (SUCCEEDED(pipeline->pso->GetCachedBlob(&cachedBlob)) && cachedBlob && cachedBlob->GetBufferSize() > 0) {
+            const auto* bp = static_cast<const std::byte*>(cachedBlob->GetBufferPointer());
+            state->cachedPsoBlobs[psoKey].assign(bp, bp + cachedBlob->GetBufferSize());
+        }
         state->track(pipeline);
         return pipeline;
     }
@@ -3305,6 +3351,84 @@ public:
         timeline->shared = true;
         state->track(timeline);
         return TimelineFencePtr(std::move(timeline));
+    }
+    Result<PipelineCacheFingerprint> pipelineCacheFingerprint() const override {
+        PipelineCacheFingerprint fp{};
+        fp.sdkVersion = std::string(gfx::version);
+        fp.backend = Backend::D3D12;
+        fp.adapterName = state->caps.adapterName;
+        std::uint64_t h = 14695981039346656037ull;
+        auto mix = [&](const void* p, std::size_t n) {
+            const auto* b = static_cast<const std::uint8_t*>(p);
+            for (std::size_t i = 0; i < n; ++i) { h ^= b[i]; h *= 1099511628211ull; }
+        };
+        const LUID luid = state->device->GetAdapterLuid();
+        mix(&luid, sizeof(luid));
+        ComPtr<IDXGIAdapter1> dxgiAdapter;
+        if (SUCCEEDED(state->factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(&dxgiAdapter))) && dxgiAdapter) {
+            DXGI_ADAPTER_DESC1 desc1{};
+            if (SUCCEEDED(dxgiAdapter->GetDesc1(&desc1))) {
+                fp.vendorId = desc1.VendorId;
+                fp.deviceId = desc1.DeviceId;
+                mix(&desc1.VendorId, sizeof(desc1.VendorId));
+                mix(&desc1.DeviceId, sizeof(desc1.DeviceId));
+                mix(&desc1.SubSysId, sizeof(desc1.SubSysId));
+                mix(&desc1.Revision, sizeof(desc1.Revision));
+            }
+        }
+        fp.driverFingerprint = h;
+        return fp;
+    }
+    Result<std::vector<std::byte>> serializePipelineCache() override {
+        auto status = state->check(); if (!status) return std::unexpected(status.error());
+        std::vector<std::byte> out;
+        const std::uint32_t count = static_cast<std::uint32_t>(state->cachedPsoBlobs.size());
+        auto append = [&](const void* p, std::size_t n) {
+            const auto* b = static_cast<const std::byte*>(p);
+            out.insert(out.end(), b, b + n);
+        };
+        append(&count, sizeof(count));
+        for (const auto& [key, blob] : state->cachedPsoBlobs) {
+            const std::uint64_t sz = static_cast<std::uint64_t>(blob.size());
+            append(&key, sizeof(key));
+            append(&sz, sizeof(sz));
+            if (sz > 0) append(blob.data(), static_cast<std::size_t>(sz));
+        }
+        return out;
+    }
+    Result<void> loadPipelineCacheData(std::span<const std::byte> data) override {
+        auto status = state->check(); if (!status) return status;
+        if (data.empty()) return {};
+        std::size_t off = 0;
+        auto read = [&](void* dst, std::size_t n) {
+            if (off > data.size() || data.size() - off < n) return false;
+            std::memcpy(dst, data.data() + off, n);
+            off += n;
+            return true;
+        };
+        std::uint32_t count = 0;
+        if (!read(&count, sizeof(count)) || count > 4096u) {
+            return invalid("Corrupted D3D12 pipeline cache entry count", ErrorCode::InvalidArgument);
+        }
+        std::unordered_map<std::uint64_t, std::vector<std::byte>> loaded;
+        for (std::uint32_t i = 0; i < count; ++i) {
+            std::uint64_t key = 0, sz = 0;
+            if (!read(&key, sizeof(key)) || !read(&sz, sizeof(sz)) || sz > 64ull * 1024ull * 1024ull) {
+                return invalid("Corrupted D3D12 pipeline cache entry header", ErrorCode::InvalidArgument);
+            }
+            if (off > data.size() || data.size() - off < sz) {
+                return invalid("Truncated D3D12 pipeline cache blob", ErrorCode::InvalidArgument);
+            }
+            std::vector<std::byte> blob(static_cast<std::size_t>(sz));
+            if (sz > 0) std::memcpy(blob.data(), data.data() + off, static_cast<std::size_t>(sz));
+            off += static_cast<std::size_t>(sz);
+            loaded.emplace(key, std::move(blob));
+        }
+        if (off != data.size()) {
+            return invalid("Trailing bytes in D3D12 pipeline cache archive", ErrorCode::InvalidArgument);
+        }
+        for (auto& [k, v] : loaded) state->cachedPsoBlobs[k] = std::move(v);
+        return {};
     }
     Result<std::uint64_t> validationErrorCount() override {
         auto status = state->check(); if (!status) return std::unexpected(status.error());

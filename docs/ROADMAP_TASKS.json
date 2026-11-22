@@ -3764,18 +3764,46 @@
       ]
     },
     {
+      "id": "P9-SHD-02",
+      "phase": 9,
+      "group": "P9-SHD",
+      "title": "Shader Binary/Pipeline Cache 영속화·Variant·Prewarming·Hot Reload (API·D3D12·Win Vulkan 구현/검증)",
+      "status": "done",
+      "gate": "followup",
+      "depends_on": [
+        "P8-CAP-01",
+        "P9-CMP-01"
+      ],
+      "work": "13개 공개 헤더/5개 CORE 유닛 계약을 유지하며 PipelineCacheFingerprint, PipelineCacheLoadResult, ShaderDefine/ShaderVariantKey, PipelinePrewarmStats, Device::{pipelineCacheFingerprint,serializePipelineCache,loadPipelineCacheData,savePipelineCacheToFile,loadPipelineCacheFromFile}(GFXPC001 FNV-1a 체크섬·원자적 저장·지문 무효화·손상 복구) 및 ShaderVariantCache::{getOrCompile,prewarm,hotReload,find,saveToDisk,loadFromDisk}를 구현했다. Vulkan은 VkPipelineCache 생성·vkGetPipelineCacheData·vkMergePipelineCaches·pipelineCacheUUID 지문을, D3D12는 GetCachedBlob/CachedPSO 아카이브·어댑터 지문을 연결했다. Windows 물리 GPU 2종(GTX 1660 SUPER·Intel UHD 770)·WARP 5모드(Debug+GBV 및 고정 VVL 1.3.290 val_errors=0), CTest 5/5, 설치 소비자에서 8-variant cold vs warm 실측(Vulkan GTX 30.17->0.55ms 54.85x·Intel 12.95->0.35ms 37.00x, D3D12 GTX 10.53->1.06ms 9.93x·Intel 16.20->0.63ms 25.71x), 지문 무효화, 3종 손상 복구, 원자적 Hot Reload 및 64x64 전 픽셀 일치를 검증했다.",
+      "done_when": "Windows D3D12/Vulkan/WARP에서 드라이버/입력 변경 무효화, 손상 캐시 복구, cold vs warm 실측, 원자적 Hot Reload 및 전 픽셀 일치 통과.",
+      "evidence": [
+        "include/graphics/Types.hpp",
+        "include/graphics/Device.hpp",
+        "src/foundation/Backend.cpp",
+        "src/backends/d3d12/D3D12.cpp",
+        "src/backends/vulkan/Vulkan.cpp",
+        "tests/ShaderCacheTests.cpp",
+        "docs/PHASE9_PERSISTENT_SHADER_CACHE_REPORT.md"
+      ]
+    },
+    {
       "id": "P9-SHD-01",
       "phase": 9,
       "group": "P9-SHD",
-      "title": "Shader Binary/Pipeline Cache 영속화·Variant·Hot Reload",
+      "title": "Shader Binary/Pipeline Cache 영속화·Variant·Hot Reload (최종 크로스플랫폼 수용)",
       "status": "todo",
       "gate": "followup",
       "depends_on": [
-        "P5-SHD-08"
+        "P5-SHD-08",
+        "P9-SHD-02"
       ],
-      "work": "GPU/드라이버·SDK 지문 기반 무효화를 포함한 디스크 영속 Shader/Pipeline Cache, Variant 관리, Pipeline Prewarming과 개발용 Hot Reload를 구현한다.",
-      "done_when": "드라이버/입력 변경 무효화, 손상 캐시 복구, cold vs warm 실측 및 전체 이미지 일치.",
-      "evidence": []
+      "work": "P9-SHD-02의 디스크 영속 Shader/Pipeline Cache, Variant, Prewarming 및 Hot Reload 구현을 P5-SHD-08 수용 이후 Linux Vulkan과 macOS Metal 환경까지 포함해 최종 검증한다.",
+      "done_when": "드라이버/입력 변경 무효화, 손상 캐시 복구, cold vs warm 실측 및 전체 이미지 일치(Linux/macOS 포함).",
+      "requires": "P5-SHD-08 선행 수용 및 Linux Vulkan / macOS Metal 실행 환경(CI 또는 실기)",
+      "evidence": [
+        "tests/ShaderCacheTests.cpp",
+        "docs/PHASE9_PERSISTENT_SHADER_CACHE_REPORT.md"
+      ]
     },
     {
       "id": "P9-CMP-01",

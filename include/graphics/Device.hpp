@@ -181,6 +181,12 @@ public:
     [[nodiscard]] virtual Result<TimelineFencePtr> createSharedTimelineFence(std::uint64_t initialValue = 0) = 0;
     [[nodiscard]] virtual Result<ExternalHandle> exportTimelineFenceHandle(const TimelineFencePtr& fence) = 0;
     [[nodiscard]] virtual Result<TimelineFencePtr> importTimelineFenceHandle(const ExternalHandle& handle, std::uint64_t initialValue = 0) = 0;
+    // Persistent native pipeline cache fingerprint, serialization, and validated disk I/O.
+    [[nodiscard]] virtual Result<PipelineCacheFingerprint> pipelineCacheFingerprint() const;
+    [[nodiscard]] virtual Result<std::vector<std::byte>> serializePipelineCache();
+    [[nodiscard]] virtual Result<void> loadPipelineCacheData(std::span<const std::byte> data);
+    [[nodiscard]] Result<void> savePipelineCacheToFile(std::string_view path);
+    [[nodiscard]] Result<PipelineCacheLoadResult> loadPipelineCacheFromFile(std::string_view path);
 protected:
     [[nodiscard]] const std::shared_ptr<detail::ProfilingTracker>& profilingTracker() const noexcept { return profiling; }
 private:
@@ -234,6 +240,45 @@ public:
     [[nodiscard]] const std::vector<RGSyncEdge>& syncEdges() const noexcept;
     [[nodiscard]] std::string dumpText() const;
     [[nodiscard]] std::string dumpDot() const;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl;
+};
+
+// High-level shader/pipeline variant manager with prewarming, atomic hot-reload
+// (preserving the previous valid pipeline on failure), and disk cache persistence.
+class ShaderVariantCache {
+public:
+    ShaderVariantCache();
+    ~ShaderVariantCache();
+    ShaderVariantCache(const ShaderVariantCache&) = delete;
+    ShaderVariantCache& operator=(const ShaderVariantCache&) = delete;
+    ShaderVariantCache(ShaderVariantCache&&) noexcept;
+    ShaderVariantCache& operator=(ShaderVariantCache&&) noexcept;
+
+    [[nodiscard]] static std::uint64_t hashBytes(std::span<const std::byte> bytes) noexcept;
+    [[nodiscard]] static std::uint64_t hashSource(std::string_view source) noexcept;
+
+    [[nodiscard]] Result<CachedGraphicsPipeline> getOrCompile(
+        Device& device,
+        const ShaderVariantKey& key,
+        const GraphicsPipelineDesc& desc);
+    [[nodiscard]] Result<PipelinePrewarmStats> prewarm(
+        Device& device,
+        std::span<const std::pair<ShaderVariantKey, GraphicsPipelineDesc>> variants);
+    // Atomically replaces an existing variant (matching name + normalized defines) when
+    // sourceHash changes. On compilation/creation failure, the previous valid pipeline is preserved.
+    [[nodiscard]] Result<PipelinePtr> hotReload(
+        Device& device,
+        const ShaderVariantKey& newKey,
+        const GraphicsPipelineDesc& newDesc);
+    [[nodiscard]] PipelinePtr find(const ShaderVariantKey& key) const;
+    [[nodiscard]] std::size_t size() const noexcept;
+    void clear();
+
+    [[nodiscard]] Result<void> saveToDisk(Device& device, std::string_view path) const;
+    [[nodiscard]] Result<PipelineCacheLoadResult> loadFromDisk(Device& device, std::string_view path);
 
 private:
     struct Impl;

@@ -5,7 +5,10 @@
 #include <bit>
 #include <chrono>
 #include <cmath>
+#include <cstring>
 #include <deque>
+#include <filesystem>
+#include <fstream>
 #include <limits>
 #include <list>
 #include <queue>
@@ -1172,6 +1175,319 @@ Result<void> Device::clearGraphicsPipelineCache() {
     if (auto status = checkStatus(); !status) return status;
     graphicsCache.reset();
     return {};
+}
+
+namespace {
+std::uint64_t fnv1a64(std::span<const std::byte> data) noexcept {
+    std::uint64_t h = 14695981039346656037ull;
+    for (const std::byte b : data) {
+        h ^= static_cast<std::uint64_t>(std::to_integer<std::uint8_t>(b));
+        h *= 1099511628211ull;
+    }
+    return h;
+}
+
+template <class T>
+void appendPod(std::vector<std::byte>& out, const T& value) {
+    const auto* p = reinterpret_cast<const std::byte*>(&value);
+    out.insert(out.end(), p, p + sizeof(T));
+}
+
+template <class T>
+bool readPod(std::span<const std::byte> data, std::size_t& offset, T& out) {
+    if (offset > data.size() || data.size() - offset < sizeof(T)) return false;
+    std::memcpy(&out, data.data() + offset, sizeof(T));
+    offset += sizeof(T);
+    return true;
+}
+
+void appendString(std::vector<std::byte>& out, std::string_view s) {
+    const std::uint32_t len = static_cast<std::uint32_t>(s.size());
+    appendPod(out, len);
+    const auto* p = reinterpret_cast<const std::byte*>(s.data());
+    out.insert(out.end(), p, p + len);
+}
+
+bool readString(std::span<const std::byte> data, std::size_t& offset, std::string& out) {
+    std::uint32_t len = 0;
+    if (!readPod(data, offset, len)) return false;
+    if (len > 4096u || offset > data.size() || data.size() - offset < len) return false;
+    out.assign(reinterpret_cast<const char*>(data.data() + offset), len);
+    offset += len;
+    return true;
+}
+
+constexpr std::array<char, 8> kPipelineCacheMagic{'G', 'F', 'X', 'P', 'C', '0', '0', '1'};
+constexpr std::uint32_t kPipelineCacheFormatVersion = 1u;
+} // namespace
+
+Result<PipelineCacheFingerprint> Device::pipelineCacheFingerprint() const {
+    const auto& c = caps();
+    PipelineCacheFingerprint fp{};
+    fp.sdkVersion = std::string(gfx::version);
+    fp.backend = c.backend;
+    fp.adapterName = c.adapterName;
+    fp.driverFingerprint = fnv1a64(std::span<const std::byte>(
+        reinterpret_cast<const std::byte*>(c.adapterName.data()), c.adapterName.size()));
+    return fp;
+}
+
+Result<std::vector<std::byte>> Device::serializePipelineCache() {
+    if (auto status = checkStatus(); !status) return std::unexpected(status.error());
+    return std::vector<std::byte>{};
+}
+
+Result<void> Device::loadPipelineCacheData(std::span<const std::byte> data) {
+    (void)data;
+    return checkStatus();
+}
+
+Result<void> Device::savePipelineCacheToFile(std::string_view path) {
+    if (auto status = checkStatus(); !status) return status;
+    if (path.empty()) return std::unexpected(Error{ErrorCode::InvalidArgument, "Pipeline cache path must not be empty"});
+    auto fp = pipelineCacheFingerprint();
+    if (!fp) return std::unexpected(fp.error());
+    auto payload = serializePipelineCache();
+    if (!payload) return std::unexpected(payload.error());
+
+    std::vector<std::byte> body;
+    body.reserve(128 + payload->size());
+    const std::uint32_t backendVal = static_cast<std::uint32_t>(fp->backend);
+    appendPod(body, backendVal);
+    appendPod(body, fp->vendorId);
+    appendPod(body, fp->deviceId);
+    appendPod(body, fp->driverFingerprint);
+    appendString(body, fp->sdkVersion);
+    appendString(body, fp->adapterName);
+    const std::uint64_t payloadSize = static_cast<std::uint64_t>(payload->size());
+    appendPod(body, payloadSize);
+    body.insert(body.end(), payload->begin(), payload->end());
+
+    const std::uint64_t checksum = fnv1a64(body);
+    std::vector<std::byte> fileBytes;
+    fileBytes.reserve(20 + body.size());
+    const auto* mp = reinterpret_cast<const std::byte*>(kPipelineCacheMagic.data());
+    fileBytes.insert(fileBytes.end(), mp, mp + kPipelineCacheMagic.size());
+    appendPod(fileBytes, kPipelineCacheFormatVersion);
+    appendPod(fileBytes, checksum);
+    fileBytes.insert(fileBytes.end(), body.begin(), body.end());
+
+    std::error_code ec;
+    const std::filesystem::path targetPath(path);
+    if (targetPath.has_parent_path()) {
+        std::filesystem::create_directories(targetPath.parent_path(), ec);
+    }
+    const std::filesystem::path tmpPath = targetPath.string() + ".tmp";
+    {
+        std::ofstream ofs(tmpPath, std::ios::binary | std::ios::trunc);
+        if (!ofs) return std::unexpected(Error{ErrorCode::BackendFailure, "Failed to open temporary pipeline cache file for writing"});
+        ofs.write(reinterpret_cast<const char*>(fileBytes.data()), static_cast<std::streamsize>(fileBytes.size()));
+        if (!ofs.good()) return std::unexpected(Error{ErrorCode::BackendFailure, "Failed to write pipeline cache file"});
+    }
+    std::filesystem::rename(tmpPath, targetPath, ec);
+    if (ec) {
+        std::filesystem::remove(targetPath, ec);
+        ec.clear();
+        std::filesystem::rename(tmpPath, targetPath, ec);
+        if (ec) {
+            std::filesystem::remove(tmpPath, ec);
+            return std::unexpected(Error{ErrorCode::BackendFailure, "Failed to atomically replace pipeline cache file"});
+        }
+    }
+    return {};
+}
+
+Result<PipelineCacheLoadResult> Device::loadPipelineCacheFromFile(std::string_view path) {
+    if (auto status = checkStatus(); !status) return std::unexpected(status.error());
+    if (path.empty()) return std::unexpected(Error{ErrorCode::InvalidArgument, "Pipeline cache path must not be empty"});
+    auto currentFp = pipelineCacheFingerprint();
+    if (!currentFp) return std::unexpected(currentFp.error());
+
+    std::error_code ec;
+    const std::filesystem::path targetPath(path);
+    if (!std::filesystem::exists(targetPath, ec)) {
+        return PipelineCacheLoadResult{false, false, false, 0};
+    }
+
+    std::ifstream ifs(targetPath, std::ios::binary | std::ios::ate);
+    if (!ifs) return PipelineCacheLoadResult{false, false, true, 0};
+    const auto sz = ifs.tellg();
+    if (sz < 20 || sz > 256ll * 1024ll * 1024ll) {
+        return PipelineCacheLoadResult{false, false, true, 0};
+    }
+    std::vector<std::byte> raw(static_cast<std::size_t>(sz));
+    ifs.seekg(0, std::ios::beg);
+    ifs.read(reinterpret_cast<char*>(raw.data()), sz);
+    if (!ifs.good()) return PipelineCacheLoadResult{false, false, true, 0};
+
+    if (std::memcmp(raw.data(), kPipelineCacheMagic.data(), kPipelineCacheMagic.size()) != 0) {
+        return PipelineCacheLoadResult{false, false, true, 0};
+    }
+    std::size_t offset = kPipelineCacheMagic.size();
+    std::uint32_t fileVersion = 0;
+    std::uint64_t storedChecksum = 0;
+    if (!readPod(raw, offset, fileVersion) || !readPod(raw, offset, storedChecksum) || fileVersion != kPipelineCacheFormatVersion) {
+        return PipelineCacheLoadResult{false, false, true, 0};
+    }
+    const std::span<const std::byte> body(raw.data() + offset, raw.size() - offset);
+    if (fnv1a64(body) != storedChecksum) {
+        return PipelineCacheLoadResult{false, false, true, 0};
+    }
+
+    std::size_t boff = 0;
+    std::uint32_t backendVal = 0;
+    PipelineCacheFingerprint storedFp{};
+    std::uint64_t payloadSize = 0;
+    if (!readPod(body, boff, backendVal) ||
+        !readPod(body, boff, storedFp.vendorId) ||
+        !readPod(body, boff, storedFp.deviceId) ||
+        !readPod(body, boff, storedFp.driverFingerprint) ||
+        !readString(body, boff, storedFp.sdkVersion) ||
+        !readString(body, boff, storedFp.adapterName) ||
+        !readPod(body, boff, payloadSize)) {
+        return PipelineCacheLoadResult{false, false, true, 0};
+    }
+    if (body.size() - boff != payloadSize) {
+        return PipelineCacheLoadResult{false, false, true, 0};
+    }
+    storedFp.backend = static_cast<Backend>(backendVal);
+    if (storedFp != *currentFp) {
+        return PipelineCacheLoadResult{false, true, false, 0};
+    }
+
+    const std::span<const std::byte> nativePayload(body.data() + boff, static_cast<std::size_t>(payloadSize));
+    if (auto ok = loadPipelineCacheData(nativePayload); !ok) {
+        return PipelineCacheLoadResult{false, false, true, 0};
+    }
+    return PipelineCacheLoadResult{true, false, false, payloadSize};
+}
+
+struct ShaderVariantCache::Impl {
+    struct Entry {
+        ShaderVariantKey key;
+        PipelinePtr pipeline;
+    };
+    std::vector<Entry> entries;
+
+    static ShaderVariantKey normalize(ShaderVariantKey key) {
+        std::sort(key.defines.begin(), key.defines.end(), [](const ShaderDefine& a, const ShaderDefine& b) {
+            return a.name != b.name ? a.name < b.name : a.value < b.value;
+        });
+        return key;
+    }
+
+    static bool sameIdentity(const ShaderVariantKey& a, const ShaderVariantKey& b) {
+        return a.name == b.name && a.defines == b.defines;
+    }
+};
+
+ShaderVariantCache::ShaderVariantCache() : impl(std::make_unique<Impl>()) {}
+ShaderVariantCache::~ShaderVariantCache() = default;
+ShaderVariantCache::ShaderVariantCache(ShaderVariantCache&&) noexcept = default;
+ShaderVariantCache& ShaderVariantCache::operator=(ShaderVariantCache&&) noexcept = default;
+
+std::uint64_t ShaderVariantCache::hashBytes(std::span<const std::byte> bytes) noexcept {
+    return fnv1a64(bytes);
+}
+
+std::uint64_t ShaderVariantCache::hashSource(std::string_view source) noexcept {
+    return fnv1a64(std::span<const std::byte>(reinterpret_cast<const std::byte*>(source.data()), source.size()));
+}
+
+Result<CachedGraphicsPipeline> ShaderVariantCache::getOrCompile(
+    Device& device,
+    const ShaderVariantKey& rawKey,
+    const GraphicsPipelineDesc& desc) {
+    if (rawKey.name.empty()) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "ShaderVariantKey::name must not be empty"});
+    }
+    const auto key = Impl::normalize(rawKey);
+    for (auto& e : impl->entries) {
+        if (Impl::sameIdentity(e.key, key)) {
+            if (e.key.sourceHash == key.sourceHash && e.pipeline) {
+                return CachedGraphicsPipeline{e.pipeline, true};
+            }
+            // Input/sourceHash changed: recompile and replace atomically.
+            auto compiled = device.createGraphicsPipeline(desc);
+            if (!compiled) return std::unexpected(compiled.error());
+            e.key = key;
+            e.pipeline = *compiled;
+            return CachedGraphicsPipeline{e.pipeline, false};
+        }
+    }
+    auto compiled = device.createGraphicsPipeline(desc);
+    if (!compiled) return std::unexpected(compiled.error());
+    impl->entries.push_back({key, *compiled});
+    return CachedGraphicsPipeline{*compiled, false};
+}
+
+Result<PipelinePrewarmStats> ShaderVariantCache::prewarm(
+    Device& device,
+    std::span<const std::pair<ShaderVariantKey, GraphicsPipelineDesc>> variants) {
+    const auto start = std::chrono::steady_clock::now();
+    PipelinePrewarmStats stats{};
+    stats.requested = static_cast<std::uint32_t>(variants.size());
+    for (const auto& [key, desc] : variants) {
+        auto res = getOrCompile(device, key, desc);
+        if (!res) {
+            ++stats.failed;
+        } else if (res->hit) {
+            ++stats.cacheHits;
+        } else {
+            ++stats.compiled;
+        }
+    }
+    const auto end = std::chrono::steady_clock::now();
+    stats.elapsedMilliseconds = std::chrono::duration<double, std::milli>(end - start).count();
+    return stats;
+}
+
+Result<PipelinePtr> ShaderVariantCache::hotReload(
+    Device& device,
+    const ShaderVariantKey& rawKey,
+    const GraphicsPipelineDesc& newDesc) {
+    if (rawKey.name.empty()) {
+        return std::unexpected(Error{ErrorCode::InvalidArgument, "ShaderVariantKey::name must not be empty"});
+    }
+    const auto key = Impl::normalize(rawKey);
+    // Compile the new pipeline first so that any failure leaves the existing valid variant untouched.
+    auto compiled = device.createGraphicsPipeline(newDesc);
+    if (!compiled) return std::unexpected(compiled.error());
+    for (auto& e : impl->entries) {
+        if (Impl::sameIdentity(e.key, key)) {
+            e.key = key;
+            e.pipeline = *compiled;
+            return e.pipeline;
+        }
+    }
+    impl->entries.push_back({key, *compiled});
+    return *compiled;
+}
+
+PipelinePtr ShaderVariantCache::find(const ShaderVariantKey& rawKey) const {
+    const auto key = Impl::normalize(rawKey);
+    for (const auto& e : impl->entries) {
+        if (Impl::sameIdentity(e.key, key) && e.key.sourceHash == key.sourceHash) {
+            return e.pipeline;
+        }
+    }
+    return nullptr;
+}
+
+std::size_t ShaderVariantCache::size() const noexcept {
+    return impl->entries.size();
+}
+
+void ShaderVariantCache::clear() {
+    impl->entries.clear();
+}
+
+Result<void> ShaderVariantCache::saveToDisk(Device& device, std::string_view path) const {
+    return device.savePipelineCacheToFile(path);
+}
+
+Result<PipelineCacheLoadResult> ShaderVariantCache::loadFromDisk(Device& device, std::string_view path) {
+    return device.loadPipelineCacheFromFile(path);
 }
 
 namespace {

@@ -716,3 +716,19 @@
   - `gfx_ai_compute_interop_tests` 7/7 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770 + WARP): Same-API D3D12/Vulkan, Cross-API D3D12↔Vulkan, Debug+GBV 및 고정 VVL 1.3.290 모두 `val_errors=0`.
   - `ctest -R ai_compute_interop` 6/6 PASS (`5.18s`).
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P9-SHD-02`: 영속 Shader/Pipeline Cache · Variant · Prewarming · Hot Reload
+
+- **기준 HEAD**: `0b791e29`
+- **완료 ID / 유지 ID**: `P9-SHD-02` 완료 (**Phase 8·9·10·11·12 Windows D3D12/Vulkan 전 항목 100% 완료**), `P9-SHD-01`(`P5-SHD-08` 선행 수용 및 Linux/Metal 최종 수용) 유지
+- **수행 내용**:
+  - `include/graphics/{Types,Device}.hpp`, `src/foundation/Backend.cpp`: `PipelineCacheFingerprint`, `PipelineCacheLoadResult`, `ShaderDefine`/`ShaderVariantKey`, `PipelinePrewarmStats`, `Device::{pipelineCacheFingerprint,serializePipelineCache,loadPipelineCacheData,savePipelineCacheToFile,loadPipelineCacheFromFile}`(`GFXPC001` FNV-1a 체크섬·임시 파일 원자적 저장·지문 무효화·손상 복구) 및 `ShaderVariantCache::{getOrCompile,prewarm,hotReload,find,saveToDisk,loadFromDisk}` 추가.
+  - `src/backends/vulkan/Vulkan.cpp`: 네이티브 `VkPipelineCache` 생성·`vkGetPipelineCacheData`·`vkMergePipelineCaches`·`pipelineCacheUUID` 지문 연결.
+  - `src/backends/d3d12/D3D12.cpp`: `GetCachedBlob`/`CachedPSO` 아카이브 및 `DXGI_ADAPTER_DESC1` 지문 연결.
+  - `tests/ShaderCacheTests.cpp`, `CMakeLists.txt`, `docs/PHASE9_PERSISTENT_SHADER_CACHE_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p9-shader-cache`, 설치 `out/p9-shader-cache-install`, `GraphicsSDKCore.lib` SHA-256 `FA2FDDBC1BAA50B8F07C4CE09D1670D11BF14E6D50F648873A6C7D3462F32917`):
+  - `gfx_shader_cache_tests` 5/5 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770 + WARP): 8-variant cold vs warm 실측(Vulkan GTX `30.17ms -> 0.55ms` **54.85x**, Intel `12.95ms -> 0.35ms` **37.00x**, D3D12 GTX `10.53ms -> 1.06ms` **9.93x** / GBV `118.07ms -> 2.40ms` **49.20x**, Intel `16.20ms -> 0.63ms` **25.71x**), 지문 무효화, 3종 손상 복구, 원자적 Hot Reload(실패 시 기존 파이프라인 보존), 64×64 전 픽셀 일치, Debug+GBV 및 고정 VVL 1.3.290 `val_errors=0`.
+  - `ctest -R shader_cache` 5/5 PASS (`4.38s`), 독립 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

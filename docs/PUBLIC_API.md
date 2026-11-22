@@ -200,6 +200,10 @@ DXC를 활성화한 빌드는 `compileHlslDxil`로 SM6.0 DXIL을 생성하며 `r
 `createCachedGraphicsPipeline`은 같은 장치의 전체 descriptor가 일치하는 파이프라인을
 재사용하고 적중 여부를 반환한다. `clearGraphicsPipelineCache`는 캐시 소유권을 해제한다.
 [키·수명·무효화 계약](PHASE5_PIPELINE_CACHE_REPORT.md)
+디스크 영속 파이프라인 캐시와 변형 관리는 `Device::{pipelineCacheFingerprint, serializePipelineCache, loadPipelineCacheData, savePipelineCacheToFile, loadPipelineCacheFromFile}`
+(Vulkan `VkPipelineCache` 직렬화/병합, D3D12 `GetCachedBlob`/`CachedPSO` 아카이브, `GFXPC001` FNV-1a 체크섬 손상 복구 및 지문 무효화)와
+`ShaderVariantCache::{getOrCompile, prewarm, hotReload, find, saveToDisk, loadFromDisk}`(컴파일 실패 시 기존 정상 파이프라인 무손실 보존)를 제공한다.
+[영속 Shader/Pipeline Cache 보고서](PHASE9_PERSISTENT_SHADER_CACHE_REPORT.md)를 따른다.
 caps는 실제 구현 범위와 어댑터·SDK 유효 한도(`maxTextureDimension2D`, `maxColorAttachments`,
 `constantBufferAlignment`, `textureCopyRowAlignment`, `textureCopyOffsetAlignment`, `maxVertexStreams`,
 `maxConstantBufferSize`)를 나타낸다. `Device::queryFormatSupport(format)`은 생성 스레드에서 GPU 대기나

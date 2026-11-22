@@ -372,4 +372,43 @@ private:
     ExternalHandleType type_{ExternalHandleType::OpaqueWin32Nt};
     std::uintptr_t handle_{};
 };
+
+// Persistent shader/pipeline cache identity used to invalidate cached blobs across
+// SDK version, backend, GPU adapter, or driver updates.
+struct PipelineCacheFingerprint {
+    std::string sdkVersion;
+    Backend backend{Backend::D3D12};
+    std::uint32_t vendorId{}, deviceId{};
+    std::string adapterName;
+    std::uint64_t driverFingerprint{};
+    bool operator==(const PipelineCacheFingerprint&) const = default;
+};
+
+struct PipelineCacheLoadResult {
+    bool loaded{};
+    bool invalidated{};
+    bool recoveredFromCorruption{};
+    std::uint64_t bytesLoaded{};
+};
+
+struct ShaderDefine {
+    std::string name;
+    std::string value;
+    bool operator==(const ShaderDefine&) const = default;
+};
+
+struct ShaderVariantKey {
+    std::string name;
+    std::vector<ShaderDefine> defines;
+    std::uint64_t sourceHash{};
+    bool operator==(const ShaderVariantKey&) const = default;
+};
+
+struct PipelinePrewarmStats {
+    std::uint32_t requested{};
+    std::uint32_t compiled{};
+    std::uint32_t cacheHits{};
+    std::uint32_t failed{};
+    double elapsedMilliseconds{};
+};
 }

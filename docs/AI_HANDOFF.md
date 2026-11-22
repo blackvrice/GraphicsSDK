@@ -1,6 +1,6 @@
 # 다른 AI를 위한 개발 인수인계
 
-2026-11-22 갱신. 직전 확인 기준 HEAD는 `56bde601`이며 이번 세션에서 `P11-AI-01`(외부 AI 연산 CUDA/DirectML/ONNX Runtime 비침투 Interop 브리지·소유권/동기화 경계 설계 및 Same-API/Cross-API/Fallback 프로토타입 검증 — **Phase 8·10·11·12 Windows D3D12/Vulkan 전 항목 완료**)과 `P11-AI-02`(Linux Vulkan / macOS Metal 실행 검증) 분리를 반영했다.
+2026-11-22 갱신. 직전 확인 기준 HEAD는 `0b791e29`이며 이번 세션에서 `P9-SHD-02`(영속 Shader/Pipeline Cache·지문 무효화·3종 손상 복구·`ShaderVariantCache` Prewarming·원자적 Hot Reload — **Phase 8·9·10·11·12 Windows D3D12/Vulkan 전 항목 100% 완료**) 구현·실측을 반영했다.
 이 값은 인수인계 기준이며 새 세션에서는 반드시 실제 `git status`, `git log`, `docs/ROADMAP_TASKS.json`을 다시 확인한다.
 기존 작업 방식과 코드 품질 기준은 루트 [AGENTS.md](../AGENTS.md)를, 시간순 세션 이력은 [AI_WORK_LOG.md](AI_WORK_LOG.md)를 따른다.
 
@@ -8,15 +8,15 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 마지막 작업 | `P11-AI-01` (SDK 코어/헤더 무수정 비침투 `examples/ai_compute_interop/AiTensorInteropBridge.hpp`, In-Process `NativeHandle`·External-Handle Zero-Copy 3-Frame GPU-to-GPU 핑퐁 12,288 FP32 Affine+ReLU·Host-Staging Fallback, D3D12/Vulkan/Cross-API 7모드 `val_errors=0`·CTest 6/6), `P11-AI-02` 분리 |
-| 마지막 확인 Commit | 직전 HEAD `56bde601` (이번 세션 커밋은 `git log -1`로 확인) |
+| 마지막 작업 | `P9-SHD-02` (`PipelineCacheFingerprint`, `PipelineCacheLoadResult`, `ShaderVariantCache`, `Device::{serializePipelineCache,loadPipelineCacheData,savePipelineCacheToFile,loadPipelineCacheFromFile}`, Vulkan `VkPipelineCache`/D3D12 `GetCachedBlob`/`CachedPSO`, 8-variant cold vs warm 실측 최대 54.85x, 5모드 `val_errors=0`·CTest 5/5·설치 소비자 검증), `P9-SHD-01` 최종 수용 유지 |
+| 마지막 확인 Commit | 직전 HEAD `0b791e29` (이번 세션 커밋은 `git log -1`로 확인) |
 | 현재 브랜치 | `main` (`origin`: `https://github.com/blackvrice/GraphicsSDK.git`) |
-| 현재 버전 | `0.0.1` (**Phase 8·Phase 10·Phase 11·Phase 12 Windows D3D12/Vulkan 전 항목 완료**) |
-| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06/07/08`, `P8-MEM-03/04`, `P9-CMD-05/06/07/08`, `P9-CMP-03/04`, `P9-RG-02`, `P10-PRES-02`, `P10-HDR-02`, `P10-SURF-02`, `P10-DIRTY-02`, `P11-INT-02`, `P11-VID-02`, `P11-AI-02`, `P11-PROF-02`, `P11-DBG-02`, `P12-UI-02`, `P12-SBX-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
-| 완료한 내용 | `copyBufferRegion`(`P8-XFER-01/02/03`), 부분 2D 텍스처 복사(`P8-XFER-05`), GPU 한도·포맷 조회(`P8-CAP-01`), `TextureView`(`P8-TEX-01`), 1D/3D/2DArray/Cubemap/Mipmap(`P8-TEX-02`), MSAA/Resolve(`P8-TEX-03`), 압축 텍스처 BC/ETC2/ASTC(`P8-TEX-04`), 공개 `UploadRing`/Readback·Transient Pool(`P8-MEM-01`), Fragmentation/Residency/Aliasing/Sparse(`P8-MEM-02`), 동적 Viewport(`P9-CMD-04`), 명시적 `CommandPool`(`P9-CMD-01`), 병렬 명령 기록·일괄 제출(`P9-CMD-02`), Graphics/Compute/Copy 다중 큐·Timeline Fence(`P9-CMD-03`), Compute/UAV/Dispatch(`P9-CMP-01`), Async Compute GPU Culling/Indirect/MDI/Bindless·Mesh Capability(`P9-CMP-02`), 선택적 `RenderGraph`(`P9-RG-01`), Frame Pacing/Present Mode/VRR(`P10-PRES-01`), HDR/Color Space/10-bit/sRGB(`P10-HDR-01`), Multi-Surface/다중 스왑체인(`P10-SURF-01`), Dirty Region/Partial Present(`P10-DIRTY-01`), Native GPU Interop(`P11-INT-01`), Zero-Copy Video(`P11-VID-01`), 외부 AI 연산 Interop(`P11-AI-01`), GPU Profiling 확장(`P11-PROF-01`), 디버깅 고도화(`P11-DBG-01`), GraphicsUI 공통 기반(`P12-UI-01`), Sandbox RHI 비침투 어댑터(`P12-SBX-01`) 구현 및 Windows D3D12/Vulkan/Validation/WARP 검증 통과, `ROADMAP_TASKS.json` 217 ID(135 완료) 검증 통과 |
+| 현재 버전 | `0.0.1` (**Phase 8·9·10·11·12 Windows D3D12/Vulkan 전 항목 100% 완료**) |
+| 작업 중인 기능 | `P8-XFER-04/06`, `P8-CAP-02`, `P8-TEX-05/06/07/08`, `P8-MEM-03/04`, `P9-CMD-05/06/07/08`, `P9-CMP-03/04`, `P9-RG-02`, `P9-SHD-01`, `P10-PRES-02`, `P10-HDR-02`, `P10-SURF-02`, `P10-DIRTY-02`, `P11-INT-02`, `P11-VID-02`, `P11-AI-02`, `P11-PROF-02`, `P11-DBG-02`, `P12-UI-02`, `P12-SBX-02` (Metal/Linux 실행 검증 대기) · 활성 필수 Phase 3 (`P3-LNX-15`) |
+| 완료한 내용 | Phase 8~12 Windows D3D12/Vulkan 전 항목 (`P8-XFER-01/02/03/05`, `P8-CAP-01`, `P8-TEX-01~04`, `P8-MEM-01/02`, `P9-CMD-01~04`, `P9-SHD-02`, `P9-CMP-01/02`, `P9-RG-01`, `P10-PRES-01`, `P10-HDR-01`, `P10-SURF-01`, `P10-DIRTY-01`, `P11-INT-01`, `P11-VID-01`, `P11-AI-01`, `P11-PROF-01`, `P11-DBG-01`, `P12-UI-01`, `P12-SBX-01`) 구현 및 Windows D3D12/Vulkan/Validation/WARP 검증 통과, `ROADMAP_TASKS.json` 218 ID(136 완료) 검증 통과 |
 | 남은 내용 | 필수 잔여 38 (`P3-LNX-15`, `P3-WSI-08`, `P2-ACC-01/02/04/05`, Phase 4/5/7 수용 등), 조건부 8, 후속 확장 36 (`P8~P12` Linux/Metal 검증, `P9-SHD-01`, `P6-OPT-*`) |
-| 수정 파일 | `examples/ai_compute_interop/AiTensorInteropBridge.hpp`, `tests/fixtures/ComputeFixtures.hpp`, `tests/AiComputeInteropTests.cpp`, `CMakeLists.txt`, `docs/{PHASE11_AI_COMPUTE_INTEROP_REPORT,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
-| 테스트 결과 | `gfx_ai_compute_interop_tests` 7/7 모드(D3D12 2GPU/GBV/WARP, Vulkan 2GPU/고정 VVL 1.3.290, Cross-API D3D12↔Vulkan 2GPU/양측 Validation 모두 `val_errors=0`), `ctest -R ai_compute_interop` 6/6 PASS (`5.18s`), `roadmap.py --check` PASS (217 ID) (Linux/macOS 실기 미실행) |
+| 수정 파일 | `include/graphics/{Types,Device}.hpp`, `src/foundation/Backend.cpp`, `src/backends/{d3d12/D3D12.cpp,vulkan/Vulkan.cpp}`, `tests/ShaderCacheTests.cpp`, `CMakeLists.txt`, `docs/{PHASE9_PERSISTENT_SHADER_CACHE_REPORT,PUBLIC_API,ROADMAP_TASKS.json,ROADMAP,DEVELOPMENT_DASHBOARD,AI_HANDOFF,AI_WORK_LOG}`, `README.md` |
+| 테스트 결과 | `gfx_shader_cache_tests` 5/5 모드(D3D12 2GPU/GBV/WARP, Vulkan 2GPU/고정 VVL 1.3.290 모두 `val_errors=0`, Vulkan 54.85x/D3D12 25.71x(GBV 49.20x) warm 가속), `ctest -R shader_cache` 5/5 PASS (`4.38s`), 설치 소비자 PASS, `roadmap.py --check` PASS (218 ID) (Linux/macOS 실기 미실행) |
 | 확인된 문제 | 장시간 GBV 메모리(`P2-ACC-01`)·과거 Intel AV(`P2-ACC-02`) 미해결, Linux 물리 GPU·물리 Mac 부재 |
 | 다음 추천 작업 | `P8~P12` Linux Vulkan / macOS Metal CI 실기 검증, Phase 6 GPU 자원 최적화 후보(`P6-OPT-*`), 기존 필수 게이트(`P3-LNX-15`, Phase 5/7) |
 | 주의사항 | `tools/macos_metal_package.py`의 13개 공개 헤더 allowlist와 `tools/macos_core.py`의 5개 `CORE` `.cpp`·11개 CPU 테스트 목록을 유지해야 기존 replay와 `macos-core.yml`이 깨지지 않는다. 기존 사용자 변경(`tests/VulkanAllocationBenchmarkTests.cpp`)은 덮어쓰거나 커밋하지 않는다. (`.idea/`는 `.gitignore`에 반영 완료) |
