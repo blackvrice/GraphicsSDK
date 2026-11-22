@@ -357,12 +357,13 @@ void testTransientPoolAndBudgetPressure(gfx::Device& device, gfx::Backend backen
 
     // 2. Live OS VRAM budget pressure query.
     auto osReport = take(pool->applyBudgetPressure(), "live applyBudgetPressure()", totals);
-    if (backend == gfx::Backend::D3D12) {
+    const auto liveBudgetProbe = device.queryMemoryBudget(gfx::MemorySegment::Local);
+    if (liveBudgetProbe) {
         check(osReport.level != gfx::BudgetPressureLevel::Unavailable && osReport.budgetBytes > 0,
-              "D3D12 live applyBudgetPressure must report real OS VRAM budget", totals);
+              "live applyBudgetPressure must report real OS VRAM budget when queryMemoryBudget is supported", totals);
     } else {
         check(osReport.level == gfx::BudgetPressureLevel::Unavailable,
-              "Vulkan live applyBudgetPressure must honestly report Unavailable", totals);
+              "live applyBudgetPressure must honestly report Unavailable when queryMemoryBudget is unsupported", totals);
     }
 
     // 3. Deterministic Soft / Hard budget pressure eviction policy (4 x 256 KiB = 1 MiB idle).

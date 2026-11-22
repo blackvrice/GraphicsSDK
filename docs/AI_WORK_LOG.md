@@ -732,3 +732,19 @@
   - `gfx_shader_cache_tests` 5/5 모드 PASS (NVIDIA GTX 1660 SUPER + Intel UHD 770 + WARP): 8-variant cold vs warm 실측(Vulkan GTX `30.17ms -> 0.55ms` **54.85x**, Intel `12.95ms -> 0.35ms` **37.00x**, D3D12 GTX `10.53ms -> 1.06ms` **9.93x** / GBV `118.07ms -> 2.40ms` **49.20x**, Intel `16.20ms -> 0.63ms` **25.71x**), 지문 무효화, 3종 손상 복구, 원자적 Hot Reload(실패 시 기존 파이프라인 보존), 64×64 전 픽셀 일치, Debug+GBV 및 고정 VVL 1.3.290 `val_errors=0`.
   - `ctest -R shader_cache` 5/5 PASS (`4.38s`), 독립 설치 소비자(`tests/consumer`) PASS (`GraphicsSDK 0.0.1`).
   - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.
+
+---
+
+## 2026-11-22 — `P3-CAP-04`: Vulkan `VK_EXT_memory_budget` OS 프로세스 메모리 예산 계약
+
+- **기준 HEAD**: `cf0ee13e`
+- **완료 ID**: `P3-CAP-04` (Phase 3 조건부 잔여 8 → 7, 전체 137/218 완료)
+- **수행 내용**:
+  - `src/backends/vulkan/Vulkan.cpp`: `vkGetPhysicalDeviceMemoryProperties2` 로드, `VK_EXT_memory_budget` 선택 활성화, `VulkanDevice::queryMemoryBudget(Local/NonLocal)`에서 `VkPhysicalDeviceMemoryBudgetPropertiesEXT` 기반 힙별 `heapBudget`/`heapUsage` 포화 합산 구현(reservation 필드 0 정직 보고, 확장 미노출 어댑터는 heap capacity 대체 없이 `Unsupported` 유지).
+  - `tests/{VulkanTests,MemoryPoolTests}.cpp`, `docs/PHASE3_VULKAN_MEMORY_BUDGET_REPORT.md` 등 문서·로드맵 갱신.
+- **검증 결과** (`out/p3-vulkan-budget`, 설치 `out/p3-vulkan-budget-install`, `GraphicsSDKCore.lib` SHA-256 `7C690A14B1226E8380F8E03CCBA1422D490B28F67FDC08183872BA312E5EFAEF`):
+  - `gfx_vulkan_tests` (일반 + 고정 VVL 1.3.290): GTX 1660 SUPER `11MiB / 5,403MiB`, Intel UHD 770 `0MiB / 48,149MiB`, `721` assertions PASS.
+  - `gfx_memory_pool_tests --vulkan --validation`: `applyBudgetPressure()` 실측 OS VRAM 압력 동작 확인 PASS.
+  - `gfx_profiling_tests --vulkan --validation`: `profilingSnapshot()` Vulkan OS VRAM 예산 실측 확인, `val_errors=0` PASS.
+  - CTest (`memory_pool_vulkan`, `profiling_vulkan`, `vulkan_transfer`) 3/3 PASS (`2.22s`), 설치 소비자(`tests/consumer`) PASS.
+  - 기존 사용자 변경 파일(`tests/VulkanAllocationBenchmarkTests.cpp`)은 변경·스테이징하지 않고 보존.

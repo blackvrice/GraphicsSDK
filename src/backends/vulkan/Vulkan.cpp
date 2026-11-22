@@ -78,7 +78,7 @@ struct Loader {
 };
 #define INSTANCE_FUNCTIONS(X) \
     X(DestroyInstance) X(EnumeratePhysicalDevices) X(GetPhysicalDeviceProperties2) \
-    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(GetPhysicalDeviceFormatProperties) X(GetPhysicalDeviceFeatures) X(GetPhysicalDeviceFeatures2) X(CreateDevice) X(GetDeviceProcAddr) X(EnumerateDeviceExtensionProperties)
+    X(GetPhysicalDeviceMemoryProperties) X(GetPhysicalDeviceMemoryProperties2) X(GetPhysicalDeviceQueueFamilyProperties) X(GetPhysicalDeviceImageFormatProperties) X(GetPhysicalDeviceFormatProperties) X(GetPhysicalDeviceFeatures) X(GetPhysicalDeviceFeatures2) X(CreateDevice) X(GetDeviceProcAddr) X(EnumerateDeviceExtensionProperties)
 struct Instance {
     std::shared_ptr<Loader> loader;
     VkInstance handle{};
@@ -339,6 +339,7 @@ struct NativeDevice {
     bool hdrMetadata{};
     bool incrementalPresent{};
     bool timelineSemaphores{};
+    bool memoryBudget{};
     bool externalMemoryWin32{};
     bool externalSemaphoreWin32{};
     PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT{};
@@ -2756,9 +2757,40 @@ struct VulkanDevice final : Device {
         }
         return result;
     }
-    Result<MemoryBudget> queryMemoryBudget(MemorySegment) override {
+    Result<MemoryBudget> queryMemoryBudget(MemorySegment segment) override {
         if (auto ok = owner->check(); !ok) return std::unexpected(ok.error());
-        return fail(ErrorCode::Unsupported, "Vulkan heap sizes do not provide the OS process budget contract");
+        if (segment != MemorySegment::Local && segment != MemorySegment::NonLocal) {
+            return fail(ErrorCode::InvalidArgument, "Invalid memory segment");
+        }
+        if (!owner->native->memoryBudget) {
+            return fail(ErrorCode::Unsupported, "VK_EXT_memory_budget is unavailable; heap capacities are not substituted for OS process budget");
+        }
+        VkPhysicalDeviceMemoryBudgetPropertiesEXT budgetProps{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT};
+        VkPhysicalDeviceMemoryProperties2 memProps{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
+        memProps.pNext = &budgetProps;
+        owner->native->instance->GetPhysicalDeviceMemoryProperties2(owner->physical, &memProps);
+        std::uint64_t totalBudget = 0;
+        std::uint64_t totalUsage = 0;
+        auto satAdd = [](std::uint64_t a, std::uint64_t b) noexcept {
+            return a > UINT64_MAX - b ? UINT64_MAX : (a + b);
+        };
+        const std::uint32_t heapCount = std::min<std::uint32_t>(memProps.memoryProperties.memoryHeapCount, VK_MAX_MEMORY_HEAPS);
+        for (std::uint32_t i = 0; i < heapCount; ++i) {
+            const bool isLocal = (memProps.memoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0;
+            if ((segment == MemorySegment::Local) == isLocal) {
+                totalBudget = satAdd(totalBudget, budgetProps.heapBudget[i]);
+                totalUsage = satAdd(totalUsage, budgetProps.heapUsage[i]);
+            }
+        }
+        // VK_EXT_memory_budget reports live OS process budget & usage per heap, without DXGI reservation counters.
+        return MemoryBudget{
+            description.adapter.value_or(AdapterId{Backend::Vulkan, 0}),
+            segment,
+            totalBudget,
+            totalUsage,
+            0u,
+            0u
+        };
     }
     Result<std::unique_ptr<Device>> recover() override {
         if (std::this_thread::get_id() != owner->thread) return fail(ErrorCode::InvalidState, "Recovery requires the creating thread");
@@ -4251,6 +4283,10 @@ Result<std::unique_ptr<Device>> createVulkanDevice(DeviceDesc desc) {
         }
     }
     const bool meshShaderSupported = hasExtension("VK_EXT_mesh_shader");
+    if (hasExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME)) {
+        native->memoryBudget = true;
+        enabledDeviceExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+    }
 #ifdef _WIN32
     if (hasExtension(VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME)) {
         native->externalMemoryWin32 = true;

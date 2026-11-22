@@ -61,7 +61,21 @@ void contracts(gfx::Device& d, const gfx::AdapterInfo& adapter, bool validation)
     reject(d.createBuffer({64, static_cast<gfx::Memory>(99)}), gfx::ErrorCode::InvalidArgument, "Unknown memory kind");
     reject(d.createTexture({1, 1, gfx::Format::D32Float, true, true}), gfx::ErrorCode::InvalidArgument, "Depth cannot also be a color target");
     reject(d.createGraphicsPipeline({}), gfx::ErrorCode::Unsupported, "Pipeline not implemented");
-    reject(d.queryMemoryBudget(gfx::MemorySegment::Local), gfx::ErrorCode::Unsupported, "No synthesized OS budget");
+    reject(d.queryMemoryBudget(static_cast<gfx::MemorySegment>(2)), gfx::ErrorCode::InvalidArgument, "Invalid memory segment");
+    if (auto localBudget = d.queryMemoryBudget(gfx::MemorySegment::Local); localBudget) {
+        check(localBudget->adapterId == adapter.id && localBudget->segment == gfx::MemorySegment::Local &&
+              localBudget->budgetBytes > 0 && localBudget->availableForReservationBytes == 0 && localBudget->reservationBytes == 0,
+              "Vulkan VK_EXT_memory_budget local fields valid");
+        auto nonLocalBudget = take(d.queryMemoryBudget(gfx::MemorySegment::NonLocal));
+        check(nonLocalBudget.adapterId == adapter.id && nonLocalBudget.segment == gfx::MemorySegment::NonLocal &&
+              nonLocalBudget.availableForReservationBytes == 0 && nonLocalBudget.reservationBytes == 0,
+              "Vulkan VK_EXT_memory_budget non-local fields valid");
+        std::cout << "  [Vulkan/" << adapter.name << "] VK_EXT_memory_budget Local: usage="
+                  << (localBudget->usageBytes / (1024 * 1024)) << "MiB / budget="
+                  << (localBudget->budgetBytes / (1024 * 1024)) << "MiB\n";
+    } else {
+        check(localBudget.error().code == gfx::ErrorCode::Unsupported, "Unsupported memory budget must not synthesize heap capacity");
+    }
     reject(d.recover(), gfx::ErrorCode::InvalidState, "Healthy recovery must preserve the generation");
     reject(d.removeForTesting(), gfx::ErrorCode::Unsupported, "Loss injection not implemented");
     auto other = take(gfx::createDevice(description(adapter, validation)));
